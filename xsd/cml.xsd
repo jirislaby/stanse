@@ -1,0 +1,678 @@
+<schema xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+  <documentation>
+    Schema for GNU C programming language, version 0.1 (12/04/2006)
+    Copyright (C) 2006 Jan Obdrzalek obdrzalek@fi.muni.cz
+    Masaryk University, Brno, Czech Republic
+    
+    TODO:
+    - finish the declarator and type part
+    - add all GNU extensions
+    - attributes not yet assigned
+    
+    BUGS:
+    - declarator and type part is CRAP, and needs to be rewritten
+    
+    SOURCES:
+    - ANSI C:
+      Kerninghan, Ritchie: C Programming Language, 2nd edition
+      Appendix A, C (ANSI C99)
+      [ v cestine: Programovaci Jazyk C, Computer Press 2006
+        cisla stranek jsou vzata odtud]
+    - GNU extensions:
+      GCC manual, http://gcc.gnu.org/onlinedocs/gcc-4.0.2/gcc.pdf, Section 5
+  </documentation>
+</annotation>
+
+<!-- source code pointers -->
+<attributeGroup name="location">
+  <attribute name="bl" type="nonNegativeInteger"/>
+  <attribute name="bc" type="nonNegativeInteger"/>
+  <attribute name="el" type="nonNegativeInteger"/>
+  <attribute name="ec" type="nonNegativeInteger"/>
+</attributeGroup>
+
+<!-- type of empty elements -->
+<complexType name="empty">
+</complexType>
+
+<!--identifiers as defined by the standard-->
+<simpleType name="id">
+  <restriction base="string">
+    <pattern value="[a-zA-Z_][a-zA-Z0-9_]*"/>
+  </restriction>
+</simpleType>
+
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+<!-- STATEMENTS -->
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+
+<group name="statement">
+  <choice>
+    <element name="emptyStatement" type="empty"/> <!--in GNU C only-->
+    <element ref="compoundStatement"/>
+    <element ref="expression"/>
+    <!--Iteration statements-->
+    <element name="whileStatement">
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element ref="statement"/>
+        </sequence>
+      </complexType>
+    </element>
+    <element name="doStatement">
+      <complexType>
+        <sequence>
+          <element ref="statement"/>
+          <element ref="expression"/>
+        </sequence>
+      </complexType>
+    </element>
+    <element name="forStatement">
+      <complexType>
+        <sequence>
+	  <choice>
+	    <element ref="expression"/>
+	    <element ref="declaration"/>
+          </choice>
+          <element ref="expression"/>
+          <element ref="expression"/>
+          <element ref="statement"/>
+        </sequence>
+      </complexType>
+    </element>
+    <!--labels-->
+    <element name="labelStatement">
+      <complexType>
+        <sequence>
+          <element ref="statement"/>
+        </sequence>
+        <attribute name="label" type="id" use="required"/>
+      </complexType>
+    </element>
+    <element name="caseLabelStatement">
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element ref="statement"/>
+        </sequence>
+      </complexType>
+    </element>
+    <element name="defaultLabelStatement">
+      <complexType>
+        <sequence>
+          <element ref="statement"/>
+        </sequence>
+      </complexType>
+    </element>
+    <!--jumps-->
+    <!--<element name="gotoStatement" type="id"/> C99-->
+    <element name="gotoStatement">
+      <complexType>
+        <sequence>
+          <element ref="expression">
+        </sequence>
+      </complexType>
+    </element>
+    <element name="breakStatement" type="empty"/>
+    <element name="continueStatement" type="empty"/>
+    <element name="returnStatement">
+      <complexType>
+        <choice minOccurs="0">
+          <element ref="expression"/>
+        </choice>
+      </complexType>
+    </element>
+    <!--choice statements-->
+    <element name="ifStatement">
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element ref="statement"/>
+        </sequence>
+      </complexType>
+    </element>
+    <element name="ifElseStatement">
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element ref="statement"/>
+          <element ref="statement"/>
+        </sequence>
+      </complexType>
+    </element>
+    <element name="switchStatement">
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element ref="statement"/>
+        </sequence>
+      </complexType>
+    </element>
+  </choice>
+</group>
+
+<element name="compoundStatement">
+  <complexType>
+    <sequence>
+      <element ref="declaration" minOccurs="0" maxOccurs="unbounded"/>
+      <element ref="statement" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+</element>
+
+
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+<!-- EXPRESSIONS -->
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+
+<simpleType name="binaryOp">
+  <restriction base="string">
+    <!--numerical-->
+    <enumeration value="+"/>
+    <enumeration value="-"/>
+    <enumeration value="*"/>
+    <enumeration value="/"/>
+    <enumeration value="%"/>
+    <!--logical-->
+    <enumeration value="||"/>
+    <enumeration value="&amp;&amp;"/>
+    <!--bit-->
+    <enumeration value="|"/>
+    <enumeration value="&amp;"/>
+    <enumeration value="^"/>
+    <!--shift-->
+    <enumeration value="&lt;&lt;"/>
+    <enumeration value="&gt;&gt;"/>
+    <!--comparison-->
+    <enumeration value="="/>
+    <enumeration value="!="/>
+    <enumeration value="&lt;"/>
+    <enumeration value="&lt;="/>
+    <enumeration value="&gt;"/>
+    <enumeration value="&gt;="/>
+  </restriction>
+</simpleType>
+
+<simpleType name="assignOp">
+  <restriction base="string">
+    <!--numerical-->
+    <enumeration value="+"/>
+    <enumeration value="-"/>
+    <enumeration value="*"/>
+    <enumeration value="/"/>
+    <enumeration value="%"/>
+    <!--bit-->
+    <enumeration value="|"/>
+    <enumeration value="&amp;"/>
+    <enumeration value="^"/>
+    <!--shift-->
+    <enumeration value="&lt;&lt;"/>
+    <enumeration value="&gt;&gt;"/>
+  </restriction>
+</simpleType>
+
+<simpleType name="prefixOp">
+  <restriction base="string">
+    <enumeration value="++"/>
+    <enumeration value="--"/> 
+    <enumeration value="+"/>
+    <enumeration value="-"/>
+    <enumeration value="~"/> <!-- also complex conjugation -->
+    <enumeration value="!"/>
+    <enumeration value="&amp;&amp;"/> <!--label dereference-->
+    <enumeration value="__real"/>
+    <enumeration value="__imag"/>
+  </restriction>
+</simpleType>
+
+<simpleType name="postfixOp">
+  <restriction base="string">
+    <enumeration value="++"/>
+    <enumeration value="--"/> 
+  </restriction>
+</simpleType>
+
+<element name="binaryExpression">
+  <complexType>
+    <sequence><!-- order does matter here -->
+      <element ref="expression"/>
+      <element ref="expression"/>
+    </sequence>
+    <attribute name="op" type="binaryOp" use="required"/>
+  </complexType>
+</element>
+
+<element name="assignExpression">
+  <complexType>
+    <sequence><!-- order does matter here -->
+      <element ref="expression"/>
+      <element ref="expression"/>
+    </sequence>
+    <attribute name="op" type="assignOp" use="optional"/>
+    <!-- no op means plain assignment -->
+  </complexType>
+</element>
+
+<element name="prefixExpression">
+  <complexType>
+    <sequence>
+      <element ref="expression"/>
+    </sequence>
+    <attribute name="op" type="prefixOp" use="required"/>
+  </complexType>
+</element>
+
+<element name="postfixExpression">
+  <complexType>
+    <sequence>
+      <element ref="expression"/>
+    </sequence>
+    <attribute name="op" type="postfixOp" use="required"/>
+  </complexType>
+</element>
+
+<group name="expression">
+  <!-- not including empty expression. TODO check this is correct -->
+  <choice>
+    <!-- constants -->
+    <element name="intConst" type="integer"/>
+    <element name="realConst" type="double"/>
+    <element name="stringConst" type="string"/>
+    <element name="id" type="id"/>
+    <!-- case range -->
+    <element name="rangeExpression">
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element ref="expression"/>
+        </sequence>
+      </complexType>
+    </element>
+    <!-- arithmetic, assignment -->
+    <element ref="binaryExpression"/>
+    <element ref="prefixExpression"/>
+    <element ref="postfixExpression"/>
+    <element ref="assignExpression"/>
+    <!--others-->
+    <element name="commaExpression"><!-- should be binary with no op? -->
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element ref="expression"/>
+        </sequence>
+      </complexType>
+    </element>
+    <element name="conditionalExpression">
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element ref="expression" minOccurs="0"/>
+          <element ref="expression"/>
+        </sequence>
+      </complexType>
+    </element>
+    <!--members-->
+    <element name="arrowExpression">
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element name="member" type="id"/>
+        </sequence>
+      </complexType>
+    </element>
+    <element name="dotExpression">
+      <complexType>
+        <sequence>
+          <element ref="expression"/>
+          <element name="member" type="id"/>
+        </sequence>
+      </complexType>
+    </element>
+    <!--pointers-->
+    <element name="derefExpression">
+      <complexType>
+        <choice>
+          <element ref="expression"/>
+        </choice>
+      </complexType>
+    </element>
+    <element name="addrExpression">
+      <complexType>
+        <choice>
+          <element ref="expression"/>
+        </choice>
+      </complexType>
+    </element>
+    <!--types related-->
+    <element name="castExpression">
+      <complexType>
+        <sequence>
+          <element ref="typeName"/>
+          <element ref="expression"/>
+        </sequence>
+      </complexType>
+    </element>
+    <element name="sizeofExpression">
+      <complexType>
+        <choice>
+          <element ref="expression"/>
+          <element ref="typeName"/>
+        </choice>
+      </complexType>
+    </element>
+    <element name="allignofExpression">
+      <complexType>
+        <choice>
+          <element ref="expression"/>
+          <element ref="typeName"/>
+        </choice>
+      </complexType>
+    </element>
+    <!-- functionCall -->
+    <element name="functionCall">
+      <complexType>
+        <sequence>
+          <element ref="expression"/> <!--name-->
+          <element ref="expression" minOccurs="0" maxOccurs="unbounded"/><!--arguments-->
+        </sequence>
+      </complexType>
+    </element>
+    <!-- compound statement - GNU-->
+    <element ref="compoundStatement"/>
+    <!--GNU Assembler-->
+    <element name="gnuAssembler">
+      <!--TODO--> 
+    </element>
+  </choice>
+</group>
+
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+<!-- TYPES -->
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+
+<simpleType name="storageClass">
+  <restriction base="string">
+    <enumeration value="auto"/>
+    <enumeration value="register"/>
+    <enumeration value="typedef"/>
+    <enumeration value="extern"/>
+    <enumeration value="static"/>
+    <enumeration value="inline"/>	<!-- GNU extension -->
+  </restriction>
+</simpleType>
+
+<!--
+<simplef name="qualifier">
+  <restriction base="string">
+    <enumeration value="const"/>
+    <enumeration value="volatile"/>
+  </restriction>
+</simpleType>
+-->
+
+
+<element name="typeSpecifier">
+  <complexType>
+    <choice>
+      <element name="baseType" type="baseType"/>
+      <element name="struct" type="structOrUnionType"/>
+      <element name="union" type="structOrUnionType"/>
+      <element ref="enum"/>
+      <element ref="typedef"/>
+    </choice>
+  </complexType>
+</element>
+
+
+<simpleType name="baseType">
+  <restriction base="string">
+    <enumeration value="void"/>
+    <enumeration value="char"/>
+    <enumeration value="short"/>
+    <enumeration value="int"/>
+    <enumeration value="long"/>
+    <enumeration value="float"/>
+    <enumeration value="double"/>
+    <enumeration value="signed"/>
+    <enumeration value="unsigned"/>
+    <enumeration value="_Bool"/>		<!-- C99 -->
+    <enumeration value="_Complex"/>		<!-- C99 -->
+    <enumeration value="_Imaginary"/>		<!-- C99 -->
+  </restriction>
+</simpleType>  
+
+
+<simpleType name="signedUnsigned">
+  <restriction base="string">
+    <enumeration value="signed"/>
+    <enumeration value="unsigned"/>
+  </restriction>
+</simpleType>
+
+<complexType name="structOrUnionType">
+  <sequence>
+    <element ref="structDeclaration" minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+  <attribute name="id" type="id"/>
+</complexType>
+
+<element name="structDeclaration">
+  <complexType>
+    <sequence>
+      <element ref="typeSpecifier"/>
+      <element ref="structDeclarator"/>
+    </sequence>
+    <attribute name="const" type="boolean"/>
+    <attribute name="restrict" type="boolean"/>
+    <attribute name="volatile" type="boolean"/>
+  </complexType>
+</element>
+
+<element name="structDeclarator">
+  <complexType>
+    <sequence>
+      <element ref="declarator" minOccurs="0"/>
+      <element ref="expression" minOccurs="0"/> <!-- constant expression -->
+    </sequence>
+  </complexType>
+</element>
+
+<element name="enum">
+  <complexType>
+    <sequence>
+      <element ref="enumerator" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="id"/>
+  </complexType>
+</element>
+
+<element name="enumerator">
+  <complexType>
+    <sequence>
+      <element ref="expression" minOccurs="0" /><!-- constant expresssion -->
+    </sequence>
+    <attribute name="id" type="id" use="required">
+  </complexType>
+</element>
+
+<!-- typedef-->
+<element name="typedef" type="id">  
+</element>
+
+
+
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+<!-- DECLARATIONS -->
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+
+<group name="externalDeclaration">
+  <choice>
+    <element name="functionDefinition">
+      <complexType>
+        <sequence>
+          <!--1/2 type-->
+          <element ref="declarationSpecifiers" minOccurs="0"/>
+          <!--2/2 type + name-->
+          <element ref="declarator"/>
+          <!--parameters-->
+          <element ref="declaration" minOccurs="0" maxOccurs="unbounded"/> 
+          <!--body-->
+          <element ref="compoundStatement"/>
+        </sequence>
+      </complexType>
+    </element>
+    <element ref="declaration"/>
+  </choice>
+</group>
+
+<element name="declarationSpecifiers">
+  <complexType>
+    <element ref="typeSpecifier" minOccurs="0" maxOccurs="unbounded"/>
+    <!-- qualifiers -->
+    <attribute name="const" type="boolean"/>
+    <attribute name="restrict" type="boolean"/>
+    <attribute name="volatile" type="boolean"/>
+    <!-- storage class -->
+    <attribute name="storageClass" type="storageClass"/>
+  </complexType>
+</element>
+
+<element name="declaration">
+  <complexType>
+    <sequence>
+      <element ref="declarationSpecifiers" minOccurs="0"/>
+      <element ref="initDeclarator" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+</element>
+
+<element name="initDeclarator">
+  <complexType>
+    <sequence>
+      <element ref="declarator"/>
+      <!--attribute declarator skipped for now-->
+      <element ref="initializer" minOccurs="0"/> <!--declarator = initializer-->
+      <!--declarator : expression as mentioned in the ANTLR grammar is ommitted here - we have not found its semantics-->
+    </sequence>
+  </complexType>
+</element>
+
+<!--a mix of C99 and GNU C 4.1-->
+<element name="initializer">
+  <complexType>
+    <choice>
+      <sequence>
+        <element ref="designator" maxOccurs="unbounded"/> <!--also named initilizerElementLabel in ANTLR-->
+        <element ref="expression"/><!--assignmentExpression-->
+      </sequence>
+      <element ref="initializer" maxOccurs="unbounded"/><!-- {initializerList} -->
+    </choice>
+  </complexType>
+</element>
+
+<element name="designator">
+  <complexType>
+    <choice>
+      <element ref="expression"/><!-- [expression]= -->
+      <element name="id" type="id"> <!-- both "ID:" (old GCC) and ".ID=" new -->
+    </choice>
+  </complexType>
+</element>
+
+<element name="pointer"><!--placeholder for '*'-->
+  <complexType>
+    <attribute name="const" type="boolean"/>
+    <attribute name="restrict" type="boolean"/>
+    <attribute name="volatile" type="boolean"/>
+  </complexType>
+</element>
+
+<element name="declarator">
+  <complexType>
+    <sequence>
+      <element ref="pointer" minOccurs="0" maxOccurs="unbounded"/>
+      <choice>
+        <element name="id" type="id"/>
+        <element ref="declarator"/>
+      </choice>
+      <choice minOccurs="0" maxOccurs="unbounded">
+        <element name="arrayDecl">
+          <complexType>
+            <sequence>
+              <element ref="expression"/><!-- constant expression -->
+            </sequence>
+          </complexType>
+        </element>        
+		<element ref="parameter" minOccurs=0 maxOccurs="unbounded"/>   
+      </choice>
+    </sequence>
+  </complexType>
+</element>
+
+<element name="parameter">
+  <complexType>
+    <choice>
+      <element ref="id">  <!-- old style -->
+	  <sequence>          <!-- new style -->
+        <element ref="declarationSpecifiers"/>
+        <choice>
+          <element ref="declarator"/>
+          <element ref="abstractDeclarator"/>
+        </choice>        
+      </sequence>
+      <element name="varArgs" type="empty"/>
+    </choice>    
+  </complexType>
+</element>
+
+
+<element name="typeName">
+  <complexType>
+    <sequence>
+      <element ref="typeSpecifier" minOccurs="0" maxOccurs="unbounded"/>
+      <element ref="abstractDeclarator" minOccurs="0"/>
+    </sequence>
+    <attribute name="const" type="boolean"/>
+    <attribute name="restrict" type="boolean"/>
+    <attribute name="volatile" type="boolean"/>
+  </complexType>
+</element>
+
+
+<element name="abstractDeclarator">
+  <complexType>
+    <sequence>
+      <element ref="pointer" minOccurs="0" maxOccurs="unbounded"/>
+      <choice minOccurs="0" maxOccurs="unbounded">
+        <element ref="abstractDeclarator"/>
+        <element name="arrayDecl">
+          <complexType>
+            <sequence>
+              <element ref="expression" minOccurs="0"/><!-- assignment expression -->
+            </sequence>
+          </complexType>
+        </element>
+        <element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
+      </choice>
+    </sequence>
+  </complexType>
+</element>
+
+
+
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+<!-- TOP LEVEL -->
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+
+<element name="translationUnit">
+  <complexType>
+    <sequence>
+      <element ref="externalDeclaration" maxOccurs="unbounded" minOccurs="0"/>
+    </sequence>
+    <attribute name="fileName" type="string"/>
+  </complexType>
+</element>
+
+</schema>

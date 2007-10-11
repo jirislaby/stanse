@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<checker>
+    <info>
+        <name>interrupts-checker</name>
+        <description>Checks if the functions 'lock(*)' and 'unlock(*)' are correctly paired.</description>
+    </info>
+
+    <definition>
+        <beginState>E</beginState>
+
+        <propagationRule>
+            <description>Enable interrupts.</description>
+            <source>
+                <functionCall>
+                    <id>restore_flags</id>
+                    <enyElement/>
+                </functionCall>
+            </source>
+            <stateAction>
+                <set>E</set>
+            </stateAction>
+        </propagationRule>
+        <propagationRule>
+            <description>Enable interrupts.</description>
+            <source>
+                <functionCall>
+                    <id>sti</id>
+                </functionCall>
+            </source>
+            <stateAction>
+                <set>E</set>
+            </stateAction>
+        </propagationRule>
+
+        <propagationRule>
+            <description>Disable interrupts.</description>
+            <source>
+                <functionCall>
+                    <id>cli</id>
+                </functionCall>
+            </source>
+            <stateAction>
+                <set>D</set>
+            </stateAction>
+        </propagationRule>
+
+
+        <errorRule>
+            <name>Double-enable</name>
+            <description>Enable interrupts that has been already enabled.</description>
+            <state>
+                <contains>E</contains>
+            </state>
+            <source>
+                <functionCall>
+                    <id>sti</id>
+                </functionCall>
+            </source>
+        </errorRule>
+         <errorRule>
+            <name>Double-enable</name>
+            <description>Enable interrupts that has been already enabled.</description>
+            <state>
+                <contains>E</contains>
+            </state>
+            <source>
+                <functionCall>
+                    <id>restore_flags</id>
+                    <enyElement/>
+                </functionCall>
+            </source>
+        </errorRule>
+
+        <errorRule>
+            <name>Double-disable</name>
+            <description>Disabling interrupts that has been already disabled.</description>
+            <state>
+                <contains>D</contains>
+            </state>
+            <source>
+                <functionCall>
+                    <id>cli</id>
+                </functionCall>
+            </source>
+        </errorRule>
+
+        <errorRule>
+            <name>Ends-with-disable</name>
+            <description>Function ends with interrupts disabled.</description>
+            <state>
+                <contains>D</contains>
+            </state>
+        </errorRule>
+
+    </definition>
+</checker>

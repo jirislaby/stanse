@@ -1,0 +1,111 @@
+<?xml version="1.0" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:annotation>
+        <xs:documentation>
+            Schema for Universal static checker definitions, version 0.1 (20/04/2007)
+            Copyright (C) 2007 Jaroslav Novontný jarek@jarek.cz
+            Masaryk University, Brno, Czech Republic
+
+            TODO:
+                include cml.xsd into sourceType
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:simpleType name="stateType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[a-zA-Z]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="varNameType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Z]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="stateSelectType">
+        <xs:choice>
+            <xs:element name="is" type="stateType" />
+            <xs:element name="isNot" type="stateType" />
+            <xs:sequence>
+                <xs:element name="contains" type="stateType" minOccurs="0" />
+                <xs:element name="notContains" type="stateType" minOccurs="0" />
+            </xs:sequence>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="stateActionType">
+        <xs:choice>
+            <xs:element name="set" type="stateType" />
+            <xs:sequence>
+                <xs:element name="add" type="stateType" minOccurs="0" />
+                <xs:element name="remove" type="stateType" minOccurs="0" />
+            </xs:sequence>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="sourceType">
+       <!-- TODO: připojit schema cml.xsd -->
+    </xs:complexType>
+
+    <xs:complexType name="propagationRuleType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0" />
+            <xs:element name="state" type="stateSelectType" minOccurs="0" />
+            <xs:element name="source" type="sourceType" />
+            <xs:choice>
+                <xs:element name="stateAction" type="stateActionType" />
+                <xs:sequence>
+                    <xs:element name="stateActionTrue" type="stateActionType" />
+                    <xs:element name="stateActionFalse" type="stateActionType" />
+                </xs:sequence>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="errorRuleType">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string" />
+            <xs:element name="description" type="xs:string" minOccurs="0" />
+            <xs:element name="state" type="stateSelectType" />
+            <xs:element name="source" type="sourceType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="infoType">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string" />
+            <xs:element name="description" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="varType">
+        <xs:sequence>
+            <xs:element name="name" type="varNameType" />
+            <xs:element name="source" type="sourceType" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="definitionType">
+        <xs:sequence>
+            <xs:element name="beginState" type="stateType"/>
+            <xs:element name="propagationRule" type="propagationRuleType" maxOccurs="unbounded"/>
+            <xs:element name="errorRule" type="errorRuleType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+    <!-- TOP LEVEL                                             -->
+    <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+
+    <xs:element name="checker">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="info" type="infoType" />
+                <xs:element name="var" type="varType" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="definition" type="definitionType" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

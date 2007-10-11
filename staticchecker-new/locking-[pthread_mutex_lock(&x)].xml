@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<checker>
+    <info>
+         <name>Locking-checker-(pthread_mutex_lock/pthread_mutex_unlock)</name>
+         <description>Checks if the functions 'pthread_mutex_lock(&amp;x)' and 'pthread_mutex_unlock(&amp;x)' are correctly paired.</description>
+    </info>
+
+    <interprocedural></interprocedural>
+
+    <var>
+         <name>PARAM</name>
+         <find>//functionCall[id[1]="pthread_mutex_lock" or id[1]="pthread_mutex_unlock"]/prefixExpression/id[1]</find>
+         <get>./text()</get>
+    </var>
+
+    <definition>
+        <beginState>U</beginState>
+
+        <propagationRule>
+            <description>Locking</description>
+            <source>.//self::node()[name()="functionCall" and id[1]="pthread_mutex_lock"]/prefixExpression/id[1 and .="${PARAM:0}"]</source>
+            <stateAction>
+                <set>L</set>
+            </stateAction>
+        </propagationRule>
+
+        <propagationRule>
+            <description>Unlocking</description>
+            <source>.//self::node()[name()="functionCall" and id[1]="pthread_mutex_unlock"]/prefixExpression/id[1 and .="${PARAM:0}"]</source>
+            <stateAction>
+                <set>U</set>
+            </stateAction>
+        </propagationRule>
+
+        <errorRule>
+            <name>Double-lock</name>
+            <description>Function is locking the lock that si already locked.</description>
+            <state>
+                <contains>L</contains>
+            </state>
+            <source>.//self::node()[name()="functionCall" and id[1]="pthread_mutex_lock"]/prefixExpression/id[1 and .="${PARAM:0}"]</source>
+        </errorRule>
+
+        <errorRule>
+            <name>Double-unlock</name>
+            <description>Function is unlocking the lock that si already unlocked.</description>
+            <state>
+                <contains>U</contains>
+            </state>
+            <source>.//self::node()[name()="functionCall" and id[1]="pthread_mutex_unlock"]/prefixExpression/id[1 and .="${PARAM:0}"]</source>
+        </errorRule>
+
+        <errorRule>
+            <name>End-with-locked</name>
+            <description>Function ends with locked lock.</description>
+            <state>
+                <contains>L</contains>
+            </state>
+        </errorRule>
+
+    </definition>
+</checker>

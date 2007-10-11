@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<checker>
+    <info>
+        <name>Locking-checker</name>
+        <description>Checks if the functions '*lock*(*)' and '*unlock*(*)' are correctly paired.</description>
+    </info>
+
+    <var>
+        <name>LOCK</name>
+        <source>
+            <functionCall>
+                <id var="text">^(.*)unlock(.*)$</id>
+                <anyElement/>
+            </functionCall>
+        </source>
+    </var>
+
+    <var>
+        <name>PARAM</name>
+        <source>
+            <functionCall>
+                <id regex="true">^.*unlock.*$</id>
+                <id var="text">^(.*)$</id>
+            </functionCall>
+        </source>
+    </var>
+
+    <definition>
+        <beginState>U</beginState>
+
+        <propagationRule>
+            <description>Locking.</description>
+            <source>
+                <functionCall>
+                    <id var="LOCK">$1lock$2</id>
+                    <id var="PARAM">$1</id>
+                </functionCall>
+            </source>
+            <stateAction>
+                <set>L</set>
+            </stateAction>
+        </propagationRule>
+
+        <propagationRule>
+            <description>Unlocking.</description>
+            <source>
+                <functionCall>
+                    <id var="LOCK">$1unlock$2</id>
+                    <id var="PARAM">$1</id>
+                </functionCall>
+            </source>
+            <stateAction>
+                <set>U</set>
+            </stateAction>
+        </propagationRule>
+
+        <errorRule>
+            <name>Double-lock</name>
+            <description>Function is locking the lock that si already locked.</description>
+            <state>
+                <contains>L</contains>
+            </state>
+            <source>
+                <functionCall>
+                    <id var="LOCK">$1lock$2</id>
+                    <id var="PARAM">$1</id>
+                </functionCall>
+            </source>
+        </errorRule>
+
+        <errorRule>
+            <name>Double-unlock</name>
+            <description>Function is unlocking the lock that si already unlocked.</description>
+            <state>
+                <contains>U</contains>
+            </state>
+            <source>
+                <functionCall>
+                    <id var="LOCK">$1unlock$2</id>
+                    <id var="PARAM">$1</id>
+                </functionCall>
+            </source>
+        </errorRule>
+
+        <errorRule>
+            <name>End-with-locked</name>
+            <description>Function ends with locked lock.</description>
+            <state>
+                <contains>L</contains>
+            </state>
+        </errorRule>
+
+    </definition>
+</checker>

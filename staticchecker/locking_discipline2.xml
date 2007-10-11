@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<checker>
+    <info>
+        <name>Locking-discipline-checker</name>
+        <description>Checks if the functions 'lock(*)' and 'unlock(*)' have correct locking discipline.</description>
+    </info>
+
+    <var>
+        <name>A</name>
+        <source>
+            <functionCall>
+                <id>lock</id>
+                <id var="text">^(.*)$</id>
+            </functionCall>
+        </source>
+    </var>
+
+    <var>
+        <name>B</name>
+        <source>
+            <functionCall>
+                <id>lock</id>
+                <id var="text">^(.*)$</id>
+            </functionCall>
+        </source>
+    </var>
+
+    <definition>
+        <beginState>U</beginState>
+
+        <propagationRule>
+            <description>Locking A</description>
+            <source>
+                <functionCall>
+                    <id>lock</id>
+                    <id var="A">$1</id>
+                </functionCall>
+            </source>
+            <stateAction>
+                <set>L</set>
+            </stateAction>
+        </propagationRule>
+        <propagationRule>
+            <description>Unlocking A</description>
+            <source>
+                <functionCall>
+                    <id>unlock</id>
+                    <id var="A">$1</id>
+                </functionCall>
+            </source>
+            <stateAction>
+                <set>U</set>
+            </stateAction>
+        </propagationRule>
+        <!--errorRule>
+            <name>Double-lock</name>
+            <description>Function is locking the lock that si already locked.</description>
+            <state>
+                <contains>L</contains>
+            </state>
+            <source>
+                <functionCall>
+                    <id>lock</id>
+                    <id var="A">$1</id>
+                </functionCall>
+            </source>
+        </errorRule>
+        <errorRule>
+            <name>Double-unlock</name>
+            <description>Function is unlocking the lock that si already unlocked.</description>
+            <state>
+                <contains>U</contains>
+            </state>
+            <source>
+                <functionCall>
+                    <id>unlock</id>
+                    <id var="A">$1</id>
+                </functionCall>
+            </source>
+        </errorRule>
+        <errorRule>
+            <name>End-with-locked</name>
+            <description>Function ends with locked lock.</description>
+            <state>
+                <contains>L</contains>
+            </state>
+        </errorRule-->
+
+        <propagationRule>
+            <description>Locking B under unlocked A.</description>
+            <source>
+                <functionCall>
+                    <id>lock</id>
+                    <id var="B">$1</id>
+                </functionCall>
+            </source>
+            <state>
+                <contains>U</contains>
+            </state>
+            <stateAction>
+                <add>u</add>
+            </stateAction>
+        </propagationRule>
+
+        <propagationRule>
+            <description>Unlocking B under unlocked A.</description>
+            <source>
+                <functionCall>
+                    <id>unlock</id>
+                    <id var="B">$1</id>
+                </functionCall>
+            </source>
+            <state>
+                <contains>U</contains>
+            </state>
+            <stateAction>
+                <add>u</add>
+            </stateAction>
+        </propagationRule>
+
+        <propagationRule>
+            <description>Locking B under locked A.</description>
+            <source>
+                <functionCall>
+                    <id>lock</id>
+                    <id var="B">$1</id>
+                </functionCall>
+            </source>
+            <state>
+                <contains>L</contains>
+            </state>
+            <stateAction>
+                <add>l</add>
+            </stateAction>
+        </propagationRule>
+
+        <propagationRule>
+            <description>Unlocking B under locked A.</description>
+            <source>
+               <functionCall>
+                    <id>unlock</id>
+                    <id var="B">$1</id>
+                </functionCall>
+            </source>
+            <state>
+                <contains>L</contains>
+            </state>
+            <stateAction>
+                <add>l</add>
+            </stateAction>
+        </propagationRule>
+
+        <error>
+            <name>Bad-discipline</name>
+            <description>Locks A and B have bad locking discipline.</description>
+            <state>
+                <contains>lu</contains>
+            </state>
+        </error>
+    </definition>
+</checker>

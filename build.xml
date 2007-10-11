@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="build" name="scv">
+    <property name="dist" value="dist"/>
+    <property name="c2xml.location" value="src/cz/muni/fi/iti/scv/c2xml"/>
+	<property name="antlr.location" value="${dist}/lib/antlr-2.7.5.jar"/>
+    <path id="project.classpath">
+        <pathelement location="build"/>
+        <pathelement location="${antlr.location}"/>
+        <pathelement location="${dist}/lib/AbsoluteLayout.jar"/>
+        <pathelement location="${dist}/lib/dom4j-1.6.1.jar"/>
+        <pathelement location="${dist}/lib/jaxen-1.1.1.jar"/>
+        <pathelement location="${dist}/lib/swing-layout-1.0.jar"/>
+        <pathelement location="${dist}/lib/syntax.jar"/>
+	<pathelement location="${dist}/lib/jgrapht-jdk1.5.jar"/>
+	<pathelement location="${dist}/lib/saxon8-dom4j.jar"/>
+	<pathelement location="${dist}/lib/saxon8-xpath.jar"/>
+	<pathelement location="${dist}/lib/saxon8.jar"/>
+	<pathelement location="${dist}/lib/log4j-1.2.14.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="build"/>
+    </target>
+    <target name="c2xml-clean">
+        <delete>
+	    <fileset dir="${c2xml.location}">
+		<include name="*.smap"/>
+		<include name="*.txt"/>
+		<include name="StdCParser.java"/>
+		<include name="StdCLexer.java"/>
+		<include name="STDCTokenTypes.java"/>
+		<include name="expandedGnuCParser.g"/>
+		<include name="GnuCLexer.java"/>
+		<include name="GnuCParser.java"/>
+		<include name="GnuCLexerTokenTypes.java"/>
+		<include name="GNUCTokenTypes.java"/>
+		<include name="XmlEmitter.java"/>
+		<include name="XmlEmitterTokenTypes.java"/>
+	    </fileset>
+	</delete>
+    </target>
+    <target name="clean" depends="c2xml-clean, javadoc-clean">
+        <delete dir="build"/>
+    </target>
+    <target name="c2xml">	
+		<antlr target="${c2xml.location}/StdCParser.g">
+	        <classpath path="${antlr.location}"/>
+		</antlr>
+		<antlr target="${c2xml.location}/GnuCParser.g" glib="${c2xml.location}/StdCParser.g">
+    	    <classpath path="${antlr.location}"/>
+		</antlr>    	
+		<antlr target="${c2xml.location}/XmlEmitter.g">
+    	    <classpath path="${antlr.location}"/>
+		</antlr>
+    </target>
+    <target name="build" depends="init,c2xml">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac destdir="build">
+            <src path="src"/>
+            <classpath refid="project.classpath"/>
+        </javac>
+	<!-- Copy .properties to the build directory, so they get included in the Jar -->
+        <copy todir="build" >
+            <fileset dir="src">
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+    </target>
+	
+    <target name="jar" depends="build">
+	     <manifest file="manifest.mf">
+	        <attribute name="Built-By" value="${user.name}"/>
+	        <attribute name="Main-Class" value="cz.muni.fi.iti.scv.scvgui.GuiMain"/>
+	        <attribute name="Class-Path" value="lib/swing-layout-1.0.jar lib/AbsoluteLayout.jar lib/antlr-2.7.5.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1-beta-12.jar lib/swing-layout-1.0.jar lib/syntax.jar lib/jgrapht-jdk1.5.jar"/>
+	    </manifest>
+    	<jar destfile="${dist}/scv.jar" basedir="build" manifest="manifest.mf"/>
+	</target>
+	
+    <target name="javadoc-clean">
+        <delete dir="${dist}/javadoc"/>
+    </target>
+    
+    <target name="javadoc" depends="init" description="Build javadoc documentation">
+        <mkdir dir="${dist}/javadoc"/>
+        <javadoc destdir="${dist}/javadoc" source="1.5" author="true" failonerror="true" useexternalfile="true">
+	<classpath refid="project.classpath"/>
+                           
+	<sourcepath>
+		<pathelement location="src/"/>
+        </sourcepath>
+            <packageset dir="src/" includes="*/**"/>
+            <fileset dir="src/" includes="*.java"/>
+        </javadoc>
+    </target>
+    
+
+</project>
