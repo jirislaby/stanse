@@ -70,7 +70,7 @@
 	     <manifest file="manifest.mf">
 	        <attribute name="Built-By" value="${user.name}"/>
 	        <attribute name="Main-Class" value="cz.muni.fi.iti.scv.scvgui.GuiMain"/>
-	        <attribute name="Class-Path" value="lib/swing-layout-1.0.jar lib/AbsoluteLayout.jar lib/antlr-2.7.5.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1-beta-12.jar lib/swing-layout-1.0.jar lib/syntax.jar lib/jgrapht-jdk1.5.jar"/>
+	        <attribute name="Class-Path" value="lib/swing-layout-1.0.jar lib/AbsoluteLayout.jar lib/antlr-2.7.5.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1-beta-12.jar lib/swing-layout-1.0.jar lib/syntax.jar lib/jgrapht-jdk1.5.jar lib/log4j-1.2.14.jar"/>
 	    </manifest>
     	<jar destfile="${dist}/scv.jar" basedir="build" manifest="manifest.mf"/>
 	</target>
