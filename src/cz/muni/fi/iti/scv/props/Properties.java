@@ -122,4 +122,11 @@ public class Properties {
         return ret;
     }
     
+    public enum VerbosityLevel {
+        SILENT,
+        LOW,
+        HIGH
+    
+    }
+    
 }

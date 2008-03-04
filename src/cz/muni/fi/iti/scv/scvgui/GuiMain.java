@@ -9,11 +9,9 @@ package cz.muni.fi.iti.scv.scvgui;
 import cz.muni.fi.iti.scv.callgraph.CallGraph;
 import cz.muni.fi.iti.scv.props.LoggerConfigurator;
 import cz.muni.fi.iti.scv.props.Properties;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.*;
 import java.util.ArrayList;
@@ -23,13 +21,13 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 import java.util.Set;
 import java.util.HashSet;
 import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggerFactory;
 import org.dom4j.Element;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedSubgraph;
@@ -716,7 +714,7 @@ public class GuiMain extends javax.swing.JFrame {
         
     }
     
-    private void openSourceFile(File file) {
+    public void openSourceFile(File file) {
         SourceAndXMLWindow dataPanel = new SourceAndXMLWindow();
         dataPanel.openSourceFile(file, highlight);
         
@@ -748,6 +746,16 @@ public class GuiMain extends javax.swing.JFrame {
         jMenuCallGraph.setEnabled(true);
         
     }
+
+    /**
+     * @Todo: this is not a good way of solving a problem. This has to be fixed
+     * @return Tabbed pane
+     */
+    public JTabbedPane getJTabbedPane1() {
+        return jTabbedPane1;
+    }
+    
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;

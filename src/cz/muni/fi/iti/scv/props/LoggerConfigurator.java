@@ -10,12 +10,14 @@
 package cz.muni.fi.iti.scv.props;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.SimpleLayout;
 
 /**
  *
@@ -31,7 +33,10 @@ public class LoggerConfigurator {
             properties.load(new BufferedInputStream(new FileInputStream("log4j.properties")));
             PropertyConfigurator.configure(properties);
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            System.err.println("log4j.properties file not found. Default logging properties will be used");
+            Logger.getRootLogger().setLevel(Level.ERROR);
+            Logger.getRootLogger().addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR));
+                    
         } catch (IOException ex) {
             ex.printStackTrace();
         }
