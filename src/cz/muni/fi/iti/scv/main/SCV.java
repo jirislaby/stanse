@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.log4j.Level;
-import org.apache.log4j.Priority;
 
 
 
