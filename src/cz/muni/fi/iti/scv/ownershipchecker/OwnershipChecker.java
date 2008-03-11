@@ -1145,7 +1145,7 @@ public class OwnershipChecker extends Checker {
         }
 
         CallGraph callGraph = new CallGraph(rootElements);
-        List<DirectedSubgraph<String, DefaultEdge>> stronglyConnectedSubgraphs = callGraph.strognlyConnected();
+        List<DirectedSubgraph<String, DefaultEdge>> stronglyConnectedSubgraphs = callGraph.stronglyConnected();
         Vector<String> topologicalSortedCG = new Vector();
         DirectedGraph directedGraph = callGraph.generateDirectedGraph();
         Set<DefaultEdge> outgoingEdges = new HashSet<DefaultEdge>(); // hrany, ktere vedou mezi ss-komponentami

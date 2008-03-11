@@ -668,7 +668,7 @@ public class SourceAndXMLWindow extends JPanel {
             for (ErrorNode error : errors) {
                 outputText += error.toString()+ "\n";
             }
-            if(outputText == "") {
+            if(outputText.isEmpty()) {
                 outputText = "No memory errors. \n";
             }
             
@@ -704,7 +704,7 @@ public class SourceAndXMLWindow extends JPanel {
             for (CheckerError error : errors) {
                 outputText += error.toString()+ "\n";
             }
-            if(outputText == "") {
+            if(outputText.isEmpty()) {
                 outputText = "No memory errors. \n";
             }
             

@@ -90,7 +90,7 @@ public class CallGraph {
      * Get list of strongly connected subgaphs for the actual call graph
      * @return list of the strongly connected directed subgraphs
      */
-    public List<DirectedSubgraph<String, DefaultEdge>> strognlyConnected() {
+    public List<DirectedSubgraph<String, DefaultEdge>> stronglyConnected() {
         StrongConnectivityInspector inspector = new StrongConnectivityInspector(generateDirectedGraph());
         return inspector.stronglyConnectedSubgraphs();
     }
@@ -126,7 +126,6 @@ public class CallGraph {
             retString += "\""+graph.getEdgeSource(edge) + "\" -> \"" + graph.getEdgeTarget(edge) + "\";\n";
         }
         
-        logger.debug(retString);
         return retString;
     }
     

@@ -8,12 +8,9 @@ package cz.muni.fi.iti.scv.scvgui;
 
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
 
 /**
  * Form for viewing graphs generated from dot source codes.

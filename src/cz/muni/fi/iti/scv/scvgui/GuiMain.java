@@ -460,7 +460,7 @@ public class GuiMain extends javax.swing.JFrame {
             }
             CallGraph callGraph = new CallGraph(rootElements);
             
-            List<DirectedSubgraph<String, DefaultEdge>> stronglyConnectedSubgraphs = callGraph.strognlyConnected();
+            List<DirectedSubgraph<String, DefaultEdge>> stronglyConnectedSubgraphs = callGraph.stronglyConnected();
             
 //            SubgraphForm subgraphForm = new SubgraphForm(stronglyConnectedSubgraphs);
 //            subgraphForm.setVisible(true);

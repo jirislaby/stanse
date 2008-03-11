@@ -125,6 +125,7 @@ public class Properties {
     public enum VerbosityLevel {
         SILENT,
         LOW,
+        MIDDLE,
         HIGH
     
     }
