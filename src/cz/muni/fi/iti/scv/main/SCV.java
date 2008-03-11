@@ -81,7 +81,7 @@ public class SCV {
                 accepts(OPT_HELP, "prints help");
                 accepts(OPT_USAGE, "shows usage");
                 accepts(OPT_VERBOSITY, "Sets the level of verbosity").withOptionalArg().
-                        describedAs("0 to 3 meaning 0 - silent, 1 - low level (default), 2 middle level, 3 high level").
+                        describedAs("0 to 3").
                         ofType(Integer.class);
                 accepts(OPT_SILENT, "Turns silent mode on. Same as -v 0");
                 accepts(OPT_CHECKERS, "Checker definition file to be run. Can occur more than once.").withOptionalArg().describedAs("List of checkers").ofType(String.class);
