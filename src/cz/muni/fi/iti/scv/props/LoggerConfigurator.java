@@ -31,7 +31,6 @@ public class LoggerConfigurator {
         java.util.Properties properties = new java.util.Properties();
 
         try {
-            properties.load(new BufferedInputStream(new FileInputStream("log4j.properties")));
             
             switch (SCV.getVerbosityLevel()) {
                 case SILENT:
@@ -47,6 +46,12 @@ public class LoggerConfigurator {
                     Logger.getRootLogger().setLevel(Level.ALL);
                     break;
             }
+            
+            if(SCV.getDebug()) {
+                Logger.getRootLogger().addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR));
+            }
+            
+            properties.load(new BufferedInputStream(new FileInputStream("log4j.properties")));
             PropertyConfigurator.configure(properties);
             
         } catch (FileNotFoundException ex) {

@@ -10,13 +10,11 @@ package cz.muni.fi.iti.scv.staticchecker;
 import javax.xml.xpath.XPathExpressionException;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.dom4j.DocumentWrapper;
-import net.sf.saxon.dom4j.NodeWrapper;
 import net.sf.saxon.sxpath.XPathExpression;
 import net.sf.saxon.sxpath.XPathEvaluator;
 import net.sf.saxon.trans.XPathException;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.tree.DefaultText;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -27,6 +25,7 @@ import java.util.HashMap;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.log4j.Logger;
 
 /**
  * Represents a variable in static checker definition
@@ -36,6 +35,8 @@ public class StaticCheckerDefVar {
     private String name; // variable's name
     private String findXPath;
     private List<String> getXPath;
+    
+    private static Logger logger = Logger.getLogger(StaticCheckerDefVar.class);
    
     /**
      * Creates a new instance of StaticCheckerDefVar
@@ -62,7 +63,6 @@ public class StaticCheckerDefVar {
         XPathEvaluator evaluator = new XPathEvaluator();
         XPathExpression xpathExpr;
         net.sf.saxon.xpath.XPathEvaluator evaluatorIn = new net.sf.saxon.xpath.XPathEvaluator();
-        XPathExpression xpathExprIn;
         Object selectedObject = null;
         try {
             xpathExpr = evaluator.createExpression(findXPath);
@@ -79,12 +79,13 @@ public class StaticCheckerDefVar {
                     } catch (XPathExpressionException ex) {
                         ex.printStackTrace();
                     }
+                    logger.debug("Got variable get "+selectedObject);
                     
                 }
                 if (!isSame.contains(string)) {
-                assigns.add(value);
-                isSame.add(string);
-            }
+                    assigns.add(value);
+                    isSame.add(string);
+                }
             }
         } catch (XPathException ex) {
             ex.printStackTrace();
@@ -108,6 +109,7 @@ public class StaticCheckerDefVar {
 //            }
 //        }
 //        
+        logger.debug(assigns);
         return assigns;
     }
     

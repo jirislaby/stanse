@@ -135,7 +135,8 @@ public class StaticChecker {
                         }
                     } else { //intraprocedural check
                         for (ControlFlowGraph cfg : cfgs.values()) { //for every function
-                            //#################################### intraprocedural with vars                        
+                            //#################################### intraprocedural with vars
+                            logger.debug("Assigns: "+defAssign);
                             check(def, defAssign, cfg, null);
                             errors.addAll(findErrors(def,defAssign, cfg, null));
                         }

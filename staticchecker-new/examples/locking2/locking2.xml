@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<checker>
+    <info>
+         <name>Locking-checker</name>
+         <description>Checks if the '.*lock.*' functions are correctly paired.</description>
+    </info>
+
+
+    <var>
+         <name>LOCK</name>
+         <find>//functionCall[contains(./id[1]/text(), "unlock")]</find>
+         <get>substring-before(./id[1]/text(), "unlock")</get>
+         <get>substring-after(./id[1]/text(), "unlock")</get>
+    </var>
+
+    <definition>
+        <beginState>U</beginState>
+
+        <propagationRule>
+            <description>Locking</description>
+            <source>.//self::node()[name()="functionCall" and id[1]="${LOCK:0}lock${LOCK:1}"]</source>
+            <stateAction>
+                <set>L</set>
+            </stateAction>
+        </propagationRule>
+
+	<propagationRule>
+            <description>Unlocking</description>
+            <source>.//self::node()[name()="functionCall" and id[1]="${LOCK:0}unlock${LOCK:1}"]</source>
+            <stateAction>
+                <set>U</set>
+            </stateAction>
+        </propagationRule>
+
+ 	<errorRule>
+            <name>Double-lock</name>
+            <description>Function is locking the lock that si already locked.</description>
+            <state>
+                <contains>L</contains>
+            </state>
+            <source>.//self::node()[name()="functionCall" and id[1]="${LOCK:0}lock${LOCK:1}"]</source>
+        </errorRule>
+
+	<errorRule>
+            <name>Double-unlock</name>
+            <description>Function is unlocking the lock that si already unlocked.</description>
+            <state>
+                <contains>U</contains>
+            </state>
+            <source>.//self::node()[name()="functionCall" and id[1]="${LOCK:0}unlock${LOCK:1}"]</source>
+        </errorRule>
+
+        <errorRule>
+            <name>End-with-locked</name>
+            <description>Function ends with locked lock.</description>
+            <state>
+                <contains>L</contains>
+            </state>
+        </errorRule>
+
+    </definition>
+
+
+</checker>
+

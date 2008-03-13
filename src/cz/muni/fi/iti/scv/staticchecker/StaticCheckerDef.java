@@ -8,8 +8,6 @@
 package cz.muni.fi.iti.scv.staticchecker;
 
 import javax.xml.xpath.XPathExpressionException;
-import net.sf.saxon.Configuration;
-import net.sf.saxon.dom4j.DocumentWrapper;
 import net.sf.saxon.xpath.XPathEvaluator;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -22,6 +20,7 @@ import java.util.HashSet;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.log4j.Logger;
 
 /**
  * Represents a definition of concrete checker
@@ -40,6 +39,8 @@ public class StaticCheckerDef {
     
     private boolean interprocedural = false; //interprocedural definition
     Set<String> interproceduralFunctions; //set of function names for interprocedural check
+    
+    private static Logger logger = Logger.getLogger(StaticCheckerDef.class);
     
     /**
      * Creates a new instance of StaticCheckerDef
@@ -180,6 +181,7 @@ public class StaticCheckerDef {
             while (findMatcher.matches()) {
                 String param = findMatcher.replaceFirst("$1"); 
                 //System.out.println("param:"+param);
+                logger.debug("Param: "+param);
                 
                 int varIndex = 1;
                 String varName = null;
@@ -203,7 +205,8 @@ public class StaticCheckerDef {
                 Pattern replacePattern = Pattern.compile("\\$\\{"+param+"\\}"); 
                 Matcher replaceMatcher = replacePattern.matcher(text);
                 text = replaceMatcher.replaceAll(replaceText);
-                //System.out.println("text:"+text); 
+                //System.out.println("text:"+text);
+                logger.debug("Text: "+text);
                 
                 findMatcher = findPattern.matcher(text);
             }

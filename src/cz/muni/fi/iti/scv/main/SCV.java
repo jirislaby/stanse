@@ -52,10 +52,13 @@ public class SCV {
     private static final String OPT_NOGUI = "nogui";
     private static final String OPT_CALLGRAPH = "callgraph";
     private static final String OPT_STRONGLYCONNECTED = "sc";
+    private static final String OPT_DEBUG = "debug";
     
     private static Logger logger = Logger.getLogger(SCV.class);
     
     private static Properties.VerbosityLevel VERBOSITY_LEVEL = Properties.VerbosityLevel.LOW;
+    
+    private static boolean DEBUG = false;
 
     /**
      * Filenames of the source files.
@@ -88,6 +91,7 @@ public class SCV {
                 accepts(OPT_NOGUI, "Don't start the GUI");
                 accepts(OPT_CALLGRAPH, "Generate call graph and store result to the file (--nogui is implied)").withRequiredArg().describedAs("Output file filename");
                 accepts(OPT_STRONGLYCONNECTED, "Highlight strongly connected subsets in the call graph");
+                accepts(OPT_DEBUG, "Debug mode - all debug info to stderr implies -v3");
             }
         };
 
@@ -128,6 +132,11 @@ public class SCV {
 
             if (options.wasDetected(OPT_SILENT)) {
                 VERBOSITY_LEVEL = Properties.VerbosityLevel.SILENT;
+            }
+            
+            if(options.wasDetected(OPT_DEBUG)) {
+                VERBOSITY_LEVEL = Properties.VerbosityLevel.HIGH;
+                
             }
             
             // Sets up the logging facility (reads the logging options from log4j.properties file.
@@ -306,6 +315,14 @@ public class SCV {
      */
     public static Properties.VerbosityLevel getVerbosityLevel() {
         return VERBOSITY_LEVEL;
+    }
+    
+    /**
+     * Whether the program is running in the debug mode or not
+     * @return True - the program is running in the debug mode, false otherwise
+     */
+    public static boolean getDebug() {
+        return DEBUG;
     }
     
 }
