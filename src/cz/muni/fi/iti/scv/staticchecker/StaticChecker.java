@@ -52,7 +52,7 @@ public class StaticChecker {
      * Creates a new instance of StaticChecker
      */
     public StaticChecker(Document source) {
-        
+        System.out.println(logger.getAllAppenders());
         //initialize
         this.source = source; 
         defs = new HashSet<StaticCheckerDef>();        
@@ -136,7 +136,6 @@ public class StaticChecker {
                     } else { //intraprocedural check
                         for (ControlFlowGraph cfg : cfgs.values()) { //for every function
                             //#################################### intraprocedural with vars
-                            logger.debug("Assigns: "+defAssign);
                             check(def, defAssign, cfg, null);
                             errors.addAll(findErrors(def,defAssign, cfg, null));
                         }
@@ -172,7 +171,16 @@ public class StaticChecker {
             }
         
         }//end for (def)
-                    
+        
+        // HTML report output
+        if(errors.isEmpty()) {
+            logger.info("No errors found");
+        }
+        for(CheckerError error: errors) {
+            logger.info(error.getDescription());
+        }
+        
+        
         return errors;
     }
     

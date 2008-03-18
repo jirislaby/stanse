@@ -12,6 +12,7 @@ import cz.muni.fi.iti.scv.props.Properties;
 import cz.muni.fi.iti.scv.scvgui.GraphViz;
 import cz.muni.fi.iti.scv.scvgui.GuiMain;
 import cz.muni.fi.iti.scv.scvgui.SourceAndXMLWindow;
+import cz.muni.fi.iti.scv.staticchecker.StaticChecker;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,11 +29,14 @@ import org.apache.log4j.Logger;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.HTMLLayout;
 import org.apache.log4j.Level;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedSubgraph;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Main class of the project. Includes the static main method, which is started from the command line.
@@ -53,6 +57,7 @@ public class SCV {
     private static final String OPT_CALLGRAPH = "callgraph";
     private static final String OPT_STRONGLYCONNECTED = "sc";
     private static final String OPT_DEBUG = "debug";
+    private static final String OPT_REPORT = "report";
     
     private static Logger logger = Logger.getLogger(SCV.class);
     
@@ -75,6 +80,7 @@ public class SCV {
 
     /**
      * @param args the command line arguments
+     * Command line argument parsed using JOpt simple. Homepage: http://jopt-simple.sourceforge.net/
      */
     public static void main(String[] args) {
         
@@ -83,15 +89,24 @@ public class SCV {
             {
                 accepts(OPT_HELP, "prints help");
                 accepts(OPT_USAGE, "shows usage");
-                accepts(OPT_VERBOSITY, "Sets the level of verbosity").withOptionalArg().
-                        describedAs("0 to 3").
-                        ofType(Integer.class);
+                accepts(OPT_VERBOSITY, "Sets the level of verbosity")
+                        .withOptionalArg()
+                        .describedAs("0 to 3")
+                        .ofType(Integer.class);
                 accepts(OPT_SILENT, "Turns silent mode on. Same as -v 0");
-                accepts(OPT_CHECKERS, "Checker definition file to be run. Can occur more than once.").withOptionalArg().describedAs("List of checkers").ofType(String.class);
+                accepts(OPT_CHECKERS, "Checker definition file to be run. Can occur more than once.")
+                            .withOptionalArg()
+                            .describedAs("Checker def file")
+                            .ofType(String.class);
                 accepts(OPT_NOGUI, "Don't start the GUI");
                 accepts(OPT_CALLGRAPH, "Generate call graph and store result to the file (--nogui is implied)").withRequiredArg().describedAs("Output file filename");
                 accepts(OPT_STRONGLYCONNECTED, "Highlight strongly connected subsets in the call graph");
                 accepts(OPT_DEBUG, "Debug mode - all debug info to stderr implies -v3");
+                accepts(OPT_REPORT, "Target of the HTML checker report")
+                            .withRequiredArg()
+                            .describedAs("report file")
+                            .ofType(String.class);
+                
             }
         };
 
@@ -162,10 +177,32 @@ public class SCV {
                 }
 
             }
+            
+            List<String> checkers = new ArrayList<String>();
+            if(options.wasDetected(OPT_CHECKERS)) {
+                for(Object checker: options.argumentsOf(OPT_CHECKERS)) {
+                    checkers.add((String) checker);
+                }
+            }
+            
+            scv.setCheckerDefinitions(checkers);
+            
+            
+            if(options.wasDetected(OPT_REPORT)) {
+                FileAppender debugAppender = new FileAppender();
+                debugAppender.setLayout(new HTMLLayout());
+                debugAppender.setFile(options.argumentOf(OPT_REPORT));
+                debugAppender.setThreshold(Level.INFO);
+                Logger.getLogger(StaticChecker.class).addAppender(debugAppender);
+                debugAppender.activateOptions();
+            }
 
             // Start GUI?
             if (startGui) {
                 scv.startGui();
+            } else {
+                // Dont start gui, but run checkers
+                throw new NotImplementedException();
             }
 
 
@@ -264,6 +301,7 @@ public class SCV {
                     }
 
                     if (!files.isEmpty()) {
+                        
                         ((SourceAndXMLWindow) gui.getJTabbedPane1().getSelectedComponent()).runStaticChecker(files);
                     }
                 }

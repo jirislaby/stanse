@@ -180,8 +180,7 @@ public class StaticCheckerDef {
             
             while (findMatcher.matches()) {
                 String param = findMatcher.replaceFirst("$1"); 
-                //System.out.println("param:"+param);
-                logger.debug("Param: "+param);
+                //logger.debug("Param: "+param);
                 
                 int varIndex = 1;
                 String varName = null;
@@ -205,8 +204,7 @@ public class StaticCheckerDef {
                 Pattern replacePattern = Pattern.compile("\\$\\{"+param+"\\}"); 
                 Matcher replaceMatcher = replacePattern.matcher(text);
                 text = replaceMatcher.replaceAll(replaceText);
-                //System.out.println("text:"+text);
-                logger.debug("Text: "+text);
+                //logger.debug("Text: "+text);
                 
                 findMatcher = findPattern.matcher(text);
             }

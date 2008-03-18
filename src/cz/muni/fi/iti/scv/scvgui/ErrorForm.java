@@ -11,18 +11,11 @@ package cz.muni.fi.iti.scv.scvgui;
 import cz.muni.fi.iti.scv.checker.CheckerError;
 import cz.muni.fi.iti.scv.checker.CheckerErrorByDescriptionComparator;
 import cz.muni.fi.iti.scv.checker.ErrorTrace;
-import cz.muni.fi.iti.scv.checker.ErrorTraceByDescriptionComparator;
 import cz.muni.fi.iti.scv.xml2cfg.CFGNode;
 import cz.muni.fi.iti.scv.xml2cfg.ControlFlowGraph;
 import java.awt.Component;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultListCellRenderer;
@@ -30,11 +23,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.TreeSelectionEvent;
 import org.dom4j.Element;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DirectedSubgraph;
 
 /**
  * Form for viewing the errors found by static checker.
