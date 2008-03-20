@@ -70,6 +70,10 @@ public class SCV {
      */
     private List<String> sourceFiles = new ArrayList<String>();
     /**
+     * Parsed source files. This is a cache created by method getXMLDocumentByFilename
+     */
+    private Map<String, Document> sourceFilesParsed = new HashMap<String, Document>();
+    /**
      * Filenames of checker definitions
      */
     private List<String> checkerDefinitions = new ArrayList<String>();
@@ -241,7 +245,7 @@ public class SCV {
         List<Element> rootElements = new ArrayList<Element>();
         for (String filename : sourceFiles) {
             try {
-                rootElements.addAll(getXMDocumentLByFilename(filename).getRootElement().selectNodes("//functionDefinition"));
+                rootElements.addAll(getXMLDocumentByFilename(filename).getRootElement().selectNodes("//functionDefinition"));
             } catch (FileNotFoundException ex) {
                 logger.log(Level.FATAL, filename, ex);
             } catch (IllegalArgumentException ex) {
@@ -318,26 +322,42 @@ public class SCV {
      * @throws java.lang.IllegalArgumentException If the source file is not in the xmlDocuments array (source files open by this instance)
      * @throws java.io.FileNotFoundException If the file is not found or readable
      */
-    public Document getXMDocumentLByFilename(String filename) throws IllegalArgumentException, FileNotFoundException {
+    public Document getXMLDocumentByFilename(String filename) throws IllegalArgumentException, FileNotFoundException {
         if (!sourceFiles.contains(filename)) {
             throw new IllegalArgumentException("Source code by this name doesn't exist");
         }
+        if(sourceFilesParsed.containsKey(filename)) {
+            return sourceFilesParsed.get(filename);
+        } else {
 
-        Document returnDocument = null;
-        if (!xmlDocuments.containsKey(filename)) {
-            CParser parser = new CParser(new FileInputStream(filename));
-            try {
-                returnDocument = parser.runXmlParser();
-            } catch (NullPointerException e) {
-                logger.log(Level.FATAL, null, e);
-            } catch (RecognitionException e) {
-                logger.log(Level.FATAL, null, e);
-            } catch (TokenStreamException e) {
-                logger.log(Level.FATAL, null, e);
+            Document returnDocument = null;
+            if (!xmlDocuments.containsKey(filename)) {
+                CParser parser = new CParser(new FileInputStream(filename));
+                try {
+                    returnDocument = parser.runXmlParser();
+                    File file = new File(filename);
+                    returnDocument.setName(file.getName());
+                    sourceFilesParsed.put(filename, returnDocument);
+                } catch (NullPointerException e) {
+                    logger.log(Level.FATAL, null, e);
+                } catch (RecognitionException e) {
+                    logger.log(Level.FATAL, null, e);
+                } catch (TokenStreamException e) {
+                    logger.log(Level.FATAL, null, e);
+                }
+
             }
-
+        
+            return returnDocument;
         }
-        return returnDocument;
+    }
+    
+    public void runCheckers() {
+        for(String checker: checkerDefinitions) {
+            for(String filename: sourceFiles) {
+                
+            }
+        }
     }
     
     

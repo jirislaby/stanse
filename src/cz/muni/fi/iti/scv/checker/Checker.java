@@ -10,7 +10,6 @@ package cz.muni.fi.iti.scv.checker;
 import cz.muni.fi.iti.scv.xml2cfg.ControlFlowGraph;
 
 import java.util.Set;
-import java.util.HashSet;
 
 /**
  * Represent a checker.

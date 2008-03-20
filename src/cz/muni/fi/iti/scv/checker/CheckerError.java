@@ -8,12 +8,10 @@
 package cz.muni.fi.iti.scv.checker;
 
 import cz.muni.fi.iti.scv.xml2cfg.CFGNode;
-import java.util.Comparator;
 import java.util.TreeSet;
 
 import org.dom4j.Element;
 
-import java.util.Stack;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;

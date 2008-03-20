@@ -175,11 +175,12 @@ public class StaticChecker {
         // HTML report output
         if(errors.isEmpty()) {
             logger.info("No errors found");
+        } else {
+            logger.info("Error found in "+source.getName());
+            for(CheckerError error: errors) {
+                logger.info(error.getDescription());
+            }
         }
-        for(CheckerError error: errors) {
-            logger.info(error.getDescription());
-        }
-        
         
         return errors;
     }
