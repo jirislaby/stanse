@@ -58,6 +58,7 @@ public class SCV {
     private static final String OPT_STRONGLYCONNECTED = "sc";
     private static final String OPT_DEBUG = "debug";
     private static final String OPT_REPORT = "report";
+    private static final String OPT_VERSION = "version";
     
     private static Logger logger = Logger.getLogger(SCV.class);
     
@@ -65,6 +66,7 @@ public class SCV {
     
     private static boolean DEBUG = false;
 
+    
     /**
      * Filenames of the source files.
      */
@@ -110,6 +112,7 @@ public class SCV {
                             .withRequiredArg()
                             .describedAs("report file")
                             .ofType(String.class);
+                accepts(OPT_VERSION, "Prints the program version (build) and exits");
                 
             }
         };
@@ -125,6 +128,11 @@ public class SCV {
                 } finally {
                     System.exit(0);
                 }
+            }
+            
+            if(options.wasDetected(OPT_VERSION)) {
+                System.out.println(SCV.class.getPackage().getImplementationVersion());
+                System.exit(0);
             }
 
             if (options.wasDetected(OPT_VERBOSITY)) {

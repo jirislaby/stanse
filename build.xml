@@ -67,10 +67,14 @@
         </copy>
     </target>
 	
-    <target name="jar" depends="build">
-	     <manifest file="manifest.mf">
+    <target name="jar" depends="build, svn-info">
+	   <tstamp>
+	     <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+	   </tstamp>	     
+	<manifest file="manifest.mf">
 	        <attribute name="Built-By" value="${user.name}"/>
 	        <attribute name="Main-Class" value="cz.muni.fi.iti.scv.main.SCV"/>
+		<attribute name="Implementation-Version" value="Revision: ${svnrevision}, Built on: ${TODAY}" />
 	        <attribute name="Class-Path" value="lib/swing-layout-1.0.jar lib/AbsoluteLayout.jar lib/antlr-2.7.5.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/swing-layout-1.0.jar lib/syntax.jar lib/jgrapht-jdk1.5.jar lib/log4j-1.2.14.jar lib/jopt-simple-2.3.2.jar lib/saxon8.jar lib/saxon8-dom4j.jar lib/saxon8-xpath.jar"/>
 	    </manifest>
     	<jar destfile="${dist}/scv.jar" basedir="build" manifest="manifest.mf"/>
@@ -92,6 +96,11 @@
             <fileset dir="src/" includes="*.java"/>
         </javadoc>
     </target>
+
+    <target name="svn-info">
+	<exec executable="./getlastrevision.sh" outputproperty="svnrevision"/>
+    </target>
+
     
 
 </project>
