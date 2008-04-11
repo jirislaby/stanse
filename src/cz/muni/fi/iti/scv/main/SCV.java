@@ -36,7 +36,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedSubgraph;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 
 /**
  * Main class of the project. Includes the static main method, which is started from the command line.
@@ -169,7 +169,7 @@ public class SCV {
             // Sets up the logging facility (reads the logging options from log4j.properties file.
             // This needs to be done only once
             // This is done after the verbosity level is set to use it as default
-            new LoggerConfigurator();
+            LoggerConfigurator.doConfigure();
 
             
             boolean startGui = !options.wasDetected(OPT_NOGUI);
@@ -201,12 +201,13 @@ public class SCV {
             
             
             if(options.wasDetected(OPT_REPORT)) {
-                FileAppender debugAppender = new FileAppender();
-                debugAppender.setLayout(new HTMLLayout());
-                debugAppender.setFile(options.argumentOf(OPT_REPORT));
-                debugAppender.setThreshold(Level.INFO);
-                Logger.getLogger(StaticChecker.class).addAppender(debugAppender);
-                debugAppender.activateOptions();
+                FileAppender reportAppender = new FileAppender();
+                reportAppender.setLayout(new HTMLLayout());
+                reportAppender.setFile(options.argumentOf(OPT_REPORT));
+                reportAppender.setThreshold(Level.INFO);
+                
+                Logger.getLogger(StaticChecker.class).addAppender(reportAppender);
+                reportAppender.activateOptions();
             }
 
             // Start GUI?
@@ -214,7 +215,7 @@ public class SCV {
                 scv.startGui();
             } else {
                 // Dont start gui, but run checkers
-                throw new NotImplementedException();
+                throw new UnsupportedOperationException("Not implemented yet");
             }
 
 

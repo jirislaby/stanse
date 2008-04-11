@@ -52,7 +52,6 @@ public class StaticChecker {
      * Creates a new instance of StaticChecker
      */
     public StaticChecker(Document source) {
-        System.out.println(logger.getAllAppenders());
         //initialize
         this.source = source; 
         defs = new HashSet<StaticCheckerDef>();        

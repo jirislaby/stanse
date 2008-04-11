@@ -691,7 +691,7 @@ public class GuiMain extends javax.swing.JFrame {
      * are xml definitions of the tests to be run at the source file
      */
     public static void main(final String args[]) {
-        new LoggerConfigurator();
+        LoggerConfigurator.doConfigure();
         
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {

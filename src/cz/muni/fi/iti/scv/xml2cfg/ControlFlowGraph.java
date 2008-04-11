@@ -566,5 +566,30 @@ public class ControlFlowGraph {
         conditions.get(from).put(to,condition);
         
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ControlFlowGraph other = (ControlFlowGraph) obj;
+        if (this.functionDefinition != other.functionDefinition && (this.functionDefinition == null || !this.functionDefinition.equals(other.functionDefinition))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 23 * hash + (this.functionDefinition != null ? this.functionDefinition.hashCode() : 0);
+        return hash;
+    }
+
+ 
+    
     
 }

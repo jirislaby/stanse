@@ -106,7 +106,39 @@ public class CFGNode {
             }        
         }
    
-    } 
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CFGNode other = (CFGNode) obj;
+        if (this.number != other.number) {
+            return false;
+        }
+        if (this.cfg != other.cfg && (this.cfg == null || !this.cfg.equals(other.cfg))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 59 * hash + this.number;
+        hash = 59 * hash + (this.cfg != null ? this.cfg.hashCode() : 0);
+        return hash;
+    }
+
+   
+
+    
+    
+    
     
     
 }

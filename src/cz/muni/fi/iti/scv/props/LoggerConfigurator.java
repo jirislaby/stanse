@@ -26,8 +26,16 @@ import org.apache.log4j.SimpleLayout;
  */
 public class LoggerConfigurator {
 
+    private static LoggerConfigurator singletonInstance = null;
+    
+    public static LoggerConfigurator doConfigure() {
+        if(LoggerConfigurator.singletonInstance != null) {
+            LoggerConfigurator.singletonInstance = new LoggerConfigurator();
+        }
+        return LoggerConfigurator.singletonInstance;
+    }
     /** Creates a new instance of LoggerConfigurator */
-    public LoggerConfigurator() {
+    private LoggerConfigurator() {
         java.util.Properties properties = new java.util.Properties();
 
         try {
