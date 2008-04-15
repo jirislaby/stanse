@@ -29,7 +29,7 @@ public class LoggerConfigurator {
     private static LoggerConfigurator singletonInstance = null;
     
     public static LoggerConfigurator doConfigure() {
-        if(LoggerConfigurator.singletonInstance != null) {
+        if(LoggerConfigurator.singletonInstance == null) {
             LoggerConfigurator.singletonInstance = new LoggerConfigurator();
         }
         return LoggerConfigurator.singletonInstance;
