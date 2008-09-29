@@ -134,6 +134,11 @@ public class CFGNode {
         return hash;
     }
 
+    @Override
+    public String toString() {
+        return new Integer(number).toString();
+    }
+
    
 
     

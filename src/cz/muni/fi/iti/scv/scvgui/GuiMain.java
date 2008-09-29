@@ -447,8 +447,8 @@ public class GuiMain extends javax.swing.JFrame {
      
      class ShowStronglyConnectedSubsets extends AbstractAction {
         ShowStronglyConnectedSubsets() {
-            putValue( AbstractAction.NAME,              "Show strongly connected subsets");
-            putValue( AbstractAction.SHORT_DESCRIPTION, "Show strongly connected subsets");
+            putValue( AbstractAction.NAME,              "Show strongly connected components");
+            putValue( AbstractAction.SHORT_DESCRIPTION, "Show strongly connected components");
             putValue( AbstractAction.SMALL_ICON,        null                             );
         }
         public void actionPerformed(ActionEvent e) {        

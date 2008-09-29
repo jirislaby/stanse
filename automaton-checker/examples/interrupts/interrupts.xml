@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<automaton>
+  <name>Interrupts checker</name>
+  <description>Checks the interrupts enable/disable discipline</description>
+
+  <param>
+	<id>x</id><!--  Unikatni ukazatel parametru. Tim se na nej potom muze odkazovat trigger -->
+	<class>cz.muni.fi.iti.scv.newchecker.AutomatonParamParamNames</class>
+  </param><!-- Parametr mozna bude pro cely automat, ne jenom pro stav -->
+
+  <state initial="true">
+	<name>E</name> <!-- V ramci automatu unikatni -->
+	<description>Enabled</description>
+	<transition> 
+		<trigger>
+			<pass>cli</pass> <!-- Predava se jako parametr metode loadTrigger  -->
+			<class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+		</trigger><!-- Akce, pod kterou se prejde do <to> stavu-->
+		<to>D</to><!-- Name stavu, do ktereho se prejde -->
+	</transition>
+	
+	<transition> 
+		<trigger>
+			<pass>sti</pass> <!-- Predava se jako parametr metode loadTrigger  -->
+			<class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+		</trigger><!-- Akce, pod kterou se prejde do <to> stavu-->
+		<errmsg>Double enable(sti)!! Interrupts have already been enabled</errmsg>
+	</transition>
+
+	<transition>
+		<trigger>
+			<pass>restore_flags</pass>
+                        <class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+			<param>x</param><!-- Zde se odkazujeme na parametry. Na poradi zalezi. -->
+		</trigger>
+		<errmsg>Double enable(restore_flags)!! Interrupts have already been enabled</errmsg>
+	</transition>
+
+  </state>
+  <state>
+	<name>D</name>
+	
+	<description>Disabled</description>
+	<eor>
+		<errmsg>Ends with interrupts disabled!!</errmsg> <!-- Zde se nesmi skoncit (eor + errmsg)-->
+	</eor>
+	<transition>
+		<trigger>
+                    <pass>cli</pass>
+                    <class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+                </trigger>
+		<errmsg>Double disable!! Interrupts have already been disabled</errmsg>
+	</transition>
+	<transition>
+		<trigger>
+                    <pass>sti</pass>
+                    <class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+                </trigger>
+		<to>E</to>
+
+	</transition>
+	<transition>
+		<trigger>
+                    <pass>restore_flags</pass>
+                    <class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+                    <param>x</param>
+                </trigger>
+		<to>E</to>
+	</transition>
+	
+  </state>
+
+
+</automaton>

@@ -7,6 +7,7 @@
 
 package cz.muni.fi.iti.scv.callgraph;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.alg.StrongConnectivityInspector;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DirectedMultigraph;
 import org.jgrapht.graph.DirectedSubgraph;
 
 
@@ -32,25 +34,33 @@ public class CallGraph {
      * Map representing the call graph. Procedures are specified by the String 
      * representation of their name.
      */
-    private Map<String, Set<String>> callingNames = new HashMap<String, Set<String>>();
+    private Map<String, List<String>> callingNames = new HashMap<String, List<String>>();
     
     private static Logger logger = Logger.getLogger(CallGraph.class);
+    
+    /**
+     * Multigraph is generated, if true.
+     */
+    private boolean isMultiGraph = false;
     
     /**
      * Creates a new instance of CallGraph
      * 
      * @param functionDefinitions The function of which the CG will be made
      */
-    public CallGraph(List<Element> functionDefinitions) {
+    public CallGraph(List<Element> functionDefinitions, boolean isMultigraph) {
+        this.isMultiGraph = isMultigraph;
         for(int i=0; i<functionDefinitions.size(); i++) {
             String functionName = ((Element)functionDefinitions.get(i).selectSingleNode("declarator/id")).getText();
             Set<Element> children = new HashSet<Element>();
             Collection list = functionDefinitions.get(i).selectNodes(".//functionCall");
             children.addAll(list);
         
-            Set<String> childrenNames = new HashSet<String>();
+            List<String> childrenNames = new ArrayList<String>();
             for(Element oneNode : children) {
-                childrenNames.add(oneNode.node(0).getText());
+                if(isMultiGraph || !childrenNames.contains(oneNode.node(0).getText())) {
+                    childrenNames.add(oneNode.node(0).getText());
+                }
             }
             if(callingNames.containsKey(functionName)) {
                 childrenNames.addAll((Collection<String>) callingNames.get(functionName));
@@ -64,12 +74,20 @@ public class CallGraph {
         
     }
     
+    public CallGraph(List<Element> functionDefinitions) {
+        this(functionDefinitions, false);
+    }
     /**
      * Get the DirectedGraph representation for the actual call graph
      * @return directed graph of the actual call graph
      */
     public DirectedGraph generateDirectedGraph() {
-        DirectedGraph<String, DefaultEdge> graph = new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
+        DirectedGraph<String, DefaultEdge> graph;
+        if(isMultiGraph) {
+            graph = new DirectedMultigraph<String, DefaultEdge>(DefaultEdge.class);
+        } else {
+            graph = new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
+        }
         for(String functionDefinition : callingNames.keySet()) {
             graph.addVertex(functionDefinition);
         }
@@ -79,10 +97,9 @@ public class CallGraph {
                 if(!graph.vertexSet().contains(called)) {
                     graph.addVertex(called);
                 }
-                graph.addEdge(functionDefinition, called);
+                DefaultEdge addEdge = graph.addEdge(functionDefinition, called);
             }
         }
-        
         return graph;
     }
     
@@ -125,7 +142,6 @@ public class CallGraph {
         for(DefaultEdge edge : graph.edgeSet()) {
             retString += "\""+graph.getEdgeSource(edge) + "\" -> \"" + graph.getEdgeTarget(edge) + "\";\n";
         }
-        
         return retString;
     }
     
@@ -145,16 +161,18 @@ public class CallGraph {
         
         int i=1;
         for(DirectedSubgraph<String, DefaultEdge> subgraph : subgraphs) {
-            retString += "subgraph \"cluster_subset"+ i + "\" { label=\"Subset "+ i + "\" \n";
+            retString += "subgraph \"cluster_subset"+ i + "\" { label=\"Component "+ i + "\" \n";
             for(String vertex : subgraph.vertexSet()) {
                 retString += " \"" + vertex + "\"; "; 
             }
             retString += " } \n";
             i++;
         }
-        return retString + "\n }"; 
+        retString += " } \n";
+        logger.debug(retString);
+        return retString; 
     }
-    
+
     
 
     

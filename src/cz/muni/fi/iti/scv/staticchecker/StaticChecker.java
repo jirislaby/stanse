@@ -175,6 +175,7 @@ public class StaticChecker {
         if(errors.isEmpty()) {
             logger.info("No errors found");
         } else {
+            System.out.println("Logging an errror!!!");
             logger.info("Error found in "+source.getName());
             for(CheckerError error: errors) {
                 logger.info(error.getDescription());

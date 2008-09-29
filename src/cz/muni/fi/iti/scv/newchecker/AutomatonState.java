@@ -5,19 +5,28 @@
 
 package cz.muni.fi.iti.scv.newchecker;
 
+import cz.muni.fi.iti.scv.xml2cfg.CFGEdge;
+import cz.muni.fi.iti.scv.xml2cfg.CFGNode;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
  * @author xstastn
  */
 public class AutomatonState {
+    
+    private static AtomicInteger globalId = new AtomicInteger(0);
+    
+    private int id;
+    
     private String name;
     private String description;
     private Set<AutomatonTransition> transitions = new HashSet<AutomatonTransition>();
 
     public AutomatonState(String name, String description) {
+        this.id = globalId.incrementAndGet();
         this.name = name;
         this.description = description;
     }
@@ -41,6 +50,12 @@ public class AutomatonState {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public int getId() {
+        return id;
+    }
+    
+    
     
     /**
      * 
@@ -55,13 +70,27 @@ public class AutomatonState {
         return null;
     }
     
-    public AutomatonTransition getTransitionByTrigger(String trigger) {
+    
+    /**
+     * Gets the transition, where trigger is triggered.
+     * @param from The CFG Node from, passed as parameter to isTriggered method
+     * @param to The CFG Node from, passed as parameter to isTriggered method
+     * @return The transition trigger found by the criteria (if any), null otherwise
+     */
+    public AutomatonTransition getTransitionByTriggeredTrigger(CFGNode from, CFGNode to) {
         for(AutomatonTransition transition: transitions) {
-            if(transition.getTrigger() != null && transition.getTrigger().equals(trigger)) {
+            if(transition.getTrigger() != null && transition.getTrigger().isTriggered(from, to)) {
                 return transition;
             }
         }
         return null;
+    }
+    
+    /**
+     * @see #getTransitionByTriggeredTrigger(CFGNode, CFGNode) 
+     */
+    public AutomatonTransition getTransitionByTriggeredTrigger(CFGEdge edge) {
+        return getTransitionByTriggeredTrigger(edge.getFrom(), edge.getTo());
     }
 
     @Override
@@ -73,20 +102,27 @@ public class AutomatonState {
             return false;
         }
         final AutomatonState other = (AutomatonState) obj;
-        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+        if (this.id != other.id) {
             return false;
         }
         return true;
     }
-    
-    
-    
+
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 43 * hash + (this.name != null ? this.name.hashCode() : 0);
+        int hash = 3;
+        hash = 71 * hash + this.id;
         return hash;
     }
+
+    
+    @Override
+    public String toString() {
+        return id + " ("+name+")";
+    }
+    
+    
+    
     
     
 }

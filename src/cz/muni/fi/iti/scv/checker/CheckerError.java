@@ -160,7 +160,7 @@ public abstract class CheckerError {
             CFGNode node = nodesToDo.iterator().next();
             nodesToDo.remove(node);
             
-            label = "\"" + nodeToText(node) + "\"";
+            label = "\"" + nodeToText(node) + node.getNumber() + "\"";
            
             color = "black";
             if (isInErrorTraces(node)) {

@@ -7,6 +7,7 @@ import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import cz.muni.fi.iti.scv.c2xml.CParser;
 import cz.muni.fi.iti.scv.callgraph.CallGraph;
+import cz.muni.fi.iti.scv.checker.Checker;
 import cz.muni.fi.iti.scv.props.LoggerConfigurator;
 import cz.muni.fi.iti.scv.props.Properties;
 import cz.muni.fi.iti.scv.scvgui.GraphViz;
@@ -32,8 +33,12 @@ import joptsimple.OptionSet;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.HTMLLayout;
 import org.apache.log4j.Level;
+import org.apache.log4j.Priority;
+import org.apache.log4j.spi.LoggingEvent;
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedSubgraph;
 
@@ -55,10 +60,12 @@ public class SCV {
     private static final String OPT_CHECKERS = "ch";
     private static final String OPT_NOGUI = "nogui";
     private static final String OPT_CALLGRAPH = "callgraph";
-    private static final String OPT_STRONGLYCONNECTED = "sc";
+    private static final String OPT_STRONGLYCONNECTED = "scc";
     private static final String OPT_DEBUG = "debug";
     private static final String OPT_REPORT = "report";
     private static final String OPT_VERSION = "version";
+    private static final String OPT_CALLGRAPHMULTI = "cgm";
+    
     
     private static Logger logger = Logger.getLogger(SCV.class);
     
@@ -79,11 +86,16 @@ public class SCV {
      * Filenames of checker definitions
      */
     private List<String> checkerDefinitions = new ArrayList<String>();
+    
     /**
-     * Cache of XML parsed source codes. Key is the filename, value is the xml
+     * Cache for parsed static checked definitions. Key is the filename, parsed Document is the value
      */
-    private Map<String, Document> xmlDocuments = new HashMap<String, Document>();
+    private Map<String, Document> definitionsParsed = new HashMap<String, Document>();
+    
 
+    
+    
+    
     /**
      * @param args the command line arguments
      * Command line argument parsed using JOpt simple. Homepage: http://jopt-simple.sourceforge.net/
@@ -107,6 +119,7 @@ public class SCV {
                 accepts(OPT_NOGUI, "Don't start the GUI");
                 accepts(OPT_CALLGRAPH, "Generate call graph and store result to the file (--nogui is implied)").withRequiredArg().describedAs("Output file filename");
                 accepts(OPT_STRONGLYCONNECTED, "Highlight strongly connected subsets in the call graph");
+                accepts(OPT_CALLGRAPHMULTI, "Represent callgraph as multigraph");
                 accepts(OPT_DEBUG, "Debug mode - all debug info to stderr implies -v3");
                 accepts(OPT_REPORT, "Target of the HTML checker report")
                             .withRequiredArg()
@@ -183,7 +196,7 @@ public class SCV {
             if (options.wasDetected(OPT_CALLGRAPH)) {
                 String filename = options.argumentOf(OPT_CALLGRAPH);
                 if (!filename.isEmpty()) {
-                    scv.generateCallGraphToFile(filename, options.wasDetected(OPT_STRONGLYCONNECTED));
+                    scv.generateCallGraphToFile(filename, options.wasDetected(OPT_STRONGLYCONNECTED), options.wasDetected(OPT_CALLGRAPHMULTI));
                     startGui = false;
 
                 }
@@ -205,9 +218,11 @@ public class SCV {
                 reportAppender.setLayout(new HTMLLayout());
                 reportAppender.setFile(options.argumentOf(OPT_REPORT));
                 reportAppender.setThreshold(Level.INFO);
-                
-                Logger.getLogger(StaticChecker.class).addAppender(reportAppender);
                 reportAppender.activateOptions();
+                Logger.getLogger(StaticChecker.class).addAppender(reportAppender);
+                Logger.getLogger(StaticChecker.class).setLevel(Level.INFO);
+                
+                
             }
 
             // Start GUI?
@@ -215,7 +230,9 @@ public class SCV {
                 scv.startGui();
             } else {
                 // Dont start gui, but run checkers
-                throw new UnsupportedOperationException("Not implemented yet");
+                if(!checkers.isEmpty()) {
+                    scv.runCheckers();
+                }
             }
 
 
@@ -235,9 +252,6 @@ public class SCV {
      * @param filenames List of filenames to be worked with
      */
     public SCV(List<String> filenames) {
-        /**
-         * Needs to be run just once at program startup
-         */
         this.sourceFiles = filenames;
     }
 
@@ -249,8 +263,9 @@ public class SCV {
      * Generate call graph either with or without strongly connected subsets highlighted
      * @param outfile Name of the file to write the image to.
      * @param withStronglyConnected Whether to highlight the strongly connected subsets or not
+     * @param isMultigraph Multigraph is generated if true
      */
-    public void generateCallGraphToFile(String outfile, boolean withStronglyConnected) throws NullPointerException {
+    public void generateCallGraphToFile(String outfile, boolean withStronglyConnected, boolean isMultigraph) throws NullPointerException {
         List<Element> rootElements = new ArrayList<Element>();
         for (String filename : sourceFiles) {
             try {
@@ -265,7 +280,7 @@ public class SCV {
             throw new NullPointerException("No source files");
         }
 
-        CallGraph callGraph = new CallGraph(rootElements);
+        CallGraph callGraph = new CallGraph(rootElements, isMultigraph);
         String dotSource = null;
         if (withStronglyConnected) {
             List<DirectedSubgraph<String, DefaultEdge>> stronglyConnectedSubgraphs = callGraph.stronglyConnected();
@@ -282,17 +297,19 @@ public class SCV {
     /**
      * Generate Callgraph to outfile without strongly connected regions
      * @param outfile Name of the file to write the image to.
+     * @param isMultigraph Multigraph is generated if true
      */
-    public void generateCallGraphToFile(String outfile) {
-        this.generateCallGraphToFile(outfile, false);
+    public void generateCallGraphToFile(String outfile, boolean isMultigraph) {
+        this.generateCallGraphToFile(outfile, false, isMultigraph);
     }
 
     /**
      * Generate callgraph to outfile with strongly connected regions highlighted
      * @param outfile Name of the file to write the image to.
+     * @param isMultigraph Multigraph is generated if true
      */
-    public void generateCallGraphToFileStronglyConnected(String outfile) {
-        this.generateCallGraphToFile(outfile, true);
+    public void generateCallGraphToFileStronglyConnected(String outfile, boolean isMultigraph) {
+        this.generateCallGraphToFile(outfile, true, isMultigraph);
     }
 
     public void startGui() {
@@ -340,33 +357,78 @@ public class SCV {
         } else {
 
             Document returnDocument = null;
-            if (!xmlDocuments.containsKey(filename)) {
-                CParser parser = new CParser(new FileInputStream(filename));
-                try {
-                    returnDocument = parser.runXmlParser();
-                    File file = new File(filename);
-                    returnDocument.setName(file.getName());
-                    sourceFilesParsed.put(filename, returnDocument);
-                } catch (NullPointerException e) {
-                    logger.log(Level.FATAL, null, e);
-                } catch (RecognitionException e) {
-                    logger.log(Level.FATAL, null, e);
-                } catch (TokenStreamException e) {
-                    logger.log(Level.FATAL, null, e);
-                }
 
+            CParser parser = new CParser(new FileInputStream(filename));
+            try {
+                returnDocument = parser.runXmlParser();
+                File file = new File(filename);
+                returnDocument.setName(file.getName());
+                sourceFilesParsed.put(filename, returnDocument);
+            } catch (NullPointerException e) {
+                logger.log(Level.FATAL, null, e);
+            } catch (RecognitionException e) {
+                logger.log(Level.FATAL, null, e);
+            } catch (TokenStreamException e) {
+                logger.log(Level.FATAL, null, e);
             }
         
             return returnDocument;
         }
+        
+        
     }
     
-    public void runCheckers() {
-        for(String checker: checkerDefinitions) {
-            for(String filename: sourceFiles) {
-                
-            }
+    /**
+     * Returns the parsed static checked definition Document. Takes care of caching.
+     * @param filename Filename of the checked definition to be parsed
+     * @return Parsed document
+     * @throws IllegalArgumentException If the checker definition has not been loaded.
+     */
+    public Document getCheckerDefinitionByFilename(String filename) throws IllegalArgumentException {
+        if (!this.checkerDefinitions.contains(filename)) {
+            throw new IllegalArgumentException("Checked definition by this name doesn't exist");
         }
+        if(definitionsParsed.containsKey(filename)) {
+            return definitionsParsed.get(filename);
+        } else {
+
+            Document returnDocument = null;
+            SAXReader reader = new SAXReader();
+            try {
+                returnDocument = reader.read(filename);
+            } catch (DocumentException ex) {
+                logger.error(null, ex);
+            }
+            definitionsParsed.put(filename, returnDocument);
+            
+            return returnDocument;
+        }
+            
+    }
+        
+    public void runCheckers() {
+    Set<Document> definitions = new HashSet<Document>();
+    for(String checker: checkerDefinitions) {
+        definitions.add(getCheckerDefinitionByFilename(checker));
+    }
+
+    for(String filename: sourceFiles) {
+        try {
+            Document compiledSource = getXMLDocumentByFilename(filename);
+            StaticChecker checker = new StaticChecker(compiledSource);
+            for(Document definition: definitions) {
+                checker.addDefinition(definition);
+            }
+            checker.check();
+            
+        } catch (IllegalArgumentException ex) {
+           logger.error(null, ex);
+        } catch (FileNotFoundException ex) {
+            logger.error(null, ex);
+        }
+
+    }
+
     }
     
     

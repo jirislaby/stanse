@@ -545,6 +545,31 @@ public class ControlFlowGraph {
         }
     }
     
+    public Set<CFGNode> getAllNodes() {
+          
+        Set<CFGNode> nodesToDo = new HashSet<CFGNode>();
+        Set<CFGNode> nodesDone = new HashSet<CFGNode>();
+        
+        nodesToDo.add(this.getStartNode());       
+        
+        
+        
+        while (!nodesToDo.isEmpty()) {
+            CFGNode node = nodesToDo.iterator().next();
+            nodesToDo.remove(node);
+            
+            
+            nodesDone.add(node);
+            
+            for (CFGNode succ : node.getSuccessors()) { 
+                
+                if (!nodesDone.contains(succ)) nodesToDo.add(succ);
+            }
+        }
+        
+        return nodesDone;
+    }
+    
     private void addEdge(CFGNode from, CFGNode to, Element element, Boolean condition) {
         
         from.addSucc(to);       

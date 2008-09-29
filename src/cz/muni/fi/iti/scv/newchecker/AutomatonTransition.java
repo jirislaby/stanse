@@ -18,9 +18,8 @@ public class AutomatonTransition {
     
     
     private String errorMessage;
-    // Zatim se pouziva pouze XPath vyraz. Casem predelat na rozhrani a udelat obecneji.
-    // Null means no the transition leads to an end node (isFinal = true)
-    private String trigger = null;
+    
+    private TransitionTrigger trigger = null;
     
 
     private AutomatonTransition(AutomatonState from) {
@@ -33,7 +32,7 @@ public class AutomatonTransition {
   
     
     
-    public static AutomatonTransition getInstance(AutomatonState from, AutomatonState to, String trigger) {
+    public static AutomatonTransition getInstance(AutomatonState from, AutomatonState to, TransitionTrigger trigger) {
         AutomatonTransition transition = new AutomatonTransition(from);
         transition.setTo(to);
         transition.setTrigger(trigger);
@@ -52,7 +51,7 @@ public class AutomatonTransition {
         return transition;
     }
     
-    public static AutomatonTransition getInstanceError(AutomatonState from, String errorMessage, String trigger) {
+    public static AutomatonTransition getInstanceError(AutomatonState from, String errorMessage, TransitionTrigger trigger) {
         AutomatonTransition transition = AutomatonTransition.getInstanceFinalError(from, errorMessage);
         transition.setIsEOR(false);
         transition.setTrigger(trigger);
@@ -105,16 +104,20 @@ public class AutomatonTransition {
         this.errorMessage = errorMessage;
     }
 
-    public String getTrigger() {
+    public TransitionTrigger getTrigger() {
         return trigger;
     }
 
-    public void setTrigger(String trigger) {
+    public void setTrigger(TransitionTrigger trigger) {
         this.trigger = trigger;
-        if(trigger == null) {
-            this.isEOR = true;
-        }
     }
+
+    @Override
+    public String toString() {
+        return "With trigger: "+this.trigger;
+    }
+    
+    
     
     
 }

@@ -13,6 +13,9 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Enumeration;
+import org.apache.log4j.Appender;
+import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -37,34 +40,44 @@ public class LoggerConfigurator {
     /** Creates a new instance of LoggerConfigurator */
     private LoggerConfigurator() {
         java.util.Properties properties = new java.util.Properties();
+        Level loggingLevel = null;
+        switch (SCV.getVerbosityLevel()) {
+            case SILENT:
+                Logger.getRootLogger().setLevel(Level.OFF);
+                loggingLevel = Level.OFF;
+                break;
+            case LOW:
+                Logger.getRootLogger().setLevel(Level.WARN);
+                loggingLevel = (Level)Level.WARN;
+                break;
+            case MIDDLE:
+                Logger.getRootLogger().setLevel(Level.INFO);
+                loggingLevel = (Level)Level.INFO;
+                break;
+            case HIGH:
+                Logger.getRootLogger().setLevel(Level.ALL);
+                loggingLevel = (Level)Level.ALL;
+                break;
+        }
 
         try {
             
-            switch (SCV.getVerbosityLevel()) {
-                case SILENT:
-                    Logger.getRootLogger().setLevel(Level.OFF);
-                    break;
-                case LOW:
-                    Logger.getRootLogger().setLevel(Level.WARN);
-                    break;
-                case MIDDLE:
-                    Logger.getRootLogger().setLevel(Level.INFO);
-                    break;
-                case HIGH:
-                    Logger.getRootLogger().setLevel(Level.ALL);
-                    break;
-            }
-            
             if(SCV.getDebug()) {
-                Logger.getRootLogger().addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR));
+                ConsoleAppender consoleAppender = new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR);
+                consoleAppender.setThreshold(loggingLevel);
+                Logger.getRootLogger().addAppender(consoleAppender);
             }
             
             properties.load(new BufferedInputStream(new FileInputStream("log4j.properties")));
             PropertyConfigurator.configure(properties);
+       
+            
             
         } catch (FileNotFoundException ex) {
             System.err.println("log4j.properties file not found. Default logging properties will be used. Exception says: "+ex);
-            Logger.getRootLogger().addAppender(new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR));
+            ConsoleAppender defaultAppender = new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR);
+            defaultAppender.setThreshold(loggingLevel);
+            Logger.getRootLogger().addAppender(defaultAppender);
 
         } catch (IOException ex) {
             ex.printStackTrace();
