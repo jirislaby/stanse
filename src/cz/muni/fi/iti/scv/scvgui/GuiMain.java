@@ -47,7 +47,6 @@ public class GuiMain extends javax.swing.JFrame {
     MappingXMLtoSourceAction mappingXMLtoSourceAction = new MappingXMLtoSourceAction(false);
     OpenBatchFileAction openBatchFileAction = new OpenBatchFileAction();
     
-    RunPThreadCheckerAction runPThreadCheckerAction = new RunPThreadCheckerAction();    
     RunStaticCheckerAction runStaticCheckerAction = new RunStaticCheckerAction();
     RunAllStaticCheckerAction runAllStaticCheckerAction = new RunAllStaticCheckerAction();
     CheckMemoryAction checkMemoryAction = new CheckMemoryAction();
@@ -302,18 +301,6 @@ public class GuiMain extends javax.swing.JFrame {
         }
     }
     
-    class RunPThreadCheckerAction extends AbstractAction {
-        RunPThreadCheckerAction() {
-            putValue( AbstractAction.NAME,              "PThread checker (current)");
-            putValue( AbstractAction.SHORT_DESCRIPTION, "Run PThread Checker on actual source code");
-//           putValue( AbstractAction.MNEMONIC_KEY,      new Integer(KeyEvent.VK_M)       );
-            putValue( AbstractAction.SMALL_ICON,        null                             );
-        }
-        public void actionPerformed(ActionEvent e) {        
-            ((SourceAndXMLWindow) jTabbedPane1.getSelectedComponent()).runPThreadChecker();             
-        }
-    }
-    
     class RunStaticCheckerAction extends AbstractAction {
         RunStaticCheckerAction() {
             putValue( AbstractAction.NAME,              "Static checker (current)");
@@ -523,7 +510,6 @@ public class GuiMain extends javax.swing.JFrame {
         jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem7 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
-        jMenuItem15 = new javax.swing.JMenuItem();
         jMenuCallGraph = new javax.swing.JMenu();
         jMenuItem9 = new javax.swing.JMenuItem();
         jMenuItem12 = new javax.swing.JMenuItem();
@@ -615,15 +601,6 @@ public class GuiMain extends javax.swing.JFrame {
         });
 
         jMenuCheck.add(jMenuItem3);
-
-        jMenuItem15.setAction(runPThreadCheckerAction);
-        jMenuItem15.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem15ActionPerformed(evt);
-            }
-        });
-
-        jMenuCheck.add(jMenuItem15);
 
         jMenuBar1.add(jMenuCheck);
 
@@ -769,7 +746,6 @@ public class GuiMain extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem12;
     private javax.swing.JMenuItem jMenuItem13;
-    private javax.swing.JMenuItem jMenuItem15;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;

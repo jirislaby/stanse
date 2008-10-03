@@ -10,13 +10,11 @@ package cz.muni.fi.iti.scv.scvgui;
 //import com.sun.org.apache.xerces.internal.util6.XML11Char;
 import cz.muni.fi.iti.scv.callgraph.CallGraph;
 import cz.muni.fi.iti.scv.checker.*;
-import cz.muni.fi.iti.scv.pthreadchecker.*;
 import cz.muni.fi.iti.scv.memorychecker.ErrorNode;
 import cz.muni.fi.iti.scv.memorychecker.MemoryChecker;
 import cz.muni.fi.iti.scv.memorychecker.OldChecker;
 import cz.muni.fi.iti.scv.xml2cfg.ControlFlowGraph;
 import cz.muni.fi.iti.scv.c2xml.CParser;
-import cz.muni.fi.iti.scv.staticchecker.*;
 import java.util.List;
 
 import java.util.Set;
@@ -574,6 +572,7 @@ public class SourceAndXMLWindow extends JPanel {
      * @param files files with definition of the checker.
      */
     public void runStaticChecker(Set<File> files) {
+/*
         if (documentXML!=null) {
             
             StaticChecker checker = new StaticChecker(documentXML);
@@ -609,37 +608,9 @@ public class SourceAndXMLWindow extends JPanel {
             }
             
         }
+*/
     }
     
-    
-    /**
-     * Run PThread Checker
-     */
-    public void runPThreadChecker() {
-        if (documentXML!=null) {
-            
-            PThreadChecker checker = new PThreadChecker(documentXML);
-            
-            Set<CheckerError> errors = checker.check();
-            
-            String outputText = "";
-            
-            if (errors.isEmpty()) {
-                jTextPaneOutput.setText("No errors. \n");
-            } else {
-                for (CheckerError error : errors) {
-                    outputText += error.getDescription() + "\n";
-                }
-                jTextPaneOutput.setText(outputText);
-                
-                //show window with errors
-                ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
-                errorForm.setVisible(true);
-                
-            }
-            
-        }
-    }
     
     /**
      * Run memory checker.

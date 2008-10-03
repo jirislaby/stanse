@@ -13,7 +13,6 @@ import cz.muni.fi.iti.scv.props.Properties;
 import cz.muni.fi.iti.scv.scvgui.GraphViz;
 import cz.muni.fi.iti.scv.scvgui.GuiMain;
 import cz.muni.fi.iti.scv.scvgui.SourceAndXMLWindow;
-import cz.muni.fi.iti.scv.staticchecker.StaticChecker;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -219,8 +218,8 @@ public class SCV {
                 reportAppender.setFile(options.argumentOf(OPT_REPORT));
                 reportAppender.setThreshold(Level.INFO);
                 reportAppender.activateOptions();
-                Logger.getLogger(StaticChecker.class).addAppender(reportAppender);
-                Logger.getLogger(StaticChecker.class).setLevel(Level.INFO);
+/*                Logger.getLogger(StaticChecker.class).addAppender(reportAppender);
+                Logger.getLogger(StaticChecker.class).setLevel(Level.INFO);*/
                 
                 
             }
@@ -415,11 +414,12 @@ public class SCV {
     for(String filename: sourceFiles) {
         try {
             Document compiledSource = getXMLDocumentByFilename(filename);
-            StaticChecker checker = new StaticChecker(compiledSource);
+/*            StaticChecker checker = new StaticChecker(compiledSource);
             for(Document definition: definitions) {
                 checker.addDefinition(definition);
             }
             checker.check();
+*/
             
         } catch (IllegalArgumentException ex) {
            logger.error(null, ex);
