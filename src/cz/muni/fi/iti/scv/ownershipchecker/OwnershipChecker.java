@@ -33,7 +33,7 @@ import org.jgrapht.traverse.DepthFirstIterator;
  * Provádí kontrolu paměťových chyb metodou určování vlastnictví ukazatelů.
  * @author Michal Fiedler
  */
-public class OwnershipChecker extends Checker {
+public class OwnershipChecker implements Checker {
     
     private Vector<ControlFlowGraph> cfgs = new Vector<ControlFlowGraph>();
     
