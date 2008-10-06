@@ -55,7 +55,7 @@
     </target>
     <target name="build" depends="init,c2xml">
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac destdir="build">
+        <javac debug="true" destdir="build">
             <src path="src"/>
             <classpath refid="project.classpath"/>
         </javac>

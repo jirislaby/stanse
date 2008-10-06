@@ -182,6 +182,7 @@ public class GuiMain extends javax.swing.JFrame {
                             
                             
                         }
+                        bufferIn.close();
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }

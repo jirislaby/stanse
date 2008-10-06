@@ -13,6 +13,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -61,27 +62,28 @@ public class LoggerConfigurator {
         }
 
         try {
-            
-            if(SCV.getDebug()) {
-                ConsoleAppender consoleAppender = new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR);
-                consoleAppender.setThreshold(loggingLevel);
-                Logger.getRootLogger().addAppender(consoleAppender);
-            }
-            
-            properties.load(new BufferedInputStream(new FileInputStream("log4j.properties")));
-            PropertyConfigurator.configure(properties);
-       
-            
-            
-        } catch (FileNotFoundException ex) {
-            System.err.println("log4j.properties file not found. Default logging properties will be used. Exception says: "+ex);
-            ConsoleAppender defaultAppender = new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR);
-            defaultAppender.setThreshold(loggingLevel);
-            Logger.getRootLogger().addAppender(defaultAppender);
+        	try {
 
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        		if(SCV.getDebug()) {
+        			ConsoleAppender consoleAppender = new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR);
+        			consoleAppender.setThreshold(loggingLevel);
+        			Logger.getRootLogger().addAppender(consoleAppender);
+        		}
+
+        		InputStream bis=new BufferedInputStream(new FileInputStream("log4j.properties"));             
+        		properties.load(bis);
+        		bis.close();
+        		PropertyConfigurator.configure(properties);
+        	} catch (FileNotFoundException ex) {
+        		System.err.println("log4j.properties file not found. Default logging properties will be used. Exception says: "+ex);
+        		ConsoleAppender defaultAppender = new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR);
+        		defaultAppender.setThreshold(loggingLevel);
+        		Logger.getRootLogger().addAppender(defaultAppender);
+        	}
         }
+        catch (IOException ex) {
+        	ex.printStackTrace();
+        } 
 
 
     }
