@@ -486,7 +486,7 @@ public class TNode extends CommonAST {
 			String elName = this.elementStack.get(i).getName();
 			//vyhleda se, jestli element nema nazev, ktery je zadany
 			for (int j = name.length - 1; j >= 0; j--){
-				if (elName == name[j]) {
+				if (elName.equals(name[j])) {
 					found = true;
 					break;
 				}		
