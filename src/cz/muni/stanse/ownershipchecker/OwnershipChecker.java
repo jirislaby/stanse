@@ -558,7 +558,7 @@ public class OwnershipChecker implements Checker {
                             int outputOwnershipValue = nodeWithOwnership.get(id).getOwnershipSetValue().getValue();
                             //int outputOwnershipValue = nodeWithOwnership.get(id).getOwnershipValue();
                             if (ownershipInfo.getOutput() == null) {
-                                ownershipInfo.setOutput(new Integer(outputOwnershipValue));
+                                ownershipInfo.setOutput(Integer.valueOf(outputOwnershipValue));
                                 ownershipInfo.setOutputSourceOfMemory(nodeWithOwnership.get(id).getSourceOfMemory());
                             } else {
                                 // je-li vlastnictvi ukazatele 0 a zapisuje se cokoliv krome 0, vystupni vlastnictvi je -1

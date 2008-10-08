@@ -14,7 +14,6 @@ import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.xml2cfg.CFGNode;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;

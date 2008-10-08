@@ -49,7 +49,7 @@ public class FunctionOwnershipInfo {
     }
     
     public void setInputPointerOwnershipValues(Vector<Integer> inputOwnershipValues) {
-        this.inputPointerOwnershipValues = inputPointerOwnershipValues;
+        this.inputPointerOwnershipValues = inputOwnershipValues;
     }
 
     public Vector<String> getInputPointerNames() {
