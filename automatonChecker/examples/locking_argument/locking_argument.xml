@@ -5,7 +5,7 @@
 
   <param>
 	<id>x</id><!--  Unikatni ukazatel parametru. Tim se na nej potom muze odkazovat trigger -->
-	<class>cz.muni.stanse.newchecker.AutomatonParamParamNames</class>
+	<class>cz.muni.stanse.automatonchecker.AutomatonParamParamNames</class>
   </param><!-- Parametr mozna bude pro cely automat, ne jenom pro stav -->
 
   <state initial="true">
@@ -14,7 +14,7 @@
 	<transition> <!-- Kazdy state ma alespon jeden transition. Finalni stavy totiz za stavy nepovazujeme (neevidujeme je) -->
 		<trigger>
 			<pass>lock</pass> <!-- Predava se jako parametr metode loadTrigger  -->
-			<class>cz.muni.stanse.newchecker.FunctionNameTrigger</class>
+			<class>cz.muni.stanse.automatonchecker.FunctionNameTrigger</class>
 			<param>x</param>
 		</trigger><!-- Akce, pod kterou se prejde do <to> stavu-->
 		<to>L</to><!-- Name stavu, do ktereho se prejde -->
@@ -23,7 +23,7 @@
 	<transition>
 		<trigger>
 			<pass>unlock</pass>
-                        <class>cz.muni.stanse.newchecker.FunctionNameTrigger</class>
+                        <class>cz.muni.stanse.automatonchecker.FunctionNameTrigger</class>
 			<param>x</param><!-- Zde se odkazujeme na parametry. Na poradi zalezi. -->
 		</trigger>
 		<errmsg>Double unlock!!</errmsg><!-- Misto "to" muze byt errmsg. To znamena, ze se dostavame do chyboveho stavu. Automat konci -->
@@ -40,7 +40,7 @@
 	<transition>
 		<trigger>
                     <pass>unlock</pass>
-                    <class>cz.muni.stanse.newchecker.FunctionNameTrigger</class>
+                    <class>cz.muni.stanse.automatonchecker.FunctionNameTrigger</class>
                     <param>x</param>
                 </trigger>
 		<to>U</to>
@@ -48,7 +48,7 @@
 	<transition>
 		<trigger>
                     <pass>lock</pass>
-                    <class>cz.muni.stanse.newchecker.FunctionNameTrigger</class>
+                    <class>cz.muni.stanse.automatonchecker.FunctionNameTrigger</class>
                     <param>x</param>
                 </trigger>
 		<errmsg>Double lock!!!</errmsg>

@@ -1,7 +1,7 @@
 
-package cz.muni.stanse.newchecker;
+package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.newchecker.exceptions.AutomatonException;
+import cz.muni.stanse.automatonchecker.exceptions.AutomatonException;
 
 /**
  * Relation between param and assigned value.
@@ -18,7 +18,7 @@ public class AssignedParam {
      * Creates a new instance of AssignedParam -- assigns a value to a param
      * @param param Param
      * @param value Value
-     * @throws cz.muni.stanse.newchecker.exceptions.AutomatonException if the param is null
+     * @throws cz.muni.stanse.automatonchecker.exceptions.AutomatonException if the param is null
      */
     public AssignedParam(AutomatonParam param, String value) throws AutomatonException {
         if(param == null) {

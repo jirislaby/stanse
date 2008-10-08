@@ -1,14 +1,14 @@
 /**
  * Represents a single automaton
  */
-package cz.muni.stanse.newchecker;
+package cz.muni.stanse.automatonchecker;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
+import cz.muni.stanse.automatonchecker.exceptions.AutomatonException;
+import cz.muni.stanse.automatonchecker.exceptions.AutomatonRunException;
+import cz.muni.stanse.automatonchecker.exceptions.AutomatonSyntaxException;
 import cz.muni.stanse.c2xml.CParser;
-import cz.muni.stanse.newchecker.exceptions.AutomatonException;
-import cz.muni.stanse.newchecker.exceptions.AutomatonRunException;
-import cz.muni.stanse.newchecker.exceptions.AutomatonSyntaxException;
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.scvgui.GraphViz;
 import cz.muni.stanse.xml2cfg.CFGEdge;

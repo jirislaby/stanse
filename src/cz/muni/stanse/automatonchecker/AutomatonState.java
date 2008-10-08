@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package cz.muni.stanse.newchecker;
+package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.xml2cfg.CFGEdge;
 import cz.muni.stanse.xml2cfg.CFGNode;

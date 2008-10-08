@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package cz.muni.stanse.newchecker.exceptions;
+package cz.muni.stanse.automatonchecker.exceptions;
 
 /**
  *
