@@ -16,7 +16,6 @@ public interface AutomatonParam {
      * @param other
      * @return
      */
-    @Override
     boolean equals(Object other);
     
     /**
