@@ -9,7 +9,7 @@
 	<transition> <!-- Kazdy state ma alespon jeden transition. Finalni stavy totiz za stavy nepovazujeme (neevidujeme je) -->
 		<trigger>
 			<pass>lock</pass> <!-- Predava se jako parametr metode loadTrigger  -->
-			<class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+			<class>cz.muni.stanse.newchecker.FunctionNameTrigger</class>
 		</trigger><!-- Akce, pod kterou se prejde do <to> stavu-->
 		<to>L</to><!-- Name stavu, do ktereho se prejde -->
 	</transition>
@@ -17,7 +17,7 @@
 	<transition>
 		<trigger>
 			<pass>unlock</pass>
-                        <class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+                        <class>cz.muni.stanse.newchecker.FunctionNameTrigger</class>
 		</trigger>
 		<errmsg>Double unlock!!</errmsg><!-- Misto "to" muze byt errmsg. To znamena, ze se dostavame do chyboveho stavu. Automat konci -->
 	</transition>
@@ -33,14 +33,14 @@
 	<transition>
 		<trigger>
                     <pass>unlock</pass>
-                    <class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+                    <class>cz.muni.stanse.newchecker.FunctionNameTrigger</class>
                 </trigger>
 		<to>U</to>
 	</transition>
 	<transition>
 		<trigger>
                     <pass>lock</pass>
-                    <class>cz.muni.fi.iti.scv.newchecker.FunctionNameTrigger</class>
+                    <class>cz.muni.stanse.newchecker.FunctionNameTrigger</class>
                 </trigger>
 		<errmsg>Double lock!!!</errmsg>
 

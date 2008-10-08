@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="build" name="scv">
+<project basedir="." default="build" name="stanse">
     <property name="dist" value="dist"/>
-    <property name="c2xml.location" value="src/cz/muni/fi/iti/scv/c2xml"/>
+    <property name="c2xml.location" value="src/cz/muni/stanse/c2xml"/>
 	<property name="antlr.location" value="${dist}/lib/antlr-2.7.5.jar"/>
     <path id="project.classpath">
         <pathelement location="build"/>
@@ -73,11 +73,11 @@
 	   </tstamp>	     
 	<manifest file="manifest.mf">
 	        <attribute name="Built-By" value="${user.name}"/>
-	        <attribute name="Main-Class" value="cz.muni.fi.iti.scv.main.SCV"/>
+	        <attribute name="Main-Class" value="cz.muni.stanse.main.SCV"/>
 		<attribute name="Implementation-Version" value="Revision: ${svnrevision}, Built on: ${TODAY}" />
 	        <attribute name="Class-Path" value="lib/swing-layout-1.0.jar lib/AbsoluteLayout.jar lib/antlr-2.7.5.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/swing-layout-1.0.jar lib/syntax.jar lib/jgrapht-jdk1.5.jar lib/log4j-1.2.14.jar lib/jopt-simple-2.3.2.jar lib/saxon8.jar lib/saxon8-dom4j.jar lib/saxon8-xpath.jar"/>
 	    </manifest>
-    	<jar destfile="${dist}/scv.jar" basedir="build" manifest="manifest.mf"/>
+    	<jar destfile="${dist}/stanse.jar" basedir="build" manifest="manifest.mf"/>
 	</target>
 	
     <target name="javadoc-clean">
