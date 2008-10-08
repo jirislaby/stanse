@@ -49,7 +49,6 @@ public class GuiMain extends javax.swing.JFrame {
     
     RunStaticCheckerAction runStaticCheckerAction = new RunStaticCheckerAction();
     RunAllStaticCheckerAction runAllStaticCheckerAction = new RunAllStaticCheckerAction();
-    CheckMemoryAction checkMemoryAction = new CheckMemoryAction();
     CheckOwnershipAction checkOwnershipAction = new CheckOwnershipAction();
     
     ShowCallGraphAction showCallGraphAction = new ShowCallGraphAction();
@@ -378,19 +377,7 @@ public class GuiMain extends javax.swing.JFrame {
             
         }
     }
-    
-    class CheckMemoryAction extends AbstractAction {
-        CheckMemoryAction() {
-            putValue( AbstractAction.NAME,              "Memory checker");
-            putValue( AbstractAction.SHORT_DESCRIPTION, "Check correct using of memory");
-//           putValue( AbstractAction.MNEMONIC_KEY,      new Integer(KeyEvent.VK_M)       );
-            putValue( AbstractAction.SMALL_ICON,        null                             );
-        }
-        public void actionPerformed(ActionEvent e) {
-            ((SourceAndXMLWindow) jTabbedPane1.getSelectedComponent()).checkMemory();
-        }
-    }
-    
+        
     class CheckOwnershipAction extends AbstractAction {
         CheckOwnershipAction() {
             putValue( AbstractAction.NAME,              "Ownership checker");
@@ -516,8 +503,6 @@ public class GuiMain extends javax.swing.JFrame {
         jMenuItem12 = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JSeparator();
         jMenuItem13 = new javax.swing.JMenuItem();
-
-        jMenuItem8.setAction(checkMemoryAction);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Static Code Verifier");

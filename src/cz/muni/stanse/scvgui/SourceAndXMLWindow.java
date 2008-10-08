@@ -18,9 +18,6 @@ import antlr.TokenStreamException;
 import cz.muni.stanse.c2xml.CParser;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.*;
-import cz.muni.stanse.memorychecker.ErrorNode;
-import cz.muni.stanse.memorychecker.MemoryChecker;
-import cz.muni.stanse.memorychecker.OldChecker;
 import cz.muni.stanse.ownershipchecker.OwnershipChecker;
 import cz.muni.stanse.xml2cfg.ControlFlowGraph;
 
@@ -611,44 +608,7 @@ public class SourceAndXMLWindow extends JPanel {
         }
 */
     }
-    
-    
-    /**
-     * Run memory checker.
-     */
-    public void checkMemory() {
-        if (documentXML!=null) {
-            
-            OldChecker checker = new MemoryChecker();
-            
-            //for every functionDefinition add ControlFlowGraph to checker
-            Element rootElement = documentXML.getRootElement();
-            for (int i = 0, size = rootElement.nodeCount(); i < size; i++) {
-                Node node = rootElement.node(i);
-                if (node instanceof Element) {
-                    Element element = (Element) node;
-                    
-                    if (element.getName().equals("functionDefinition")) {
-                        checker.addCFG(new ControlFlowGraph(element));
-                    }
-                }
-            }
-            
-            Set<ErrorNode> errors = checker.check();
-            
-            String outputText = "";
-            for (ErrorNode error : errors) {
-                outputText += error.toString()+ "\n";
-            }
-            if(outputText.isEmpty()) {
-                outputText = "No memory errors. \n";
-            }
-            
-            jTextPaneOutput.setText(outputText);
-            
-        }
-    }
-    
+        
     /**
      * Run ownership checker.
      */
