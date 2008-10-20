@@ -8,6 +8,10 @@
 package cz.muni.stanse.scvgui;
 
 //import com.sun.org.apache.xerces.internal.util6.XML11Char;
+import cz.muni.stanse.callgraph.CallGraph;
+import cz.muni.stanse.checker.*;
+import cz.muni.stanse.xml2cfg.ControlFlowGraph;
+import cz.muni.stanse.c2xml.CParser;
 import java.util.List;
 
 import java.util.Set;
@@ -15,12 +19,9 @@ import java.util.HashSet;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
-import cz.muni.stanse.c2xml.CParser;
-import cz.muni.stanse.callgraph.CallGraph;
-import cz.muni.stanse.checker.*;
+import cz.muni.stanse.automatonchecker.Automaton;
+import cz.muni.stanse.automatonchecker.exceptions.AutomatonSyntaxException;
 import cz.muni.stanse.ownershipchecker.OwnershipChecker;
-import cz.muni.stanse.xml2cfg.ControlFlowGraph;
-
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -32,6 +33,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -46,8 +48,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
@@ -76,6 +80,7 @@ public class SourceAndXMLWindow extends JPanel {
     private JTextPane jTextPaneOutput;
     private XMLTree treeXML;
     
+    private static Logger logger = Logger.getLogger(GuiMain.class);
     
     /** Creates a new instance of SourceAndXMLWindow */
     public SourceAndXMLWindow() {
@@ -470,63 +475,8 @@ public class SourceAndXMLWindow extends JPanel {
             treeXML.setXMLDocument(documentXML);
         }
         setCursor(originalCursor);
-        
-//        catch (FileNotFoundException ex) {
-//           // ex.printStackTrace();
-//        } catch (NullPointerException ex) {
-//           // ex.printStackTrace();
-//        } catch (RecognitionException ex) {
-//           // ex.printStackTrace();
-//        } catch (TokenStreamException ex) {
-//           // ex.printStackTrace();
-//        }
-        
-        
-//        new TransformWorker().execute();
     }
     
-//    private class TransformWorker extends SwingWorker<Document, Boolean> {
-//        protected Document doInBackground() throws Exception {
-//            Cursor originalCursor = getCursor();
-//            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//
-//            Document retDocument = null;
-//            try {
-//                CParser parser = new CParser(new FileInputStream(sourceFile));
-//                retDocument = parser.runXmlParser();
-//                retDocument.setName(sourceFile.getName());
-//            } catch (FileNotFoundException ex) {
-//                ex.printStackTrace();
-//            } catch (NullPointerException ex) {
-//                ex.printStackTrace();
-//            } catch (RecognitionException ex) {
-//                ex.printStackTrace();
-//            } catch (TokenStreamException ex) {
-//                ex.printStackTrace();
-//            }
-//            treeXML.setXMLDocument(retDocument);
-//
-//            setCursor(originalCursor);
-//            return retDocument;
-//
-//
-//        }
-//
-//        protected void done() {
-//            try {
-//                documentXML = get();
-//
-//
-//            } catch (ExecutionException ex) {
-//                ex.printStackTrace();
-//            } catch (InterruptedException ex) {
-//                ex.printStackTrace();
-//            }
-//        }
-//
-//
-//
-//    }
     
     /**
      * Show or hide a panel for finding in source file
@@ -570,45 +520,39 @@ public class SourceAndXMLWindow extends JPanel {
      * @param files files with definition of the checker.
      */
     public void runStaticChecker(Set<File> files) {
-/*
-        if (documentXML!=null) {
-            
-            StaticChecker checker = new StaticChecker(documentXML);
-            
-            // concrete special initialization for StaticChecker
-            SAXReader reader = new SAXReader();
-            for (File file : files) {
+        if(documentXML != null) {
+            for(File file: files) {
+                SAXReader reader = new SAXReader();
                 try {
-                    checker.addDefinition(reader.read(file));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Checker a = Automaton.getInstanceByDocument(reader.read(file));
+                    addFunctionsToChecker(a, documentXML);
+                    Set<CheckerError> errors = a.check();
+                    
+                    StringBuilder outputText = new StringBuilder();
+                    
+                    if (errors.isEmpty()) {
+                        jTextPaneOutput.setText("No errors. \n");
+                    } else {
+                        for (CheckerError error : errors) {
+                            outputText.append(error.getDescription()).append("\n");
+                        }
+                        jTextPaneOutput.setText(outputText.toString());
+
+                        //show window with errors
+                        ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
+                        errorForm.setVisible(true);
+                
+                    }
+                    
+                } catch (DocumentException ex) {
+                    logger.error("XML document exception while loading the definitions file", ex);
+                } catch(AutomatonSyntaxException ex) {
+                    logger.error("Definition document syntax is incorrect", ex);
                 }
             }
-            
-            // check and get errors
-            Set<CheckerError> errors = checker.check();
-            Set<GraphForm> graphs = new HashSet<GraphForm>();
-            
-            String outputText = "";
-            
-            if (errors.isEmpty()) {
-                jTextPaneOutput.setText("No errors. \n");
-            } else {
-                for (CheckerError error : errors) {
-                    outputText += error.getDescription() + "\n";
-                }
-                jTextPaneOutput.setText(outputText);
-                
-                //show window with errors
-                ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
-                errorForm.setVisible(true);
-                
-            }
-            
         }
-*/
     }
-        
+  
     /**
      * Run ownership checker.
      */

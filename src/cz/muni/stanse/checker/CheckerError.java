@@ -104,56 +104,16 @@ public abstract class CheckerError {
         return false;
     }
     
-    /**
-     * Get Graphviz source which draws procedure's control flow graph with error traces 
-     * @return graphviz source code
-     */
-    public String toDotOld() {
-        String output="", label,color;
-        Set<CFGNode> nodesToDo = new HashSet<CFGNode>();
-        Set<CFGNode> nodesDone = new HashSet<CFGNode>();
-        
-        output += "digraph CFG { \n";        
-        output += "   node [shape=circle, fixedsize=true, height=0.4]; \n";
-        output += "   node [fontsize=12]; \n";
-        
-        nodesToDo.add(getNode().getCFG().getStartNode());       
-        
-        while (!nodesToDo.isEmpty()) {
-            CFGNode node = nodesToDo.iterator().next();
-            nodesToDo.remove(node);
-            
-            label = "\"" + nodeToText(node) + "\"";
-           
-            color = "black";
-            if (isInErrorTraces(node)) {
-                color = "green";
-                if (getNode() == node) color += ",style = filled";
-            }
-                        
-            output += "   " + node.getNumber() + " [label=" + label + ",color=" + color + "]; \n";
-            
-            nodesDone.add(node);
-
-            for (CFGNode succ : node.getSuccessors()) {
-                output += "   " + edgeToDot(node, succ) + "; \n";
-                if (!nodesDone.contains(succ)) nodesToDo.add(succ);
-            }
-        }
-        
-        output += "} \n";
-        return output;
-    
-    }
-    
     public String toDot() {
-        String output="", label,color;        
+        StringBuilder output = new StringBuilder();
+        String label = "";
+        String color = "";
         Set<CFGNode> nodesToDo = new HashSet<CFGNode>();
         Set<CFGNode> nodesDone = new HashSet<CFGNode>();
         
-        output += "digraph CFG { \n";        
-        output += "   node [shape=circle, fixedsize=true, height=0.4]; \n";
-        output += "   node [fontsize=12]; \n";
+        output.append("digraph CFG { \n")
+                .append("   node [shape=circle, fixedsize=true, height=0.4]; \n")
+                .append("   node [fontsize=12]; \n");
         
         nodesToDo.add(getNode().getCFG().getStartNode());       
         
@@ -169,19 +129,25 @@ public abstract class CheckerError {
                 if (getNode() == node) color += ",style = filled";
             }
                         
-            output += "   " + node.getNumber() + " [label=" + label + ",color=" + color + "]; \n";
+            output.append("   ")
+                    .append(node.getNumber())
+                    .append(" [label=")
+                    .append(label)
+                    .append(",color=")
+                    .append(color)
+                    .append("]; \n");
             
             nodesDone.add(node);
             
             for (CFGNode succ : node.getSuccessors()) { 
-                output += "   " + edgeToDot(node, succ) + "; \n";
+                output.append("   " + edgeToDot(node, succ) + "; \n");
                 
                 if (!nodesDone.contains(succ)) nodesToDo.add(succ);
             }
         }
         
-        output += "} \n";
-        return output;
+        output.append("} \n");
+        return output.toString();
         
     }
     
@@ -193,7 +159,9 @@ public abstract class CheckerError {
      * @return graphviz source code
      */    
     private String edgeToDot(CFGNode from, CFGNode to) {
-        String output, color, label;
+        StringBuilder output = new StringBuilder(); 
+        String color;
+        StringBuilder label = new StringBuilder();
         
         Element element = getNode().getCFG().getEdgeElement(from, to);
         
@@ -202,18 +170,25 @@ public abstract class CheckerError {
             color = "green";            
         }
         
-        label = "\"" + elementToString(element) + "\"";
+        label.append("\"").append(elementToString(element)).append("\"");
         
         if (getNode().getCFG().getEdgeConditionType(from, to) != null) {
             if (getNode().getCFG().getEdgeConditionType(from, to) == true) {
-                label += ",fontcolor=blue";
+                label.append(",fontcolor=blue");
             } else {
-                label += ",fontcolor=red";
+                label.append(",fontcolor=red");
             }
         }
-        output = from.getNumber() + " -> " + to.getNumber() + " [color=" + color + ",label=" + label + "]";
+        output.append(from.getNumber())
+                .append(" -> ")
+                .append(to.getNumber())
+                .append(" [color=")
+                .append(color)
+                .append(",label=")
+                .append(label)
+                .append("]");
         
-        return output;
+        return output.toString();
     }     
     
     /**

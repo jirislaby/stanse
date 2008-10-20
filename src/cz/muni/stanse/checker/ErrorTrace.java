@@ -12,20 +12,14 @@ package cz.muni.stanse.checker;
 import cz.muni.stanse.xml2cfg.CFGNode;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
- *
+ * Extends ArrayList by adding a description to it.
+ * 
  * @author xstastn
  */
 public class ErrorTrace extends ArrayList<CFGNode> {
-    
-    private List<CFGNode> trace = new ArrayList<CFGNode>();
-    
-    private CFGNode errorNode;
     
     private String description = "";
     

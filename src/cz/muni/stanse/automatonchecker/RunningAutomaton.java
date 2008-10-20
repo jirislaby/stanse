@@ -5,11 +5,15 @@
 
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.automatonchecker.exceptions.AutomatonException;
 import cz.muni.stanse.xml2cfg.CFGEdge;
 import cz.muni.stanse.xml2cfg.CFGNode;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
@@ -21,6 +25,9 @@ import org.apache.log4j.Logger;
 public class RunningAutomaton {
     
     private static AtomicInteger globalId = new AtomicInteger(0);
+    
+    // Trace the automaton has gone trough
+    private ArrayList<CFGNode> trace = new ArrayList<CFGNode>();
     
     /**
      * Unique identificator.
@@ -134,6 +141,26 @@ public class RunningAutomaton {
     public Set<Integer> getIds() {
         return ids;
     }
+
+    public ArrayList<CFGNode> getTrace() {
+        return trace;
+    }
+    
+    /**
+     * Returns the automaton trace as an error trace with description.
+     * TODO: Return real traces!!!
+     * @return Automaton trace build from whole automaton trace
+     */
+    public ErrorTrace traceAsErrorTrace() {
+//        List<CFGNode> reversedList = new ArrayList<CFGNode>(trace);
+//        Collections.reverse(reversedList);
+//        return new ErrorTrace(reversedList, "Default automaton trace");
+        //return new ErrorTrace(Collections.unmodifiableList(trace), "Default automaton trace");
+        return new ErrorTrace("Empty trace");
+
+        
+    }
+    
 
     @Override
     public boolean equals(Object obj) {
