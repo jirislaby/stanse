@@ -18,6 +18,9 @@
 	<pathelement location="${dist}/lib/log4j-1.2.14.jar"/>
 	<pathelement location="${dist}/lib/jopt-simple-2.3.2.jar"/>
     </path>
+    <target name="run" depends="jar">
+        <java jar="${dist}/${ant.project.name}.jar" fork="true"/>
+    </target>
     <target name="init">
         <mkdir dir="build"/>
     </target>
@@ -41,6 +44,11 @@
     </target>
     <target name="clean" depends="c2xml-clean, javadoc-clean">
         <delete dir="build"/>
+        <delete>
+            <fileset dir="dist">
+                <include name="stanse.jar"/>
+            </fileset>
+        </delete>
     </target>
     <target name="c2xml">	
 		<antlr target="${c2xml.location}/StdCParser.g">
