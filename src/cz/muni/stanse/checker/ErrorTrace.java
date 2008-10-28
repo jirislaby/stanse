@@ -1,78 +1,34 @@
-/*
- * ErrorTrace.java
- *
- * Created on 14. březen 2007, 12:50
- *
- * Class representing an error trace. It was created to have toString
- * description of the trace.
- */
-
 package cz.muni.stanse.checker;
 
 import cz.muni.stanse.xml2cfg.CFGNode;
-
-import java.util.ArrayList;
+import cz.muni.stanse.utils.Pair;
 import java.util.List;
 
-/**
- * Extends ArrayList by adding a description to it.
- * 
- * @author xstastn
- */
-public class ErrorTrace extends ArrayList<CFGNode> {
-    
-    private String description = "";
-    
-    /**
-     * Creates a new instance of ErrorTrace with given description
-     * Same as ErrorTrace(new ArrayList<CFGNode>(), "No description")
-     */
-    public ErrorTrace() {
-        this(new ArrayList<CFGNode>(), "No description");
+public final class ErrorTrace {
+    public ErrorTrace(String shortDesc, String fullDesc,
+                      List< Pair<CFGNode,String> > trace) {
+        this.shortDesc = shortDesc;
+        this.fullDesc = fullDesc;
+        this.trace = trace;
     }
-    
-    /**
-     * Creates a new instance of ErrorTrace with given description
-     * Same as ErrorTrace(new ArrayList<CFGNode>(), description)
-     * @param description Error trace description
-     */
-    public ErrorTrace(String description) {
-        this(new ArrayList<CFGNode>(), description);
+
+    public String getShortDescription() {
+        return shortDesc;
     }
-    
-    /**
-     * Creates a new instance of ErrorTrace with given trace
-     * Same as ErrorTrace(trace, "No description")
-     * @param trace Error trace
-     */
-    public ErrorTrace(List<CFGNode> trace) {
-        this(trace, "No description");
+
+    public String getFullDescription() {
+        return fullDesc;
     }
-    
-    /**
-     * Creates a new instance of ErrorTrace with given trace and description
-     * @param trace Error trace
-     * @param description Trace description
-     */
-    public ErrorTrace(List<CFGNode> trace, String description) {
-        super(trace);
-        this.description = description;
+
+    public List< Pair<CFGNode,String> > getErrorTrace() {
+        return trace;
     }
-    
-    /**
-     * Gets the string representation of the error trace
-     * @return String representation
-     */
-    public String toString() {
-        return description;
-    }
-    
-    /**
-     * Returns Error trace description
-     * @return Error trace description
-     */
-    public String getDescription() {
-        return description;
-    }
-    
+
+    private final String shortDesc;
+    private final String fullDesc;
+    private final List< Pair<CFGNode,String> > trace;
 }
+
+
+// TODO: Error description is related to CFG-nodes only. There could arise
+//       a need to attach description also to edges (in the future).

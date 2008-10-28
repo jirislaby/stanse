@@ -9,8 +9,6 @@
 
 package cz.muni.stanse.ownershipchecker;
 
-import cz.muni.stanse.checker.CheckerError;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
@@ -29,7 +27,7 @@ public class FunctionOwnershipInfo {
     private Integer output;
     private HashSet<String> calledFunctions = new HashSet<String>();
     private boolean changed;
-    private Set<CheckerError> errors = new HashSet<CheckerError>();
+    private Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
 
     public FunctionOwnershipInfo() {
 
@@ -112,11 +110,11 @@ public class FunctionOwnershipInfo {
         this.changed = changed;
     }
 
-    public Set<CheckerError> getErrors() {
+    public Set<CheckerErrorOld> getErrors() {
         return errors;
     }
 
-    public void addErrors(Set<CheckerError> errors) {
+    public void addErrors(Set<CheckerErrorOld> errors) {
         this.errors.addAll(errors);
     }
 

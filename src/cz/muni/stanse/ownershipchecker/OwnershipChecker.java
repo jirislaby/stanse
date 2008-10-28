@@ -12,10 +12,13 @@ package cz.muni.stanse.ownershipchecker;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
+import cz.muni.stanse.checker.ErrorTrace;
+import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.xml2cfg.CFGNode;
 import cz.muni.stanse.xml2cfg.ControlFlowGraph;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,9 +37,9 @@ import org.jgrapht.traverse.DepthFirstIterator;
  * Provádí kontrolu paměťových chyb metodou určování vlastnictví ukazatelů.
  * @author Michal Fiedler
  */
-public class OwnershipChecker implements Checker {
+public final class OwnershipChecker extends Checker {
     
-    private Vector<ControlFlowGraph> cfgs = new Vector<ControlFlowGraph>();
+    //private Vector<ControlFlowGraph> cfgs = new Vector<ControlFlowGraph>();
     
     private Map<CFGNode, Map<String, PointerOwnership>> nodesWithOwnerships;
 
@@ -57,30 +60,61 @@ public class OwnershipChecker implements Checker {
     private final boolean INTER = true;
     
     /** Creates a new instance of OwnershipChecker */
-    public OwnershipChecker() {
-    }
-    
-    public void addCFG(ControlFlowGraph cfg) {
-        cfgs.add(cfg);
+    public OwnershipChecker(Set<ControlFlowGraph> cfgs) {
+        super(cfgs);
     }
 
-    public void addAllCFG(Set<ControlFlowGraph> cfgs) {
-        this.cfgs.addAll(cfgs);
+    public String getName() {
+        return "OwnershipChecker";
+    }
+            
+    public List<CheckerError> check() {
+        return convertAllErrorsFromOld(
+                    checkOld( new Vector<ControlFlowGraph>(getCFGs()) ) );
     }
 
-    public void removeCFG(ControlFlowGraph cfg) {
-        cfgs.remove(cfg);
+    ////////////////////////////////////////////////////////////////////////////
+
+    private LinkedList<CheckerError> convertAllErrorsFromOld(
+                                           final Set<CheckerErrorOld> oldErrs) {
+        
+        final LinkedList<CheckerError> result = new LinkedList<CheckerError>();
+        for (CheckerErrorOld errIter : oldErrs)
+            result.addLast(
+                new CheckerError(errIter.getDescription(),
+                                 errIter.getDescription(),
+                                 CheckerError.ErrorLevel.ERROR,
+                                 convertAllTracesFromOld(
+                                        errIter.getErrorTracesFromCache() ) ) );
+
+        return result;
     }
 
-    public void removeAllCFG(Set<ControlFlowGraph> cfgs) {
-        this.cfgs.removeAll(cfgs);
+    private List<ErrorTrace> convertAllTracesFromOld(
+                                           final Set<ErrorTraceOld> oldTraces) {
+
+        final LinkedList<ErrorTrace> result = new LinkedList<ErrorTrace>();
+        for (ErrorTraceOld traceIter : oldTraces)
+            result.addLast(
+                new ErrorTrace(traceIter.getDescription(),
+                               traceIter.getDescription(),
+                               convertAllCFGNodesFromOld(traceIter) ) );
+
+        return result;
     }
 
-    public void clearCFG() {
-        cfgs.clear();
+    private List< Pair<CFGNode,String> > convertAllCFGNodesFromOld(
+                                                 final ErrorTraceOld oldTrace) {
+        final LinkedList< Pair<CFGNode,String> > result =
+                new LinkedList< Pair<CFGNode,String> >();
+        for (CFGNode node : oldTrace)
+            result.addLast( new Pair<CFGNode,String>(node,"No description " +
+                                                          "provided. Sorry.") );
+
+        return result;
     }
 
-    public Set<CheckerError> check() {
+    public Set<CheckerErrorOld> checkOld(Vector<ControlFlowGraph> cfgs) {
         //nacteni globalnich ukazatelu
         Element rootElement = cfgs.elementAt(0).getFunctionDefinition().getDocument().getRootElement();
         for (Object declaration : rootElement.selectNodes("declaration")) {
@@ -98,7 +132,7 @@ public class OwnershipChecker implements Checker {
             }
         }
         
-        Set<CheckerError> errors = new HashSet<CheckerError>();
+        Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         
         topologicalSortedCG = topologicalSortedCallGraph();
         
@@ -197,8 +231,8 @@ public class OwnershipChecker implements Checker {
         return errors;
     }
 
-    private void /*Set<CheckerError>*/ check(ControlFlowGraph cfg, boolean inter) {
-        Set<CheckerError> errors = new HashSet<CheckerError>();
+    private void /*Set<CheckerErrorOld>*/ check(ControlFlowGraph cfg, boolean inter) {
+        Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         nodesWithOwnerships = new HashMap<CFGNode, Map<String, PointerOwnership>>();
         nodeOnCorrectTrace = new HashSet<CFGNode>();
         ownershipInfo = functions.get(functionName);
@@ -258,9 +292,9 @@ public class OwnershipChecker implements Checker {
      * @param cfg control flow graf funkce, která bude analyzována
      * @param inter true odpovídá interprocedurální analýze, false odpovídá intraprocedurální analýze
      */
-    private void /*Set<CheckerError>*/ forwardAnalysis(ControlFlowGraph cfg, boolean inter) {
+    private void /*Set<CheckerErrorOld>*/ forwardAnalysis(ControlFlowGraph cfg, boolean inter) {
         Stack<CFGNode> nodesToDo = new Stack<CFGNode>();
-        Set<CheckerError> errors = new HashSet<CheckerError>();
+        Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         
         nodesWithOwnerships.put(cfg.getStartNode(), new HashMap<String, PointerOwnership>());
         nodesToDo.push(cfg.getStartNode());
@@ -781,10 +815,10 @@ public class OwnershipChecker implements Checker {
      * @param cfg control flow graf funkce, která bude analyzována
      * @param inter true odpovídá interprocedurální analýze, false odpovídá intraprocedurální analýze
      */
-    private void /*Set<CheckerError>*/ backwardAnalysis(ControlFlowGraph cfg, boolean inter) {
+    private void /*Set<CheckerErrorOld>*/ backwardAnalysis(ControlFlowGraph cfg, boolean inter) {
         Stack<CFGNode> nodesToDo = new Stack<CFGNode>();
         Stack<CFGNode> nodesDone = new Stack<CFGNode>();
-        Set<CheckerError> errors = new HashSet<CheckerError>();
+        Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         
         nodesToDo.push(cfg.getEndNode());
         
@@ -1010,7 +1044,7 @@ public class OwnershipChecker implements Checker {
         return paramNames;
     }
     
-    private void functionInputParemetersCheck(Vector<String> paramNames, CFGNode node, FunctionOwnershipInfo calledFunctionOwnershipInfo, Set<CheckerError> errors) {
+    private void functionInputParemetersCheck(Vector<String> paramNames, CFGNode node, FunctionOwnershipInfo calledFunctionOwnershipInfo, Set<CheckerErrorOld> errors) {
         // dojde-li k dodatecnemu urceni hodnoty predchoziho parametru zmenou soucasneho, nemelo by to nicemu vadit,
         // protoze je-li pozadovano 0 nebo 1, tak tu hodnotu uz musi mit nebo se v pripade -1 nastavi nebo se nahlasi chyba,
         // a kdyz je -1 a je pozadovano neco jineho, tak se to nastavi
@@ -1141,7 +1175,7 @@ public class OwnershipChecker implements Checker {
         
         List<Element> rootElements = new ArrayList<Element>();
         
-        for(ControlFlowGraph cfg : cfgs) {
+        for(ControlFlowGraph cfg : getCFGs()) {
             rootElements.add(cfg.getFunctionDefinition());
         }
 
@@ -1197,7 +1231,7 @@ public class OwnershipChecker implements Checker {
         
         topol.setSize(topologicalSortedCG.size());
         
-        for(ControlFlowGraph cfg : cfgs) {
+        for(ControlFlowGraph cfg : getCFGs()) {
             // vytvori se poradi CFG podle urceneho poradi funkci
             topol.set(topologicalSortedCG.indexOf(cfg.getFunctionName()), cfg);
         }

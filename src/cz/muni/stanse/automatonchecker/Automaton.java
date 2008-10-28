@@ -8,8 +8,6 @@ import antlr.TokenStreamException;
 import cz.muni.stanse.c2xml.CParser;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
-import cz.muni.stanse.checker.DefaultCheckerError;
-import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.automatonchecker.exceptions.AutomatonException;
 import cz.muni.stanse.automatonchecker.exceptions.AutomatonRunException;
 import cz.muni.stanse.automatonchecker.exceptions.AutomatonSyntaxException;
@@ -39,7 +37,7 @@ import org.dom4j.io.SAXReader;
  *
  * @author xstastn
  */
-public class Automaton implements Checker {
+public class Automaton extends Checker {
 
     private Set<AutomatonState> states = new HashSet<AutomatonState>();
     private String name = "";
@@ -57,11 +55,15 @@ public class Automaton implements Checker {
     private Map<String, ControlFlowGraph> CFGs = new HashMap<String, ControlFlowGraph>();
 
 
+    public Automaton(Set<ControlFlowGraph> cfgs) {
+        super(cfgs);
+    }
+
     /**
      * Empty, use getInstance... methods instead
      */
-    protected Automaton() {
-    }
+//    protected Automaton() {
+//    }
     /**
      * Factory method. Creates a new instance of Automaton, described by the XML definition file
      * @param document XML definition file
@@ -69,7 +71,7 @@ public class Automaton implements Checker {
      * @throws cz.muni.stanse.automatonchecker.exceptions.AutomatonSyntaxException If the syntax of the document is not correct
      */
     static public Automaton getInstanceByDocument(Document document) throws AutomatonSyntaxException {
-        Automaton automaton = new Automaton();
+        Automaton automaton = new Automaton(null);
 
         automaton.setName(document.getRootElement().selectSingleNode("name").getText());
         automaton.setDescription(((Element) document.getRootElement().selectSingleNode("description")).getTextTrim());
@@ -185,8 +187,8 @@ public class Automaton implements Checker {
 
     }
     
-    public Set<CheckerError> runForFunctionCfg(ControlFlowGraph cfg) {
-        Set<CheckerError> errors = new HashSet<CheckerError>();
+    public Set<CheckerErrorOld> runForFunctionCfg(ControlFlowGraph cfg) {
+        Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         
         //=======================
         //   DRAW GRAPH
@@ -244,7 +246,7 @@ public class Automaton implements Checker {
                             +" in automaton "+runningAutomaton
                             +" in function "+currentEdge.getFrom().getCFG().getFunctionName()
                             +" at edge "+currentEdge);
-                        Set<ErrorTrace> traces = new HashSet<ErrorTrace>();
+                        Set<ErrorTraceOld> traces = new HashSet<ErrorTraceOld>();
                         traces.add(runningAutomaton.traceAsErrorTrace());
                         errors.add(
                                 new DefaultCheckerError(currentEdge.getTo(), 
@@ -284,7 +286,7 @@ public class Automaton implements Checker {
                                 +" in function "+currentEdge.getFrom().getCFG().getFunctionName()
                                 +" at edge "+currentEdge);
                             newRunningAutomaton.setInErrorState(true);
-                            Set<ErrorTrace> traces = new HashSet<ErrorTrace>();
+                            Set<ErrorTraceOld> traces = new HashSet<ErrorTraceOld>();
                             traces.add(newRunningAutomaton.traceAsErrorTrace());
                             errors.add(
                                     new DefaultCheckerError(currentEdge.getTo(), 
@@ -452,11 +454,11 @@ public class Automaton implements Checker {
     public void setName(String name) {
         this.name = name;
     }
-
+/*
     public String getName() {
         return name;
     }
-
+*/
     public Set<AutomatonParam> getParams() {
         return params;
     }
@@ -550,8 +552,8 @@ public class Automaton implements Checker {
      * Runs the checker for the CFGs of the procedures added by {@link #addCFG addCFG} and {@link #addAllCFG addAllCFG} methods
      * @return Set of errors found by the checker
      */
-    public Set<CheckerError> check() {
-        Set<CheckerError> errors = new HashSet<CheckerError>();
+    private Set<CheckerErrorOld> checkOld() {
+        Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         for(ControlFlowGraph cfg: cfgsToCheck) {
             errors.addAll(this.runForFunctionCfg(cfg));
         }
@@ -559,4 +561,13 @@ public class Automaton implements Checker {
         return errors;
         
     }
+    
+    public String getName() {
+        return "Automaton";
+    }
+    
+    public List<CheckerError> check() {
+        return null;
+    }
+    
 }

@@ -5,7 +5,6 @@
 
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.automatonchecker.exceptions.AutomatonException;
 import cz.muni.stanse.xml2cfg.CFGEdge;
 import cz.muni.stanse.xml2cfg.CFGNode;
@@ -151,12 +150,12 @@ public class RunningAutomaton {
      * TODO: Return real traces!!!
      * @return Automaton trace build from whole automaton trace
      */
-    public ErrorTrace traceAsErrorTrace() {
+    public ErrorTraceOld traceAsErrorTrace() {
 //        List<CFGNode> reversedList = new ArrayList<CFGNode>(trace);
 //        Collections.reverse(reversedList);
 //        return new ErrorTrace(reversedList, "Default automaton trace");
         //return new ErrorTrace(Collections.unmodifiableList(trace), "Default automaton trace");
-        return new ErrorTrace("Empty trace");
+        return new ErrorTraceOld("Empty trace");
 
         
     }

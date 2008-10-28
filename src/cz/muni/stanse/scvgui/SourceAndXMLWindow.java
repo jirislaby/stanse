@@ -11,9 +11,12 @@ package cz.muni.stanse.scvgui;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.*;
 import cz.muni.stanse.xml2cfg.ControlFlowGraph;
+import cz.muni.stanse.xml2cfg.CFGNode;
 import cz.muni.stanse.c2xml.CParser;
+import cz.muni.stanse.utils.Pair;
 import java.util.List;
 
+import java.util.Vector;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -520,20 +523,21 @@ public class SourceAndXMLWindow extends JPanel {
      * @param files files with definition of the checker.
      */
     public void runStaticChecker(Set<File> files) {
+        /*        
         if(documentXML != null) {
             for(File file: files) {
                 SAXReader reader = new SAXReader();
                 try {
                     Checker a = Automaton.getInstanceByDocument(reader.read(file));
                     addFunctionsToChecker(a, documentXML);
-                    Set<CheckerError> errors = a.check();
+                    Set<CheckerErrorOld> errors = a.check();
                     
                     StringBuilder outputText = new StringBuilder();
                     
                     if (errors.isEmpty()) {
                         jTextPaneOutput.setText("No errors. \n");
                     } else {
-                        for (CheckerError error : errors) {
+                        for (CheckerErrorOld error : errors) {
                             outputText.append(error.getDescription()).append("\n");
                         }
                         jTextPaneOutput.setText(outputText.toString());
@@ -551,45 +555,72 @@ public class SourceAndXMLWindow extends JPanel {
                 }
             }
         }
+        */
     }
   
+    private static final HashSet<ControlFlowGraph> buildCFGsFromXML(
+                                                   final Document documentXML) {
+        if (documentXML == null)
+            return null;
+
+        final HashSet<ControlFlowGraph> cfgs = new HashSet<ControlFlowGraph>();
+        {
+            final Element rootElement = documentXML.getRootElement();
+            for (int i = 0, size = rootElement.nodeCount(); i < size; i++) {
+                final Node node = rootElement.node(i);
+                if (node instanceof Element) {
+                    final Element element = (Element) node;
+
+                    if (element.getName().equals("functionDefinition")) {
+                        cfgs.add(new ControlFlowGraph(element));
+                    }
+                }
+            }
+        }
+
+        return cfgs;
+    }
+
+    private static final String convertCheckerErrorListToString(
+                                             final List<CheckerError> errList) {
+        String result = "";
+        for (CheckerError err : errList) {
+            result +=
+                "CheckerError:\n" +
+                "    - shortDesc: " + err.getShortDescription() + '\n' +
+                "    - fullDesc: " + err.getFullDescription() + '\n' +
+                "    - errorLevel: " + err.getErrorLevel() + '\n';
+            for (ErrorTrace trac : err.getErrorTraces()) {
+                result +=
+                    "    - ErrorTrace:\n" +
+                    "        - shortDesc: " + trac.getShortDescription() + '\n'+
+                    "        - fullDesc: " + trac.getFullDescription() + '\n' +
+                    "        - CFGNodes:\n";
+                for (Pair<CFGNode,String> node : trac.getErrorTrace()) {
+                    result +=
+                        "            - <" + node.getFirst().toString() + "," +
+                                            node.getSecond() + ">\n";
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * Run ownership checker.
      */
     public void checkOwnership() {
-        if (documentXML!=null) {
-            
-            Checker checker = new OwnershipChecker();
-            
-            //for every functionDefinition add ControlFlowGraph to checker
-            Element rootElement = documentXML.getRootElement();
-            for (int i = 0, size = rootElement.nodeCount(); i < size; i++) {
-                Node node = rootElement.node(i);
-                if (node instanceof Element) {
-                    Element element = (Element) node;
-                    
-                    if (element.getName().equals("functionDefinition")) {
-                        checker.addCFG(new ControlFlowGraph(element));
-                    }
-                }
-            }
-            
-            Set<CheckerError> errors = checker.check();
-            
-            String outputText = "";
-            for (CheckerError error : errors) {
-                outputText += error.toString()+ "\n";
-            }
-            if(outputText.isEmpty()) {
-                outputText = "No memory errors. \n";
-            }
-            
-            jTextPaneOutput.setText(outputText);
-            
-            ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
-            errorForm.setVisible(true);
-            
-        }
+
+        final HashSet<ControlFlowGraph> cfgs = buildCFGsFromXML(documentXML);
+        if (cfgs == null)
+            return;
+
+        List<CheckerError> errors = (new OwnershipChecker(cfgs)).check();
+
+        jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
+        ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
+        errorForm.setVisible(true);
+
     }
     
     public TreeSelectionListener getTreeXMLMappingListener() {
@@ -621,7 +652,7 @@ public class SourceAndXMLWindow extends JPanel {
     public Document getDocumentXML() {
         return documentXML;
     }
-    
+    /*
     private static void addFunctionsToChecker(Checker checker, Document document) {
         
         //for every functionDefinition add ControlFlowGraph to checker
@@ -637,6 +668,6 @@ public class SourceAndXMLWindow extends JPanel {
             }
         }
     }
-    
+    */
     
 }

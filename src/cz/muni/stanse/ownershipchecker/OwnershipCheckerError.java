@@ -9,8 +9,6 @@
 
 package cz.muni.stanse.ownershipchecker;
 
-import cz.muni.stanse.checker.CheckerError;
-import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.xml2cfg.CFGNode;
 
 import java.util.HashSet;
@@ -24,12 +22,12 @@ import org.dom4j.Element;
  * Třída slouží k označení uzlu control flow grafu, ve kterém byla odhalena chyba. Umožňuje chybu popsat. Vytváří pro danou chybu chybovou trasu.
  * @author Michal Fiedler
  */
-public class OwnershipCheckerError extends CheckerError {
+public class OwnershipCheckerError extends CheckerErrorOld {
 
     public enum ErrorType {FREE, UNCHECKED, FUNCTION_OUTPUT, UNCONSISTENT_JOINING_BRANCHES, UNCONSISTENT_SPLITTING_BRANCHES, NULL_ASSIGNMENT, LOST_REFERENCE, FUNCTION_INPUT, LOST_FUNCTION_OUTPUT};
 
     private CFGNode errorNode;
-    private Set<ErrorTrace> errorTraces = new HashSet<ErrorTrace>();
+    private Set<ErrorTraceOld> errorTraces = new HashSet<ErrorTraceOld>();
     private String description;
     private HashSet<String> erroneousPointers;
     private Map<CFGNode, Map<String, PointerOwnership>> nodesWithOwnerships;
@@ -37,7 +35,7 @@ public class OwnershipCheckerError extends CheckerError {
     private HashSet<CFGNode> nodeOnCorrectTrace;
     private ResourceBundle bundle = ResourceBundle.getBundle("cz/muni/stanse/ownershipchecker/OwnershipChecker");
     
-    /** Creates a new instance of OwnershipCheckerError */
+    /** Creates a new instance of OwnershipCheckerErrorOld */
     public OwnershipCheckerError(CFGNode errorNode, HashSet<String> erroneousPointers, ErrorType errorType, Map<CFGNode, Map<String, PointerOwnership>> nodesWithOwnerships, HashSet<CFGNode> nodeOnCorrectTrace) {
         this.errorNode = errorNode;
         this.nodesWithOwnerships = nodesWithOwnerships;
@@ -61,10 +59,10 @@ public class OwnershipCheckerError extends CheckerError {
         return errorNode;
     }
 
-    public Set<ErrorTrace> getErrorTraces() {
+    public Set<ErrorTraceOld> getErrorTraces() {
         CFGNode node = errorNode;
         if (errorType == ErrorType.FREE) {
-            ErrorTrace trace = new ErrorTrace(this.getDescription());
+            ErrorTraceOld trace = new ErrorTraceOld(this.getDescription());
             trace.add(node);
             String pointerName = erroneousPointers.iterator().next();
             try {
@@ -83,7 +81,7 @@ public class OwnershipCheckerError extends CheckerError {
                                 for (CFGNode pred : predecessors) {
                                     if (!nodeOnCorrectTrace.contains(pred)) node2 = pred;
                                 }
-                                ErrorTrace cyclicTrace = new ErrorTrace(this.getDescription());
+                                ErrorTraceOld cyclicTrace = new ErrorTraceOld(this.getDescription());
                                 cyclicTrace.add(node2);
                                 while (!node2.equals(errorNode)) {
                                     //cyclicTrace.add(0, node2);
@@ -135,7 +133,7 @@ public class OwnershipCheckerError extends CheckerError {
                 errorTraces.add(trace);
             }
         }*/ else if (errorType == ErrorType.FUNCTION_INPUT) {
-            ErrorTrace trace = new ErrorTrace(this.getDescription());
+            ErrorTraceOld trace = new ErrorTraceOld(this.getDescription());
             trace.add(node);
             trace.add(node.getSuccessors().iterator().next());
             String pointerName = erroneousPointers.iterator().next();
@@ -153,14 +151,14 @@ public class OwnershipCheckerError extends CheckerError {
             errorTraces.add(trace);
         } else if (errorType == ErrorType.UNCONSISTENT_JOINING_BRANCHES) {
             for (CFGNode pred : node.getPredecessors()) {
-                ErrorTrace trace = new ErrorTrace(this.getDescription());
+                ErrorTraceOld trace = new ErrorTraceOld(this.getDescription());
                 trace.add(pred);
                 trace.add(node);
                 trace.add(node.getSuccessors().iterator().next());
                 errorTraces.add(trace);                
             }
         } else {
-            ErrorTrace trace = new ErrorTrace(this.getDescription());
+            ErrorTraceOld trace = new ErrorTraceOld(this.getDescription());
             trace.add(node);
             trace.add(node.getSuccessors().iterator().next());
             errorTraces.add(trace);
@@ -184,7 +182,7 @@ public class OwnershipCheckerError extends CheckerError {
         return output;
     }
 
-    public String errorTraceEdgeToText(ErrorTrace errorTrace, CFGNode from, CFGNode to) {
+    public String errorTraceEdgeToText(ErrorTraceOld errorTrace, CFGNode from, CFGNode to) {
         return "";
     }
     

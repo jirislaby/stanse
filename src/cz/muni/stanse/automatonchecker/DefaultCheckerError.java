@@ -1,5 +1,5 @@
 
-package cz.muni.stanse.checker;
+package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.xml2cfg.CFGNode;
 import java.util.HashSet;
@@ -11,16 +11,16 @@ import java.util.Set;
  * 
  * @author honza
  */
-public class DefaultCheckerError extends CheckerError {
+public class DefaultCheckerError extends CheckerErrorOld {
 
     private CFGNode node;
-    private Set<ErrorTrace> errorTraces = new HashSet<ErrorTrace>();
+    private Set<ErrorTraceOld> errorTraces = new HashSet<ErrorTraceOld>();
     private String description;
 
     public DefaultCheckerError() {
     }
     
-    public DefaultCheckerError(CFGNode node, Set<ErrorTrace> errorTraces, String description) {
+    public DefaultCheckerError(CFGNode node, Set<ErrorTraceOld> errorTraces, String description) {
         this.node = node;
         this.errorTraces = errorTraces;
         this.description = description;
@@ -35,7 +35,7 @@ public class DefaultCheckerError extends CheckerError {
     }
 
     @Override
-    protected Set<ErrorTrace> getErrorTraces() {
+    protected Set<ErrorTraceOld> getErrorTraces() {
         return errorTraces;
     }
 
@@ -64,7 +64,7 @@ public class DefaultCheckerError extends CheckerError {
      * @return Empty string for all inputs.
      */
     @Override
-    public String errorTraceEdgeToText(ErrorTrace errorTrace, CFGNode from, CFGNode to) {
+    public String errorTraceEdgeToText(ErrorTraceOld errorTrace, CFGNode from, CFGNode to) {
         return "";
     }
 
