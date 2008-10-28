@@ -30,11 +30,11 @@ public final class CheckerErrorAlgo {
     public static ListIterator< Pair<CFGNode,String> > findFirstNode(
                                final ListIterator< Pair<CFGNode,String> > iter,
                                final CFGNode node) {
-
         for ( ; iter.hasNext(); )
-            if (iter.next().getFirst().equals(node))
+            if (iter.next().getFirst().equals(node)) {
+                iter.previous();
                 return iter;
-
+            }
         return null;
     }
     
@@ -42,10 +42,14 @@ public final class CheckerErrorAlgo {
                                ListIterator< Pair<CFGNode,String> > iter,
                                final CFGNode startNode, final CFGNode endNode) {
 
-        for (iter =  findFirstNode(iter,startNode); iter != null; iter.next(),
-             iter =  findFirstNode(iter,startNode))
-            if (iter.next().getFirst().equals(endNode))
+        for (iter =  findFirstNode(iter,startNode); iter != null;
+             iter =  findFirstNode(iter,startNode)) {
+            iter.next();
+            if (iter.hasNext() && iter.next().getFirst().equals(endNode)) {
+                iter.previous();
                 return iter;
+            }
+        }
 
         return null;
     }

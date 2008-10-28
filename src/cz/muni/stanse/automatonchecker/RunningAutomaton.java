@@ -151,11 +151,11 @@ public class RunningAutomaton {
      * @return Automaton trace build from whole automaton trace
      */
     public ErrorTraceOld traceAsErrorTrace() {
-//        List<CFGNode> reversedList = new ArrayList<CFGNode>(trace);
-//        Collections.reverse(reversedList);
-//        return new ErrorTrace(reversedList, "Default automaton trace");
+        List<CFGNode> reversedList = new ArrayList<CFGNode>(trace);
+        //Collections.reverse(reversedList);
+        return new ErrorTraceOld(reversedList, "Default automaton trace");
         //return new ErrorTrace(Collections.unmodifiableList(trace), "Default automaton trace");
-        return new ErrorTraceOld("Empty trace");
+        //return new ErrorTraceOld("Empty trace");
 
         
     }

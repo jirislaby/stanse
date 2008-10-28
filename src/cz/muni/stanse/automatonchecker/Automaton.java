@@ -8,6 +8,7 @@ import antlr.TokenStreamException;
 import cz.muni.stanse.c2xml.CParser;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
+import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.automatonchecker.exceptions.AutomatonException;
 import cz.muni.stanse.automatonchecker.exceptions.AutomatonRunException;
 import cz.muni.stanse.automatonchecker.exceptions.AutomatonSyntaxException;
@@ -26,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.LinkedList;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -37,7 +39,7 @@ import org.dom4j.io.SAXReader;
  *
  * @author xstastn
  */
-public class Automaton extends Checker {
+public final class Automaton extends Checker {
 
     private Set<AutomatonState> states = new HashSet<AutomatonState>();
     private String name = "";
@@ -55,23 +57,78 @@ public class Automaton extends Checker {
     private Map<String, ControlFlowGraph> CFGs = new HashMap<String, ControlFlowGraph>();
 
 
-    public Automaton(Set<ControlFlowGraph> cfgs) {
+    public Automaton(final Set<ControlFlowGraph> cfgs) {
         super(cfgs);
     }
 
-    /**
-     * Empty, use getInstance... methods instead
-     */
-//    protected Automaton() {
-//    }
+    public void setConfigurations(final Set<File> configFiles) {
+        try {
+            getInstanceByDocument(
+                    (new SAXReader()).read( configFiles.iterator().next() ) );
+        }
+        catch (DocumentException ex) {
+        }
+        catch (AutomatonException ex) {
+        }
+    }
+    
+    public String getName() {
+        return "AutomatonChecker";
+    }
+    
+    public List<CheckerError> check() {
+        return convertAllErrorsFromOld( checkOld( getCFGs() ) );
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    private LinkedList<CheckerError> convertAllErrorsFromOld(
+                                           final Set<CheckerErrorOld> oldErrs) {
+        
+        final LinkedList<CheckerError> result = new LinkedList<CheckerError>();
+        for (CheckerErrorOld errIter : oldErrs)
+            result.addLast(
+                new CheckerError(errIter.getDescription(),
+                                 errIter.getDescription(),
+                                 CheckerError.ErrorLevel.ERROR,
+                                 convertAllTracesFromOld(
+                                        errIter.getErrorTracesFromCache() ) ) );
+
+        return result;
+    }
+
+    private List<ErrorTrace> convertAllTracesFromOld(
+                                           final Set<ErrorTraceOld> oldTraces) {
+
+        final LinkedList<ErrorTrace> result = new LinkedList<ErrorTrace>();
+        for (ErrorTraceOld traceIter : oldTraces)
+            result.addLast(
+                new ErrorTrace(traceIter.getDescription(),
+                               traceIter.getDescription(),
+                               convertAllCFGNodesFromOld(traceIter) ) );
+
+        return result;
+    }
+
+    private List< cz.muni.stanse.utils.Pair<CFGNode,String> >
+                       convertAllCFGNodesFromOld(final ErrorTraceOld oldTrace) {
+        final LinkedList< cz.muni.stanse.utils.Pair<CFGNode,String> > result =
+                new LinkedList< cz.muni.stanse.utils.Pair<CFGNode,String> >();
+        for (CFGNode node : oldTrace)
+            result.addLast( new cz.muni.stanse.utils.Pair<CFGNode,String>(
+                                 node,"No description " + "provided. Sorry.") );
+
+        return result;
+    }
+
     /**
      * Factory method. Creates a new instance of Automaton, described by the XML definition file
      * @param document XML definition file
      * @return New instance of Automaton
      * @throws cz.muni.stanse.automatonchecker.exceptions.AutomatonSyntaxException If the syntax of the document is not correct
      */
-    static public Automaton getInstanceByDocument(Document document) throws AutomatonSyntaxException {
-        Automaton automaton = new Automaton(null);
+    private void getInstanceByDocument(Document document) throws AutomatonSyntaxException {
+        Automaton automaton = this; //new Automaton(null);
 
         automaton.setName(document.getRootElement().selectSingleNode("name").getText());
         automaton.setDescription(((Element) document.getRootElement().selectSingleNode("description")).getTextTrim());
@@ -181,13 +238,9 @@ public class Automaton extends Checker {
 
         }
 
-
-        return automaton;
-
-
     }
     
-    public Set<CheckerErrorOld> runForFunctionCfg(ControlFlowGraph cfg) {
+    private Set<CheckerErrorOld> runForFunctionCfg(ControlFlowGraph cfg) {
         Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         
         //=======================
@@ -419,7 +472,7 @@ public class Automaton extends Checker {
 
     }
 
-    public void run() throws AutomatonRunException {
+    private void run() throws AutomatonRunException {
         
         for (ControlFlowGraph cfg: cfgsToCheck) {
             this.runForFunctionCfg(cfg);
@@ -434,7 +487,7 @@ public class Automaton extends Checker {
      * @return State, matching the name
      * @throws AutomatonSyntaxException If no state by this name exists
      */
-    public AutomatonState getStateByName(String name) throws AutomatonSyntaxException {
+    private AutomatonState getStateByName(String name) throws AutomatonSyntaxException {
         for (AutomatonState state : states) {
             if (state.getName().equals(name)) {
                 return state;
@@ -443,15 +496,15 @@ public class Automaton extends Checker {
         throw new AutomatonSyntaxException("State by name " + name + " doesn't exist in the automaton.");
     }
 
-    public void setDescription(String description) {
+    private void setDescription(String description) {
         this.description = description;
     }
 
-    public String getDescription() {
+    private String getDescription() {
         return description;
     }
 
-    public void setName(String name) {
+    private void setName(String name) {
         this.name = name;
     }
 /*
@@ -459,11 +512,11 @@ public class Automaton extends Checker {
         return name;
     }
 */
-    public Set<AutomatonParam> getParams() {
+    private Set<AutomatonParam> getParams() {
         return params;
     }
 
-    public void setParams(Set<AutomatonParam> params) {
+    private void setParams(Set<AutomatonParam> params) {
         this.params = params;
     }
 
@@ -472,7 +525,7 @@ public class Automaton extends Checker {
      * @param id ID of the param to be found
      * @return param with the given id. Null if the automaton doesn't include param with this id
      */
-    public AutomatonParam getParamById(String id) {
+    private AutomatonParam getParamById(String id) {
         for (AutomatonParam param : params) {
             if (param.getId().equals(id)) {
                 return param;
@@ -528,23 +581,23 @@ public class Automaton extends Checker {
 //    }
 
     
-    public void addCFG(ControlFlowGraph cfg) {
+    private void addCFG(ControlFlowGraph cfg) {
         cfgsToCheck.add(cfg);
     }
 
-    public void addAllCFG(Set<ControlFlowGraph> cfgs) {
+    private void addAllCFG(Set<ControlFlowGraph> cfgs) {
         cfgsToCheck.addAll(cfgs);
     }
 
-    public void removeCFG(ControlFlowGraph cfg) {
+    private void removeCFG(ControlFlowGraph cfg) {
         cfgsToCheck.remove(cfg);
     }
 
-    public void removeAllCFG(Set<ControlFlowGraph> cfgs) {
+    private void removeAllCFG(Set<ControlFlowGraph> cfgs) {
         cfgsToCheck.removeAll(cfgs);
     }
 
-    public void clearCFG() {
+    private void clearCFG() {
         cfgsToCheck.clear();
     }
 
@@ -552,22 +605,14 @@ public class Automaton extends Checker {
      * Runs the checker for the CFGs of the procedures added by {@link #addCFG addCFG} and {@link #addAllCFG addAllCFG} methods
      * @return Set of errors found by the checker
      */
-    private Set<CheckerErrorOld> checkOld() {
+    private Set<CheckerErrorOld> checkOld(final Set<ControlFlowGraph> cfgs) {
         Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
-        for(ControlFlowGraph cfg: cfgsToCheck) {
+        for(ControlFlowGraph cfg: cfgs) {
             errors.addAll(this.runForFunctionCfg(cfg));
         }
         
         return errors;
         
-    }
-    
-    public String getName() {
-        return "Automaton";
-    }
-    
-    public List<CheckerError> check() {
-        return null;
     }
     
 }

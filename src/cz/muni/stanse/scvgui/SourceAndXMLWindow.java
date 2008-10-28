@@ -518,46 +518,6 @@ public class SourceAndXMLWindow extends JPanel {
         }
     }
     
-    /**
-     * Open a new window with static checker results.
-     * @param files files with definition of the checker.
-     */
-    public void runStaticChecker(Set<File> files) {
-        /*        
-        if(documentXML != null) {
-            for(File file: files) {
-                SAXReader reader = new SAXReader();
-                try {
-                    Checker a = Automaton.getInstanceByDocument(reader.read(file));
-                    addFunctionsToChecker(a, documentXML);
-                    Set<CheckerErrorOld> errors = a.check();
-                    
-                    StringBuilder outputText = new StringBuilder();
-                    
-                    if (errors.isEmpty()) {
-                        jTextPaneOutput.setText("No errors. \n");
-                    } else {
-                        for (CheckerErrorOld error : errors) {
-                            outputText.append(error.getDescription()).append("\n");
-                        }
-                        jTextPaneOutput.setText(outputText.toString());
-
-                        //show window with errors
-                        ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
-                        errorForm.setVisible(true);
-                
-                    }
-                    
-                } catch (DocumentException ex) {
-                    logger.error("XML document exception while loading the definitions file", ex);
-                } catch(AutomatonSyntaxException ex) {
-                    logger.error("Definition document syntax is incorrect", ex);
-                }
-            }
-        }
-        */
-    }
-  
     private static final HashSet<ControlFlowGraph> buildCFGsFromXML(
                                                    final Document documentXML) {
         if (documentXML == null)
@@ -604,6 +564,61 @@ public class SourceAndXMLWindow extends JPanel {
             }
         }
         return result;
+    }
+
+    /**
+     * Open a new window with Automaton (static) checker results.
+     * @param files files with definition of the checker.
+     */
+    public void runStaticChecker(final Set<File> configFiles) {
+        if (configFiles == null || configFiles.isEmpty())
+            return;
+        
+        final HashSet<ControlFlowGraph> cfgs = buildCFGsFromXML(documentXML);
+        if (cfgs == null)
+            return;
+
+        final Automaton checker = new Automaton(cfgs);
+        checker.setConfigurations(configFiles);
+        List<CheckerError> errors = checker.check();
+
+        jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
+        ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
+        errorForm.setVisible(true);
+        
+        /*        
+        if(documentXML != null) {
+            for(File file: files) {
+                SAXReader reader = new SAXReader();
+                try {
+                    Checker a = Automaton.getInstanceByDocument(reader.read(file));
+                    addFunctionsToChecker(a, documentXML);
+                    Set<CheckerErrorOld> errors = a.check();
+                    
+                    StringBuilder outputText = new StringBuilder();
+                    
+                    if (errors.isEmpty()) {
+                        jTextPaneOutput.setText("No errors. \n");
+                    } else {
+                        for (CheckerErrorOld error : errors) {
+                            outputText.append(error.getDescription()).append("\n");
+                        }
+                        jTextPaneOutput.setText(outputText.toString());
+
+                        //show window with errors
+                        ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
+                        errorForm.setVisible(true);
+                
+                    }
+                    
+                } catch (DocumentException ex) {
+                    logger.error("XML document exception while loading the definitions file", ex);
+                } catch(AutomatonSyntaxException ex) {
+                    logger.error("Definition document syntax is incorrect", ex);
+                }
+            }
+        }
+        */
     }
 
     /**

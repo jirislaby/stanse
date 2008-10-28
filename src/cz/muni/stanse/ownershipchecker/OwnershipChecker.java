@@ -51,7 +51,7 @@ public final class OwnershipChecker extends Checker {
     
     private FunctionOwnershipInfo ownershipInfo;
     
-    Vector<ControlFlowGraph> topologicalSortedCG;
+    private Vector<ControlFlowGraph> topologicalSortedCG;
     
     // obsahuje vzdy posledni uzel na spravne vetvi pred sloucenim dvou vetvi
     private HashSet<CFGNode> nodeOnCorrectTrace;
@@ -60,7 +60,7 @@ public final class OwnershipChecker extends Checker {
     private final boolean INTER = true;
     
     /** Creates a new instance of OwnershipChecker */
-    public OwnershipChecker(Set<ControlFlowGraph> cfgs) {
+    public OwnershipChecker(final Set<ControlFlowGraph> cfgs) {
         super(cfgs);
     }
 
@@ -114,7 +114,7 @@ public final class OwnershipChecker extends Checker {
         return result;
     }
 
-    public Set<CheckerErrorOld> checkOld(Vector<ControlFlowGraph> cfgs) {
+    private Set<CheckerErrorOld> checkOld(Vector<ControlFlowGraph> cfgs) {
         //nacteni globalnich ukazatelu
         Element rootElement = cfgs.elementAt(0).getFunctionDefinition().getDocument().getRootElement();
         for (Object declaration : rootElement.selectNodes("declaration")) {

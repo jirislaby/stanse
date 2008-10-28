@@ -496,8 +496,10 @@ public class ErrorForm extends javax.swing.JFrame {
     }
 
     private final String buildActualCFGEdgeDescription() {
+
         final Pair<CFGNode,String> startNode =
-                actualTrace.getErrorTrace().get(actualIndex - 1);
+                actualTrace.getErrorTrace().get(
+                                      (actualIndex == 0) ? 0 : actualIndex - 1);
         final Pair<CFGNode,String> endNode =
                 actualTrace.getErrorTrace().get(actualIndex);
         return "<" + startNode.getFirst().toString() + ','
