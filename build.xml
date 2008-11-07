@@ -2,10 +2,12 @@
 <project basedir="." default="build" name="stanse">
     <property name="dist" value="dist"/>
     <property name="c2xml.location" value="src/cz/muni/stanse/c2xml"/>
-	<property name="antlr.location" value="${dist}/lib/antlr-2.7.5.jar"/>
+    <property name="antlr.location" value="${dist}/lib/antlr-3.0.1.jar"/>
+    <property name="antlr-runtime.location" value="${dist}/lib/antlr-runtime-3.0.1.jar"/>
     <path id="project.classpath">
         <pathelement location="build"/>
         <pathelement location="${antlr.location}"/>
+        <pathelement location="${antlr-runtime.location}"/>
         <pathelement location="${dist}/lib/AbsoluteLayout.jar"/>
         <pathelement location="${dist}/lib/dom4j-1.6.1.jar"/>
         <pathelement location="${dist}/lib/jaxen-1.1.1.jar"/>
@@ -27,18 +29,15 @@
     <target name="c2xml-clean">
         <delete>
 	    <fileset dir="${c2xml.location}">
-		<include name="*.smap"/>
-		<include name="*.txt"/>
-		<include name="StdCParser.java"/>
-		<include name="StdCLexer.java"/>
-		<include name="STDCTokenTypes.java"/>
-		<include name="expandedGnuCParser.g"/>
-		<include name="GnuCLexer.java"/>
-		<include name="GnuCParser.java"/>
-		<include name="GnuCLexerTokenTypes.java"/>
-		<include name="GNUCTokenTypes.java"/>
-		<include name="XmlEmitter.java"/>
-		<include name="XmlEmitterTokenTypes.java"/>
+<!--
+		<include name="GNUCa__.g"/>
+		<include name="GNUCa.java"/>
+		<include name="GNUCa.tokens"/>
+		<include name="GNUCaLexer.java"/>
+		<include name="GNUCaParser.java"/>
+		<include name="XMLEmitter.java"/>
+		<include name="XMLEmitter.tokens"/>
+-->
 	    </fileset>
 	</delete>
     </target>
@@ -51,15 +50,12 @@
         </delete>
     </target>
     <target name="c2xml">	
-		<antlr target="${c2xml.location}/StdCParser.g">
-	        <classpath path="${antlr.location}"/>
+<!--		<antlr target="${c2xml.location}/GNUCa.g">
+		<classpath path="${antlr.location}"/>
 		</antlr>
-		<antlr target="${c2xml.location}/GnuCParser.g" glib="${c2xml.location}/StdCParser.g">
-    	    <classpath path="${antlr.location}"/>
-		</antlr>    	
-		<antlr target="${c2xml.location}/XmlEmitter.g">
-    	    <classpath path="${antlr.location}"/>
-		</antlr>
+		<antlr target="${c2xml.location}/XMLEmitter.g">
+		<classpath path="${antlr.location}"/>
+		</antlr>-->
     </target>
     <target name="build" depends="init,c2xml">
         <echo message="${ant.project.name}: ${ant.file}"/>
@@ -83,7 +79,7 @@
 	        <attribute name="Built-By" value="${user.name}"/>
 	        <attribute name="Main-Class" value="cz.muni.stanse.main.SCV"/>
 		<attribute name="Implementation-Version" value="Revision: ${svnrevision}, Built on: ${TODAY}" />
-	        <attribute name="Class-Path" value="lib/swing-layout-1.0.jar lib/AbsoluteLayout.jar lib/antlr-2.7.5.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/swing-layout-1.0.jar lib/syntax.jar lib/jgrapht-jdk1.5.jar lib/log4j-1.2.14.jar lib/jopt-simple-2.3.2.jar lib/saxon8.jar lib/saxon8-dom4j.jar lib/saxon8-xpath.jar"/>
+	        <attribute name="Class-Path" value="lib/swing-layout-1.0.jar lib/AbsoluteLayout.jar lib/antlr-3.0.1.jar lib/antlr-runtime-3.0.1.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/swing-layout-1.0.jar lib/syntax.jar lib/jgrapht-jdk1.5.jar lib/log4j-1.2.14.jar lib/jopt-simple-2.3.2.jar lib/saxon8.jar lib/saxon8-dom4j.jar lib/saxon8-xpath.jar"/>
 	    </manifest>
     	<jar destfile="${dist}/stanse.jar" basedir="build" manifest="manifest.mf"/>
 	</target>

@@ -19,7 +19,7 @@ public class FunctionNameTrigger extends AbstractTrigger {
     public boolean isTriggered(CFGNode from, CFGNode to) {
         Element edge = from.getCFG().getEdgeElement(from, to);
         return edge.getName().equals("functionCall") &&
-                pass.equals(edge.selectSingleNode("./id").getText());
+                pass.equals(edge.selectSingleNode("./expression/id").getText());
     }
 
     public void loadTrigger(String param) {

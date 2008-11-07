@@ -7,7 +7,6 @@
 
 package cz.muni.stanse.scvgui;
 
-//import com.sun.org.apache.xerces.internal.util6.XML11Char;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.*;
 import cz.muni.stanse.xml2cfg.ControlFlowGraph;
@@ -20,8 +19,7 @@ import java.util.Vector;
 import java.util.Set;
 import java.util.HashSet;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
+import org.antlr.runtime.RecognitionException;
 import cz.muni.stanse.automatonchecker.Automaton;
 import cz.muni.stanse.automatonchecker.exceptions.AutomatonSyntaxException;
 import cz.muni.stanse.ownershipchecker.OwnershipChecker;
@@ -34,6 +32,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -465,14 +464,15 @@ public class SourceAndXMLWindow extends JPanel {
      * transform C source file to XML tree
      * Called automatically when opening a source code.
      */
-    public void transformCSourceFileToXML() throws FileNotFoundException, RecognitionException, TokenStreamException {
+    public void transformCSourceFileToXML() throws FileNotFoundException,
+					IOException, RecognitionException {
         if(sourceFile.length() <= 0) {
             return;
         }
         Cursor originalCursor = getCursor();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         CParser parser = new CParser(new FileInputStream(sourceFile));
-        documentXML = parser.runXmlParser();
+        documentXML = parser.run();
         documentXML.setName(sourceFile.getName());
         if(documentXML != null) {
             treeXML.setXMLDocument(documentXML);
@@ -523,20 +523,14 @@ public class SourceAndXMLWindow extends JPanel {
         if (documentXML == null)
             return null;
 
-        final HashSet<ControlFlowGraph> cfgs = new HashSet<ControlFlowGraph>();
-        {
-            final Element rootElement = documentXML.getRootElement();
-            for (int i = 0, size = rootElement.nodeCount(); i < size; i++) {
-                final Node node = rootElement.node(i);
-                if (node instanceof Element) {
-                    final Element element = (Element) node;
-
-                    if (element.getName().equals("functionDefinition")) {
-                        cfgs.add(new ControlFlowGraph(element));
-                    }
-                }
-            }
-        }
+	final HashSet<ControlFlowGraph> cfgs = new HashSet<ControlFlowGraph>();
+	{
+	    final Element rootElement = documentXML.getRootElement();
+	    List<Element> edecls = rootElement.elements("externalDeclaration");
+	    for (Element e: edecls)
+		if (e.element("functionDefinition") != null)
+		    cfgs.add(new ControlFlowGraph(e.element("functionDefinition")));
+	}
 
         return cfgs;
     }

@@ -3,8 +3,6 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;

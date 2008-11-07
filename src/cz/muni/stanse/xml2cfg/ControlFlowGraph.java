@@ -412,6 +412,10 @@ public class ControlFlowGraph {
             
             return null;
         }
+
+	if (actualElement.getName().equals("statement") ||
+		actualElement.getName().equals("expression"))
+		return nodeCreator(start, (Element)actualElement.node(0));
         
         //=== otherwise (expression) ===========================================
         CFGNode end = new CFGNode(this);        

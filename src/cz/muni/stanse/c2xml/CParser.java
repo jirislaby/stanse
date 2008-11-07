@@ -1,62 +1,36 @@
 package cz.muni.stanse.c2xml;
 
+import java.io.IOException;
 import java.io.InputStream;
 
+import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.CommonTreeNodeStream;
+
 import org.dom4j.Document;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 
-import antlr.*;
+public final class CParser {
+    private InputStream stream;
 
+    private CParser() { }
 
-public class CParser {
-	
-	protected InputStream inputStream;
-	
-	public CParser(InputStream inputStream) {
-		this.inputStream = inputStream;	
-	}
+    public CParser(InputStream stream) {
+	this.stream = stream;
+    }
 
-	public CParser() {
-	}
-	
-	public void setInputStream(InputStream inputStream) {
-		this.inputStream = inputStream;
-	}
+    public Document run() throws IOException, RecognitionException {
+	GNUCaLexer lex = new GNUCaLexer(new ANTLRInputStream(stream));
+	CommonTokenStream tokens = new CommonTokenStream(lex);
+	GNUCaParser parser = new GNUCaParser(tokens);
 
-	public Document runXmlParser() throws NullPointerException, RecognitionException, TokenStreamException {
-		//check wether inputstream is set
-		if (inputStream == null) throw new NullPointerException();
+	GNUCaParser.translationUnit_return r = parser.translationUnit();
+	CommonTree t = (CommonTree)r.getTree();
 
-		//ExtentLexerSharedInputState - it is used to determine position of a token in source
-        ExtentLexerSharedInputState eis = new ExtentLexerSharedInputState(inputStream);
-        
-        // Lexer
-        GnuCLexer lexer = new GnuCLexer(eis);
-        lexer.setTokenObjectClass(CToken.class.getName());
-        lexer.initialize();
-        
-        // Parser
-        GnuCParser parser = new GnuCParser(lexer);
-        
-        // set AST node type to TNode or get nasty cast class errors
-        parser.setASTNodeType(TNode.class.getName());
-        TNode.setTokenVocabulary("GNUCTokenTypes");
-        
-        // invoke parser
-       	parser.translationUnit();
-        TNode astTree = (TNode)parser.getAST();
-
-        XmlEmitter e = new XmlEmitter();
-        // set AST node type to TNode or get nasty cast class errors
-        e.setASTNodeType(TNode.class.getName());
-
-        // walk that tree
-        astTree.doubleLink(); //nejprve pospojujeme strom, aby sel prochazet i zpetne
-		e.translationUnit(astTree);
-        Document xmlDocument = e.getXmlDocument();
-
-        return xmlDocument;
-	}
-	
+	CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
+	nodes.setTokenStream(tokens);
+	XMLEmitter emitter = new XMLEmitter(nodes);
+	return emitter.translationUnit();
+    }
 }

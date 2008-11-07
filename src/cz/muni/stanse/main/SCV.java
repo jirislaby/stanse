@@ -3,8 +3,6 @@
  */
 package cz.muni.stanse.main;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
 import cz.muni.stanse.c2xml.CParser;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.Checker;
@@ -42,6 +40,7 @@ import org.dom4j.io.SAXReader;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedSubgraph;
 
+import org.antlr.runtime.RecognitionException;
 
 /**
  * Main class of the project. Includes the static main method, which is started from the command line.
@@ -360,7 +359,7 @@ public class SCV {
 
             CParser parser = new CParser(new FileInputStream(filename));
             try {
-                returnDocument = parser.runXmlParser();
+                returnDocument = parser.run();
                 File file = new File(filename);
                 returnDocument.setName(file.getName());
                 sourceFilesParsed.put(filename, returnDocument);
@@ -368,7 +367,7 @@ public class SCV {
                 logger.log(Level.FATAL, null, e);
             } catch (RecognitionException e) {
                 logger.log(Level.FATAL, null, e);
-            } catch (TokenStreamException e) {
+            } catch (IOException e) {
                 logger.log(Level.FATAL, null, e);
             }
         

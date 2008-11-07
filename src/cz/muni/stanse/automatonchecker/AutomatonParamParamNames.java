@@ -25,7 +25,7 @@ public class AutomatonParamParamNames implements AutomatonParam {
     public AssignedParam initValue(CFGNode from, CFGNode to, int index) {
         AssignedParam assignedParam = null;
         try {
-            String value = ((Element) from.getCFG().getEdgeElement(from, to).selectSingleNode("./id["+(index+2)+"]")).getTextTrim();
+            String value = ((Element) from.getCFG().getEdgeElement(from, to).selectSingleNode("./expression["+(index+2)+"]/id")).getTextTrim();
             assignedParam = new AssignedParam(this, value);
         } catch (AutomatonException ex) {
             logger.error(null, ex);
