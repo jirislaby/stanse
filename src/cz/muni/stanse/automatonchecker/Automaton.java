@@ -5,7 +5,6 @@ package cz.muni.stanse.automatonchecker;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
-import cz.muni.stanse.c2xml.CParser;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;
@@ -534,40 +533,6 @@ public final class Automaton extends Checker {
         return null;
     }
 
-//    static public void main(String[] args) {
-//        LoggerConfigurator.doConfigure();
-//        SAXReader reader = new SAXReader();
-//        try {
-//            String filename = (args.length > 0) ? args[0] : "/home/xstastn/iti/repo/automaton-checker/examples/speedtest.c";
-//            String checker = (args.length > 1) ? args[1] : "/home/xstastn/iti/repo/fa-desc/example.xml";
-//            
-//            File xml = new File(checker);
-//            Automaton a = Automaton.getInstanceByDocument(reader.read(xml));
-//            File sourceFile = new File(filename);
-//            Document source = new CParser(new BufferedInputStream(new FileInputStream(sourceFile))).runXmlParser();
-//            a.loadDocument(source);
-//            a.run();
-//        } catch (AutomatonRunException ex) {
-//            logger.error(null, ex);
-//        } catch (NullPointerException ex) {
-//            logger.error(null, ex);
-//        } catch (RecognitionException ex) {
-//            logger.error(null, ex);
-//        } catch (TokenStreamException ex) {
-//            logger.error(null, ex);
-//        } catch (FileNotFoundException ex) {
-//            logger.error(null, ex);
-//        } catch (DocumentException ex) {
-//            logger.error(null, ex);
-//        } catch (AutomatonSyntaxException ex) {
-//            logger.error(null, ex);
-//        } catch (AutomatonException ex) {
-//            logger.error(null, ex);
-//        }
-//
-//    }
-
-    
 //     public ControlFlowGraph getCFGForProcedure(String procedureName) throws AutomatonRunException {
 //        if (!CFGs.containsKey(procedureName)) {
 //            Element functionDefinition = (Element) sourceDocument.selectSingleNode("//functionDefinition[declarator/id = \"" + procedureName + "\"]");
