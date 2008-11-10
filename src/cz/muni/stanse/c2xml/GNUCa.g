@@ -121,9 +121,12 @@ scope Symbols {
 
 @header{
 	package cz.muni.stanse.c2xml;
-
 	import java.util.Set;
 	import java.util.HashSet;
+}
+
+@lexer::header{
+	package cz.muni.stanse.c2xml;
 }
 
 @members{

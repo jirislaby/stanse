@@ -29,7 +29,6 @@
     <target name="c2xml-clean">
         <delete>
 	    <fileset dir="${c2xml.location}">
-<!--
 		<include name="GNUCa__.g"/>
 		<include name="GNUCa.java"/>
 		<include name="GNUCa.tokens"/>
@@ -37,7 +36,6 @@
 		<include name="GNUCaParser.java"/>
 		<include name="XMLEmitter.java"/>
 		<include name="XMLEmitter.tokens"/>
--->
 	    </fileset>
 	</delete>
     </target>
@@ -50,12 +48,14 @@
         </delete>
     </target>
     <target name="c2xml">	
-<!--		<antlr target="${c2xml.location}/GNUCa.g">
+		<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr" 
+		target="${c2xml.location}/GNUCa.g">
 		<classpath path="${antlr.location}"/>
-		</antlr>
-		<antlr target="${c2xml.location}/XMLEmitter.g">
+		</antlr:antlr3>
+		<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr" 
+		target="${c2xml.location}/XMLEmitter.g">
 		<classpath path="${antlr.location}"/>
-		</antlr>-->
+		</antlr:antlr3>
     </target>
     <target name="build" depends="init,c2xml">
         <echo message="${ant.project.name}: ${ant.file}"/>
