@@ -1,0 +1,92 @@
+#!/usr/bin/perl -w
+# took over from cgcc from sparse package
+
+my $cc = $ENV{'REAL_CC'} || 'cc';
+my $check = $ENV{'CHECK'} || 'sparse';
+# FIXME remove this line and change the previous to stanse
+$check = 'true';
+
+my $gendeps = 0;
+my $do_check = 0;
+my $do_compile = 1;
+my $verbose = 0;
+
+foreach (@ARGV) {
+    # Look for a .c file.  We don't want to run the checker on .o or .so files
+    # in the link run.  (This simplistic check knows nothing about options
+    # with arguments, but it seems to do the job.)
+    $do_check = 1 if /^[^-].*\.c$/;
+
+    # Ditto for stdin.
+    $do_check = 1 if $_ eq '-';
+
+    $gendeps = 1 if /^-M$/;
+
+    if ($_ eq '-no-compile') {
+	$do_compile = 0;
+	next;
+    }
+
+    # If someone adds "-E", don't pre-process twice.
+    $do_compile = 0 if $_ eq '-E';
+
+    $verbose = 1 if $_ eq '-v';
+
+    my $this_arg = ' ' . &quote_arg ($_);
+    $cc .= $this_arg unless &check_only_option ($_);
+    $check .= $this_arg unless &cc_only_option ($_);
+}
+
+if ($gendeps) {
+    $do_compile = 1;
+    $do_check = 0;
+}
+
+if ($do_check) {
+    print "$check\n" if $verbose;
+    if ($do_compile) {
+	system ($check);
+    } else {
+	exec ($check);
+    }
+}
+
+if ($do_compile) {
+    exec ($cc);
+}
+
+exit 0;
+
+# -----------------------------------------------------------------------------
+# Check if an option is for "check" only.
+
+sub check_only_option {
+    my ($arg) = @_;
+    return 0;
+}
+
+# -----------------------------------------------------------------------------
+# Check if an option is for "cc" only.
+
+sub cc_only_option {
+    my ($arg) = @_;
+    # -Wall turns on all Sparse warnings, including experimental and noisy
+    # ones.  Don't include it just because a project wants to pass -Wall to cc.
+    # If you really want cgcc to run sparse with -Wall, use
+    # CHECK="sparse -Wall".
+    return 1 if $arg =~ /^-Wall$/;
+    return 0;
+}
+
+# -----------------------------------------------------------------------------
+# Simple arg-quoting function.  Just adds backslashes when needed.
+
+sub quote_arg {
+    my ($arg) = @_;
+    return "''" if $arg eq '';
+    return join ('',
+		 map {
+		     m|^[-a-zA-Z0-9._/,=]+$| ? $_ : "\\" . $_;
+		 } (split (//, $arg)));
+}
+
