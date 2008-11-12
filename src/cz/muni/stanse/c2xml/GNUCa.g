@@ -16,8 +16,7 @@ TODO:
 
 	- remove ambiguities (curently handled by backtracking)
 	  o attributes at more than one place
-	  ! declarator|abstractDeclarator in parameterDeclaration
-	  o expression/typeName in postfixExpression and unaryExpression
+	  o declarator|abstractDeclarator in parameterDeclaration (MANY)
 		
 	5.4 Nested Functions
 	  o are (almost) the same as declarations
@@ -58,6 +57,10 @@ IMPLEMENTED EXTENSIONS:
 	5.43 Offsetof
 	5.50 Unnamed struct/union fields within structs/unions (IGNORED)
 	5.51 Thread-Local Storage
+
+COMMENTS:
+	- expression/typeName conflicts are sorted by using semantic predicates
+	  we always try '(' typename ')' first, as it should have a shorter derivation
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -353,12 +356,12 @@ declarator
 	;
 
 directDeclarator
-//	options {k=3;}
 	:	 ( IDENTIFIER
 			{
+//			System.err.println("T: ID="+$IDENTIFIER.text+", size="+$declaration.size());
 			if ($declaration.size()>0&&$declaration::isTypedef) {
 				$Symbols::types.add($IDENTIFIER.text);
-//				System.out.println("define type "+$IDENTIFIER.text);
+//				System.err.println("define type "+$IDENTIFIER.text);
 			}
 			} -> IDENTIFIER
 	|	'(' attributes? declarator ')' -> declarator
@@ -485,8 +488,8 @@ offsetofMemberDesignator
 
 postfixExpression
 	:
-	(	primaryExpression -> primaryExpression
-	|	'(' typeName ')' '{' initializerList ','? '}' -> ^(COMPOUND_LITERAL typeName initializerList)
+	(	('(' typeName ')') => '(' typeName ')' '{' initializerList ','? '}' -> ^(COMPOUND_LITERAL typeName initializerList)
+	|	primaryExpression -> primaryExpression
 	)
 	(	'[' expression ']' -> ^(ARRAY_ACCESS $postfixExpression expression)
         |	'(' argumentExpressionList? ')' -> ^(FUNCTION_CALL $postfixExpression argumentExpressionList?)
@@ -506,10 +509,10 @@ unaryExpression
 	|	'++'^ unaryExpression
 	|	'--'^ unaryExpression
 	|	unaryOperator^ castExpression
+	|	('sizeof' '(' typeName ')') => 'sizeof'^ '('! typeName ')'!
 	|	'sizeof'^ unaryExpression
-	|	'sizeof'^ '('! typeName ')'!
+	|	(('__alignof'|'__alignof__') '(' typeName ')')=> ('__alignof'|'__alignof__') '(' typeName ')' -> ^('__alignof__' typeName)
 	|	('__alignof'|'__alignof__') unaryExpression -> ^('__alignof__' unaryExpression)
-	|	('__alignof'|'__alignof__') '(' typeName ')' -> ^('__alignof__' typeName)
 	;
 
 unaryOperator
