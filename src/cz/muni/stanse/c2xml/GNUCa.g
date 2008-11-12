@@ -15,8 +15,7 @@ TODO:
 	- fix 'extern __typeof__' bug
 
 	- remove ambiguities (curently handled by backtracking)
-	  o attributes at more than one place
-	  o declarator|abstractDeclarator in parameterDeclaration (MANY)
+	  o attributes in more than one place
 		
 	5.4 Nested Functions
 	  o are (almost) the same as declarations
@@ -392,7 +391,8 @@ parameterList
 	;
 
 parameterDeclaration
-	:	declarationSpecifiers (declarator|abstractDeclarator?) attributes? -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
+	// syntactic predicate: declarator must end-up with an IDENTIFIER, abstract with pointer or '['
+	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator | abstractDeclarator?) attributes? -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
 	;
 
 identifierList
