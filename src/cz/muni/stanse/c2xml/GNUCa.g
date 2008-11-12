@@ -25,6 +25,7 @@ TODO:
 IMPLEMENTED EXTENSIONS:
 	(as of 4.1.0 GCC manual)
 	5.1 Statements and Declarations in Expressions
+	5.2 Locally Declared Labels
 	5.5 Constructing Function Calls (IGNORED)
 	5.6 Referring to a Type with typeof
 	5.7 Conditionals with Omitted Operands
@@ -630,6 +631,7 @@ scope Symbols; // blocks are scopes
 @init { $Symbols::types = new HashSet(); }
 //	:	'{' (x+=declaration | x+=nestedFunctionDefinition | x+=statement)* '}' -> ^(COMPOUND_STATEMENT $x*)
 	:	'{' blockItem* '}' -> ^(COMPOUND_STATEMENT blockItem*)
+	|	'{' labelDeclaration+ blockItem* '}' -> ^(COMPOUND_STATEMENT blockItem*)	// GNU // TODO labels AST
 	;
 
 blockItem
@@ -638,6 +640,10 @@ blockItem
 //
 //	|	nestedFunctionDefinition 
 	|	statement
+	;
+
+labelDeclaration
+	:	'__label__' identifierList ';'
 	;
 
 expressionStatement
