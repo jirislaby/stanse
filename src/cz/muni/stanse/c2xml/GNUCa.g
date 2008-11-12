@@ -7,7 +7,6 @@ Some bits taken from C.g by Terence Parr
 AUTHOR:		Jan Obdrzalek, Jul 07, 2007
 
 TODO:
-	- fix typedefs
 	- improve alternate keywords handling
 	- check 'I','J' imaginary suffixes
 	- finish string literal concatenation
@@ -15,10 +14,17 @@ TODO:
 	- fix the externalDefinition prediction
 	- fix 'extern __typeof__' bug
 
+	- remove ambiguities (curently handled by backtracking)
+	  o attributes at more than one place
+	  ! declarator|abstractDeclarator in parameterDeclaration
+	  o expression/typeName in postfixExpression and unaryExpression
+		
+	5.4 Nested Functions
+	  o are (almost) the same as declarations
+
 IMPLEMENTED EXTENSIONS:
 	(as of 4.1.0 GCC manual)
 	5.1 Statements and Declarations in Expressions
-	5.4 Nested Functions
 	5.5 Constructing Function Calls (IGNORED)
 	5.6 Referring to a Type with typeof
 	5.7 Conditionals with Omitted Operands
@@ -224,7 +230,7 @@ declarationSpecifiers	// (6.7)
 		| typeSpecifier
 		| typeQualifier
 		| sc+=functionSpecifier
-		| attributes)+ -> ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER typeSpecifier*) ^(XTYPE_QUALIFIER typeQualifier*) ^(XSTORAGE_CLASS $sc*))
+			| attributes)+ -> ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER typeSpecifier*) ^(XTYPE_QUALIFIER typeQualifier*) ^(XSTORAGE_CLASS $sc*))
 	;
 
 initDeclaratorList
@@ -346,6 +352,7 @@ declarator
 	;
 
 directDeclarator
+//	options {k=3;}
 	:	 ( IDENTIFIER
 			{
 			if ($declaration.size()>0&&$declaration::isTypedef) {
@@ -359,10 +366,12 @@ directDeclarator
 	{if ($declaration.size()>0) { $declaration::isTypedef=false;}}
 	( 	'[' { list_tq = null; } tq+=typeQualifier* ae=assignmentExpression? ']' -> ^(ARRAY_DECLARATOR $directDeclarator $tq* $ae?)
 	|	'[' { list_tq = null; } 'static' tq+=typeQualifier* ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq* $ae)
-	|	'[' { list_tq = null; } tq+=typeQualifier+ 'static' ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq+ $ae)
-	|	'[' { list_tq = null; } tq+=typeQualifier* '*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*' $tq*)
+	|	('[' typeQualifier+ 'static') => '[' { list_tq = null; } tq+=typeQualifier+ 'static' ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq+ $ae)
+	|	('[' typeQualifier* '*' ']') => '[' { list_tq = null; }  tq+=typeQualifier* '*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*' $tq*)
+		// LPAREN ID (COMMA | RPAREN) is identifierList. Lookahead k=3 should work, but does not :(
+		// adding a syntactic predicate
 	|	'(' parameterTypeList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator parameterTypeList)
-	|	'(' identifierList? ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList?)
+	|	('(' IDENTIFIER (',' | ')')) => '(' identifierList? ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList?)
 	)*
 	;
 
@@ -397,12 +406,12 @@ abstractDeclarator // TODO AST
 
 directAbstractDeclarator
 	:	'(' attributes? abstractDeclarator ')'
-		( '[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR abstractDeclarator? assignmentExpression)
-		| '[' '*' ']' -> ^(ARRAY_DECLARATOR abstractDeclarator '*')
+		( '[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR abstractDeclarator assignmentExpression?)
+		| ('[' '*' ']') => '[' '*' ']' -> ^(ARRAY_DECLARATOR abstractDeclarator '*')
 		| '(' parameterTypeList? ')'  ->  ^(FUNCTION_DECLARATOR abstractDeclarator parameterTypeList?)
 		)?
 	|	'[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR assignmentExpression?)
-	|	'[' '*' ']' -> ^(ARRAY_DECLARATOR '*')
+	|	('[' '*' ']') => '[' '*' ']' -> ^(ARRAY_DECLARATOR '*')
 	|	'(' parameterTypeList? ')'  ->  ^(FUNCTION_DECLARATOR parameterTypeList?)
 	;
 
@@ -425,7 +434,8 @@ initializerList
 	;
 
 designation
-	:	arrayDesignator		-> //null		// GNU
+	// this semantic predicate may be expensive, backtrack+memmoize are probably better
+	:	('[' constantExpression '...')=> arrayDesignator -> //null		// GNU
 	|	IDENTIFIER ':'!			// GNU
 	|	designator+ '=' -> ^(DESIGNATOR designator)+
 	;
@@ -618,15 +628,17 @@ labeledStatement
 compoundStatement
 scope Symbols; // blocks are scopes
 @init { $Symbols::types = new HashSet(); }
-	:	'{' (x+=declaration | x+=nestedFunctionDefinition | x+=statement)* '}' -> ^(COMPOUND_STATEMENT $x*)
-//	:	'{' blockItem* '}' -> ^(COMPOUND blockItem*)
+//	:	'{' (x+=declaration | x+=nestedFunctionDefinition | x+=statement)* '}' -> ^(COMPOUND_STATEMENT $x*)
+	:	'{' blockItem* '}' -> ^(COMPOUND_STATEMENT blockItem*)
 	;
 
-//blockItem
-//	:	declaration
-//	|	nestedFunctionDefinition
-//	|	statement
-//	;
+blockItem
+	:	declaration
+// TODO GNUC : dela velky bordel, je v zasade stejna jak declaration
+//
+//	|	nestedFunctionDefinition 
+	|	statement
+	;
 
 expressionStatement
 	:	expression? ';' -> ^(EXPRESSION_STATEMENT expression?)
