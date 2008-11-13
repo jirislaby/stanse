@@ -7,17 +7,18 @@ AUTHOR:	Jan Obdrzalek, 2007-2008
 	Typedef handling taken from C.g distributed with ANTLR v3,  (c) Terence Parr
 
 TODO:
-	- check 'I','J' imaginary suffixes
-	- finish string literal concatenation
-	- attributes in typeQualifierList
-	- fix the externalDefinition prediction
-	- fix 'extern __typeof__' bug
+	- 5.4 Nested Functions - (almost) the same as declarations
+	- attributes
 
-	- remove ambiguities (curently handled by backtracking)
-	  o attributes in more than one place
-		
-	5.4 Nested Functions
-	  o are (almost) the same as declarations
+DISABLED ATTRIBUTE-RELATED EXTENSIONS:
+	5.24 Declaring Attributes of Functions
+	5.25 Attribute Syntax
+	5.31 Specifying Attributes of Variables
+	5.32 Specifying Attributes of Types
+	- removed to get rid of backtracking
+ 	- too ambiguous grammar, not very well documented
+	- easily removed by the following macro: #define __attrobute__(x)
+	- attributes in typeQualifierList not implemented
 
 IMPLEMENTED EXTENSIONS:
 	(as of 4.1.0 GCC manual)
@@ -37,15 +38,11 @@ IMPLEMENTED EXTENSIONS:
 	5.21 Case Ranges
 	5.22 Cast to a Union Type (IGNORED)
 	5.23 Mixed Declarations and Code (C99)
-	5.24 Declaring Attributes of Functions
-	5.25 Attribute Syntax
 	5.26 Prototypes and Old-Style Function Definitions (IGNORED)
 	5.27 C++ Style Comments	(C99)
 	5.28 Dollar Signs in Identifier Names
 	5.29 The Character <ESC> in Constants
 	5.30 Inquiring on Alignment of Types or Variables
-	5.31 Specifying Attributes of Variables
-	5.32 Specifying Attributes of Types
 	5.33 An Inline Function is As Fast As a Macro (C99/IGNORED)
 	5.34 Assembler Instructions with C Expression Operands
 	5.35 Constraints for asm Operands
@@ -65,7 +62,8 @@ COMMENTS:
 
 grammar GNUCa;
 options {
-	backtrack=true;
+//	backtrack=true;
+	backtrack=false;
 	memoize=true;
 	k=2;
 	output = AST;
@@ -183,7 +181,8 @@ scope Symbols; // entire file is a scope
 //
 externalDeclaration
 options {k=1;}
-	:	( declarationSpecifiers declarator ('{' | storageClassSpecifier | typeSpecifier | typeQualifier | functionSpecifier| '__attribute' | '__attribute__') )=> functionDefinition	// (6.9.1)
+//	:	( declarationSpecifiers declarator ('{' | storageClassSpecifier | typeSpecifier | typeQualifier | functionSpecifier| '__attribute' | '__attribute__') )=> functionDefinition	// (6.9.1)
+	:	( declarationSpecifiers declarator ('{' | storageClassSpecifier | typeSpecifier | typeQualifier | functionSpecifier) )=> functionDefinition	// (6.9.1)
 	|	declaration
 	|	';'!
 	|	asmDefinition	// GNU
@@ -234,7 +233,8 @@ declarationSpecifiers	// (6.7)
 		| typeSpecifier
 		| typeQualifier
 		| sc+=functionSpecifier
-			| attributes)+ -> ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER typeSpecifier*) ^(XTYPE_QUALIFIER typeQualifier*) ^(XSTORAGE_CLASS $sc*))
+//		| attributes)+ -> ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER typeSpecifier*) ^(XTYPE_QUALIFIER typeQualifier*) ^(XSTORAGE_CLASS $sc*))
+		)+ -> ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER typeSpecifier*) ^(XTYPE_QUALIFIER typeQualifier*) ^(XSTORAGE_CLASS $sc*))
 	;
 
 initDeclaratorList
@@ -242,7 +242,8 @@ initDeclaratorList
 	;
 
 initDeclarator		// (6.7)
-	:	declarator simpleAsmExpr? attributes? ( '=' initializer )?  -> ^(INIT_DECLARATOR declarator initializer?)
+//	:	declarator simpleAsmExpr? attributes? ( '=' initializer )?  -> ^(INIT_DECLARATOR declarator initializer?)
+	:	declarator simpleAsmExpr? ( '=' initializer )?  -> ^(INIT_DECLARATOR declarator initializer?)
 	;
 
 storageClassSpecifier	// (6.7.1)
@@ -283,8 +284,10 @@ structOrUnionSpecifier // (6.7.2.1)
 options{k=3;}
 scope Symbols; // structs are scopes
 @init { $Symbols::types = new HashSet(); }
-	:	structOrUnion attributes? IDENTIFIER? '{' structDeclaration* '}' attributes? -> ^(structOrUnion ^(XID IDENTIFIER?) structDeclaration* )
-	|	structOrUnion attributes? IDENTIFIER -> ^(structOrUnion ^(XID IDENTIFIER))
+//	:	structOrUnion attributes? IDENTIFIER? '{' structDeclaration* '}' attributes? -> ^(structOrUnion ^(XID IDENTIFIER?) structDeclaration* )
+//	|	structOrUnion attributes? IDENTIFIER -> ^(structOrUnion ^(XID IDENTIFIER))
+	:	structOrUnion IDENTIFIER? '{' structDeclaration* '}' -> ^(structOrUnion ^(XID IDENTIFIER?) structDeclaration* )
+	|	structOrUnion IDENTIFIER -> ^(structOrUnion ^(XID IDENTIFIER))
 	;
 
 structOrUnion		// (6.7.2.1)
@@ -302,29 +305,33 @@ structDeclaration	// (6.7.2.1)
 specifierQualifier // TODO AST
 	:	typeSpecifier -> ^(XTYPE_SPECIFIER typeSpecifier)
 	|	typeQualifier -> ^(XTYPE_QUALIFIER typeQualifier)
-	|	attributes -> // NULL
+//	|	attributes -> // NULL
 	;
 
 structDeclaratorList
-	:	structDeclarator ( ',' attributes? structDeclarator )* -> structDeclarator+
+//	:	structDeclarator ( ',' attributes? structDeclarator )* -> structDeclarator+
+	:	structDeclarator ( ',' structDeclarator )* -> structDeclarator+
 	;
 
 structDeclarator
-	:	declarator ( ':' constantExpression )? attributes? -> ^(STRUCT_DECLARATOR declarator constantExpression?)
-	|	':' constantExpression attributes? -> ^(STRUCT_DECLARATOR constantExpression)
+//	:	declarator ( ':' constantExpression )? attributes? -> ^(STRUCT_DECLARATOR declarator constantExpression?)
+//	|	':' constantExpression attributes? -> ^(STRUCT_DECLARATOR constantExpression)
+	:	declarator ( ':' constantExpression )? -> ^(STRUCT_DECLARATOR declarator constantExpression?)
+	|	':' constantExpression -> ^(STRUCT_DECLARATOR constantExpression)
 	;
 
 enumSpecifier // TODO improve the grammar
-	:	'enum' attributes?
+//	:	'enum' attributes?
+	:	'enum' 
 	(
 		'{' enumeratorList ( ',' )? '}' -> ^('enum' enumeratorList)
 	|	IDENTIFIER '{' enumeratorList ( ',' )? '}' -> ^('enum' ^(XID IDENTIFIER) enumeratorList)
 	|	IDENTIFIER -> ^('enum' ^(XID IDENTIFIER))
 	)
 // orig:
-//	:	'enum' attributes? '{' enumeratorList ( ',' )? '}' -> ^('enum' enumeratorList)
-//	|	'enum' attributes? IDENTIFIER '{' enumeratorList ( ',' )? '}' -> ^('enum' ^(XID IDENTIFIER) enumeratorList)
-//	|	'enum' attributes? IDENTIFIER -> ^('enum' ^(XID IDENTIFIER))
+//	:	'enum' '{' enumeratorList ( ',' )? '}' -> ^('enum' enumeratorList)
+//	|	'enum' IDENTIFIER '{' enumeratorList ( ',' )? '}' -> ^('enum' ^(XID IDENTIFIER) enumeratorList)
+//	|	'enum' IDENTIFIER -> ^('enum' ^(XID IDENTIFIER))
 	;
 
 enumeratorList
@@ -366,7 +373,8 @@ directDeclarator
 //				System.err.println("define type "+$IDENTIFIER.text);
 			}
 			} -> IDENTIFIER
-	|	'(' attributes? declarator ')' -> declarator
+//	|	'(' attributes? declarator ')' -> declarator
+	|	'(' declarator ')' -> declarator
 		)
 	//  ugly hack, prevents getting function parameters into types
 	{if ($declaration.size()>0) { $declaration::isTypedef=false;}}
@@ -395,13 +403,14 @@ parameterList
 
 parameterDeclaration
 	// syntactic predicate: declarator must end-up with an IDENTIFIER, abstract with pointer or '['
-	// the complicated rewrite of attributes? is necessary to remove ambiguities. If abstractDeclarator is empty, it should not have any attributes.
 	//   TODO check for correctness
-	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator attributes? | (abstractDeclarator attributes?)? ) -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
+// the complicated rewrite of attributes? is necessary to remove ambiguities. If abstractDeclarator is empty, it should not have any attributes.
+//	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator attributes? | (abstractDeclarator attributes?)? ) -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
+	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator | abstractDeclarator ? ) -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
 	;
 // orig:
-//	:	declarationSpecifiers declarator attributes?
-//	|	declarationSpecifiers abstractDeclarator? attributes?
+//	:	declarationSpecifiers declarator
+//	|	declarationSpecifiers abstractDeclarator?
 //	;
 
 identifierList
@@ -418,7 +427,8 @@ abstractDeclarator // TODO AST
 	;
 
 directAbstractDeclarator
-	:	'(' attributes? abstractDeclarator ')'
+//	:	'(' attributes? abstractDeclarator ')'
+	:	'(' abstractDeclarator ')'
 		( '[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR abstractDeclarator assignmentExpression?)
 		| ('[' '*' ']') => '[' '*' ']' -> ^(ARRAY_DECLARATOR abstractDeclarator '*')
 		| '(' parameterTypeList? ')'  ->  ^(FUNCTION_DECLARATOR abstractDeclarator parameterTypeList?)
@@ -462,22 +472,22 @@ arrayDesignator					// GNU
 	:	'[' constantExpression '...' constantExpression ']'
 	;
 
-attributes
-	:	attribute+
-	;
+//attributes
+//	:	attribute+
+//	;
 
-attribute
-	:	('__attribute'|'__attribute__') '(' '(' attributeList ')' ')'
-	;
+//attribute
+//	:	('__attribute'|'__attribute__') '(' '(' attributeList ')' ')'
+//	;
 
-attributeList
-	:	attrib (',' attrib)*
-	;
+//attributeList
+//	:	attrib (',' attrib)*
+//	;
 
-attrib		// taken from GnuCParser.g (Monty Zukowski)
-	:     ( ~('('| ')'| ',')
-	|	'(' attributeList ')' )*
-	;
+//attrib		// taken from GnuCParser.g (Monty Zukowski)
+//	:     ( ~('('| ')'| ',')
+//	|	'(' attributeList ')' )*
+//	;
 
 // A.2.1 Expressions
 
@@ -539,9 +549,6 @@ unaryOperator
 	;
 
 castExpression
-// ORIG: 	'(' typeName ')' castExpression
-// gets rid of a lot of backtracking
-// GNUC-like
 	:	('(' typeName ')') => '('typeName ')' ( castExpression  -> ^(CAST_EXPRESSION typeName castExpression)| '{' initializerList ','? '}' -> ^(COMPOUND_LITERAL typeName initializerList))
 	|	unaryExpression
 	;
@@ -633,7 +640,8 @@ statement
 	;
 
 labeledStatement
-	:	IDENTIFIER ':' attributes? statement -> ^(LABEL IDENTIFIER attributes? statement)
+//	:	IDENTIFIER ':' attributes? statement -> ^(LABEL IDENTIFIER attributes? statement)
+	:	IDENTIFIER ':' statement -> ^(LABEL IDENTIFIER statement)
 	|	'case' constantExpression ('...' constantExpression)? ':' statement -> ^('case' constantExpression statement) // TODO '...' AST
 	|	'default'^ ':'! statement
 	;
