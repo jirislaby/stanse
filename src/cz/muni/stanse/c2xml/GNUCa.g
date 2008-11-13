@@ -12,7 +12,6 @@ TODO:
 
 DISABLED ATTRIBUTE-RELATED EXTENSIONS:
 	5.24 Declaring Attributes of Functions
-	5.25 Attribute Syntax
 	5.31 Specifying Attributes of Variables
 	5.32 Specifying Attributes of Types
 	- removed to get rid of backtracking
@@ -38,6 +37,7 @@ IMPLEMENTED EXTENSIONS:
 	5.21 Case Ranges
 	5.22 Cast to a Union Type (IGNORED)
 	5.23 Mixed Declarations and Code (C99)
+	5.25 Attribute Syntax
 	5.26 Prototypes and Old-Style Function Definitions (IGNORED)
 	5.27 C++ Style Comments	(C99)
 	5.28 Dollar Signs in Identifier Names
@@ -472,22 +472,22 @@ arrayDesignator					// GNU
 	:	'[' constantExpression '...' constantExpression ']'
 	;
 
-//attributes
-//	:	attribute+
-//	;
+attributes
+	:	attribute+
+	;
 
-//attribute
-//	:	('__attribute'|'__attribute__') '(' '(' attributeList ')' ')'
-//	;
+attribute
+	:	('__attribute'|'__attribute__') '(' '(' attributeList ')' ')'
+	;
 
-//attributeList
-//	:	attrib (',' attrib)*
-//	;
+attributeList
+	:	attrib (',' attrib)*
+	;
 
-//attrib		// taken from GnuCParser.g (Monty Zukowski)
-//	:     ( ~('('| ')'| ',')
-//	|	'(' attributeList ')' )*
-//	;
+attrib		// taken from GnuCParser.g (Monty Zukowski)
+	:     ( ~('('| ')'| ',')
+	|	'(' attributeList ')' )*
+	;
 
 // A.2.1 Expressions
 
