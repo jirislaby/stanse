@@ -4,10 +4,9 @@ GNUC grammar for ANTLR v3
 
 AUTHOR:	Jan Obdrzalek, 2007-2008
 	Jiri Slaby (minor modifications), 2008
-	Typedef handling taken from C.g distributed with ANTLR v3,  (c) Teerence Parr
+	Typedef handling taken from C.g distributed with ANTLR v3,  (c) Terence Parr
 
 TODO:
-	- improve alternate keywords handling
 	- check 'I','J' imaginary suffixes
 	- finish string literal concatenation
 	- attributes in typeQualifierList
@@ -72,9 +71,11 @@ options {
 	output = AST;
 }
 
+// list of imaginary nodes
 tokens{
 	BRACKET_DESIGNATOR;
 	SIGNED;
+	COMPLEX;
 	E1;
 	E2;
 	E3;
@@ -261,14 +262,16 @@ typeSpecifier		// (6.7.2)
         |       'long'			-> ^(BASETYPE 'long')
         |       'float'			-> ^(BASETYPE 'float')
         |       'double'		-> ^(BASETYPE 'double')
-        |       'signed'		-> ^(BASETYPE SIGNED)			// TODO
-        |       '__signed'		-> ^(BASETYPE SIGNED)			// TODO
-        |       '__signed__'		-> ^(BASETYPE SIGNED)			// TODO
+//        |       'signed'		-> ^(BASETYPE 'signed')
+        |       s='signed'		-> ^(BASETYPE SIGNED[$s])
+        |       s='__signed'		-> ^(BASETYPE SIGNED[$s])
+        |       s='__signed__'		-> ^(BASETYPE SIGNED[$s])
         |       'unsigned'		-> ^(BASETYPE 'unsigned')
         |	'_Bool'			-> ^(BASETYPE '_Bool')
-        |	'_Complex'		-> ^(BASETYPE '_Complex')
-        |	'__complex'		-> ^(BASETYPE XID)		// TODO
-        |	'__complex__'		-> ^(BASETYPE XID)		// TODO
+//        |	'_Complex'		-> ^(BASETYPE '_Complex')
+        |	c='_Complex'		-> ^(BASETYPE COMPLEX[$c])
+        |	c='__complex'		-> ^(BASETYPE COMPLEX[$c])
+        |	c='__complex__'		-> ^(BASETYPE COMPLEX[$c])
         |	'_Imaginary'		-> ^(BASETYPE '_Imaginary')		// TODO removed in C99 TC2
         |       structOrUnionSpecifier
         |       enumSpecifier

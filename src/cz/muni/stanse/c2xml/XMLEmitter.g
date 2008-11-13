@@ -463,7 +463,7 @@ typeSpecifier returns [Element e]
 	| ^(BASETYPE SIGNED)	{ $e.addElement("baseType").addText("signed"); }
 	| ^(BASETYPE 'unsigned'){ $e.addElement("baseType").addText("unsigned"); }
 	| ^(BASETYPE '_Bool')	{ $e.addElement("baseType").addText("_Bool"); }
-	| ^(BASETYPE '_Complex'){ $e.addElement("baseType").addText("_Complex"); }
+	| ^(BASETYPE COMPLEX)	{ $e.addElement("baseType").addText("_Complex"); }
 	| ^(BASETYPE XID)
 	| ^(BASETYPE '_Imaginary')	{ $e.addElement("baseType").addText("_Imaginary"); }
 	| structOrUnionSpecifier{ $e.add($structOrUnionSpecifier.e); }
