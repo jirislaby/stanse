@@ -1,10 +1,10 @@
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 GNUC grammar for ANTLR v3
-Based on ANSIC99 grammar by Jan Obdrzalek
-Some bits taken from C.g by Terence Parr
 
-AUTHOR:		Jan Obdrzalek, Jul 07, 2007
+AUTHOR:	Jan Obdrzalek, 2007-2008
+	Jiri Slaby (minor modifications), 2008
+	Typedef handling taken from C.g distributed with ANTLR v3,  (c) Teerence Parr
 
 TODO:
 	- improve alternate keywords handling
@@ -58,7 +58,7 @@ IMPLEMENTED EXTENSIONS:
 	5.51 Thread-Local Storage
 
 COMMENTS:
-	- expression/typeName conflicts are sorted by using semantic predicates
+	- expression/typeName conflicts are sorted by using syntactic predicates
 	  we always try '(' typename ')' first, as it should have a shorter derivation
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -392,8 +392,14 @@ parameterList
 
 parameterDeclaration
 	// syntactic predicate: declarator must end-up with an IDENTIFIER, abstract with pointer or '['
-	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator | abstractDeclarator?) attributes? -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
+	// the complicated rewrite of attributes? is necessary to remove ambiguities. If abstractDeclarator is empty, it should not have any attributes.
+	//   TODO check for correctness
+	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator attributes? | (abstractDeclarator attributes?)? ) -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
 	;
+// orig:
+//	:	declarationSpecifiers declarator attributes?
+//	|	declarationSpecifiers abstractDeclarator? attributes?
+//	;
 
 identifierList
 	:	IDENTIFIER (',' IDENTIFIER)* -> ^(PARAMETER IDENTIFIER)+
