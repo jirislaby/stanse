@@ -51,7 +51,7 @@ class EdgeWithAutomata {
         for (Iterator<RunningAutomaton> it = automataSet.getAutomata().iterator(); it.hasNext();) {
             RunningAutomaton runningAutomaton = it.next();
             for (Integer id : runningAutomaton.getIds()) {
-                if (pairs.contains(Pair.getInstance(id, runningAutomaton.getCurrentStateId()))) {
+                if (pairs.contains(new Pair<Integer, Integer>(id, runningAutomaton.getCurrentStateId()))) {
                     it.remove();
                     break;
                 }

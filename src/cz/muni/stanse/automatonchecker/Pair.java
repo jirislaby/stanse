@@ -18,23 +18,11 @@ public class Pair<T, S> {
      * @param first First item
      * @param second Second item
      */
-    private Pair(T first, S second) {
+    public Pair(T first, S second) {
         this.first = first;
         this.second = second;
     }
     
-    /**
-     * Facotry method. Caching can be introduced in the future.
-     * @param <T> Type of the first item
-     * @param <S> Type of the second item
-     * @param first First item
-     * @param second Second item
-     * @return New instance of Pair object
-     */
-    public static <T, S> Pair<T, S> getInstance(T first, S second) {
-        return new Pair(first, second);
-    }
-
     public T getFirst() {
         return first;
     }

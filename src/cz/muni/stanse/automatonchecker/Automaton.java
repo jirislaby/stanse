@@ -390,7 +390,7 @@ public final class Automaton extends Checker {
                 }
 
                 for (RunningAutomaton automaton : currentRunningAutomata.getAutomata()) {
-                    edgeHistory.get(currentEdge).add(Pair.getInstance(automaton.getId(), automaton.getCurrentStateId()));
+                    edgeHistory.get(currentEdge).add(new Pair<Integer, Integer>(automaton.getId(), automaton.getCurrentStateId()));
                     if(DEBUG) {
                         logger.debug("Do historie pridano k hrane "+currentEdge+" "+automaton);
                     }
