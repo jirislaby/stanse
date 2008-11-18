@@ -385,7 +385,7 @@ directDeclarator
 		// LPAREN ID (COMMA | RPAREN) is identifierList. Lookahead k=3 should work, but does not :(
 		// adding a syntactic predicate
 	|	'(' parameterTypeList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator parameterTypeList)
-	|	('(' IDENTIFIER (',' | ')')) => '(' identifierList? ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList?)
+	|	('(' (IDENTIFIER (',' | ')')| ')') ) => '(' identifierList? ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList?)
 	)*
 	;
 
