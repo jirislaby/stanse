@@ -1,15 +1,27 @@
 #!/usr/bin/perl -w
 # took over from cgcc from sparse package
+use strict;
+use File::Basename;
 
 my $cc = $ENV{'REAL_CC'} || 'cc';
-my $check = $ENV{'CHECK'} || 'sparse';
-# FIXME remove this line and change the previous to stanse
-$check = 'true';
+my $check = $cc . ' -E -w ';
+# until we get things fixed...
+$check .= '-P -D__attribute__\(x\)= -D__builtin_va_list=int -D__builtin_offsetof\(x,y\)=1 ';
+my $output = '';
+
+$ENV{'CHECKER_DEF'} || die "You need to define checking xml in CHECKER_DEF " .
+	"environment variable";
+my $checker_def = $ENV{'CHECKER_DEF'};
+die "Checking xml ($checker_def) doesn't exist" unless -f $checker_def;
+
+my $stansedir = ".stanse/";
+my $stansejar = $ENV{'STANSE_JAR'} || "stanse.jar";
 
 my $gendeps = 0;
 my $do_check = 0;
 my $do_compile = 1;
 my $verbose = 0;
+my $change_suffix = 0;
 
 foreach (@ARGV) {
     # Look for a .c file.  We don't want to run the checker on .o or .so files
@@ -27,15 +39,28 @@ foreach (@ARGV) {
 	next;
     }
 
-    # If someone adds "-E", don't pre-process twice.
-    $do_compile = 0 if $_ eq '-E';
-
     $verbose = 1 if $_ eq '-v';
 
     my $this_arg = ' ' . &quote_arg ($_);
     $cc .= $this_arg unless &check_only_option ($_);
+
+    # convert -o /path/file.o into -o /path/.stanse/file.o
+    if ($change_suffix == 1) {
+	$output = $stansedir . &quote_arg($_);
+	my $dir = dirname($output);
+	if (! -d $dir) {
+		system("mkdir -p $dir 2>/dev/null") && die "Can't create $dir";
+	}
+	$this_arg = ' ' . $output;
+#	$output = substr(`pwd`, 0, -1) . '/' . $output;
+	$change_suffix = 0;
+    }
+    $change_suffix = 1 if $_ eq '-o';
+
     $check .= $this_arg unless &cc_only_option ($_);
 }
+#print STDERR "X$cc\n";
+#print STDERR "Y$check\n";
 
 if ($gendeps) {
     $do_compile = 1;
@@ -44,6 +69,7 @@ if ($gendeps) {
 
 if ($do_check) {
     print "$check\n" if $verbose;
+    $check = $check . "; java -jar $stansejar -nogui -ch $checker_def $output";
     if ($do_compile) {
 	system ($check);
     } else {
