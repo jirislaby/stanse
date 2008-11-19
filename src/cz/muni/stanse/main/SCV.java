@@ -3,6 +3,7 @@
  */
 package cz.muni.stanse.main;
 
+import cz.muni.stanse.automatonchecker.Automaton;
 import cz.muni.stanse.c2xml.CParser;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.Checker;
@@ -11,6 +12,7 @@ import cz.muni.stanse.props.Properties;
 import cz.muni.stanse.scvgui.GraphViz;
 import cz.muni.stanse.scvgui.GuiMain;
 import cz.muni.stanse.scvgui.SourceAndXMLWindow;
+import cz.muni.stanse.xml2cfg.ControlFlowGraph;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -234,9 +236,8 @@ public class SCV {
                 scv.startGui();
             } else {
                 // Dont start gui, but run checkers
-                if(!checkers.isEmpty()) {
+                if(!checkers.isEmpty())
                     scv.runCheckers();
-                }
             }
 
 
@@ -411,20 +412,24 @@ public class SCV {
     }
         
     public void runCheckers() {
-    Set<Document> definitions = new HashSet<Document>();
-    for(String checker: checkerDefinitions) {
-        definitions.add(getCheckerDefinitionByFilename(checker));
-    }
+    Set<File> definitions = new HashSet<File>();
+    for(String checker: checkerDefinitions)
+        definitions.add(new File(checker));
 
     for(String filename: sourceFiles) {
         try {
             Document compiledSource = getXMLDocumentByFilename(filename);
-/*            StaticChecker checker = new StaticChecker(compiledSource);
-            for(Document definition: definitions) {
-                checker.addDefinition(definition);
-            }
+	    HashSet<ControlFlowGraph> cfgs = new HashSet<ControlFlowGraph>();
+	    Element rootElement = compiledSource.getRootElement();
+
+	    /* code duplication -- the same is performed for gui */
+	    List<Element> edecls = rootElement.elements("externalDeclaration");
+	    for (Element e: edecls)
+		if (e.element("functionDefinition") != null)
+		    cfgs.add(new ControlFlowGraph(e.element("functionDefinition")));
+	    Automaton checker = new Automaton(cfgs);
+	    checker.setConfigurations(definitions);
             checker.check();
-*/
             
         } catch (IllegalArgumentException ex) {
            logger.error(null, ex);
