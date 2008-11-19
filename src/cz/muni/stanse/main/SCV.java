@@ -132,7 +132,7 @@ public class SCV {
         try {
             final OptionSet options = optionsParser.parse(args);
 
-            if (options.wasDetected(OPT_HELP) || options.wasDetected(OPT_USAGE)) {
+            if (options.has(OPT_HELP) || options.has(OPT_USAGE)) {
                 try {
                     optionsParser.printHelpOn(System.out);
                 } catch (IOException ex) {
@@ -142,13 +142,16 @@ public class SCV {
                 }
             }
             
-            if(options.wasDetected(OPT_VERSION)) {
+            if(options.has(OPT_VERSION)) {
                 System.out.println(SCV.class.getPackage().getImplementationVersion());
                 System.exit(0);
             }
 
-            if (options.wasDetected(OPT_VERBOSITY)) {
-                switch ((Integer) options.valueOf(OPT_VERBOSITY)) {
+            if (options.has(OPT_VERBOSITY)) {
+		Integer level = (Integer)options.valueOf(OPT_VERBOSITY);
+		if (level == null)
+			level = 1;
+                switch (level) {
                     case 1:
                         VERBOSITY_LEVEL = Properties.VerbosityLevel.LOW;
                         break;
@@ -169,11 +172,11 @@ public class SCV {
                     }
             } 
 
-            if (options.wasDetected(OPT_SILENT)) {
+            if (options.has(OPT_SILENT)) {
                 VERBOSITY_LEVEL = Properties.VerbosityLevel.SILENT;
             }
             
-            if(options.wasDetected(OPT_DEBUG)) {
+            if(options.has(OPT_DEBUG)) {
                 VERBOSITY_LEVEL = Properties.VerbosityLevel.HIGH;
                 
             }
@@ -184,7 +187,7 @@ public class SCV {
             LoggerConfigurator.doConfigure();
 
             
-            boolean startGui = !options.wasDetected(OPT_NOGUI);
+            boolean startGui = !options.has(OPT_NOGUI);
 
             List<String> sources = new ArrayList<String>();
             for (Object nonOptionArgument : options.nonOptionArguments()) {
@@ -192,10 +195,12 @@ public class SCV {
             }
             SCV scv = new SCV(sources);
             
-            if (options.wasDetected(OPT_CALLGRAPH)) {
+            if (options.has(OPT_CALLGRAPH)) {
                 String filename = options.argumentOf(OPT_CALLGRAPH);
                 if (!filename.isEmpty()) {
-                    scv.generateCallGraphToFile(filename, options.wasDetected(OPT_STRONGLYCONNECTED), options.wasDetected(OPT_CALLGRAPHMULTI));
+                    scv.generateCallGraphToFile(filename,
+			options.has(OPT_STRONGLYCONNECTED),
+			options.has(OPT_CALLGRAPHMULTI));
                     startGui = false;
 
                 }
@@ -203,7 +208,7 @@ public class SCV {
             }
             
             List<String> checkers = new ArrayList<String>();
-            if(options.wasDetected(OPT_CHECKERS)) {
+            if(options.has(OPT_CHECKERS)) {
                 for(Object checker: options.argumentsOf(OPT_CHECKERS)) {
                     checkers.add((String) checker);
                 }
@@ -212,7 +217,7 @@ public class SCV {
             scv.setCheckerDefinitions(checkers);
             
             
-            if(options.wasDetected(OPT_REPORT)) {
+            if(options.has(OPT_REPORT)) {
                 FileAppender reportAppender = new FileAppender();
                 reportAppender.setLayout(new HTMLLayout());
                 reportAppender.setFile(options.argumentOf(OPT_REPORT));
