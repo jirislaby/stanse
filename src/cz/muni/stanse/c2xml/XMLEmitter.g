@@ -181,7 +181,7 @@ scope Symbols;
 	: ^(TRANSLATION_UNIT (eds=externalDeclaration {root.add(eds);} )*) {
 		xmlDocument.setRootElement(root);
 		outputXML();
-		d = xmlDocument;
+		$d = xmlDocument;
 	}
 	;
 
