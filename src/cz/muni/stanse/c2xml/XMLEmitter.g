@@ -259,11 +259,11 @@ directDeclarator returns [List<Element> els]
 	$els = new ArrayList<Element>();
 }
 	: IDENTIFIER {
-		String newName = renameVariable($IDENTIFIER.getText());
-		if (!newName.equals($IDENTIFIER.getText()))
-			newListElement($els, "oldId").addText($IDENTIFIER.getText());
+		String newName = renameVariable($IDENTIFIER.text);
+		if (!newName.equals($IDENTIFIER.text))
+			newListElement($els, "oldId").addText($IDENTIFIER.text);
 		newListElement($els, "id").addText(newName);
-		pushSymbol($IDENTIFIER.getText(), newName, 1);
+		pushSymbol($IDENTIFIER.text, newName, 1);
 	}
 	| declarator { newListElement($els, "declarator").add($declarator.e); }
 	| directDeclarator1 { $els = $directDeclarator1.els; } /* XXX is here the + needed? */
@@ -277,11 +277,11 @@ directDeclarator1 returns [List<Element> els]
 }
 	: ^(ARRAY_DECLARATOR (IDENTIFIER|dd=directDeclarator1) ('static' {tqs.add("static");}|asterisk='*')? (tq=typeQualifier {tqs.add(tq);})* expression?) {
 		if ($IDENTIFIER != null) {
-			String newName = renameVariable($IDENTIFIER.getText());
-			if (!newName.equals($IDENTIFIER.getText()))
-				newListElement($els, "oldId").addText($IDENTIFIER.getText());
+			String newName = renameVariable($IDENTIFIER.text);
+			if (!newName.equals($IDENTIFIER.text))
+				newListElement($els, "oldId").addText($IDENTIFIER.text);
 			newListElement($els, "id").addText(newName);
-			pushSymbol($IDENTIFIER.getText(), newName, 2);
+			pushSymbol($IDENTIFIER.text, newName, 2);
 		} else
 			addAllElements(newListElement($els, "declarator"), $dd.els);
 		Element e = newListElement($els, "arrayDecl");
@@ -292,11 +292,11 @@ directDeclarator1 returns [List<Element> els]
 		addElementCond(e, $expression.e);
 	}
 	| ^(FUNCTION_DECLARATOR (IDENTIFIER { /* we need to process the id before params */
-				String newName = renameVariable($IDENTIFIER.getText());
-				if (!newName.equals($IDENTIFIER.getText()))
-					newListElement($els, "oldId").addText($IDENTIFIER.getText());
+				String newName = renameVariable($IDENTIFIER.text);
+				if (!newName.equals($IDENTIFIER.text))
+					newListElement($els, "oldId").addText($IDENTIFIER.text);
 				newListElement($els, "id").addText(newName);
-				pushSymbol($IDENTIFIER.getText(), newName, 3);
+				pushSymbol($IDENTIFIER.text, newName, 3);
 				pushSymbol("-", "-", 0); /* see functionDefinition */
 			}|declarator) (pl=parameterTypeList|(i=identifier {l.add(i);})*)) {
 		if ($IDENTIFIER == null)
@@ -337,8 +337,8 @@ designator returns [Element e]
 	$e = newElement("designator");
 }
 	: ^(DESIGNATOR ^(BRACKET_DESIGNATOR expression)) { $e.add($expression.e); }
-	| ^(DESIGNATOR IDENTIFIER)	{ $e.addElement("id").addText($IDENTIFIER.getText()); }
-	| IDENTIFIER			{ $e.addElement("id").addText($IDENTIFIER.getText()); }
+	| ^(DESIGNATOR IDENTIFIER)	{ $e.addElement("id").addText($IDENTIFIER.text); }
+	| IDENTIFIER			{ $e.addElement("id").addText($IDENTIFIER.text); }
 	;
 
 compoundStatement returns [Element e]
@@ -409,12 +409,12 @@ directAbstractDeclarator returns [List<Element> els]
 
 identifier returns [Element e]
 	: ^(PARAMETER IDENTIFIER)	{
-		String newName = renameVariable($IDENTIFIER.getText());
+		String newName = renameVariable($IDENTIFIER.text);
 		$e = newElement("id");
-		if (!newName.equals($IDENTIFIER.getText()))
-			$e.addAttribute("oldId", $IDENTIFIER.getText());
+		if (!newName.equals($IDENTIFIER.text))
+			$e.addAttribute("oldId", $IDENTIFIER.text);
 		$e.addText(newName);
-		pushSymbol($IDENTIFIER.getText(), newName, 4);
+		pushSymbol($IDENTIFIER.text, newName, 4);
 	}
 	;
 
@@ -480,7 +480,7 @@ structOrUnionSpecifier returns [Element e]
 	: ^(structOrUnion ^(XID IDENTIFIER?) (sd=structDeclaration {sds.add(sd);})*) {
 		$e = newElement($structOrUnion.s);
 		if ($IDENTIFIER != null)
-			$e.addAttribute("id", $IDENTIFIER.getText());
+			$e.addAttribute("id", $IDENTIFIER.text);
 		addAllElements($e, sds);
 		symbolsEnabled = true;
 	}
@@ -525,7 +525,7 @@ enumSpecifier returns [Element e]
 	: ^('enum' (^(XID IDENTIFIER))? (en=enumerator {ens.add(en);})*) {
 		$e = newElement("enum");
 		if ($IDENTIFIER != null)
-			$e.addAttribute("id", $IDENTIFIER.getText());
+			$e.addAttribute("id", $IDENTIFIER.text);
 		addAllElements($e, ens);
 	}
 	;
@@ -533,7 +533,7 @@ enumSpecifier returns [Element e]
 enumerator returns [Element e]
 	: ^(ENUMERATOR IDENTIFIER expression?) {
 		$e = newElement("enumerator");
-		$e.addAttribute("id", $IDENTIFIER.getText());
+		$e.addAttribute("id", $IDENTIFIER.text);
 		addElementCond($e, $expression.e);
 	}
 	;
@@ -595,7 +595,7 @@ labeledStatement returns [Element e]
 	: ^(LABEL IDENTIFIER statement) {
 		$e = newElement("labelStatement");
 		$e.add($statement.e);
-		$e.addAttribute("id", $IDENTIFIER.getText());
+		$e.addAttribute("id", $IDENTIFIER.text);
 	}
 	| ^('case' expression statement) {
 		$e = newElement("labeledStatement");
@@ -660,7 +660,7 @@ iterationStatement returns [Element e]
 jumpStatement returns [Element e]
 	: ^('goto' IDENTIFIER) {
 		$e = newElement("gotoStatement");
-		$e.addElement("expression").addElement("id").addText($IDENTIFIER.getText());
+		$e.addElement("expression").addElement("id").addText($IDENTIFIER.text);
 	}
 	| ^('goto' XU expression) {
 		$e = newElement("gotoStatement");
@@ -721,12 +721,12 @@ expression returns [Element e]
 	| ^('.' e1=expression IDENTIFIER)	{
 		exp = $e.addElement("dotExpression");
 		exp.add(e1);
-		exp.addElement("member").addText($IDENTIFIER.getText());
+		exp.addElement("member").addText($IDENTIFIER.text);
 	}
 	| ^('->' e1=expression IDENTIFIER) {
 		exp = $e.addElement("arrowExpression");
 		exp.add(e1);
-		exp.addElement("member").addText($IDENTIFIER.getText());
+		exp.addElement("member").addText($IDENTIFIER.text);
 	}
 	| ^(AU e1=expression)	{ $e.addElement("addrExpression").add(e1); }
 	| ^(XU e1=expression)	{ $e.addElement("derefExpression").add(e1); }
@@ -764,8 +764,8 @@ binaryExpression returns [Element e]
 	;
 
 primaryExpression returns [Element e]
-	: IDENTIFIER		{ $e = newElement("id"); $e.addText(findVariable($IDENTIFIER.getText())); }
-	| CONSTANT		{ $e = newElement("intConst"); $e.addText($CONSTANT.getText()); }
+	: IDENTIFIER		{ $e = newElement("id"); $e.addText(findVariable($IDENTIFIER.text)); }
+	| CONSTANT		{ $e = newElement("intConst"); $e.addText($CONSTANT.text); }
 	| sTRING_LITERAL	{ $e = newElement("stringConst"); $e.addText($sTRING_LITERAL.text); }
 	| compoundStatement	{ $e = $compoundStatement.e; }
 	| ^(BUILTIN_OFFSETOF typeName offsetofMemberDesignator) {
@@ -779,7 +779,7 @@ sTRING_LITERAL returns [String text]
 @init {
 	List<String> sls = new ArrayList<String>();
 }
-	: ^(STR_LITERAL (STRING_LITERAL {sls.add($STRING_LITERAL.getText());})+) {
+	: ^(STR_LITERAL (STRING_LITERAL {sls.add($STRING_LITERAL.text);})+) {
 		StringBuilder sb = new StringBuilder();
 		for (String str: sls) /* crop the quotation */
 			sb.append(str.substring(1, str.length() - 1));
