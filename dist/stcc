@@ -6,7 +6,7 @@ use File::Basename;
 my $cc = $ENV{'REAL_CC'} || 'cc';
 my $check = $cc . ' -E -w ';
 # until we get things fixed...
-$check .= '-P -D__attribute__\(x\)= -D__builtin_va_list=int -D__builtin_offsetof\(x,y\)=1 ';
+$check .= '-P -D__attribute__\(x\)= -D__attribute\(x\)= -D__builtin_va_list=int -D__builtin_offsetof\(x,y\)=1 ';
 my $output = '';
 
 $ENV{'CHECKER_DEF'} || die "You need to define checking xml in CHECKER_DEF " .
