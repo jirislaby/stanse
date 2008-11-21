@@ -60,8 +60,19 @@ import org.dom4j.io.XMLWriter;
 	private Element newElement(String text) {
 		return xmlFactory.createElement(text);
 	}
+	private Element newElement(String text, CommonTree start) {
+		return newElement(text).
+			addAttribute("bl", String.valueOf(start.getLine())).
+			addAttribute("bc", String.valueOf(start.getCharPositionInLine()));
+	}
 	private Element newListElement(List<Element> els, String text) {
 		Element e = newElement(text);
+		els.add(e);
+		return e;
+	}
+	private Element newListElement(List<Element> els, String text,
+			CommonTree start) {
+		Element e = newElement(text, start);
 		els.add(e);
 		return e;
 	}
@@ -178,7 +189,7 @@ scope Symbols;
 	$Symbols::variables = new Stack<String>();
 	$Symbols::variablesOld = new Stack<String>();
 }
-	: ^(TRANSLATION_UNIT (eds=externalDeclaration {root.add(eds);} )*) {
+	: ^(TRANSLATION_UNIT (eds=externalDeclaration {root.add($eds.e);} )*) {
 		xmlDocument.setRootElement(root);
 		outputXML();
 		$d = xmlDocument;
@@ -187,7 +198,7 @@ scope Symbols;
 
 externalDeclaration returns [Element e]
 @init {
-	$e = newElement("externalDeclaration");
+	$e = newElement("externalDeclaration", $externalDeclaration.start);
 }
 	: functionDefinition	{ $e.add($functionDefinition.e); }
 	| declaration		{ $e.add($declaration.e); }
@@ -196,9 +207,9 @@ externalDeclaration returns [Element e]
 functionDefinition returns [Element e]
 @init {
 	List<Element> ds = new ArrayList<Element>();
-	$e = newElement("functionDefinition");
+	$e = newElement("functionDefinition", $functionDefinition.start);
 }
-	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator (d=declaration {ds.add(d);})* compoundStatement) {
+	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator (d=declaration {ds.add($d.e);})* compoundStatement) {
 		$e.add($declarationSpecifiers.e);
 		$e.add($declarator.e);
 		addAllElements($e, ds);
@@ -210,9 +221,9 @@ functionDefinition returns [Element e]
 declaration returns [Element e]
 @init {
 	List<Element> ids = new ArrayList<Element>();
-	$e = newElement("declaration");
+	$e = newElement("declaration", $declaration.start);
 }
-	: ^('typedef' declarationSpecifiers? (id=initDeclarator {ids.add(id);})*) {
+	: ^('typedef' declarationSpecifiers? (id=initDeclarator {ids.add($id.e);})*) {
 		Element ds;
 		if ($declarationSpecifiers.e != null)
 			$e.add(ds = $declarationSpecifiers.e);
@@ -221,7 +232,7 @@ declaration returns [Element e]
 		ds.addAttribute("storageClass", "typedef");
 		addAllElements($e, ids);
 	}
-	| ^(DECLARATION declarationSpecifiers (id=initDeclarator {ids.add(id);})*) {
+	| ^(DECLARATION declarationSpecifiers (id=initDeclarator {ids.add($id.e);})*) {
 		$e.add($declarationSpecifiers.e);
 		addAllElements($e, ids);
 	}
@@ -234,8 +245,9 @@ declarationSpecifiers returns [Element e]
 	Set<String> scs = new HashSet<String>();
 	Set<String> fss = new HashSet<String>();
 }
-	: ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER (ts=typeSpecifier {tss.add(ts);})*) ^(XTYPE_QUALIFIER (tq=typeQualifier {tqs.add(tq);})*) ^(XSTORAGE_CLASS (sc=storageClassSpecifier {scs.add(sc);}|fs=functionSpecifier {fss.add(fs);})*)) {
-		$e = newElement("declarationSpecifiers");
+	: ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER (ts=typeSpecifier {tss.add($ts.e);})*) ^(XTYPE_QUALIFIER (tq=typeQualifier {tqs.add($tq.s);})*) ^(XSTORAGE_CLASS (sc=storageClassSpecifier {scs.add($sc.s);}|fs=functionSpecifier {fss.add($fs.s);})*)) {
+		$e = newElement("declarationSpecifiers",
+				$declarationSpecifiers.start);
 		addAllElements($e, typeNormalize(tss));
 		for (String str: tqs)
 			$e.addAttribute(str, "1");
@@ -248,7 +260,7 @@ declarationSpecifiers returns [Element e]
 
 declarator returns [Element e]
 	: ^(DECLARATOR pointer? directDeclarator) {
-		$e = newElement("declarator");
+		$e = newElement("declarator", $declarator.start);
 		addAllElements($e, $pointer.els);
 		addAllElements($e, $directDeclarator.els);
 	}
@@ -265,7 +277,8 @@ directDeclarator returns [List<Element> els]
 		newListElement($els, "id").addText(newName);
 		pushSymbol($IDENTIFIER.text, newName, 1);
 	}
-	| declarator { newListElement($els, "declarator").add($declarator.e); }
+	| declarator { newListElement($els, "declarator", $declarator.start).
+			add($declarator.e); }
 	| directDeclarator1 { $els = $directDeclarator1.els; } /* XXX is here the + needed? */
 	;
 
@@ -283,7 +296,8 @@ directDeclarator1 returns [List<Element> els]
 			newListElement($els, "id").addText(newName);
 			pushSymbol($IDENTIFIER.text, newName, 2);
 		} else
-			addAllElements(newListElement($els, "declarator"), $dd.els);
+			addAllElements(newListElement($els, "declarator",
+					$dd.start), $dd.els);
 		Element e = newListElement($els, "arrayDecl");
 		for (String t: tqs)
 			e.addAttribute(t, "1");
@@ -308,7 +322,7 @@ directDeclarator1 returns [List<Element> els]
 
 initDeclarator returns [Element e]
 	: ^(INIT_DECLARATOR declarator initializer?) {
-		$e = newElement("initDeclarator");
+		$e = newElement("initDeclarator", $initDeclarator.start);
 		$e.add($declarator.e);
 		addElementCond($e, $initializer.e);
 	}
@@ -316,7 +330,7 @@ initDeclarator returns [Element e]
 
 initializer returns [Element e]
 @init {
-	$e = newElement("initializer");
+	$e = newElement("initializer", $initializer.start);
 }
 	: ^(INITIALIZER expression)	{ $e.add($expression.e); }
 	| INITIALIZER /* just <initializer/> */
@@ -327,14 +341,14 @@ initializerList returns [List<Element> els]
 @init {
 	$els = new ArrayList<Element>();
 }
-	: ((d=designator {$els.add(d);})* initializer {
+	: ((d=designator {$els.add($d.e);})* initializer {
 		$els.add($initializer.e);
 	})+
 	;
 
 designator returns [Element e]
 @init {
-	$e = newElement("designator");
+	$e = newElement("designator", $designator.start);
 }
 	: ^(DESIGNATOR ^(BRACKET_DESIGNATOR expression)) { $e.add($expression.e); }
 	| ^(DESIGNATOR IDENTIFIER)	{ $e.addElement("id").addText($IDENTIFIER.text); }
@@ -346,8 +360,8 @@ compoundStatement returns [Element e]
 	List<Element> els = new ArrayList<Element>();
 	pushSymbol(".", ".", 0);
 }
-	: ^(COMPOUND_STATEMENT (d=declaration {els.add(d);}|fd=functionDefinition{els.add(fd);}|st=statement{els.add(st);})*) {
-		$e = newElement("compoundStatement");
+	: ^(COMPOUND_STATEMENT (d=declaration {els.add($d.e);}|fd=functionDefinition{els.add($fd.e);}|st=statement{els.add($st.e);})*) {
+		$e = newElement("compoundStatement", $compoundStatement.start);
 		addAllElements($e, els);
 		popUntil(".");
 	}
@@ -357,7 +371,7 @@ parameterTypeList returns [List<Element> els]
 @init {
 	$els = new ArrayList<Element>();
 }
-	: (p=parameterDeclaration {$els.add(p);})+ VARARGS? {
+	: (p=parameterDeclaration {$els.add($p.e);})+ VARARGS? {
 		if ($VARARGS != null) {
 			Element va = newElement("parameter");
 			va.addElement("varArgs");
@@ -368,7 +382,7 @@ parameterTypeList returns [List<Element> els]
 
 parameterDeclaration returns [Element e]
 	: ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator?) {
-		$e = newElement("parameter");
+		$e = newElement("parameter", $parameterDeclaration.start);
 		$e.add($declarationSpecifiers.e);
 		addElementCond($e, $declarator.e);
 		addElementCond($e, $abstractDeclarator.e);
@@ -377,7 +391,7 @@ parameterDeclaration returns [Element e]
 
 abstractDeclarator returns [Element e]
 @init {
-	$e = newElement("abstractDeclarator");
+	$e = newElement("abstractDeclarator", $abstractDeclarator.start);
 }
 	: pointer directAbstractDeclarator? {
 		addAllElements($e, $pointer.els);
@@ -393,7 +407,8 @@ directAbstractDeclarator returns [List<Element> els]
 	: ^(ARRAY_DECLARATOR abstractDeclarator? (expression?|ast='*')) {
 		if ($abstractDeclarator.e != null)
 			$els.add($abstractDeclarator.e);
-		Element e = newListElement($els, "arrayDecl");
+		Element e = newListElement($els, "arrayDecl",
+				$directAbstractDeclarator.start);
 		if ($expression.e != null)
 			e.add($expression.e);
 		else if ($ast != null)
@@ -402,7 +417,8 @@ directAbstractDeclarator returns [List<Element> els]
 	| ^(FUNCTION_DECLARATOR abstractDeclarator? parameterTypeList?) {
 		if ($abstractDeclarator.e != null)
 			$els.add($abstractDeclarator.e);
-		Element e = newElement("functionDecl");
+		Element e = newElement("functionDecl",
+				$directAbstractDeclarator.start);
 		addAllElements(e, $parameterTypeList.els);
 	}
 	;
@@ -426,7 +442,7 @@ typeName returns [Element e]
 }
 	: ^(TYPE_NAME (sq=specifierQualifier {sqs.add(sq);})+ abstractDeclarator?) {
 		List <Element> tss = new ArrayList<Element>();
-		$e = newElement("typeName");
+		$e = newElement("typeName", $typeName.start);
 		for (specifierQualifier_return sqr: sqs)
 			if (sqr.qual != null)
 				$e.addAttribute(sqr.qual, "1");
@@ -451,7 +467,7 @@ typeQualifier returns [String s]
 
 typeSpecifier returns [Element e]
 @init {
-	$e = newElement("typeSpecifier");
+	$e = newElement("typeSpecifier", $typeSpecifier.start);
 }
 	: ^(BASETYPE 'void')	{ $e.addElement("baseType").addText("void"); }
 	| ^(BASETYPE 'char')	{ $e.addElement("baseType").addText("char"); }
@@ -477,7 +493,7 @@ structOrUnionSpecifier returns [Element e]
 	List<Element> sds = new ArrayList<Element>();
 	symbolsEnabled = false;
 }
-	: ^(structOrUnion ^(XID IDENTIFIER?) (sd=structDeclaration {sds.add(sd);})*) {
+	: ^(structOrUnion ^(XID IDENTIFIER?) (sd=structDeclaration {sds.add($sd.e);})*) {
 		$e = newElement($structOrUnion.s);
 		if ($IDENTIFIER != null)
 			$e.addAttribute("id", $IDENTIFIER.text);
@@ -496,9 +512,9 @@ structDeclaration returns [Element e]
 	List<specifierQualifier_return> sqs = new ArrayList<specifierQualifier_return>();
 	List<Element> sds = new ArrayList<Element>();
 }
-	: ^(STRUCT_DECLARATION (sq=specifierQualifier {sqs.add(sq);})+ (sd=structDeclarator {sds.add(sd);})*) {
+	: ^(STRUCT_DECLARATION (sq=specifierQualifier {sqs.add(sq);})+ (sd=structDeclarator {sds.add($sd.e);})*) {
 		List <Element> tss = new ArrayList<Element>();
-		$e = newElement("structDeclaration");
+		$e = newElement("structDeclaration", $structDeclaration.start);
 		for (specifierQualifier_return sqr: sqs)
 			if (sqr.qual != null)
 				$e.addAttribute(sqr.qual, "1");
@@ -512,7 +528,7 @@ structDeclaration returns [Element e]
 
 structDeclarator returns [Element e]
 	: ^(STRUCT_DECLARATOR declarator? expression?) {
-		$e = newElement("structDeclarator");
+		$e = newElement("structDeclarator", $structDeclarator.start);
 		addElementCond($e, $declarator.e);
 		addElementCond($e, $expression.e);
 	}
@@ -522,8 +538,8 @@ enumSpecifier returns [Element e]
 @init {
 	List<Element> ens = new ArrayList<Element>();
 }
-	: ^('enum' (^(XID IDENTIFIER))? (en=enumerator {ens.add(en);})*) {
-		$e = newElement("enum");
+	: ^('enum' (^(XID IDENTIFIER))? (en=enumerator {ens.add($en.e);})*) {
+		$e = newElement("enum", $enumSpecifier.start);
 		if ($IDENTIFIER != null)
 			$e.addAttribute("id", $IDENTIFIER.text);
 		addAllElements($e, ens);
@@ -532,7 +548,7 @@ enumSpecifier returns [Element e]
 
 enumerator returns [Element e]
 	: ^(ENUMERATOR IDENTIFIER expression?) {
-		$e = newElement("enumerator");
+		$e = newElement("enumerator", $enumerator.start);
 		$e.addAttribute("id", $IDENTIFIER.text);
 		addElementCond($e, $expression.e);
 	}
@@ -580,7 +596,7 @@ pointer returns [List<Element> els]
 
 statement returns [Element e]
 @init {
-	$e = newElement("statement");
+	$e = newElement("statement", $statement.start);
 }
 	: labeledStatement	{ $e.add($labeledStatement.e); }
 	| compoundStatement	{ $e.add($compoundStatement.e); }
@@ -593,17 +609,18 @@ statement returns [Element e]
 
 labeledStatement returns [Element e]
 	: ^(LABEL IDENTIFIER statement) {
-		$e = newElement("labelStatement");
+		$e = newElement("labelStatement", $labeledStatement.start);
 		$e.add($statement.e);
 		$e.addAttribute("id", $IDENTIFIER.text);
 	}
 	| ^('case' expression statement) {
-		$e = newElement("labeledStatement");
+		$e = newElement("labeledStatement", $labeledStatement.start);
 		$e.add($expression.e);
 		$e.add($statement.e);
 	}
 	| ^('default' statement) {
-		$e = newElement("defaultLabelStatement");
+		$e = newElement("defaultLabelStatement",
+				$labeledStatement.start);
 		$e.add($statement.e);
 	}
 	;
@@ -614,13 +631,14 @@ expressionStatement returns [Element e]
 
 selectionStatement returns [Element e]
 	: ^('if' expression s1=statement s2=statement?) {
-		$e = newElement(s2 == null ? "ifStatement" : "ifElseStatement");
+		$e = newElement(s2 == null ? "ifStatement" : "ifElseStatement",
+				$selectionStatement.start);
 		$e.add($expression.e);
-		$e.add(s1);
-		addElementCond($e, s2);
+		$e.add($s1.e);
+		addElementCond($e, $s2.e);
 	}
 	| ^('switch' expression statement) {
-		$e = newElement("switchStatement");
+		$e = newElement("switchStatement", $selectionStatement.start);
 		$e.add($expression.e);
 		$e.add($statement.e);
 	}
@@ -628,17 +646,17 @@ selectionStatement returns [Element e]
 
 iterationStatement returns [Element e]
 	: ^('while' expression statement) {
-		$e = newElement("whileStatement");
+		$e = newElement("whileStatement", $iterationStatement.start);
 		$e.add($expression.e);
 		$e.add($statement.e);
 	}
 	| ^('do' statement expression) {
-		$e = newElement("doStatement");
+		$e = newElement("doStatement", $iterationStatement.start);
 		$e.add($statement.e);
 		$e.add($expression.e);
 	}
 	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) ^(E3 e3=expression?) statement) {
-		$e = newElement("forStatement");
+		$e = newElement("forStatement", $iterationStatement.start);
 		if ($declaration.e != null)
 			$e.add($declaration.e);
 		else if (e1 != null)
@@ -659,23 +677,25 @@ iterationStatement returns [Element e]
 
 jumpStatement returns [Element e]
 	: ^('goto' IDENTIFIER) {
-		$e = newElement("gotoStatement");
+		$e = newElement("gotoStatement", $jumpStatement.start);
 		$e.addElement("expression").addElement("id").addText($IDENTIFIER.text);
 	}
 	| ^('goto' XU expression) {
-		$e = newElement("gotoStatement");
+		$e = newElement("gotoStatement", $jumpStatement.start);
 		$e.addElement("expression").addElement("derefExpression").add($expression.e);
 	}
-	| 'continue'	{ $e = newElement("continueStatement"); }
-	| 'break'	{ $e = newElement("breakStatement"); }
+	| 'continue'	{ $e = newElement("continueStatement",
+			$jumpStatement.start); }
+	| 'break'	{ $e = newElement("breakStatement",
+			$jumpStatement.start); }
 	| ^('return' expression?) {
-		$e = newElement("returnStatement");
+		$e = newElement("returnStatement", $jumpStatement.start);
 		addElementCond($e, $expression.e);
 	}
 	;
 
 asmStatement returns [Element e]
-	: ASM		{ $e = newElement("gnuAssembler"); }
+	: ASM		{ $e = newElement("gnuAssembler", $asmStatement.start); }
 	;
 
 /* STATEMENTS END */
@@ -686,7 +706,7 @@ expression returns [Element e]
 @init {
 	List<Element> exs = new ArrayList<Element>();
 	Element exp;
-	$e = newElement("expression");
+	$e = newElement("expression", $expression.start);
 }
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) {
 		String op = $assignmentOperator.text;
@@ -739,7 +759,7 @@ expression returns [Element e]
 
 binaryExpression returns [Element e]
 @after {
-	$e = newElement("binaryExpression");
+	$e = newElement("binaryExpression", $binaryExpression.start);
 	$e.add($e1.e);
 	$e.add($e2.e);
 	$e.addAttribute("op", op.getText());
@@ -767,10 +787,10 @@ binaryExpression returns [Element e]
 primaryExpression returns [Element e]
 	: IDENTIFIER		{ $e = newElement("id"); $e.addText(findVariable($IDENTIFIER.text)); }
 	| CONSTANT		{ $e = newElement("intConst"); $e.addText($CONSTANT.text); }
-	| sTRING_LITERAL	{ $e = newElement("stringConst"); $e.addText($sTRING_LITERAL.text); }
+	| sTRING_LITERAL	{ $e = newElement("stringConst", $sTRING_LITERAL.start); $e.addText($sTRING_LITERAL.text); }
 	| compoundStatement	{ $e = $compoundStatement.e; }
 	| ^(BUILTIN_OFFSETOF typeName offsetofMemberDesignator) {
-		$e = newElement("offsetofExpression");
+		$e = newElement("offsetofExpression", $primaryExpression.start);
 		$e.add($typeName.e);
 		$e.add($offsetofMemberDesignator.e);
 	}
