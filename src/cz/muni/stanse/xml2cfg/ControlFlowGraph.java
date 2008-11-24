@@ -160,11 +160,18 @@ public class ControlFlowGraph {
 
 		    for (i++; i < size; i++) {
 			node = actualElement.node(i);
-			if (node instanceof Element) {
-			    dump("unreachable code (compoundStatement)",
-				    (Element)node);
+			if (!(node instanceof Element))
+			    continue;
+
+			/* ignore unreachable labelStatement so far */
+			element = (Element)node;
+			if (element.nodeCount() > 0 && element.node(0).
+				    getName().equals("labelStatement"))
 			    break;
-			}
+
+			dump("unreachable code (compoundStatement)",
+				(Element)node);
+			break;
 		    }
 
 		    break;
