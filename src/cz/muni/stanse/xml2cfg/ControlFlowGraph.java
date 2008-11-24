@@ -13,6 +13,10 @@ package cz.muni.stanse.xml2cfg;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
+
+import java.io.IOException;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -112,6 +116,21 @@ public class ControlFlowGraph {
 	return conditions.get(from).get(to);
     }
 
+    private void dump(final String reason, final Element subtree) {
+	System.err.println("CFG: " + reason + " in function '" +
+		this.functionName + "' at:");
+	Thread.dumpStack();
+	System.err.println("Code:");
+	OutputFormat format = OutputFormat.createPrettyPrint();
+	try {
+	    XMLWriter writer = new XMLWriter(System.err, format);
+	    writer.write(subtree);
+	} catch (IOException e) {
+	    System.err.println(" <none>");
+	}
+	System.err.println("");
+    }
+
     /**
      * Algorithm for recursive transormation from element to sub-graph
      * @param start start node of sub-graph
@@ -119,88 +138,107 @@ public class ControlFlowGraph {
      * @return end node of sub-graph
      */
     private CFGNode nodeCreator(CFGNode start, Element actualElement) {
-	//=== unroll compoundStatement =========================================
+
+	if (actualElement.getName().equals("statement"))
+	    return nodeCreator(start, (Element)actualElement.node(0));
+
+	//=== unroll compoundStatement ========================================
 	if (actualElement.getName().equals("compoundStatement")) {
+	    /* (declaration, statement, functionDefinition)*
+	     */
 
 	    CFGNode end = start;
 
 	    for (int i = 0, size = actualElement.nodeCount(); i < size; i++) {
 		Node node = actualElement.node(i);
-		if (node instanceof Element) {
-		    Element element = (Element) node;
-		    end = nodeCreator(end, element);
-		    if (end==null) {
+		if (!(node instanceof Element))
+		    continue;
 
-			for (i++; i < size; i++) {
-			    node = actualElement.node(i);
-			    if (node instanceof Element) {
-				System.out.println("CFG: unreachable code in function '" + this.functionName + "'");
-				break;
-			    }
+		Element element = (Element)node;
+		end = nodeCreator(end, element);
+		if (end == null) {
+
+		    for (i++; i < size; i++) {
+			node = actualElement.node(i);
+			if (node instanceof Element) {
+			    dump("unreachable code (compoundStatement)",
+				    (Element)node);
+			    break;
 			}
-
-			break;
-
 		    }
+
+		    break;
 		}
 	    }
 
 	    return end;
 	}
 
-	//=== unroll ifStatement ===============================================
+	//=== unroll ifStatement ==============================================
 	if (actualElement.getName().equals("ifStatement")) {
-
+	    /* 0: expression
+	     * 1: statement
+	     */
 	    CFGNode end = new CFGNode(this);
 
 	    // false branch
-	    addEdge(start, end, (Element) actualElement.node(0), false);
+	    addEdge(start, end, (Element)actualElement.node(0), false);
 
 	    // true branch
 	    CFGNode trueStart = new CFGNode(this);
-	    addEdge(start, trueStart, (Element) actualElement.node(0), true);
+	    addEdge(start, trueStart, (Element)actualElement.node(0), true);
 
-	    CFGNode trueEnd = nodeCreator(trueStart, (Element) actualElement.node(1));
+	    CFGNode trueEnd = nodeCreator(trueStart,
+			(Element)actualElement.node(1));
 
 	    return joinNodes(trueEnd,end);
 	}
 
-	//=== unroll ifElseStatement ===========================================
+	//=== unroll ifElseStatement ==========================================
 	if (actualElement.getName().equals("ifElseStatement")) {
-
+	    /* 0: expression
+	     * 1: statement
+	     * 2: statement
+	     */
 	    CFGNode end = new CFGNode(this);
 
 	    // true branch
 	    CFGNode trueStart = new CFGNode(this);
-	    addEdge(start, trueStart, (Element) actualElement.node(0), true);
+	    addEdge(start, trueStart, (Element)actualElement.node(0), true);
 
-	    CFGNode trueEnd = nodeCreator(trueStart, (Element) actualElement.node(1));
+	    CFGNode trueEnd = nodeCreator(trueStart,
+			(Element)actualElement.node(1));
 
 	    // false branch
 	    CFGNode falseStart = new CFGNode(this);
-	    addEdge(start, falseStart, (Element) actualElement.node(0), false);
+	    addEdge(start, falseStart,
+			(Element)actualElement.node(0), false);
 
-	    CFGNode falseEnd = nodeCreator(falseStart, (Element) actualElement.node(2));
+	    CFGNode falseEnd = nodeCreator(falseStart,
+			(Element)actualElement.node(2));
 
-	    return joinNodes(falseEnd,trueEnd);
+	    return joinNodes(falseEnd, trueEnd);
 
 	}
 
-	//=== unroll whileStatement ============================================
+	//=== unroll whileStatement ===========================================
 	if (actualElement.getName().equals("whileStatement")) {
-
+	    /* 0: expression
+	     * 1: statement
+	     */
 	    CFGNode end = new CFGNode(this);
 	    breakStack.push(end);
 	    continueStack.push(start);
 
 	    // false branch
-	    addEdge(start, end, (Element) actualElement.node(0), false);
+	    addEdge(start, end, (Element)actualElement.node(0), false);
 
 	    // true branch
 	    CFGNode trueStart = new CFGNode(this);
-	    addEdge(start, trueStart, (Element) actualElement.node(0), true);
+	    addEdge(start, trueStart, (Element)actualElement.node(0), true);
 
-	    CFGNode trueEnd = nodeCreator(trueStart, (Element) actualElement.node(1));
+	    CFGNode trueEnd = nodeCreator(trueStart,
+			(Element)actualElement.node(1));
 
 	    joinNodes(start,trueEnd);
 
@@ -211,21 +249,23 @@ public class ControlFlowGraph {
 
 	//=== unroll doStatement ==============================================
 	if (actualElement.getName().equals("doStatement")) {
-
+	    /* 0: statement
+	     * 1: expression
+	     */
 	    CFGNode end = new CFGNode(this);
 	    breakStack.push(end);
 
 	    CFGNode whileEnd = new CFGNode(this);
 	    continueStack.push(whileEnd);
 
-	    CFGNode tmpWhileEnd = nodeCreator(start, (Element) actualElement.node(1)); // c2xml bug = spravne ma byt node(0)
+	    CFGNode tmpWhileEnd = nodeCreator(start,
+			(Element)actualElement.node(0));
 	    whileEnd = joinNodes(tmpWhileEnd, whileEnd);
 
 	    // false branch
-	    addEdge(whileEnd, end, (Element) actualElement.node(0), false); // c2xml bug = spravne ma byt node(1)
-
+	    addEdge(whileEnd, end, (Element)actualElement.node(1), false);
 	    // true branch
-	    addEdge(whileEnd, start, (Element) actualElement.node(0), true); // c2xml bug = spravne ma byt node(1)
+	    addEdge(whileEnd, start, (Element)actualElement.node(1), true);
 
 	    breakStack.pop();
 	    continueStack.pop();
@@ -233,10 +273,15 @@ public class ControlFlowGraph {
 
 	}
 
-	//=== unroll forStatement ==============================================
+	//=== unroll forStatement =============================================
 	if (actualElement.getName().equals("forStatement")) {
-
-	    CFGNode forStart = nodeCreator(start, (Element) actualElement.node(0));
+	    /* 0: (expression | declaration)
+	     * 1: expression
+	     * 2: expression
+	     * 3: statement
+	     */
+	    CFGNode forStart = nodeCreator(start,
+			(Element)actualElement.node(0));
 
 	    CFGNode end = new CFGNode(this);
 	    breakStack.push(end);
@@ -251,9 +296,11 @@ public class ControlFlowGraph {
 	    CFGNode trueEnd = new CFGNode(this);
 	    continueStack.push(trueEnd);
 
-	    trueEnd = joinNodes(trueEnd, nodeCreator(trueStart, (Element) actualElement.node(3)));
+	    trueEnd = joinNodes(trueEnd,
+		    nodeCreator(trueStart, (Element)actualElement.node(3)));
 
-	    joinNodes(forStart, nodeCreator(trueEnd, (Element) actualElement.node(2)));
+	    joinNodes(forStart,
+		    nodeCreator(trueEnd, (Element)actualElement.node(2)));
 
 	    breakStack.pop();
 	    continueStack.pop();
@@ -261,124 +308,117 @@ public class ControlFlowGraph {
 
 	}
 
-	//=== unroll switchStatement ==============================================
+	//=== unroll switchStatement ==========================================
 	if (actualElement.getName().equals("switchStatement")) {
+	    /* 0: expression -> (id, ...)
+	     * 1: statement -> compoundStatement -> S=statement*
+	     *
+	     * S -> (caseLabelStatement, defaultLabelStatement, UNREACHABLE)
+	     */
 
 	    CFGNode endSwitch = new CFGNode(this);
 	    breakStack.push(endSwitch);
 
 	    CFGNode end = null;
-	    //CFGNode trueSwitch = null;
 	    CFGNode falseSwitch = start;
 	    CFGNode defaultSwitch = null;
 
-	    Element compoundStatement = (Element) actualElement.node(1);
+	    Element statement = (Element)actualElement.node(1);
+	    Element compoundStatement = (Element)statement.node(0);
 
 	    for (int i = 0, size = compoundStatement.nodeCount(); i < size; i++) {
 		Node node = compoundStatement.node(i);
-		if (node instanceof Element) {
-		    Element element = (Element) node;
+		if (!(node instanceof Element))
+		    continue;
 
-		    if (element.getName().equals("caseLabelStatement")) {
+		statement = (Element)node;
+		Element element = (Element)statement.node(0);
 
-			CFGNode source = falseSwitch;
+		if (element.getName().equals("caseLabelStatement")) {
+		    /* 0: expression
+		     * 1: statement
+		     */
+		    CFGNode source = falseSwitch;
 
-			falseSwitch = new CFGNode(this);
+		    falseSwitch = new CFGNode(this);
 
-			CFGNode trueSwitch;
-			if (end == null) {
-			    trueSwitch = new CFGNode(this);
-			} else {
-			    trueSwitch = end;
-			}
+		    if (end == null)
+			end = new CFGNode(this);
 
-			//T source -> trueSwitch
-			addEdge(source, trueSwitch, (Element) element.node(0), true);
-			//F source -> falseSwitch
-			addEdge(source, falseSwitch, (Element) element.node(0), false);
+		    CFGNode trueSwitch = end;
 
-			end = trueSwitch;
+		    //T source -> trueSwitch
+		    addEdge(source, trueSwitch, (Element)element.node(0), true);
+		    //F source -> falseSwitch
+		    addEdge(source, falseSwitch, (Element)element.node(0), false);
 
-			//label next to label
-			Element caseLabelExpression = (Element) element.node(1);
-			while (caseLabelExpression.getName().equals("caseLabelStatement") ||
-			       caseLabelExpression.getName().equals("defaultLabelStatement")) {
+		    //label next to label
+		    statement = (Element)element.node(1);
+		    Element caseLabelExpression = (Element)statement.node(0);
+		    while (caseLabelExpression.getName().equals("caseLabelStatement") ||
+			   caseLabelExpression.getName().equals("defaultLabelStatement")) {
 
-			    if (caseLabelExpression.getName().equals("caseLabelStatement")) {
+			if (caseLabelExpression.getName().equals("caseLabelStatement")) {
+			    source = falseSwitch;
 
-				source = falseSwitch;
+			    falseSwitch = new CFGNode(this);
 
-				falseSwitch = new CFGNode(this);
+			    //T source -> trueSwitch
+			    addEdge(source, trueSwitch,
+					(Element)caseLabelExpression.node(0),
+					true);
+			    //F source -> falseSwitch
+			    addEdge(source, falseSwitch,
+					(Element)caseLabelExpression.node(0),
+					false);
 
-				//T source -> trueSwitch
-				addEdge(source, trueSwitch, (Element) caseLabelExpression.node(0), true);
-				//F source -> falseSwitch
-				addEdge(source, falseSwitch, (Element) caseLabelExpression.node(0), false);
-
-				caseLabelExpression = (Element) caseLabelExpression.node(1);
-
-			    } else {
-
-				defaultSwitch = end;
-
-				caseLabelExpression = (Element) caseLabelExpression.node(0);
-
-			    }
-
-			}
-
-			end = nodeCreator(end, caseLabelExpression);
-
-		    }
-		    else if (element.getName().equals("defaultLabelStatement")) {
-
-			if (end == null) {
-			    defaultSwitch = new CFGNode(this);
+			    statement = (Element)caseLabelExpression.node(1);
+			    caseLabelExpression = (Element)statement.node(0);
 			} else {
 			    defaultSwitch = end;
+
+			    statement = (Element)caseLabelExpression.node(0);
+			    caseLabelExpression = (Element)statement.node(0);
 			}
 
-			end = defaultSwitch;
+		    }
 
-			//label next to label
-			Element labelExpression = (Element) element.node(0);
-			if (labelExpression.getName().equals("caseLabelStatement")) {
+		    end = nodeCreator(end, caseLabelExpression);
+		} else if (element.getName().equals("defaultLabelStatement")) {
+		    if (end == null)
+			end = new CFGNode(this);
 
-			    System.out.println("CFG: duplicity code (switch) in function '" + this.functionName + "'");
+		    defaultSwitch = end;
 
-			}
-
+		    //label next to label
+		    statement = (Element)element.node(0);
+		    Element labelExpression = (Element)statement.node(0);
+		    if (labelExpression.getName().equals("caseLabelStatement"))
+			dump("redundant code (switch)", element);
+		    else
 			end = nodeCreator(end, (Element) element.node(0));
-
-		    }
-		    else {
-
-			if (end != null) { // is reachable
-			    end = nodeCreator(end, element);
-			}
-			else System.out.println("CFG: unreachable code (switch) in function '" + this.functionName + "'");
-
-		    }
-
+		} else {
+		    if (end != null) // is reachable
+			end = nodeCreator(end, element);
+		    else
+			dump("unreachable code (switch)", (Element)node);
 		}
-	    }
+	    } /* for */
 
-	    if (defaultSwitch!=null) {
-		falseSwitch = joinNodes(defaultSwitch,falseSwitch);
+	    if (defaultSwitch != null) {
+		falseSwitch = joinNodes(defaultSwitch, falseSwitch);
 	    } else {
-		falseSwitch = joinNodes(end,falseSwitch);
-		endSwitch = joinNodes(falseSwitch,endSwitch);
+		falseSwitch = joinNodes(end, falseSwitch);
+		endSwitch = joinNodes(falseSwitch, endSwitch);
 	    }
 
-	    joinNodes(endSwitch,end);
+	    joinNodes(endSwitch, end);
 
 	    return endSwitch;
-
 	}
 
-	//=== unroll emptyStatement ==============================================
+	//=== unroll emptyStatement ===========================================
 	if (actualElement.getName().equals("emptyStatement")) {
-
 	    CFGNode end = new CFGNode(this);
 
 	    addEdge(start, end, actualElement, null);
@@ -386,37 +426,43 @@ public class ControlFlowGraph {
 	    return end;
 	}
 
-	//=== unroll returnStatement ==============================================
+	//=== unroll returnStatement ==========================================
 	if (actualElement.getName().equals("returnStatement")) {
-
+	    /* expression?
+	     */
 	    addEdge(start, endNode, actualElement, null);
 
 	    return null;
 	}
 
-	//=== unroll breakStatement ==============================================
+	//=== unroll breakStatement ===========================================
 	if (actualElement.getName().equals("breakStatement")) {
-
 	    CFGNode breakNode = breakStack.peek();
 	    addEdge(start, breakNode, actualElement, null);
 
 	    return null;
 	}
 
-	//=== unroll continueStatement ==============================================
+	//=== unroll continueStatement ========================================
 	if (actualElement.getName().equals("continueStatement")) {
-
 	    CFGNode continueNode = continueStack.peek();
 	    addEdge(start, continueNode, actualElement, null);
 
 	    return null;
 	}
 
-	if (actualElement.getName().equals("statement") ||
-		actualElement.getName().equals("expression"))
-	    return nodeCreator(start, (Element)actualElement.node(0));
+	if (actualElement.getName().equals("expression")) {
+	    /* intConst | realConst | stringConst | id | *Expression |
+	     * compoundStatement | functionCall | arrayAccess | ...
+	     */
+	    CFGNode end = new CFGNode(this);
+	    addEdge(start, end, actualElement, null);
+	    if (actualElement.nodeCount() > 0)
+		    return nodeCreator(end, (Element)actualElement.node(0));
+	    return end;
+	}
 
-	//=== otherwise (expression) ===========================================
+	//=== otherwise (expression) ==========================================
 	CFGNode end = new CFGNode(this);
 	addEdge(start, end, actualElement, null);
 
