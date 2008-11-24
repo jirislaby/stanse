@@ -6,7 +6,7 @@ use File::Basename;
 my $cc = $ENV{'REAL_CC'} || 'cc';
 my $check = $cc . ' -E -w ';
 # until we get things fixed...
-$check .= '-P -D__attribute__\(x\)= -D__attribute\(x\)= -D__builtin_va_list=int -D__builtin_offsetof\(x,y\)=1 ';
+$check .= '-P -D__attribute__\(x\)= -D__attribute\(x\)= -D__builtin_va_list=int -D__builtin_offsetof\(x,y\)=1 -D__builtin_types_compatible_p\(x,y\)=0 ';
 my $output = '';
 
 $ENV{'CHECKER_DEF'} || die "You need to define checking xml in CHECKER_DEF " .
@@ -68,6 +68,8 @@ if ($gendeps) {
 }
 
 if ($do_check) {
+    die "unable to find stanse jar file ($stansejar), " .
+	"try to set STANSE_JAR environment variable" unless -f $stansejar;
     print "$check\n" if $verbose;
     $check = $check . "; java -jar $stansejar -nogui -ch $checker_def $output";
     if ($do_compile) {
