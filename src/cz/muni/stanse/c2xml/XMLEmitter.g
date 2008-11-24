@@ -614,7 +614,7 @@ labeledStatement returns [Element e]
 		$e.addAttribute("id", $IDENTIFIER.text);
 	}
 	| ^('case' expression statement) {
-		$e = newElement("labeledStatement", $labeledStatement.start);
+		$e = newElement("caseLabelStatement", $labeledStatement.start);
 		$e.add($expression.e);
 		$e.add($statement.e);
 	}
