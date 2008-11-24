@@ -600,7 +600,7 @@ statement returns [Element e]
 }
 	: labeledStatement	{ $e.add($labeledStatement.e); }
 	| compoundStatement	{ $e.add($compoundStatement.e); }
-	| expressionStatement	{ addElementCond($e, $expressionStatement.e); }
+	| expressionStatement	{ $e.add($expressionStatement.e != null ? $expressionStatement.e : newElement("emptyStatement")); }
 	| selectionStatement	{ $e.add($selectionStatement.e); }
 	| iterationStatement	{ $e.add($iterationStatement.e); }
 	| jumpStatement		{ $e.add($jumpStatement.e); }
