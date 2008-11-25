@@ -1,60 +1,46 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <automaton>
-  <name>Locking checker</name>
-  <description>Checks locks with one argument as the name of the lock</description>
-
-  <param>
-	<id>x</id><!--  Unikatni ukazatel parametru. Tim se na nej potom muze odkazovat trigger -->
-	<class>cz.muni.stanse.automatonchecker.AutomatonParamParamNames</class>
-  </param><!-- Parametr mozna bude pro cely automat, ne jenom pro stav -->
-
-  <state initial="true">
-	<name>U</name> <!-- V ramci automatu unikatni -->
-	<description>Unlocked</description>
-	<transition> <!-- Kazdy state ma alespon jeden transition. Finalni stavy totiz za stavy nepovazujeme (neevidujeme je) -->
-		<trigger>
-			<pass>lock</pass> <!-- Predava se jako parametr metode loadTrigger  -->
-			<class>cz.muni.stanse.automatonchecker.FunctionNameTrigger</class>
-			<param>x</param>
-		</trigger><!-- Akce, pod kterou se prejde do <to> stavu-->
-		<to>L</to><!-- Name stavu, do ktereho se prejde -->
-	</transition>
-
-	<transition>
-		<trigger>
-			<pass>unlock</pass>
-                        <class>cz.muni.stanse.automatonchecker.FunctionNameTrigger</class>
-			<param>x</param><!-- Zde se odkazujeme na parametry. Na poradi zalezi. -->
-		</trigger>
-		<errmsg>Double unlock!!</errmsg><!-- Misto "to" muze byt errmsg. To znamena, ze se dostavame do chyboveho stavu. Automat konci -->
-	</transition>
-
-  </state>
-  <state>
-	<name>L</name>
-	
-	<description>Locked</description>
-	<eor>
-		<errmsg>End with locked!!</errmsg> <!-- Zde se nesmi skoncit (eor + errmsg)-->
-	</eor>
-	<transition>
-		<trigger>
-                    <pass>unlock</pass>
-                    <class>cz.muni.stanse.automatonchecker.FunctionNameTrigger</class>
-                    <param>x</param>
-                </trigger>
-		<to>U</to>
-	</transition>
-	<transition>
-		<trigger>
-                    <pass>lock</pass>
-                    <class>cz.muni.stanse.automatonchecker.FunctionNameTrigger</class>
-                    <param>x</param>
-                </trigger>
-		<errmsg>Double lock!!!</errmsg>
-
-	</transition>
-  </state>
-
-
+  <description name="Locking checker"
+               desc="Checks locks with one argument as the name of the lock." />
+  
+  <pattern name="locking">
+    <functionCall>
+      <expression>
+        <id>lock</id>
+      </expression>
+      <expression>
+        <var name="A" />
+      </expression>
+    </functionCall>
+  </pattern>
+  
+  <pattern name="unlocking">
+    <functionCall>
+      <expression>
+        <id>unlock</id>
+      </expression>
+      <expression>
+        <var name="A" />
+      </expression>
+    </functionCall>
+  </pattern>
+  
+  <start state="Unlocked" />
+  <transition from="Unlocked[A]" by="locking[A]" to="Locked[A]" />
+  <transition from="Locked[A]" by="unlocking[A]" to="Unlocked[A]" />
+  
+  <error from="Unlocked[A]" by="unlocking[A]"
+         desc="Double unlock"
+         level="0"
+         entry="Function called in unlocked state."
+         begin="The lock is unlocked here."
+         propag="not affected --> the lock is still unlocked."
+         end="The lock is unlocked and here is attempt to unlock it twice." />
+  <error from="Locked[A]" by="locking[A]"
+         desc="Double lock"
+         level="0"
+         entry="Function called in locked state."
+         begin="The lock is locked here."
+         propag="not affected --> the lock is still locked."
+         end="The lock is locked and here is attempt to lock it twice." />
 </automaton>

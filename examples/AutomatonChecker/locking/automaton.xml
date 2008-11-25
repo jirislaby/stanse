@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<automaton>
+  <description name="lock/unlock/islocked automanton checker"
+               desc="Handles locking problem ..." />
+
+  <pattern name="lock">
+    <functionCall>
+      <expression>
+        <id>lock</id>
+      </expression>
+    </functionCall>
+  </pattern>
+  
+  <pattern name="lock">
+    <functionCall>
+      <expression>
+        <id>lock</id>
+      </expression>
+      <expression>
+        <var name="A" />
+      </expression>
+    </functionCall>
+  </pattern>
+  
+  <pattern name="lock">
+    <functionCall>
+      <expression>
+        <id>lock_kernel</id>
+      </expression>
+    </functionCall>
+  </pattern>
+
+
+
+  <pattern name="unlock">
+    <functionCall>
+      <expression>
+        <id>unlock</id>
+      </expression>
+    </functionCall>
+  </pattern>
+
+  <pattern name="unlock">
+    <functionCall>
+      <expression>
+        <id>unlock</id>
+      </expression>
+      <expression>
+        <var name="A" />
+      </expression>
+    </functionCall>
+  </pattern>
+
+  <pattern name="unlock">
+    <functionCall>
+      <expression>
+        <id>unlock_kernel</id>
+      </expression>
+    </functionCall>
+  </pattern>
+
+
+
+  <pattern name="islocked">
+    <functionCall>
+      <expression>
+        <id>islocked</id>
+      </expression>
+   </functionCall>
+  </pattern>
+  
+  <pattern name="islocked">
+    <functionCall>
+      <expression>
+        <id>islocked</id>
+      </expression>
+      <expression>
+        <var name="A" />
+      </expression>
+    </functionCall>
+  </pattern>
+  
+  <pattern name="islocked">
+    <functionCall>
+      <expression>
+        <id>locked_kernel</id>
+      </expression>
+    </functionCall>
+  </pattern>
+  
+  <start state="U" />
+  <transition from="U[A]" by="lock[A]" to="L[A]" />
+  <transition from="L[A]" by="lock[B]" to="L[A]" />
+  <transition from="L[A]" by="lock[B]" to="LL[A][B]" />
+  <transition from="L[A]" by="unlock[A]" to="U[A]" />
+  <transition from="LL[A][B]" by="unlock[B]" to="" />
+  
+  <error from="U[A]" by="unlock[A]"
+         desc="double unlock"
+         level="0"
+         entry="The function called in unlocked state."
+         begin="The lock is unlocked here."
+         propag="not affected --> the lock is still unlocked."
+         end="The lock is unlocked and here is an attempt to unlock it twice." />
+  <error from="L[A]" by="lock[A]"
+         desc="double lock"
+         level="0"
+         entry="The function called in locked state."
+         begin="The lock is locked here."
+         propag="not affected --> the lock is still locked."
+         end="The lock is locked and here is an attempt to lock it twice." />
+  <error from="LL[A][B]" by="unlock[A]"
+         desc="cross locking"
+         level="2"
+         entry="The function called in locked order lock(A) lock(B)."
+         begin="The locked order is now lock(A) lock(B) - here locking B."
+         propag="not affected --> locked order is still lock(A) lock(B)"
+         end="The locked order lock(A) lock(B), but now unlocking A (e.i. before
+              B) --> cross locking." />
+  <error from="U[A] -L[A]" by="islocked[A]"
+         desc="unnecessary check - always unlocked"
+         level="4"
+         entry="The function called in unlocked state and never called in lock state."
+         begin="The lock in unlocked here and cannot be here in locked state."
+         propag="not affected --> the lock is still in unlocked and never in locked state."
+         end="The lock is checked for locking state, but here the lock always is
+             in unlocked state and never in locked state --> unnecessary check." />
+  <error from="-U[A] L[A]" by="islocked[A]"
+         desc="unnecessary check - always locked"
+         level="4"
+         entry="The function called in locked state and never called in unlock state."
+         begin="The lock in locked here and cannot be here in unlocked state."
+         propag="not affected --> the lock is still locked and never in unlocked state."
+         end="The lock is checked for locking state, but here the lock always is
+              in locked state and never in unlocked state --> unnecessary check." />
+  <error from="L[*]" by=""
+         desc="leaving function in locked state"
+         level="1"
+         entry="The function called in locked state."
+         begin="The lock is locked here."
+         propag="not affected --> the lock is still locked."
+         end="Leaving function in locked state." />
+</automaton>
