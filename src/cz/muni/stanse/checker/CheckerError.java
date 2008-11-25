@@ -4,13 +4,7 @@ import java.util.List;
 
 public final class CheckerError {
     
-    public enum ErrorLevel {
-        ERROR,
-        WARNING,
-        HINT;
-    }
-
-    public CheckerError(String shortDesc, String fullDesc, ErrorLevel level,
+    public CheckerError(String shortDesc, String fullDesc, int level,
                         List<ErrorTrace> traces) {
         this.shortDesc = shortDesc;
         this.fullDesc = fullDesc;
@@ -18,7 +12,7 @@ public final class CheckerError {
         this.traces = traces;
     }
 
-    public ErrorLevel getErrorLevel() {
+    public int getErrorLevel() {
         return level;
     }
     
@@ -36,7 +30,7 @@ public final class CheckerError {
 
     private final String shortDesc;
     private final String fullDesc;
-    private final ErrorLevel level;
+    private final int level;
     private final List<ErrorTrace> traces;
 }
 

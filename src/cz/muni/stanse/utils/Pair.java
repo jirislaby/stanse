@@ -1,8 +1,10 @@
 package cz.muni.stanse.utils;
 
-public final class Pair<A, B> {
+public final class Pair<A,B> {
 
-    public Pair(A first, B second) {
+    // public section
+
+    public Pair(final A first, final B second) {
         this.first = first;
         this.second = second;
     }
@@ -10,7 +12,27 @@ public final class Pair<A, B> {
     public A getFirst() { return first; }
     public B getSecond() { return second; }
 
+    @Override
+    public boolean equals(final Object obj) {
+        return (obj == null || getClass() != obj.getClass()) ?
+                false : isEqualWith((Pair<A,B>)obj);
+    }
+
+    public boolean isEqualWith(final Pair<A,B> other) {
+        return first.equals(other.first) && second.equals(other.second);
+    }
+
+    @Override
+    public int hashCode() {
+        final int PRIME = 31;
+        int result = 1;
+        result = PRIME * result + ((first == null) ? 0 : first.hashCode());
+        result = PRIME * result + ((second == null) ? 0 : second.hashCode());
+        return result;
+    }
+
+    // private section
+
     private final A first;
     private final B second;
-
 }

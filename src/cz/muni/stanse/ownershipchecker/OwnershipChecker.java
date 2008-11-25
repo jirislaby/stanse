@@ -83,7 +83,7 @@ public final class OwnershipChecker extends Checker {
             result.addLast(
                 new CheckerError(errIter.getDescription(),
                                  errIter.getDescription(),
-                                 CheckerError.ErrorLevel.ERROR,
+                                 0,
                                  convertAllTracesFromOld(
                                         errIter.getErrorTracesFromCache() ) ) );
 

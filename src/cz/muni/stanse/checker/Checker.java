@@ -13,7 +13,7 @@ public abstract class Checker {
 
     public abstract String getName();
 
-    public abstract List<CheckerError> check();
+    public abstract List<CheckerError> check() throws Exception;
 
     protected final Set<ControlFlowGraph> getCFGs() {
         return CFGs;

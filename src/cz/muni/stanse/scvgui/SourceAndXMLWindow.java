@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Vector;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 import org.antlr.runtime.RecognitionException;
-import cz.muni.stanse.automatonchecker.Automaton;
-import cz.muni.stanse.automatonchecker.exceptions.AutomatonSyntaxException;
+import cz.muni.stanse.automatonchecker.AutomatonChecker;
 import cz.muni.stanse.ownershipchecker.OwnershipChecker;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -565,6 +565,33 @@ public class SourceAndXMLWindow extends JPanel {
      * @param files files with definition of the checker.
      */
     public void runStaticChecker(final Set<File> configFiles) {
+        if (configFiles == null || configFiles.isEmpty()) {
+            logger.error("Error: No automaton XML file provided.");
+            return;
+        }
+
+        final HashSet<ControlFlowGraph> cfgs = buildCFGsFromXML(documentXML);
+        if (cfgs == null) {
+            logger.error("Error: No CFG provided.");
+            return;
+        }
+
+        final LinkedList<CheckerError> errors = new LinkedList<CheckerError>(); 
+        for (File f : configFiles)
+            try {
+                errors.addAll(
+                    (new AutomatonChecker(cfgs,(new SAXReader()).read(f))).check()
+                );
+            }
+            catch(Exception e) {
+                logger.error(e.getMessage());
+            }
+
+        jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
+        ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
+        errorForm.setVisible(true);
+
+        /*
         if (configFiles == null || configFiles.isEmpty())
             return;
         
@@ -579,7 +606,7 @@ public class SourceAndXMLWindow extends JPanel {
         jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
         ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
         errorForm.setVisible(true);
-        
+        */
         /*        
         if(documentXML != null) {
             for(File file: files) {

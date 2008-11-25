@@ -3,7 +3,7 @@
  */
 package cz.muni.stanse.main;
 
-import cz.muni.stanse.automatonchecker.Automaton;
+import cz.muni.stanse.automatonchecker.AutomatonChecker;
 import cz.muni.stanse.c2xml.CParser;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.Checker;
@@ -39,6 +39,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.dom4j.DocumentException;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedSubgraph;
 
@@ -412,10 +413,6 @@ public class SCV {
     }
         
     public void runCheckers() {
-    Set<File> definitions = new HashSet<File>();
-    for(String checker: checkerDefinitions)
-        definitions.add(new File(checker));
-
     for(String filename: sourceFiles) {
         try {
             Document compiledSource = getXMLDocumentByFilename(filename);
@@ -427,13 +424,19 @@ public class SCV {
 	    for (Element e: edecls)
 		if (e.element("functionDefinition") != null)
 		    cfgs.add(new ControlFlowGraph(e.element("functionDefinition")));
-	    Automaton checker = new Automaton(cfgs);
-	    checker.setConfigurations(definitions);
+        for(String xmlName: checkerDefinitions) {
+        final AutomatonChecker checker =
+            new AutomatonChecker(cfgs,(new SAXReader()).read(new File(xmlName)));
+
             checker.check();
-            
+        }
         } catch (IllegalArgumentException ex) {
            logger.error(null, ex);
         } catch (FileNotFoundException ex) {
+            logger.error(null, ex);
+        } catch (DocumentException ex) {
+            logger.error(null, ex);
+        } catch (Exception ex) {
             logger.error(null, ex);
         }
 

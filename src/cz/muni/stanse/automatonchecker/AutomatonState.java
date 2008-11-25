@@ -1,129 +1,80 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.xml2cfg.CFGEdge;
-import cz.muni.stanse.xml2cfg.CFGNode;
+import java.util.Vector;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+final class AutomatonState {
 
-/**
- *
- * @author xstastn
- */
-public class AutomatonState {
-    
-    private static AtomicInteger globalId = new AtomicInteger(0);
-    
-    private int id;
-    
-    private String name;
-    private String description;
-    private Set<AutomatonTransition> transitions = new HashSet<AutomatonTransition>();
-
-    public AutomatonState(String name, String description) {
-        this.id = globalId.incrementAndGet();
-        this.name = name;
-        this.description = description;
-    }
-    
-    public void addTransition(AutomatonTransition transition) {
-        this.transitions.add(transition);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getId() {
-        return id;
-    }
-    
-    
-    
-    /**
-     * 
-     * @return EOR transition if exists. Null otherwise
-     */
-    public AutomatonTransition getEOR() {
-        for(AutomatonTransition transition: transitions) {
-            if(transition.isEOR()) {
-                return transition;
-            }
-        }
-        return null;
-    }
-    
-    
-    /**
-     * Gets the transition, where trigger is triggered.
-     * @param from The CFG Node from, passed as parameter to isTriggered method
-     * @param to The CFG Node from, passed as parameter to isTriggered method
-     * @return The transition trigger found by the criteria (if any), null otherwise
-     */
-    public AutomatonTransition getTransitionByTriggeredTrigger(CFGNode from, CFGNode to) {
-        for(AutomatonTransition transition: transitions) {
-            if(transition.getTrigger() != null && transition.getTrigger().isTriggered(from, to)) {
-                return transition;
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * @see #getTransitionByTriggeredTrigger(CFGNode, CFGNode) 
-     */
-    public AutomatonTransition getTransitionByTriggeredTrigger(CFGEdge edge) {
-        return getTransitionByTriggeredTrigger(edge.getFrom(), edge.getTo());
-    }
+    // public section
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AutomatonState other = (AutomatonState) obj;
-        if (this.id != other.id) {
-            return false;
-        }
-        return true;
+    public boolean equals(final Object obj) {
+        return (obj == null || getClass() != obj.getClass()) ?
+                    false : isEqualWith((AutomatonState)obj);
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 71 * hash + this.id;
-        return hash;
+        final int PRIME = 31;
+        int result = 1;
+        result = PRIME * result + ((CFG == null) ? 0 : CFG.hashCode());
+
+        result = PRIME * result + ((automatonIDs == null) ?
+                                                   0 : automatonIDs.hashCode());
+
+        result = PRIME * result + symbolID;
+        return result;
     }
 
-    
-    @Override
-    public String toString() {
-        return id + " ("+name+")";
+    // package-private section
+
+    AutomatonState(final cz.muni.stanse.xml2cfg.ControlFlowGraph CFG,
+                   final int symbolID, final Vector<Integer> automatonIDs) {
+        this.CFG = CFG;
+        this.symbolID = symbolID;
+        this.automatonIDs = automatonIDs;
     }
-    
-    
-    
-    
-    
+
+    AutomatonState(final cz.muni.stanse.xml2cfg.ControlFlowGraph CFG,
+                   final int symbolID, final Integer automatonID) {
+        this.CFG = CFG;
+        this.symbolID = symbolID;
+        this.automatonIDs = new Vector<Integer>(1);
+        automatonIDs.add(automatonID);
+    }
+
+    cz.muni.stanse.xml2cfg.ControlFlowGraph getCFG() {
+        return CFG;
+    }
+
+    int getSymbolID() {
+        return symbolID;
+    }
+
+    Vector<Integer> getAutomatonIDs() {
+        return automatonIDs;
+    }
+
+
+    boolean isEqualWith(AutomatonState other) {
+        return getCFG() == other.getCFG() &&
+               getSymbolID() == other.getSymbolID() &&
+               getAutomatonIDs().equals(other.getAutomatonIDs());
+//               equalIDs(getAutomatonIDs(),other.getAutomatonIDs());  
+    }
+
+    // private section
+/*
+    private static boolean equalIDs(final Vector<Integer> idVec1,
+                                    final Vector<Integer> idVec2) {
+        if (idVec1.size() != idVec2.size())
+            return false;
+        for (int i = 0; i < idVec1.size(); ++i)
+            if (idVec2.get(i) != -1 && idVec2.get(i) != idVec1.get(i))
+                return false;
+        return true;
+    }
+*/  
+    private final cz.muni.stanse.xml2cfg.ControlFlowGraph CFG;
+    private final int symbolID;
+    private final Vector<Integer> automatonIDs;
 }
