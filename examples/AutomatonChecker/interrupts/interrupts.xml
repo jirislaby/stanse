@@ -46,7 +46,7 @@
          begin="Here the interrupts are disabled."
          propag="not affected --> interrupts are still disabled."
          end="Interrupts have already been disabled, and disabling it twice here." />
-  <error from="L[*]" by=""
+  <error from="Disabled[*]" by=""
          desc="Leaving function with interrupts disabled state."
          level="0"
          entry="The function called with interrupts disabled state."
