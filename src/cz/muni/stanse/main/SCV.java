@@ -4,9 +4,9 @@
 package cz.muni.stanse.main;
 
 import cz.muni.stanse.automatonchecker.AutomatonChecker;
+import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.c2xml.CParser;
 import cz.muni.stanse.callgraph.CallGraph;
-import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
 import cz.muni.stanse.scvgui.GraphViz;
@@ -103,7 +103,7 @@ public class SCV {
      * Command line argument parsed using JOpt simple. Homepage: http://jopt-simple.sourceforge.net/
      */
     public static void main(String[] args) {
-        
+
         OptionParser optionsParser = new OptionParser() {
 
             {
@@ -425,10 +425,13 @@ public class SCV {
 		if (e.element("functionDefinition") != null)
 		    cfgs.add(new ControlFlowGraph(e.element("functionDefinition")));
         for(String xmlName: checkerDefinitions) {
-        final AutomatonChecker checker =
-            new AutomatonChecker(cfgs,(new SAXReader()).read(new File(xmlName)));
-
-            checker.check();
+            final AutomatonChecker checker =
+                new AutomatonChecker(cfgs,
+                                     (new SAXReader()).read(new File(xmlName)));
+            for (CheckerError error : checker.check()) {
+                logger.error("not really. it is just output from checker :-)\n"
+                             + error.toString());
+            }
         }
         } catch (IllegalArgumentException ex) {
            logger.error(null, ex);

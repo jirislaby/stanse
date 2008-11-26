@@ -538,25 +538,8 @@ public class SourceAndXMLWindow extends JPanel {
     private static final String convertCheckerErrorListToString(
                                              final List<CheckerError> errList) {
         String result = "";
-        for (CheckerError err : errList) {
-            result +=
-                "CheckerError:\n" +
-                "    - shortDesc: " + err.getShortDescription() + '\n' +
-                "    - fullDesc: " + err.getFullDescription() + '\n' +
-                "    - errorLevel: " + err.getErrorLevel() + '\n';
-            for (ErrorTrace trac : err.getErrorTraces()) {
-                result +=
-                    "    - ErrorTrace:\n" +
-                    "        - shortDesc: " + trac.getShortDescription() + '\n'+
-                    "        - fullDesc: " + trac.getFullDescription() + '\n' +
-                    "        - CFGNodes:\n";
-                for (Pair<CFGNode,String> node : trac.getErrorTrace()) {
-                    result +=
-                        "            - <" + node.getFirst().toString() + "," +
-                                            node.getSecond() + ">\n";
-                }
-            }
-        }
+        for (CheckerError err : errList)
+            result += err.toString() + "\n\n";
         return result;
     }
 
