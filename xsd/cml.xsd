@@ -1,6 +1,6 @@
-<schema xmlns="http://www.w3.org/2001/XMLSchema">
-<annotation>
-  <documentation>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:annotation>
+  <xs:documentation>
     Schema for GNU C programming language, version 0.1 (12/04/2006)
     Copyright (C) 2006 Jan Obdrzalek obdrzalek@fi.muni.cz
     Masaryk University, Brno, Czech Republic
@@ -21,485 +21,516 @@
         cisla stranek jsou vzata odtud]
     - GNU extensions:
       GCC manual, http://gcc.gnu.org/onlinedocs/gcc-4.0.2/gcc.pdf, Section 5
-  </documentation>
-</annotation>
+  </xs:documentation>
+</xs:annotation>
 
 <!-- source code pointers -->
-<attributeGroup name="location">
-  <attribute name="bl" type="nonNegativeInteger"/>
-  <attribute name="bc" type="nonNegativeInteger"/>
-  <attribute name="el" type="nonNegativeInteger"/>
-  <attribute name="ec" type="nonNegativeInteger"/>
-</attributeGroup>
+<xs:attributeGroup name="location">
+  <xs:attribute name="bl" type="xs:nonNegativeInteger"/>
+  <xs:attribute name="bc" type="xs:nonNegativeInteger"/>
+  <xs:attribute name="el" type="xs:nonNegativeInteger"/>
+  <xs:attribute name="ec" type="xs:nonNegativeInteger"/>
+</xs:attributeGroup>
 
 <!-- type of empty elements -->
-<complexType name="empty">
-</complexType>
+<xs:complexType name="empty">
+</xs:complexType>
 
 <!--identifiers as defined by the standard-->
-<simpleType name="id">
-  <restriction base="string">
-    <pattern value="[a-zA-Z_][a-zA-Z0-9_]*"/>
-  </restriction>
-</simpleType>
+<xs:simpleType name="id">
+  <xs:restriction base="xs:string">
+    <xs:pattern value="[a-zA-Z_][a-zA-Z0-9_]*"/>
+  </xs:restriction>
+</xs:simpleType>
 
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 <!-- STATEMENTS -->
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 
-<group name="statement">
-  <choice>
-    <element name="emptyStatement" type="empty"/> <!--in GNU C only-->
-    <element ref="compoundStatement"/>
-    <element ref="expression"/>
+<xs:group name="statement">
+  <xs:choice>
+    <xs:element name="emptyStatement" type="empty"/> <!--in GNU C only-->
+    <xs:element name="compoundStatement"/>
+    <xs:element name="expression"/>
     <!--Iteration statements-->
-    <element name="whileStatement">
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element ref="statement"/>
-        </sequence>
-      </complexType>
-    </element>
-    <element name="doStatement">
-      <complexType>
-        <sequence>
-          <element ref="statement"/>
-          <element ref="expression"/>
-        </sequence>
-      </complexType>
-    </element>
-    <element name="forStatement">
-      <complexType>
-        <sequence>
-	  <choice>
-	    <element ref="expression"/>
-	    <element ref="declaration"/>
-          </choice>
-          <element ref="expression"/>
-          <element ref="expression"/>
-          <element ref="statement"/>
-        </sequence>
-      </complexType>
-    </element>
+    <xs:element name="whileStatement">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="statement"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="doStatement">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="statement"/>
+          <xs:element name="expression"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="forStatement">
+      <xs:complexType>
+        <xs:sequence>
+	  <xs:choice>
+	    <xs:element name="expression"/>
+	    <xs:element name="declaration"/>
+          </xs:choice>
+          <xs:element name="expression"/>
+          <xs:element name="expression"/>
+          <xs:element name="statement"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
     <!--labels-->
-    <element name="labelStatement">
-      <complexType>
-        <sequence>
-          <element ref="statement"/>
-        </sequence>
-        <attribute name="label" type="id" use="required"/>
-      </complexType>
-    </element>
-    <element name="caseLabelStatement">
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element ref="statement"/>
-        </sequence>
-      </complexType>
-    </element>
-    <element name="defaultLabelStatement">
-      <complexType>
-        <sequence>
-          <element ref="statement"/>
-        </sequence>
-      </complexType>
-    </element>
+    <xs:element name="labelStatement">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="statement"/>
+        </xs:sequence>
+        <xs:attribute name="label" type="id" use="required"/>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="caseLabelStatement">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="statement"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="defaultLabelStatement">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="statement"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
     <!--jumps-->
-    <!--<element name="gotoStatement" type="id"/> C99-->
-    <element name="gotoStatement">
-      <complexType>
-        <sequence>
-          <element ref="expression">
-        </sequence>
-      </complexType>
-    </element>
-    <element name="breakStatement" type="empty"/>
-    <element name="continueStatement" type="empty"/>
-    <element name="returnStatement">
-      <complexType>
-        <choice minOccurs="0">
-          <element ref="expression"/>
-        </choice>
-      </complexType>
-    </element>
+    <!--<xs:element name="gotoStatement" type="id"/> C99-->
+    <xs:element name="gotoStatement">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="breakStatement" type="empty"/>
+    <xs:element name="continueStatement" type="empty"/>
+    <xs:element name="returnStatement">
+      <xs:complexType>
+        <xs:choice minOccurs="0">
+          <xs:element name="expression"/>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
     <!--choice statements-->
-    <element name="ifStatement">
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element ref="statement"/>
-        </sequence>
-      </complexType>
-    </element>
-    <element name="ifElseStatement">
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element ref="statement"/>
-          <element ref="statement"/>
-        </sequence>
-      </complexType>
-    </element>
-    <element name="switchStatement">
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element ref="statement"/>
-        </sequence>
-      </complexType>
-    </element>
-  </choice>
-</group>
+    <xs:element name="ifStatement">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="statement"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="ifElseStatement">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="statement"/>
+          <xs:element name="statement"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="switchStatement">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="statement"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  </xs:choice>
+</xs:group>
 
-<element name="compoundStatement">
-  <complexType>
-    <sequence>
-      <element ref="declaration" minOccurs="0" maxOccurs="unbounded"/>
-      <element ref="statement" minOccurs="0" maxOccurs="unbounded"/>
-    </sequence>
-  </complexType>
-</element>
+<xs:element name="compoundStatement">
+  <xs:complexType>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="declaration"/>
+      <xs:element name="statement"/>
+      <!-- GNU nesting functions -->
+      <xs:element name="functionDefinition"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:element>
 
 
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 <!-- EXPRESSIONS -->
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 
-<simpleType name="binaryOp">
-  <restriction base="string">
+<xs:simpleType name="binaryOp">
+  <xs:restriction base="xs:string">
     <!--numerical-->
-    <enumeration value="+"/>
-    <enumeration value="-"/>
-    <enumeration value="*"/>
-    <enumeration value="/"/>
-    <enumeration value="%"/>
+    <xs:enumeration value="+"/>
+    <xs:enumeration value="-"/>
+    <xs:enumeration value="*"/>
+    <xs:enumeration value="/"/>
+    <xs:enumeration value="%"/>
     <!--logical-->
-    <enumeration value="||"/>
-    <enumeration value="&amp;&amp;"/>
+    <xs:enumeration value="||"/>
+    <xs:enumeration value="&amp;&amp;"/>
     <!--bit-->
-    <enumeration value="|"/>
-    <enumeration value="&amp;"/>
-    <enumeration value="^"/>
+    <xs:enumeration value="|"/>
+    <xs:enumeration value="&amp;"/>
+    <xs:enumeration value="^"/>
     <!--shift-->
-    <enumeration value="&lt;&lt;"/>
-    <enumeration value="&gt;&gt;"/>
+    <xs:enumeration value="&lt;&lt;"/>
+    <xs:enumeration value="&gt;&gt;"/>
     <!--comparison-->
-    <enumeration value="="/>
-    <enumeration value="!="/>
-    <enumeration value="&lt;"/>
-    <enumeration value="&lt;="/>
-    <enumeration value="&gt;"/>
-    <enumeration value="&gt;="/>
-  </restriction>
-</simpleType>
+    <xs:enumeration value="=="/>
+    <xs:enumeration value="!="/>
+    <xs:enumeration value="&lt;"/>
+    <xs:enumeration value="&lt;="/>
+    <xs:enumeration value="&gt;"/>
+    <xs:enumeration value="&gt;="/>
+  </xs:restriction>
+</xs:simpleType>
 
-<simpleType name="assignOp">
-  <restriction base="string">
+<xs:simpleType name="assignOp">
+  <xs:restriction base="xs:string">
     <!--numerical-->
-    <enumeration value="+"/>
-    <enumeration value="-"/>
-    <enumeration value="*"/>
-    <enumeration value="/"/>
-    <enumeration value="%"/>
+    <xs:enumeration value="+"/>
+    <xs:enumeration value="-"/>
+    <xs:enumeration value="*"/>
+    <xs:enumeration value="/"/>
+    <xs:enumeration value="%"/>
     <!--bit-->
-    <enumeration value="|"/>
-    <enumeration value="&amp;"/>
-    <enumeration value="^"/>
+    <xs:enumeration value="|"/>
+    <xs:enumeration value="&amp;"/>
+    <xs:enumeration value="^"/>
     <!--shift-->
-    <enumeration value="&lt;&lt;"/>
-    <enumeration value="&gt;&gt;"/>
-  </restriction>
-</simpleType>
+    <xs:enumeration value="&lt;&lt;"/>
+    <xs:enumeration value="&gt;&gt;"/>
+  </xs:restriction>
+</xs:simpleType>
 
-<simpleType name="prefixOp">
-  <restriction base="string">
-    <enumeration value="++"/>
-    <enumeration value="--"/> 
-    <enumeration value="+"/>
-    <enumeration value="-"/>
-    <enumeration value="~"/> <!-- also complex conjugation -->
-    <enumeration value="!"/>
-    <enumeration value="&amp;&amp;"/> <!--label dereference-->
-    <enumeration value="__real"/>
-    <enumeration value="__imag"/>
-  </restriction>
-</simpleType>
+<xs:simpleType name="prefixOp">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="++"/>
+    <xs:enumeration value="--"/> 
+    <xs:enumeration value="+"/>
+    <xs:enumeration value="-"/>
+    <xs:enumeration value="~"/> <!-- also complex conjugation -->
+    <xs:enumeration value="!"/>
+    <xs:enumeration value="&amp;"/>
+    <xs:enumeration value="&amp;&amp;"/> <!--label dereference-->
+    <xs:enumeration value="__real"/>
+    <xs:enumeration value="__imag"/>
+  </xs:restriction>
+</xs:simpleType>
 
-<simpleType name="postfixOp">
-  <restriction base="string">
-    <enumeration value="++"/>
-    <enumeration value="--"/> 
-  </restriction>
-</simpleType>
+<xs:simpleType name="postfixOp">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="++"/>
+    <xs:enumeration value="--"/> 
+  </xs:restriction>
+</xs:simpleType>
 
-<element name="binaryExpression">
-  <complexType>
-    <sequence><!-- order does matter here -->
-      <element ref="expression"/>
-      <element ref="expression"/>
-    </sequence>
-    <attribute name="op" type="binaryOp" use="required"/>
-  </complexType>
-</element>
+<xs:element name="binaryExpression">
+  <xs:complexType>
+    <xs:sequence><!-- order does matter here -->
+      <xs:element name="expression"/>
+      <xs:element name="expression"/>
+    </xs:sequence>
+    <xs:attribute name="op" type="binaryOp" use="required"/>
+  </xs:complexType>
+</xs:element>
 
-<element name="assignExpression">
-  <complexType>
-    <sequence><!-- order does matter here -->
-      <element ref="expression"/>
-      <element ref="expression"/>
-    </sequence>
-    <attribute name="op" type="assignOp" use="optional"/>
+<xs:element name="assignExpression">
+  <xs:complexType>
+    <xs:sequence><!-- order does matter here -->
+      <xs:element name="expression"/>
+      <xs:element name="expression"/>
+    </xs:sequence>
+    <xs:attribute name="op" type="assignOp" use="optional"/>
     <!-- no op means plain assignment -->
-  </complexType>
-</element>
+  </xs:complexType>
+</xs:element>
 
-<element name="prefixExpression">
-  <complexType>
-    <sequence>
-      <element ref="expression"/>
-    </sequence>
-    <attribute name="op" type="prefixOp" use="required"/>
-  </complexType>
-</element>
+<xs:element name="prefixExpression">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="expression"/>
+    </xs:sequence>
+    <xs:attribute name="op" type="prefixOp" use="required"/>
+  </xs:complexType>
+</xs:element>
 
-<element name="postfixExpression">
-  <complexType>
-    <sequence>
-      <element ref="expression"/>
-    </sequence>
-    <attribute name="op" type="postfixOp" use="required"/>
-  </complexType>
-</element>
+<xs:element name="postfixExpression">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="expression"/>
+    </xs:sequence>
+    <xs:attribute name="op" type="postfixOp" use="required"/>
+  </xs:complexType>
+</xs:element>
 
-<group name="expression">
+<xs:group name="expression">
   <!-- not including empty expression. TODO check this is correct -->
-  <choice>
+  <xs:choice>
     <!-- constants -->
-    <element name="intConst" type="integer"/>
-    <element name="realConst" type="double"/>
-    <element name="stringConst" type="string"/>
-    <element name="id" type="id"/>
+    <xs:element name="intConst" type="xs:integer"/>
+    <xs:element name="realConst" type="xs:double"/>
+    <xs:element name="stringConst" type="xs:string"/>
+    <xs:element name="id" type="id"/>
     <!-- case range -->
-    <element name="rangeExpression">
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element ref="expression"/>
-        </sequence>
-      </complexType>
-    </element>
+    <xs:element name="rangeExpression">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="expression"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
     <!-- arithmetic, assignment -->
-    <element ref="binaryExpression"/>
-    <element ref="prefixExpression"/>
-    <element ref="postfixExpression"/>
-    <element ref="assignExpression"/>
+    <xs:element name="binaryExpression"/>
+    <xs:element name="prefixExpression"/>
+    <xs:element name="postfixExpression"/>
+    <xs:element name="arrayAccess"> <!-- part of postfixExpression -->
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="expression"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="assignExpression"/>
     <!--others-->
-    <element name="commaExpression"><!-- should be binary with no op? -->
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element ref="expression"/>
-        </sequence>
-      </complexType>
-    </element>
-    <element name="conditionalExpression">
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element ref="expression" minOccurs="0"/>
-          <element ref="expression"/>
-        </sequence>
-      </complexType>
-    </element>
+    <xs:element name="commaExpression"><!-- should be binary with no op? -->
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="expression"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="conditionalExpression">
+      <xs:complexType>
+        <xs:sequence>
+	  <!-- to avoid ambiguity -->
+          <xs:element name="expression" minOccurs="2" maxOccurs="3"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
     <!--members-->
-    <element name="arrowExpression">
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element name="member" type="id"/>
-        </sequence>
-      </complexType>
-    </element>
-    <element name="dotExpression">
-      <complexType>
-        <sequence>
-          <element ref="expression"/>
-          <element name="member" type="id"/>
-        </sequence>
-      </complexType>
-    </element>
+    <xs:element name="arrowExpression">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="member" type="id"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="dotExpression">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/>
+          <xs:element name="member" type="id"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
     <!--pointers-->
-    <element name="derefExpression">
-      <complexType>
-        <choice>
-          <element ref="expression"/>
-        </choice>
-      </complexType>
-    </element>
-    <element name="addrExpression">
-      <complexType>
-        <choice>
-          <element ref="expression"/>
-        </choice>
-      </complexType>
-    </element>
+    <xs:element name="derefExpression">
+      <xs:complexType>
+	<xs:sequence>
+          <xs:element name="expression"/>
+	</xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="addrExpression">
+      <xs:complexType>
+	<xs:sequence>
+          <xs:element name="expression"/>
+	</xs:sequence>
+      </xs:complexType>
+    </xs:element>
     <!--types related-->
-    <element name="castExpression">
-      <complexType>
-        <sequence>
-          <element ref="typeName"/>
-          <element ref="expression"/>
-        </sequence>
-      </complexType>
-    </element>
-    <element name="sizeofExpression">
-      <complexType>
-        <choice>
-          <element ref="expression"/>
-          <element ref="typeName"/>
-        </choice>
-      </complexType>
-    </element>
-    <element name="allignofExpression">
-      <complexType>
-        <choice>
-          <element ref="expression"/>
-          <element ref="typeName"/>
-        </choice>
-      </complexType>
-    </element>
+    <xs:element name="castExpression">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="typeName"/>
+          <xs:element name="expression"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="sizeofExpression">
+      <xs:complexType>
+        <xs:choice>
+          <xs:element name="expression"/>
+          <xs:element name="typeName"/>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="offsetofExpression">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="typeName"/>
+          <xs:element name="expression" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="allignofExpression">
+      <xs:complexType>
+        <xs:choice>
+          <xs:element name="expression"/>
+          <xs:element name="typeName"/>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
     <!-- functionCall -->
-    <element name="functionCall">
-      <complexType>
-        <sequence>
-          <element ref="expression"/> <!--name-->
-          <element ref="expression" minOccurs="0" maxOccurs="unbounded"/><!--arguments-->
-        </sequence>
-      </complexType>
-    </element>
+    <xs:element name="functionCall">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="expression"/> <!--name-->
+          <xs:element name="expression" minOccurs="0" maxOccurs="unbounded"/><!--arguments-->
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
     <!-- compound statement - GNU-->
-    <element ref="compoundStatement"/>
+    <xs:element name="compoundStatement"/>
     <!--GNU Assembler-->
-    <element name="gnuAssembler">
+    <xs:element name="gnuAssembler">
       <!--TODO--> 
-    </element>
-  </choice>
-</group>
+    </xs:element>
+    <xs:element name="compoundLiteral">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="typeName"/>
+          <xs:element name="initializer"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  </xs:choice>
+</xs:group>
 
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 <!-- TYPES -->
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 
-<simpleType name="storageClass">
-  <restriction base="string">
-    <enumeration value="auto"/>
-    <enumeration value="register"/>
-    <enumeration value="typedef"/>
-    <enumeration value="extern"/>
-    <enumeration value="static"/>
-    <enumeration value="inline"/>	<!-- GNU extension -->
-  </restriction>
-</simpleType>
+<xs:simpleType name="storageClass">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="auto"/>
+    <xs:enumeration value="register"/>
+    <xs:enumeration value="typedef"/>
+    <xs:enumeration value="extern"/>
+    <xs:enumeration value="static"/>
+    <xs:enumeration value="inline"/>	<!-- GNU extension -->
+  </xs:restriction>
+</xs:simpleType>
 
 <!--
-<simplef name="qualifier">
-  <restriction base="string">
-    <enumeration value="const"/>
-    <enumeration value="volatile"/>
-  </restriction>
-</simpleType>
+<xs:simplef name="qualifier">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="const"/>
+    <xs:enumeration value="volatile"/>
+  </xs:restriction>
+</xs:simpleType>
 -->
 
+<xs:simpleType name="function">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="inline"/>
+  </xs:restriction>
+</xs:simpleType>
 
-<element name="typeSpecifier">
-  <complexType>
-    <choice>
-      <element name="baseType" type="baseType"/>
-      <element name="struct" type="structOrUnionType"/>
-      <element name="union" type="structOrUnionType"/>
-      <element ref="enum"/>
-      <element ref="typedef"/>
-    </choice>
-  </complexType>
-</element>
-
-
-<simpleType name="baseType">
-  <restriction base="string">
-    <enumeration value="void"/>
-    <enumeration value="char"/>
-    <enumeration value="short"/>
-    <enumeration value="int"/>
-    <enumeration value="long"/>
-    <enumeration value="float"/>
-    <enumeration value="double"/>
-    <enumeration value="signed"/>
-    <enumeration value="unsigned"/>
-    <enumeration value="_Bool"/>		<!-- C99 -->
-    <enumeration value="_Complex"/>		<!-- C99 -->
-    <enumeration value="_Imaginary"/>		<!-- C99 -->
-  </restriction>
-</simpleType>  
+<xs:element name="typeSpecifier">
+  <xs:complexType>
+    <xs:choice>
+      <xs:element name="baseType" type="baseType"/>
+      <xs:element name="struct" type="structOrUnionType"/>
+      <xs:element name="union" type="structOrUnionType"/>
+      <xs:element name="enum"/>
+      <xs:element name="typedef-name"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:element>
 
 
-<simpleType name="signedUnsigned">
-  <restriction base="string">
-    <enumeration value="signed"/>
-    <enumeration value="unsigned"/>
-  </restriction>
-</simpleType>
+<xs:simpleType name="baseType">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="void"/>
+    <xs:enumeration value="char"/>
+    <xs:enumeration value="short"/>
+    <xs:enumeration value="int"/>
+    <xs:enumeration value="long"/>
+    <xs:enumeration value="float"/>
+    <xs:enumeration value="double"/>
+    <xs:enumeration value="signed"/>
+    <xs:enumeration value="unsigned"/>
+    <xs:enumeration value="_Bool"/>		<!-- C99 -->
+    <xs:enumeration value="_Complex"/>		<!-- C99 -->
+    <xs:enumeration value="_Imaginary"/>		<!-- C99 -->
+  </xs:restriction>
+</xs:simpleType>  
 
-<complexType name="structOrUnionType">
-  <sequence>
-    <element ref="structDeclaration" minOccurs="0" maxOccurs="unbounded"/>
-  </sequence>
-  <attribute name="id" type="id"/>
-</complexType>
 
-<element name="structDeclaration">
-  <complexType>
-    <sequence>
-      <element ref="typeSpecifier"/>
-      <element ref="structDeclarator"/>
-    </sequence>
-    <attribute name="const" type="boolean"/>
-    <attribute name="restrict" type="boolean"/>
-    <attribute name="volatile" type="boolean"/>
-  </complexType>
-</element>
+<xs:simpleType name="signedUnsigned">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="signed"/>
+    <xs:enumeration value="unsigned"/>
+  </xs:restriction>
+</xs:simpleType>
 
-<element name="structDeclarator">
-  <complexType>
-    <sequence>
-      <element ref="declarator" minOccurs="0"/>
-      <element ref="expression" minOccurs="0"/> <!-- constant expression -->
-    </sequence>
-  </complexType>
-</element>
+<xs:complexType name="structOrUnionType">
+  <xs:sequence>
+    <xs:element name="structDeclaration" minOccurs="0" maxOccurs="unbounded"/>
+  </xs:sequence>
+  <xs:attribute name="id" type="id"/>
+</xs:complexType>
 
-<element name="enum">
-  <complexType>
-    <sequence>
-      <element ref="enumerator" minOccurs="0" maxOccurs="unbounded"/>
-    </sequence>
-    <attribute name="id" type="id"/>
-  </complexType>
-</element>
+<xs:element name="structDeclaration">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="typeSpecifier" maxOccurs="unbounded"/>
+      <xs:element name="structDeclarator" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="const" type="xs:boolean"/>
+    <xs:attribute name="restrict" type="xs:boolean"/>
+    <xs:attribute name="volatile" type="xs:boolean"/>
+  </xs:complexType>
+</xs:element>
 
-<element name="enumerator">
-  <complexType>
-    <sequence>
-      <element ref="expression" minOccurs="0" /><!-- constant expresssion -->
-    </sequence>
-    <attribute name="id" type="id" use="required">
-  </complexType>
-</element>
+<xs:element name="structDeclarator">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="declarator" minOccurs="0"/>
+      <xs:element name="expression" minOccurs="0"/> <!-- constant expression -->
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="enum">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="enumerator" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="id"/>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="enumerator">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="expression" minOccurs="0" /><!-- constant expresssion -->
+    </xs:sequence>
+    <xs:attribute name="id" type="id" use="required"/>
+  </xs:complexType>
+</xs:element>
 
 <!-- typedef-->
-<element name="typedef" type="id">  
-</element>
+<xs:element name="typedef-name" type="id">  
+</xs:element>
 
 
 
@@ -507,158 +538,176 @@
 <!-- DECLARATIONS -->
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 
-<group name="externalDeclaration">
-  <choice>
-    <element name="functionDefinition">
-      <complexType>
-        <sequence>
+<xs:group name="externalDeclaration">
+  <xs:choice>
+    <xs:element name="functionDefinition">
+      <xs:complexType>
+        <xs:sequence>
           <!--1/2 type-->
-          <element ref="declarationSpecifiers" minOccurs="0"/>
+          <xs:element name="declarationSpecifiers" minOccurs="0"/>
           <!--2/2 type + name-->
-          <element ref="declarator"/>
+          <xs:element name="declarator"/>
           <!--parameters-->
-          <element ref="declaration" minOccurs="0" maxOccurs="unbounded"/> 
+          <xs:element name="declaration" minOccurs="0" maxOccurs="unbounded"/> 
           <!--body-->
-          <element ref="compoundStatement"/>
-        </sequence>
-      </complexType>
-    </element>
-    <element ref="declaration"/>
-  </choice>
-</group>
+          <xs:element name="compoundStatement"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="declaration"/>
+  </xs:choice>
+</xs:group>
 
-<element name="declarationSpecifiers">
-  <complexType>
-    <element ref="typeSpecifier" minOccurs="0" maxOccurs="unbounded"/>
+<xs:element name="declarationSpecifiers">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="typeSpecifier" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
     <!-- qualifiers -->
-    <attribute name="const" type="boolean"/>
-    <attribute name="restrict" type="boolean"/>
-    <attribute name="volatile" type="boolean"/>
+    <xs:attribute name="const" type="xs:boolean"/>
+    <xs:attribute name="restrict" type="xs:boolean"/>
+    <xs:attribute name="volatile" type="xs:boolean"/>
     <!-- storage class -->
-    <attribute name="storageClass" type="storageClass"/>
-  </complexType>
-</element>
+    <xs:attribute name="storageClass" type="storageClass"/>
+    <xs:attribute name="function"/>
+  </xs:complexType>
+</xs:element>
 
-<element name="declaration">
-  <complexType>
-    <sequence>
-      <element ref="declarationSpecifiers" minOccurs="0"/>
-      <element ref="initDeclarator" minOccurs="0" maxOccurs="unbounded"/>
-    </sequence>
-  </complexType>
-</element>
+<xs:element name="declaration">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="declarationSpecifiers" minOccurs="0"/>
+      <xs:element name="initDeclarator" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
 
-<element name="initDeclarator">
-  <complexType>
-    <sequence>
-      <element ref="declarator"/>
+<xs:element name="initDeclarator">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="declarator"/>
       <!--attribute declarator skipped for now-->
-      <element ref="initializer" minOccurs="0"/> <!--declarator = initializer-->
+      <xs:element name="initializer" minOccurs="0"/> <!--declarator = initializer-->
       <!--declarator : expression as mentioned in the ANTLR grammar is ommitted here - we have not found its semantics-->
-    </sequence>
-  </complexType>
-</element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
 
-<!--a mix of C99 and GNU C 4.1-->
-<element name="initializer">
-  <complexType>
-    <choice>
-      <sequence>
-        <element ref="designator" maxOccurs="unbounded"/> <!--also named initilizerElementLabel in ANTLR-->
-        <element ref="expression"/><!--assignmentExpression-->
-      </sequence>
-      <element ref="initializer" maxOccurs="unbounded"/><!-- {initializerList} -->
-    </choice>
-  </complexType>
-</element>
+<xs:element name="initializer">
+  <xs:complexType>
+    <xs:choice>
+      <xs:element name="expression"/><!--assignmentExpression-->
+      <xs:sequence minOccurs="0" maxOccurs="unbounded"><!-- { initializerList ,? } -->
+	<xs:element name="designator" minOccurs="0" maxOccurs="unbounded"/>
+	<xs:element name="initializer"/>
+      </xs:sequence>
+    </xs:choice>
+  </xs:complexType>
+</xs:element>
 
-<element name="designator">
-  <complexType>
-    <choice>
-      <element ref="expression"/><!-- [expression]= -->
-      <element name="id" type="id"> <!-- both "ID:" (old GCC) and ".ID=" new -->
-    </choice>
-  </complexType>
-</element>
+<xs:element name="designator">
+  <xs:complexType>
+    <xs:choice>
+      <xs:element name="expression"/><!-- [expression]= -->
+      <xs:element name="id" type="id"/> <!-- both "ID:" (old GCC) and ".ID=" new -->
+    </xs:choice>
+  </xs:complexType>
+</xs:element>
 
-<element name="pointer"><!--placeholder for '*'-->
-  <complexType>
-    <attribute name="const" type="boolean"/>
-    <attribute name="restrict" type="boolean"/>
-    <attribute name="volatile" type="boolean"/>
-  </complexType>
-</element>
+<xs:element name="pointer"><!--placeholder for '*'-->
+  <xs:complexType>
+    <xs:attribute name="const" type="xs:boolean"/>
+    <xs:attribute name="restrict" type="xs:boolean"/>
+    <xs:attribute name="volatile" type="xs:boolean"/>
+  </xs:complexType>
+</xs:element>
 
-<element name="declarator">
-  <complexType>
-    <sequence>
-      <element ref="pointer" minOccurs="0" maxOccurs="unbounded"/>
-      <choice>
-        <element name="id" type="id"/>
-        <element ref="declarator"/>
-      </choice>
-      <choice minOccurs="0" maxOccurs="unbounded">
-        <element name="arrayDecl">
-          <complexType>
-            <sequence>
-              <element ref="expression"/><!-- constant expression -->
-            </sequence>
-          </complexType>
-        </element>        
-		<element ref="parameter" minOccurs=0 maxOccurs="unbounded"/>   
-      </choice>
-    </sequence>
-  </complexType>
-</element>
+<xs:element name="declarator">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="pointer" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice>
+	<xs:sequence>
+	  <xs:element name="oldId" type="id" minOccurs="0"/>
+	  <xs:element name="id" type="id"/>
+	</xs:sequence>
+        <xs:element name="declarator"/>
+      </xs:choice>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="arrayDecl"/>
+        <xs:element name="functionDecl"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
 
-<element name="parameter">
-  <complexType>
-    <choice>
-      <element ref="id">  <!-- old style -->
-	  <sequence>          <!-- new style -->
-        <element ref="declarationSpecifiers"/>
-        <choice>
-          <element ref="declarator"/>
-          <element ref="abstractDeclarator"/>
-        </choice>        
-      </sequence>
-      <element name="varArgs" type="empty"/>
-    </choice>    
-  </complexType>
-</element>
+<xs:element name="arrayDecl">
+  <xs:complexType>
+    <xs:choice>
+      <xs:element name="expression" minOccurs="0"/><!-- assignment expression -->
+      <xs:element name="asterisk" type="empty"/><!-- [*] -->
+    </xs:choice>
+    <xs:attribute name="static" type="xs:boolean"/>
+    <!-- qualifiers -->
+    <xs:attribute name="const" type="xs:boolean"/>
+    <xs:attribute name="restrict" type="xs:boolean"/>
+    <xs:attribute name="volatile" type="xs:boolean"/>
+  </xs:complexType>
+</xs:element>        
+
+<xs:element name="functionDecl">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:choice>
+	<xs:element name="parameter" maxOccurs="unbounded"/>
+	<xs:element name="id" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="parameter">
+  <xs:complexType>
+    <xs:choice>
+      <xs:element name="id"/>  <!-- old style -->
+      <xs:sequence>          <!-- new style -->
+        <xs:element name="declarationSpecifiers"/>
+        <xs:choice minOccurs="0"> <!-- prototypes doesn't have any -->
+          <xs:element name="declarator"/>
+          <xs:element name="abstractDeclarator"/>
+        </xs:choice>        
+      </xs:sequence>
+      <xs:element name="varArgs" type="empty"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:element>
 
 
-<element name="typeName">
-  <complexType>
-    <sequence>
-      <element ref="typeSpecifier" minOccurs="0" maxOccurs="unbounded"/>
-      <element ref="abstractDeclarator" minOccurs="0"/>
-    </sequence>
-    <attribute name="const" type="boolean"/>
-    <attribute name="restrict" type="boolean"/>
-    <attribute name="volatile" type="boolean"/>
-  </complexType>
-</element>
+<xs:element name="typeName">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="typeSpecifier" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="abstractDeclarator" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="const" type="xs:boolean"/>
+    <xs:attribute name="restrict" type="xs:boolean"/>
+    <xs:attribute name="volatile" type="xs:boolean"/>
+  </xs:complexType>
+</xs:element>
 
 
-<element name="abstractDeclarator">
-  <complexType>
-    <sequence>
-      <element ref="pointer" minOccurs="0" maxOccurs="unbounded"/>
-      <choice minOccurs="0" maxOccurs="unbounded">
-        <element ref="abstractDeclarator"/>
-        <element name="arrayDecl">
-          <complexType>
-            <sequence>
-              <element ref="expression" minOccurs="0"/><!-- assignment expression -->
-            </sequence>
-          </complexType>
-        </element>
-        <element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
-      </choice>
-    </sequence>
-  </complexType>
-</element>
+<xs:element name="abstractDeclarator">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="pointer" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="abstractDeclarator" minOccurs="0" />
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="arrayDecl"/>
+        <xs:element name="functionDecl"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
 
 
 
@@ -666,13 +715,13 @@
 <!-- TOP LEVEL -->
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 
-<element name="translationUnit">
-  <complexType>
-    <sequence>
-      <element ref="externalDeclaration" maxOccurs="unbounded" minOccurs="0"/>
-    </sequence>
-    <attribute name="fileName" type="string"/>
-  </complexType>
-</element>
+<xs:element name="translationUnit">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="externalDeclaration" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="fileName" type="xs:string"/>
+  </xs:complexType>
+</xs:element>
 
-</schema>
+</xs:schema>
