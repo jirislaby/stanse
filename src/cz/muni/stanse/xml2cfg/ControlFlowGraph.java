@@ -60,12 +60,20 @@ public class ControlFlowGraph {
 	startNode = new CFGNode(this);
 	endNode = new CFGNode(this);
 
-	// find declarator
-	Element declaratorId = (Element) functionDefinition.selectSingleNode("declarator/id");
-	functionName = declaratorId.getText();
+	Element d, declarator = (Element)functionDefinition.node(1);
+	while ((d = (Element)declarator.selectSingleNode("declarator")) != null)
+		declarator = d;
+
+	Element id = (Element)declarator.selectSingleNode("id");
+	if (id == null) {
+	    dump("strange functionDefinition", functionDefinition);
+	    return;
+	}
+
+	functionName = id.getText();
 
 	// find compoundStatement
-	Element compoundStatement = (Element) functionDefinition.selectSingleNode("compoundStatement");
+	Element compoundStatement = (Element)functionDefinition.selectSingleNode("compoundStatement");
 
 	endNode = joinNodes(endNode, nodeCreator(startNode,compoundStatement));
 
