@@ -14,7 +14,6 @@ final class PatternLocation {
                     final cz.muni.stanse.xml2cfg.CFGEdge referenceEdge,
                     final Collection<TransitionRule> transitionRules,
                     final Collection<ErrorRule> errorRules) {
-        // TODO: tady je asi potreba testovat: assert(!transitionRules.isEmpty())  
         CFG = cfg;
         CFGreferenceEdge = referenceEdge;
         processedAutomataStates = new HashSet<AutomatonState>();

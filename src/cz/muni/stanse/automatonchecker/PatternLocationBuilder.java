@@ -6,7 +6,6 @@ import cz.muni.stanse.utils.CFGTraversal;
 
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.HashMap;
 
 final class PatternLocationBuilder {
@@ -38,25 +37,24 @@ final class PatternLocationBuilder {
             final XMLAutomatonDefinition automatonDefinition) throws Exception {
         final PatternLocationCreator patternLocationCreator =
             new PatternLocationCreator(cfg,automatonDefinition);
-        final HashSet<PatternLocation> allLocations =
+        final HashMap<CFGEdge,PatternLocation> edgeLocationsDictionary =
             CFGTraversal.traverseCFGToBreadthForward(cfg,cfg.getStartNode(),
                     patternLocationCreator).getCreatedPatternLocations();
-        
-        final HashMap<CFGEdge,PatternLocation> edgeLocationsDictionary =
-            new HashMap<CFGEdge,PatternLocation>();
-        for (final PatternLocation location : allLocations)
-            edgeLocationsDictionary.put(location.getCFGreferenceEdge(),location);
-        
-        for (final PatternLocation location : allLocations)
+
+        edgeLocationsDictionary.get(cfg.getEntryEdge()).
+            setInitialAutomataStates(getInitialStates(
+                            cfg,automatonDefinition.getStartSymbol(),
+                            patternLocationCreator.getNumDistinctLocations()));
+        edgeLocationsDictionary.get(cfg.getExitEdge()).
+            getErrorRules().addAll(getExitErrorRules(
+                            automatonDefinition.getExitErrorRule(),
+                            patternLocationCreator.getNumDistinctLocations()));
+
+        for (final PatternLocation location : edgeLocationsDictionary.values())
             CFGTraversal.traverseCFGToBreadthForward(cfg,
                 location.getCFGreferenceEdge().getTo(),
                 new ConnectPatternLocationToSuccessors(
                         location,edgeLocationsDictionary));
-
-        CFGTraversal.traverseCFGToBreadthForward(cfg,cfg.getStartNode(),
-            new StartPatternLocationsInitializer(edgeLocationsDictionary,
-                    getInitialStates(cfg,automatonDefinition.getStartSymbol(),
-                            patternLocationCreator.getNumDistinctLocations())));
 
         return edgeLocationsDictionary;
     }
@@ -71,5 +69,15 @@ final class PatternLocationBuilder {
             initStates.add(new AutomatonState(cfg,startSymbol,i));
 
         return initStates;
+    }
+
+    private static LinkedList<ErrorRule> getExitErrorRules(
+                    final XMLErrorRule XMLrule,final int numDistinctLocations) {
+        final LinkedList<ErrorRule> errorRules = new LinkedList<ErrorRule>();
+
+        for (int i = 0; i < numDistinctLocations; ++i)
+            errorRules.add(new ErrorRule(XMLrule,i));
+
+        return errorRules;
     }
 }

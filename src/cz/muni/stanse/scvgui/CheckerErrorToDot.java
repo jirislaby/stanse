@@ -25,7 +25,7 @@ final class CheckerErrorToDot {
                 .append("   node [shape=circle, fixedsize=true, height=0.4]; \n")
                 .append("   node [fontsize=12]; \n");
         
-        nodesToDo.add(cfg.getStartNode());       
+        nodesToDo.add(cfg.getEntryNode());       
         
         while (!nodesToDo.isEmpty()) {
             CFGNode node = nodesToDo.iterator().next();

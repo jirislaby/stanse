@@ -38,26 +38,7 @@ final class XMLAutomatonDefinition {
         XMLtransitionRules = buildXMLTransitionRules(XMLdefinition,
                                                      statesSymbolTable);
         XMLerrorRules = buildXMLErrorRules(XMLdefinition,statesSymbolTable);
-/*
-         TODO: To co tu je ted je nesmysl! Musim to prepsat! Nejspis budu muset
-               udelat nove debug funkce...
 
-        if (!XMLpatterns.containsAll(XMLtransitionRules))
-            throw new Exception("[stanse/AutomatonChecker] - " +
-                    "XMLAutomatonDefinition.XMLAutomatonDefinition() :: " +
-                    "XML document '" + XMLdefinition.getName() +
-                    "' error: XML transition node syntax error -> attribute" +
-                    " 'by' must containt name of some pattern, and this does" +
-                    " not hold now.");
-
-        if (!XMLpatterns.containsAll(XMLerrorRules))
-            throw new Exception("[stanse/AutomatonChecker] - " +
-                    "XMLAutomatonDefinition.XMLAutomatonDefinition() :: " +
-                    "XML document '" + XMLdefinition.getName() +
-                    "' error: XML error node syntax error -> attribute 'by'" +
-                    " must containt name of some pattern, and this does not" +
-                    " hold now.");
-*/
         patternTransitionRulesDictionary =
             buildPatternTransitionRulesDictionary(XMLpatterns,XMLtransitionRules);
         patternErrorRulesDictionary =

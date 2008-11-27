@@ -59,21 +59,10 @@ final class AutomatonState {
         return getCFG() == other.getCFG() &&
                getSymbolID() == other.getSymbolID() &&
                getAutomatonIDs().equals(other.getAutomatonIDs());
-//               equalIDs(getAutomatonIDs(),other.getAutomatonIDs());  
     }
 
     // private section
-/*
-    private static boolean equalIDs(final Vector<Integer> idVec1,
-                                    final Vector<Integer> idVec2) {
-        if (idVec1.size() != idVec2.size())
-            return false;
-        for (int i = 0; i < idVec1.size(); ++i)
-            if (idVec2.get(i) != -1 && idVec2.get(i) != idVec1.get(i))
-                return false;
-        return true;
-    }
-*/  
+
     private final cz.muni.stanse.xml2cfg.ControlFlowGraph CFG;
     private final int symbolID;
     private final Vector<Integer> automatonIDs;

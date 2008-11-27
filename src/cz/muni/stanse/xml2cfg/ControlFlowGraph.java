@@ -37,6 +37,9 @@ public class ControlFlowGraph {
     private CFGNode startNode; // start of the control-flow graph
     private CFGNode endNode;   // end of the control-flow graph
 
+    private CFGNode entryNode;
+    private CFGNode exitNode;
+    
     private Stack<CFGNode> breakStack = new Stack<CFGNode>(); // return-nodes for breakSatement
     private Stack<CFGNode> continueStack = new Stack<CFGNode>(); // return-nodes for continueSatement
 
@@ -66,6 +69,24 @@ public class ControlFlowGraph {
 
 	endNode = joinNodes(endNode, nodeCreator(startNode,compoundStatement));
 
+        {
+        entryNode = new CFGNode(this);
+        entryNode.addSucc(startNode);
+        startNode.addPred(entryNode);
+
+        final Map<CFGNode,Element> entryMap = new HashMap<CFGNode,Element>();
+        entryMap.put(startNode,this.functionDefinition.addElement("entry edge"));
+        expressions.put(entryNode,entryMap);
+
+        exitNode = new CFGNode(this);
+        exitNode.addPred(endNode);
+        endNode.addSucc(exitNode);
+
+        final Map<CFGNode,Element> exitMap = new HashMap<CFGNode,Element>();
+        exitMap.put(exitNode,this.functionDefinition.addElement("exit edge"));
+        expressions.put(endNode,exitMap);
+        }
+
 	/*
 	//Debugging info
 	printNodesFromStart();
@@ -90,6 +111,16 @@ public class ControlFlowGraph {
 	return endNode;
     }
 
+    public CFGNode getEntryNode() { return entryNode; }
+    public CFGNode getExitNode() { return exitNode; }
+
+    public CFGEdge getEntryEdge() {
+        return CFGEdge.getInstance(getEntryNode(),getStartNode());
+    }
+    public CFGEdge getExitEdge() {
+        return CFGEdge.getInstance(getEndNode(),getExitNode());
+    }
+    
     /**
      * Returns org.dom4j.Element representating expression's definition of edge
      * @param from start node of edge

@@ -38,7 +38,7 @@ final class XMLErrorRule {
             checkVars(1,-1,bySymbol);
 
         final String locationVarName =
-               (byString.isEmpty()) ? "" : bySymbol.getSecond().firstElement();
+               (byString.isEmpty()) ? "*" : bySymbol.getSecond().firstElement();
 
         patternName = bySymbol.getFirst();
 

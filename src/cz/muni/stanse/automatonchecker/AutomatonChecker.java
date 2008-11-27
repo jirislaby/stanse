@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 
+import cz.muni.stanse.xml2cfg.ControlFlowGraph;
+
 public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     // public section
@@ -32,9 +34,8 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
         final LinkedList<PatternLocation> progressQueue =
                 new LinkedList<PatternLocation>();
-        for (PatternLocation loc : edgeLocationDictionary.values())
-            if (loc.hasUnprocessedAutomataStates())
-                progressQueue.add(loc);
+        for (final ControlFlowGraph cfg : getCFGs())
+            progressQueue.add(edgeLocationDictionary.get(cfg.getEntryEdge()));
 
         while (!progressQueue.isEmpty()) {
             final PatternLocation currentLocation = progressQueue.remove();
@@ -46,11 +47,7 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                 progressQueue.addAll(
                         currentLocation.getSuccessorPatternLocations());
         }
-
-        return CheckerErrorBuilder.buildErrorList(getCFGs(),
-                        new ErrorRule(getXMLAutomatonDefinition().
-                                            getExitErrorRule(),-1),
-                                      edgeLocationDictionary);
+        return CheckerErrorBuilder.buildErrorList(edgeLocationDictionary);
     }
 
     // private section

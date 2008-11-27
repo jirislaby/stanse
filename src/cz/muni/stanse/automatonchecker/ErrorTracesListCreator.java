@@ -35,20 +35,18 @@ final class ErrorTraceNode {
                    final ErrorTraceNode predecessor) {
         this.node = node;
         this.message = message;
-        this.predecessors = new LinkedList<ErrorTraceNode>();
+        this.predecessors = new HashSet<ErrorTraceNode>();
         this.predecessors.add(predecessor);
     }
 
     ErrorTraceNode(final CFGNode node, final String message) {
         this.node = node;
         this.message = message;
-        this.predecessors = new LinkedList<ErrorTraceNode>();
+        this.predecessors = new HashSet<ErrorTraceNode>();
     }
 
     boolean isEqualWith(final ErrorTraceNode other) {
-        return node.equals(other.node) &&
-               message.equals(other.message) &&
-               predecessors == other.predecessors;
+        return node.equals(other.node);
     }
 
     CFGNode getCFGNode() {
@@ -59,7 +57,7 @@ final class ErrorTraceNode {
         return message;
     }
 
-    LinkedList<ErrorTraceNode> getPredecessors() {
+    HashSet<ErrorTraceNode> getPredecessors() {
         return predecessors;
     }
 
@@ -67,7 +65,7 @@ final class ErrorTraceNode {
 
     private final CFGNode node;
     private final String message;
-    private final LinkedList<ErrorTraceNode> predecessors;
+    private final HashSet<ErrorTraceNode> predecessors;
 }
 
 final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGvisitor {
@@ -77,31 +75,32 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGvisitor {
     @Override
     public boolean visit(final CFGEdge edge, final org.dom4j.Element element)
                                                               throws Exception {
+        if (getStartEdge().equals(edge))
+            return false;
+
         final PatternLocation location = getEdgeLocationDictionary().get(edge);
 
         if (location == null) {
-            /*
-            // TODO: tady se pridava entry nod funkce, zatim je to zakomentovane
-            //       protoze to neni zcela spravne. Poresit!
-            if (edge.getFrom().equals(getCFG().getStartNode())) {
-                addLeafTracedErrorNode(edge,getRule().getErrorEntryMessage());
-                return false;
-            }
-            */
-            addTracedErrorNode(edge,getRule().getErrorPropagMessage());
+            addTracedErrorEdge(edge,getRule().getErrorPropagMessage());
             return true;
         }
 
         if (!getRule().checkForError(location.getDeliveredAutomataStates()))
             return false;
-        
+
         if (!getRule().checkForError(location.getProcessedAutomataStates())) {
-           addLeafTracedErrorNode(edge,rule.getErrorBeginMessage());
-           return false;
+            getTracedErrorLeafNodes().add(
+                          addTracedErrorEdge(edge,rule.getErrorBeginMessage()));
+            return false;
         }
 
-        addTracedErrorNode(edge,getRule().getErrorPropagMessage());
+        if (edge.equals(getCFG().getEntryEdge())) {
+            getTracedErrorLeafNodes().add(
+                          addTracedErrorEdge(edge,rule.getErrorEntryMessage()));
+            return false;
+        }
 
+        addTracedErrorEdge(edge,getRule().getErrorPropagMessage());
         return true;
     }
 
@@ -114,43 +113,27 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGvisitor {
         rule = errorRule;
         CFG = cfg;
         edgeLocationDictionary = dictionary;
-        tracedErrorLeafNodes = new LinkedList<ErrorTraceNode>();
+        startEdge = edge;
+        tracedErrorLeafNodes = new HashSet<ErrorTraceNode>();
         tracedErrorNodes = new HashMap<CFGNode,ErrorTraceNode>();
-        addInitialTracedErrorNode(edge,"Here we are in error state.");
-        addTracedErrorNode(edge,rule.getErrorEndMessage());
-    }
-
-    ErrorTracesListCreator(final ErrorRule errorRule,
-                           final HashMap<CFGEdge,PatternLocation> dictionary,
-                           final CFGNode node, final ControlFlowGraph cfg) {
-        super();
-        rule = errorRule;
-        CFG = cfg;
-        edgeLocationDictionary = dictionary;
-        tracedErrorLeafNodes = new LinkedList<ErrorTraceNode>();
-        tracedErrorNodes = new HashMap<CFGNode,ErrorTraceNode>();
-        addInitialTracedErrorNode(node,rule.getErrorEndMessage());
+        addInitialTracedErrorEdge(edge);
     }
 
     LinkedList<ErrorTrace> GetTraceErrorsList() {
-        final LinkedList< LinkedList<ErrorTraceNode> > errorTraces =
-            new LinkedList< LinkedList<ErrorTraceNode> >();
-        for (ErrorTraceNode traceNode : getTracedErrorLeafNodes())
-            errorTraces.addAll(buildErrorTracesFromNode(traceNode,
-                                                new HashSet<ErrorTraceNode>()));
-        final int numTraces = errorTraces.size();
+        final LinkedList<ErrorTrace> result = new LinkedList<ErrorTrace>();
+
+        final LinkedList< LinkedList< Pair<CFGNode,String> > > errorTraceNodes =
+                buildErrorTraceNodes();
         int traceCounter = 0;
-        final LinkedList<ErrorTrace> result =
-            new LinkedList<ErrorTrace>();
-        for (LinkedList<ErrorTraceNode> trace : errorTraces) {
+        final int numTraces = errorTraceNodes.size();
+        for (LinkedList< Pair<CFGNode,String> > trace : errorTraceNodes) {
             ++traceCounter;
-            result.add(
-                new ErrorTrace(
+            result.add(new ErrorTrace(
                         "error-trace [" + traceCounter + "/" + numTraces + "]",
                         // TODO: full description should contain little more
                         //       info then short one. :-)
                         "error-trace [" + traceCounter + "/" + numTraces + "]",
-                        buildTraceErrorNodesListTrace(trace)));
+                        trace));
         }
 
         return result;
@@ -158,81 +141,74 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGvisitor {
 
     // private section
 
-    private boolean addInitialTracedErrorNode(final CFGNode node,
-                                              final String msg) {
-        getTracedErrorNodes().put(node,
-                lastTraceNode = new ErrorTraceNode(node,msg));
-        return true;
+    private void addInitialTracedErrorEdge(final CFGEdge edge) {
+        final ErrorTraceNode fromTraceNode = new ErrorTraceNode(edge.getTo(),
+                                  "Here we are in error state.");
+        final ErrorTraceNode toTraceNode = new ErrorTraceNode(edge.getFrom(),
+                                  getRule().getErrorEndMessage(),fromTraceNode);
+        getTracedErrorNodes().put(edge.getTo(),fromTraceNode);
+        getTracedErrorNodes().put(edge.getFrom(),toTraceNode);
     }
 
-    private boolean addInitialTracedErrorNode(final CFGEdge edge,
+    private ErrorTraceNode addTracedErrorEdge(final CFGEdge edge,
                                               final String msg) {
-        return addInitialTracedErrorNode(edge.getTo(),msg);
-    }
+        final ErrorTraceNode fromTraceNode =
+                                     getTracedErrorNodes().get(edge.getTo());
+        assert(fromTraceNode != null);
 
-    private boolean addTracedErrorNode(final CFGEdge edge, final String msg) {
-        if (getLastTraceNode() == null)
-            lastTraceNode = getTracedErrorNodes().get(edge.getTo());
-        assert(getLastTraceNode() != null);
-        final ErrorTraceNode tracedNode =
-                    getTracedErrorNodes().get(edge.getFrom());
-        if (tracedNode != null) {
-            tracedNode.getPredecessors().add(getLastTraceNode());
-            lastTraceNode = tracedNode;
-            return false;
-        }
+        ErrorTraceNode toTraceNode = getTracedErrorNodes().get(edge.getFrom());
+        if (toTraceNode != null)
+            toTraceNode.getPredecessors().add(fromTraceNode);
         else
-            getTracedErrorNodes().put(edge.getFrom(),
-                  lastTraceNode = new ErrorTraceNode(edge.getFrom(),
-                                                     msg,getLastTraceNode()));
-        return true;
+            getTracedErrorNodes().put(edge.getFrom(),toTraceNode =
+                          new ErrorTraceNode(edge.getFrom(),msg,fromTraceNode));
+
+        return toTraceNode;
     }
 
-    private void addLeafTracedErrorNode(final CFGEdge edge, final String msg) {
-        addTracedErrorNode(edge,msg);
-        getTracedErrorLeafNodes().add(getLastTraceNode());
-        lastTraceNode = null;
+    private LinkedList< LinkedList< Pair<CFGNode,String> > >
+    buildErrorTraceNodes() {
+        final LinkedList< LinkedList< Pair<CFGNode,String> > > result =
+            new LinkedList< LinkedList< Pair<CFGNode,String> > >();
+
+        for (ErrorTraceNode traceNode : getTracedErrorLeafNodes())
+            result.addAll(buildErrorTraceNodesFromNode(traceNode,
+                                                new HashSet<ErrorTraceNode>()));
+        return result;
     }
 
-    private static LinkedList< LinkedList<ErrorTraceNode> >
-    buildErrorTracesFromNode(final ErrorTraceNode node,
-                        final HashSet<ErrorTraceNode> crossedNodes) {
+    private static LinkedList< LinkedList< Pair<CFGNode,String> > >
+    buildErrorTraceNodesFromNode(final ErrorTraceNode node,
+                             final HashSet<ErrorTraceNode> crossedNodes) {
         if (crossedNodes.contains(node))
             return null;
         
-        final LinkedList< LinkedList<ErrorTraceNode> > result =
-            new LinkedList< LinkedList<ErrorTraceNode> >();
-        
+        final LinkedList< LinkedList< Pair<CFGNode,String> > > result =
+            new LinkedList< LinkedList< Pair<CFGNode,String> > >();
+
         if (node.getPredecessors().isEmpty()) {
-            final LinkedList<ErrorTraceNode> newTrace =
-                new LinkedList<ErrorTraceNode>();
-            newTrace.add(node);
+            final LinkedList< Pair<CFGNode,String> > newTrace =
+                new LinkedList< Pair<CFGNode,String> >();
+            newTrace.add(new Pair<CFGNode,String>(node.getCFGNode(),
+                                                  node.getMessage()));
             result.add(newTrace);
             return result;
         }
 
         crossedNodes.add(node);
         for (ErrorTraceNode predNode : node.getPredecessors()) {
-            final LinkedList< LinkedList<ErrorTraceNode> > temp =
-                buildErrorTracesFromNode(predNode,
+            final LinkedList< LinkedList< Pair<CFGNode,String> > > temp =
+                buildErrorTraceNodesFromNode(predNode,
                                      new HashSet<ErrorTraceNode>(crossedNodes));
             if (temp != null)
                 result.addAll(temp);
         }
-        for (LinkedList<ErrorTraceNode> trace : result)
-            trace.addFirst(node);
-        
-        return result;
-    }
 
-    private static LinkedList< Pair<CFGNode,String> >
-    buildTraceErrorNodesListTrace(final LinkedList<ErrorTraceNode> trace) {
-        final LinkedList< Pair<CFGNode,String> > result =
-            new LinkedList< Pair<CFGNode,String> >();
-
-        for (ErrorTraceNode node : trace)
-            result.add(new Pair<CFGNode,String>(node.getCFGNode(),
-                                                node.getMessage()));
+        final Pair<CFGNode,String> item =
+                new Pair<CFGNode,String>(node.getCFGNode(),
+                                         node.getMessage());
+        for (LinkedList< Pair<CFGNode,String> > trace : result)
+            trace.addFirst(item);
 
         return result;
     }
@@ -249,7 +225,11 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGvisitor {
         return CFG;
     }
 
-    private LinkedList<ErrorTraceNode> getTracedErrorLeafNodes() {
+    private CFGEdge getStartEdge() {
+        return startEdge;
+    }
+
+    private HashSet<ErrorTraceNode> getTracedErrorLeafNodes() {
         return tracedErrorLeafNodes;
     }
 
@@ -257,14 +237,10 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGvisitor {
         return tracedErrorNodes;
     }
 
-    private ErrorTraceNode getLastTraceNode() {
-        return lastTraceNode;
-    }
-
     private final ErrorRule rule;
     private final HashMap<CFGEdge,PatternLocation> edgeLocationDictionary;
     private final ControlFlowGraph CFG;
-    private final LinkedList<ErrorTraceNode> tracedErrorLeafNodes;
+    private final CFGEdge startEdge;
+    private final HashSet<ErrorTraceNode> tracedErrorLeafNodes;
     private final HashMap<CFGNode,ErrorTraceNode> tracedErrorNodes;
-    private ErrorTraceNode lastTraceNode;
 }
