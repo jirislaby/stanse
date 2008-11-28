@@ -457,19 +457,19 @@ initializerList
 	;
 
 designation
-	// this semantic predicate may be expensive, backtrack+memmoize are probably better
-	:	('[' constantExpression '...')=> arrayDesignator -> //null		// GNU
-	|	IDENTIFIER ':'!			// GNU
+	:	IDENTIFIER ':'!			// GNU
 	|	designator+ '=' -> ^(DESIGNATOR designator)+
 	;
 
-designator	// TODO AST
-	:	'[' constantExpression ']' -> ^(BRACKET_DESIGNATOR constantExpression)
+designator
+	// this semantic predicate may be expensive, backtrack+memmoize are probably better
+	:	('[' constantExpression '...') => arrayDesignator
+	|	'[' constantExpression ']' -> ^(BRACKET_DESIGNATOR constantExpression)
 	|	'.'! IDENTIFIER
 	;
 
 arrayDesignator					// GNU
-	:	'[' constantExpression '...' constantExpression ']'
+	:	'['! constantExpression '...'^ constantExpression ']'!
 	;
 
 attributes

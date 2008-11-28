@@ -350,7 +350,13 @@ designator returns [Element e]
 @init {
 	$e = newElement("designator", $designator.start);
 }
-	: ^(DESIGNATOR ^(BRACKET_DESIGNATOR expression)) { $e.add($expression.e); }
+	: ^(DESIGNATOR ^('...' e1=expression e2=expression)) {
+		Element range = $e.addElement("expression").
+			addElement("rangeExpression");
+		range.add($e1.e);
+		range.add($e2.e);
+	}
+	| ^(DESIGNATOR ^(BRACKET_DESIGNATOR expression)) { $e.add($expression.e); }
 	| ^(DESIGNATOR IDENTIFIER)	{ $e.addElement("id").addText($IDENTIFIER.text); }
 	| IDENTIFIER			{ $e.addElement("id").addText($IDENTIFIER.text); }
 	;
