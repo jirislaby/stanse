@@ -83,7 +83,8 @@ public class ControlFlowGraph {
         startNode.addPred(entryNode);
 
         final Map<CFGNode,Element> entryMap = new HashMap<CFGNode,Element>();
-        entryMap.put(startNode,this.functionDefinition.addElement("entry edge"));
+        entryMap.put(startNode,(Element)functionDefinition.selectSingleNode(
+                                                       ".//compoundStatement"));
         expressions.put(entryNode,entryMap);
 
         exitNode = new CFGNode(this);
@@ -91,7 +92,8 @@ public class ControlFlowGraph {
         endNode.addSucc(exitNode);
 
         final Map<CFGNode,Element> exitMap = new HashMap<CFGNode,Element>();
-        exitMap.put(exitNode,this.functionDefinition.addElement("exit edge"));
+        exitMap.put(exitNode,(Element)functionDefinition.selectSingleNode(
+                                                       ".//compoundStatement"));
         expressions.put(endNode,exitMap);
         }
 

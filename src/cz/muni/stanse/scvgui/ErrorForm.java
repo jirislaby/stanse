@@ -483,7 +483,7 @@ public class ErrorForm extends javax.swing.JFrame {
     
     private final void buildTraceGraphPictureAndShowIt() {
         final GraphViz gv = new GraphViz();
-        gv.graph.append(CheckerErrorToDot.run(actualTrace));
+        gv.graph.append(CheckerErrorToDot.run(actualTrace,false));
         try {
             final File out = File.createTempFile("SCVGraph",".png");
             out.deleteOnExit();

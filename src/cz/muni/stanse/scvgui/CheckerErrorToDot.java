@@ -10,7 +10,7 @@ import java.util.HashSet;
 
 final class CheckerErrorToDot {
 
-    public static String run(final ErrorTrace trace) {
+    public static String run(final ErrorTrace trace, boolean showEntryAndExit) {
 
         final StringBuilder output = new StringBuilder();
         String label = "";
@@ -25,12 +25,12 @@ final class CheckerErrorToDot {
                 .append("   node [shape=circle, fixedsize=true, height=0.4]; \n")
                 .append("   node [fontsize=12]; \n");
         
-        nodesToDo.add(cfg.getEntryNode());       
+        nodesToDo.add(showEntryAndExit ? cfg.getEntryNode() : cfg.getStartNode());
         
         while (!nodesToDo.isEmpty()) {
             CFGNode node = nodesToDo.iterator().next();
             nodesToDo.remove(node);
-            
+
             label = "\"" + node.toString() + "\"";
            
             color = "black";
@@ -50,6 +50,9 @@ final class CheckerErrorToDot {
             nodesDone.add(node);
             
             for (CFGNode succ : node.getSuccessors()) { 
+                if (!showEntryAndExit && succ.equals(cfg.getExitNode()))
+                    continue;
+                
                 output.append("   " + edgeToDot(trace,cfg,node,succ) + "; \n");
                 
                 if (!nodesDone.contains(succ)) nodesToDo.add(succ);

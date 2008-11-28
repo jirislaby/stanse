@@ -91,42 +91,35 @@ public class SourceAndXMLWindow extends JPanel {
         initComponents();
         findInSourcePanelVisible(false);
         findInXMLPanelVisible(false);
-        treeXML.addNonVisibleAttribute("bl");
-        treeXML.addNonVisibleAttribute("el");
-        treeXML.addNonVisibleAttribute("bc");
-        treeXML.addNonVisibleAttribute("ec");
+        //treeXML.addNonVisibleAttribute("bl");
         treeXMLMappingListener = new TreeSelectionListener() { // pri kliku na XML se zvyrazni odpovidajici zdrojovy text (pokud je to v artibutech uzlu)
-            public void valueChanged(TreeSelectionEvent e) {
-                if (! (e.getSource() instanceof Element) ) { return ;}
-                Element uzel = (Element) e.getSource();
-                if ((uzel.attributeCount() > 0) && (true)) {
-                    int rowStart = -1;
-                    int colStart = -1;
-                    int rowEnd = -1;
-                    int colEnd = -1;
-                    Iterator it = uzel.attributeIterator();
-                    while (it.hasNext()) {
-                        Attribute atrib = (Attribute) it.next();
-                        if (atrib.getName() == "bl") { rowStart = new Integer(atrib.getValue());}
-                        if (atrib.getName() == "el") { rowEnd = new Integer(atrib.getValue());}
-                        if (atrib.getName() == "bc") { colStart = new Integer(atrib.getValue());}
-                        if (atrib.getName() == "ec") { colEnd = new Integer(atrib.getValue());}
-                    }
-                    final int a = rowStart;
-                    final int b = colStart;
-                    final int c = rowEnd;
-                    final int d = colEnd;
-                    if ((rowStart > 0)&&(colStart > 0)&&(rowEnd > 0)&&(colEnd > 0)) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-//                                sourceText.selectText(rowStart, colStart, rowEnd, colEnd);
-                                sourceText.selectText(a, b, c, d);
-                            }
-                        });
+            public void valueChanged(final TreeSelectionEvent e) {
+                if (!(e.getSource() instanceof Element))
+                    return;
+                Element element = (Element)e.getSource();
+                if (element.attributeCount() < 1 ||
+                    element.valueOf("@bl") == null) {
+                    element = element.getParent();
+                    if (element.attributeCount() < 1 ||
+                        element.valueOf("@bl") == null) {
+                        logger.error("TreeSelectionListener::valueChanged() :: " +
+                                     "error : element of accepted selection " +
+                                     "event does not contain attribute 'bl'." +
+                                     " [element=" + element.toString() + "]");
+                        return;
                     }
                 }
-            }
-        };
+                final Integer row = Integer.decode(element.valueOf("@bl"));
+                if (row > 0)
+                    SwingUtilities.invokeLater(
+                        new Runnable() {
+                            public void run() {
+                                sourceText.selectLines(row,row);
+                            }
+                        }
+                    );
+                }
+            };
         
     }
     
