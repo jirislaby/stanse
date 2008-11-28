@@ -11,10 +11,9 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     // public section
 
-    public AutomatonChecker(
-                      final Set<cz.muni.stanse.xml2cfg.ControlFlowGraph> CFGs,
-                      final org.dom4j.Document XMLdefinition) throws Exception {
-        super(CFGs);
+    public AutomatonChecker(final org.dom4j.Document XMLdefinition)
+                                                              throws Exception {
+        super();
         XMLAutomatonDefinition = new XMLAutomatonDefinition(
                                                 XMLdefinition.getRootElement());
     }
@@ -27,14 +26,16 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     }
 
     @Override
-    public List<cz.muni.stanse.checker.CheckerError> check() throws Exception {
+    public List<cz.muni.stanse.checker.CheckerError>
+    check(final Set<cz.muni.stanse.xml2cfg.ControlFlowGraph> CFGs)
+                                                              throws Exception {
         final HashMap<cz.muni.stanse.xml2cfg.CFGEdge,PatternLocation>
             edgeLocationDictionary = PatternLocationBuilder.
-                   buildPatternLocations(getCFGs(),getXMLAutomatonDefinition());
+                   buildPatternLocations(CFGs,getXMLAutomatonDefinition());
 
         final LinkedList<PatternLocation> progressQueue =
                 new LinkedList<PatternLocation>();
-        for (final ControlFlowGraph cfg : getCFGs())
+        for (final ControlFlowGraph cfg : CFGs)
             progressQueue.add(edgeLocationDictionary.get(cfg.getEntryEdge()));
 
         while (!progressQueue.isEmpty()) {

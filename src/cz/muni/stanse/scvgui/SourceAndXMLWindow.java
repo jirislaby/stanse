@@ -563,7 +563,7 @@ public class SourceAndXMLWindow extends JPanel {
         for (File f : configFiles)
             try {
                 errors.addAll(
-                    (new AutomatonChecker(cfgs,(new SAXReader()).read(f))).check()
+                   (new AutomatonChecker((new SAXReader()).read(f))).check(cfgs)
                 );
             }
             catch(Exception e) {
@@ -573,56 +573,6 @@ public class SourceAndXMLWindow extends JPanel {
         jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
         ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
         errorForm.setVisible(true);
-
-        /*
-        if (configFiles == null || configFiles.isEmpty())
-            return;
-        
-        final HashSet<ControlFlowGraph> cfgs = buildCFGsFromXML(documentXML);
-        if (cfgs == null)
-            return;
-
-        final Automaton checker = new Automaton(cfgs);
-        checker.setConfigurations(configFiles);
-        List<CheckerError> errors = checker.check();
-
-        jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
-        ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
-        errorForm.setVisible(true);
-        */
-        /*        
-        if(documentXML != null) {
-            for(File file: files) {
-                SAXReader reader = new SAXReader();
-                try {
-                    Checker a = Automaton.getInstanceByDocument(reader.read(file));
-                    addFunctionsToChecker(a, documentXML);
-                    Set<CheckerErrorOld> errors = a.check();
-                    
-                    StringBuilder outputText = new StringBuilder();
-                    
-                    if (errors.isEmpty()) {
-                        jTextPaneOutput.setText("No errors. \n");
-                    } else {
-                        for (CheckerErrorOld error : errors) {
-                            outputText.append(error.getDescription()).append("\n");
-                        }
-                        jTextPaneOutput.setText(outputText.toString());
-
-                        //show window with errors
-                        ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
-                        errorForm.setVisible(true);
-                
-                    }
-                    
-                } catch (DocumentException ex) {
-                    logger.error("XML document exception while loading the definitions file", ex);
-                } catch(AutomatonSyntaxException ex) {
-                    logger.error("Definition document syntax is incorrect", ex);
-                }
-            }
-        }
-        */
     }
 
     /**
@@ -634,7 +584,7 @@ public class SourceAndXMLWindow extends JPanel {
         if (cfgs == null)
             return;
 
-        List<CheckerError> errors = (new OwnershipChecker(cfgs)).check();
+        List<CheckerError> errors = (new OwnershipChecker()).check(cfgs);
 
         jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
         ErrorForm errorForm = new ErrorForm(errors, treeXML, this);

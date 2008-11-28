@@ -60,17 +60,17 @@ public final class OwnershipChecker extends Checker {
     private final boolean INTER = true;
     
     /** Creates a new instance of OwnershipChecker */
-    public OwnershipChecker(final Set<ControlFlowGraph> cfgs) {
-        super(cfgs);
+    public OwnershipChecker() {
+        super();
     }
 
     public String getName() {
         return "OwnershipChecker";
     }
             
-    public List<CheckerError> check() {
+    public List<CheckerError> check(final Set<ControlFlowGraph> cfgs) {
         return convertAllErrorsFromOld(
-                    checkOld( new Vector<ControlFlowGraph>(getCFGs()) ) );
+                    checkOld( new Vector<ControlFlowGraph>(cfgs) ) );
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ public final class OwnershipChecker extends Checker {
         
         Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         
-        topologicalSortedCG = topologicalSortedCallGraph();
+        topologicalSortedCG = topologicalSortedCallGraph(cfgs);
         
         // intraproceduralni analyza
         for (ControlFlowGraph cfg : topologicalSortedCG) {
@@ -1169,13 +1169,14 @@ public final class OwnershipChecker extends Checker {
      * vrací control flow grafy v reverzním topologickém pořadí podle call grafu
      * @return vector obsahující control flow grafy
      */
-    private Vector<ControlFlowGraph> topologicalSortedCallGraph() {
+    private Vector<ControlFlowGraph> topologicalSortedCallGraph(
+                                             final Vector<ControlFlowGraph> cfgs) {
     // funkce pouzije silne souvisle komponenty z call grafu, ktere by meli byt topologicky usporadane a urci navic nejake poradi
     // zpracovani jednotlivych funkci ze techto ss-komponent (v soucasnosti DFS)
         
         List<Element> rootElements = new ArrayList<Element>();
         
-        for(ControlFlowGraph cfg : getCFGs()) {
+        for(ControlFlowGraph cfg : cfgs) {
             rootElements.add(cfg.getFunctionDefinition());
         }
 
@@ -1231,7 +1232,7 @@ public final class OwnershipChecker extends Checker {
         
         topol.setSize(topologicalSortedCG.size());
         
-        for(ControlFlowGraph cfg : getCFGs()) {
+        for(ControlFlowGraph cfg : cfgs) {
             // vytvori se poradi CFG podle urceneho poradi funkci
             topol.set(topologicalSortedCG.indexOf(cfg.getFunctionName()), cfg);
         }

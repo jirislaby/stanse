@@ -426,9 +426,8 @@ public class SCV {
 		    cfgs.add(new ControlFlowGraph(e.element("functionDefinition")));
         for(String xmlName: checkerDefinitions) {
             final AutomatonChecker checker =
-                new AutomatonChecker(cfgs,
-                                     (new SAXReader()).read(new File(xmlName)));
-            for (CheckerError error : checker.check()) {
+                new AutomatonChecker((new SAXReader()).read(new File(xmlName)));
+            for (CheckerError error : checker.check(cfgs)) {
                 logger.error("not really. it is just output from checker :-)\n"
                              + error.toString());
             }
