@@ -31,6 +31,19 @@ public final class Pair<A,B> {
         return result;
     }
 
+    @Override
+    public String toString() {
+	StringBuilder sb = new StringBuilder();
+	sb.append('{');
+	if (first != null)
+	    sb.append(first.toString());
+	sb.append(':');
+	if (second != null)
+	    sb.append(second.toString());
+	sb.append('}');
+	return sb.toString();
+    }
+
     // private section
 
     private final A first;
