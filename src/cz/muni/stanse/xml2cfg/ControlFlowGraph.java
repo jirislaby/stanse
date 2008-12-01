@@ -3,12 +3,13 @@
  *
  * @author Jaroslav Novotný <jarek@jarek.cz>
  *
- * TODO: 1) goto statement and labels
- *       2) short-circuit evaluation
+ * TODO: * short-circuit evaluation
  *
  */
 
 package cz.muni.stanse.xml2cfg;
+
+import cz.muni.stanse.utils.Pair;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -18,11 +19,13 @@ import org.dom4j.io.XMLWriter;
 
 import java.io.IOException;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+
 
 /**
  * Represents a control-flow graph of a procedure
@@ -47,6 +50,9 @@ public class ControlFlowGraph {
 
     private Map<CFGNode, Map<CFGNode, Boolean>> conditions = new HashMap<CFGNode, Map<CFGNode, Boolean>>(); // maping graph edges to type of condition
 
+    private Map<String, CFGNode> labels = new HashMap<String, CFGNode>();
+    private Map<String, Set<Pair<CFGNode, Element>>> gotos =
+		new HashMap<String, Set<Pair<CFGNode, Element>>>();
 
     /**
      * Creates a new instance of ControlFlowGraph
@@ -196,26 +202,23 @@ public class ControlFlowGraph {
 		    continue;
 
 		Element element = (Element)node;
+
 		end = nodeCreator(end, element);
 		if (end == null) {
-
 		    for (i++; i < size; i++) {
 			node = actualElement.node(i);
 			if (!(node instanceof Element))
 			    continue;
-
-			/* ignore unreachable labelStatement so far */
 			element = (Element)node;
+
 			if (element.nodeCount() > 0 && element.node(0).
-				    getName().equals("labelStatement"))
+				getName().equals("labelStatement")) {
+			    i--;
 			    break;
+			}
 
-			dump("unreachable code (compoundStatement)",
-				(Element)node);
-			break;
+			dump("unreachable code (compoundStatement)", element);
 		    }
-
-		    break;
 		}
 	    }
 
@@ -497,6 +500,48 @@ public class ControlFlowGraph {
 	    addEdge(start, continueNode, actualElement, null);
 
 	    return null;
+	}
+
+	if (actualElement.getName().equals("gotoStatement")) {
+	    /* expression
+	     */
+	    Element idElem = (Element)actualElement.selectSingleNode(".//expression/id");
+	    String id = idElem.getText();
+	    CFGNode label = labels.get(id);
+
+	    if (label != null) /* already available, use it */
+		addEdge(start, label, actualElement, null);
+	    else { /* set down for backpatching */
+		Set<Pair<CFGNode, Element>> s = gotos.get(id);
+		if (s == null) {
+		    s = new LinkedHashSet<Pair<CFGNode, Element>>();
+		    gotos.put(id, s);
+		}
+		s.add(new Pair(start, actualElement));
+	    }
+
+	    return null;
+	}
+
+	if (actualElement.getName().equals("labelStatement")) {
+	    /* statement
+	     */
+	    String id = actualElement.attribute("id").getValue();
+
+	    CFGNode end = new CFGNode(this);
+	    /* it might be null, when unreferenced so far */
+	    if (start != null)
+		addEdge(start, end, actualElement, null);
+	    /* add for later use */
+	    labels.put(id, end);
+
+	    /* backpatch all previous */
+	    Set<Pair<CFGNode, Element>> s = gotos.get(id);
+	    if (s != null)
+		for (Pair<CFGNode, Element> p: s)
+		    addEdge(p.getFirst(), end, p.getSecond(), null);
+
+	    return nodeCreator(end, (Element)actualElement.node(0));
 	}
 
 	if (actualElement.getName().equals("expression")) {
