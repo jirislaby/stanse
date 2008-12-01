@@ -614,9 +614,21 @@ public class ControlFlowGraph {
 	    nodesDone.add(node);
 
 	    for (CFGNode succ : node.getSuccessors()) {
-		System.out.println("  -> "+succ);
+		System.out.print("  -> " + succ + " COND= ");
+		if (conditions.get(node) != null && conditions.get(node).get(succ) != null)
+		    System.out.print(conditions.get(node).get(succ));
+		System.out.print(" XML: ");
 
-		if (!nodesDone.contains(succ)) nodesToDo.add(succ);
+		try {
+		    XMLWriter writer = new XMLWriter(System.err);
+		    writer.write(expressions.get(node).get(succ));
+		} catch (IOException e) {
+		    System.err.print(" <none>");
+		}
+		System.err.println("");
+
+		if (!nodesDone.contains(succ))
+		    nodesToDo.add(succ);
 	    }
 	}
     }
