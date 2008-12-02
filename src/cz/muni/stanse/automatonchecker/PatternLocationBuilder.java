@@ -47,7 +47,7 @@ final class PatternLocationBuilder {
                             patternLocationCreator.getNumDistinctLocations()));
         edgeLocationsDictionary.get(cfg.getExitEdge()).
             getErrorRules().addAll(getExitErrorRules(
-                            automatonDefinition.getExitErrorRule(),
+                            automatonDefinition.getExitErrorRules(),
                             patternLocationCreator.getNumDistinctLocations()));
 
         for (final PatternLocation location : edgeLocationsDictionary.values())
@@ -72,11 +72,13 @@ final class PatternLocationBuilder {
     }
 
     private static LinkedList<ErrorRule> getExitErrorRules(
-                    final XMLErrorRule XMLrule,final int numDistinctLocations) {
+                                        final LinkedList<XMLErrorRule> XMLrules,
+                                        final int numDistinctLocations) {
         final LinkedList<ErrorRule> errorRules = new LinkedList<ErrorRule>();
 
-        for (int i = 0; i < numDistinctLocations; ++i)
-            errorRules.add(new ErrorRule(XMLrule,i));
+        for (XMLErrorRule rule : XMLrules)
+            for (int i = 0; i < numDistinctLocations; ++i)
+                errorRules.add(new ErrorRule(rule,i));
 
         return errorRules;
     }

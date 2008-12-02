@@ -33,6 +33,18 @@ final class XMLPattern {
     private static boolean matchingElements(
             final org.dom4j.Element XMLpivot, final org.dom4j.Element XMLelement,
             final PatternVariablesAssignment varsAssignment) throws Exception {
+        if (XMLpivot.getName().equals("nested"))
+            return onNested(XMLpivot,XMLelement,varsAssignment);
+        if (XMLpivot.getName().equals("any"))
+            return true;
+        if (XMLpivot.getName().equals("ignore"))
+            return true;
+        if (XMLpivot.getName().equals("var")) {
+            varsAssignment.put(XMLAlgo.readValueOfAttribute("name",XMLpivot),
+                               XMLelement);
+            return true;
+        }
+        
         if (!XMLpivot.getName().equals(XMLelement.getName()))
             return false;
         if (XMLpivot.isTextOnly() != XMLelement.isTextOnly())
@@ -43,28 +55,31 @@ final class XMLPattern {
 
         final Iterator i = XMLpivot.elementIterator();
         final Iterator j = XMLelement.elementIterator();
-        for ( ; i.hasNext() && j.hasNext(); ) {
-            final org.dom4j.Element child_i = (org.dom4j.Element)i.next();
-            final String name_i = child_i.getName(); 
-            if (name_i.equals("any"))
-                return true;
-            if (name_i.equals("ignore")) {
-                j.next();
-                continue;
-            }
-            if (name_i.equals("var")) {
-                varsAssignment.put(XMLAlgo.readValueOfAttribute("name",child_i),
-                                   (org.dom4j.Element)j.next());
-                continue;
-            }
-            if (!matchingElements(child_i,(org.dom4j.Element)j.next(),
+        for ( ; i.hasNext() && j.hasNext(); )
+            if (!matchingElements((org.dom4j.Element)i.next(),
+                                  (org.dom4j.Element)j.next(),
                                   varsAssignment))
                 return false;
-        }
         if (i.hasNext() || j.hasNext())
             return false;
 
         return true;
+    }
+
+    private static boolean onNested(
+            final org.dom4j.Element XMLpivot, final org.dom4j.Element XMLelement,
+            final PatternVariablesAssignment varsAssignment) throws Exception {
+        if (matchingElements(
+                           (org.dom4j.Element)XMLpivot.elementIterator().next(),
+                           XMLelement,varsAssignment))
+            return true;
+        
+        for (final Iterator j = XMLelement.elementIterator() ; j.hasNext(); )
+            if (matchingElements(XMLpivot,(org.dom4j.Element)j.next(),
+                                 varsAssignment))
+                return true;
+
+        return false;
     }
 
     private final org.dom4j.Element getPatternXMLelement() {

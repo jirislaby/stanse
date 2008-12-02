@@ -577,7 +577,16 @@ public class SourceAndXMLWindow extends JPanel {
         if (cfgs == null)
             return;
 
-        List<CheckerError> errors = (new OwnershipChecker()).check(cfgs);
+        final LinkedList<CheckerError> errors = new LinkedList<CheckerError>(); 
+        try {
+            errors.addAll(
+                (new OwnershipChecker()).check(cfgs)
+            );
+        }
+        catch(Exception e) {
+            logger.error(e.getMessage());
+        }
+        //List<CheckerError> errors = (new OwnershipChecker()).check(cfgs);
 
         jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
         ErrorForm errorForm = new ErrorForm(errors, treeXML, this);

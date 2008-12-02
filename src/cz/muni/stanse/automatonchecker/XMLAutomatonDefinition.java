@@ -71,11 +71,12 @@ final class XMLAutomatonDefinition {
         return patternErrorRulesDictionary.get(patternIndex);
     }
 
-    XMLErrorRule getExitErrorRule() {
+    LinkedList<XMLErrorRule> getExitErrorRules() {
+        final LinkedList<XMLErrorRule> result = new LinkedList<XMLErrorRule>();
         for (XMLErrorRule rule : XMLerrorRules)
             if (rule.isExitRule())
-                return rule;
-        return null;
+                result.add(rule);
+        return result;
     }
 
     // private section
