@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<automaton>
+    <description name="pointer analysis automaton checker"
+                 desc="Handles common problems when using pointer such as
+                       null/dangling pointer dereference, double free, and
+                       memory leaks." />
+
+
+    <start state="U" />
+    <transition from="U[A]" by="malloc[A]" to="I[A]" />
+    <transition from="N[A]" by="malloc[A]" to="I[A]" />
+    <transition from="D[A]" by="malloc[A]" to="I[A]" />
+    <transition from="I[A]" by="null[A]" to="N[A]" />
+    <transition from="I[A]" by="notnull[A]" to="V[A]" />
+    <transition from="V[A]" by="free[A]" to="D[A]" />
+    <transition from="I[A]" by="free[A]" to="D[A]" />
+
+
+    <error  from="U[A]" by="free[A]"
+            desc="releasing of not allocated memory."
+            level="0"
+            entry=""
+            begin="pointer is not initialized."
+            propag="not affected --> pointer is still not initialized."
+            end="pointer is not initialized, but releasing it here." />
+
+    <error  from="I[A]" by="free[A]"
+            desc="releasing not allocated memory."
+            level="0"
+            entry=""
+            begin="pointer does not points to valid memory."
+            propag="not affected --> pointer still does not points to valid memory."
+            end="pointer is not initialized, but releasing it here." />
+
+    <error  from="N[A]" by="free[A]"
+            desc="releasing of not allocated memory."
+            level="0"
+            entry=""
+            begin="pointer points to NULL."
+            propag="not affected --> pointer still points to NULL."
+            end="pointer points to NULL, but releasing it here." />
+
+    <error  from="D[A]" by="free[A]"
+            desc="releasing already released memory"
+            level="0"
+            entry=""
+            begin="memory is released here -> pointer becames dangling."
+            propag="not affected --> pointer is still dangling."
+            end="pointer is dangling and releasing it here." />
+
+    <error  from="V[A]" by="malloc[A]"
+            desc="memory leak"
+            level="0"
+            entry=""
+            begin="pointer is pointing to the valid memory."
+            propag="not affected --> still pointing to valid memory."
+            end="the only reference to valid memory is lost here." />
+
+    <error  from="U[A]" by="deref[A]"
+            desc="dereferencing not valid pointer"
+            level="0"
+            entry=""
+            begin="pointer is not initialized."
+            propag="not affected --> pointer is still not initialized."
+            end="dereferencing not valid pointer here." />
+
+    <error  from="I[A]" by="deref[A]"
+            desc="dereferencing not valid pointer"
+            level="0"
+            entry=""
+            begin="pointer does not points to valid memory."
+            propag="not affected --> pointer still does not points to valid memory."
+            end="dereferencing not valid pointer here." />
+
+    <error  from="N[A]" by="deref[A]"
+            desc="dereferencing not valid pointer"
+            level="0"
+            entry=""
+            begin="pointer does not points to valid memory."
+            propag="not affected --> pointer still does not points to valid memory."
+            end="dereferencing not valid pointer here." />
+
+    <error  from="D[A]" by="deref[A]"
+            desc="dereferencing not valid pointer"
+            level="0"
+            entry=""
+            begin="pointer does not points to valid memory."
+            propag="not affected --> pointer still does not points to valid memory."
+            end="dereferencing not valid pointer here." />
+
+    <error  from="V[*]" by=""
+            desc="leaving function without releasing memory - memory leak"
+            level="0"
+            entry=""
+            begin="pointer points to valid memory."
+            propag="not affected --> pointer still points to valid memory."
+            end="Leaving function and only reference to valid memory is lost here." />
+
+    <error  from="I[*]" by=""
+            desc="leaving function without releasing memory - memory leak"
+            level="0"
+            entry=""
+            begin="pointer points to valid memory."
+            propag="not affected --> pointer still points to valid memory."
+            end="Leaving function and only reference to valid memory is lost here." />
+
+
+    <pattern name="malloc">
+        <nested>
+            <assignExpression>
+                <var name="A" />
+                <nested>
+                    <functionCall>
+                        <id>malloc</id>
+                        <ignore />
+                    </functionCall>
+                </nested>
+            </assignExpression>
+        </nested>
+    </pattern>
+
+    <pattern name="free">
+        <expressionStatement>
+            <functionCall>
+                <id>free</id>
+                <var name="A" />
+            </functionCall>
+        </expressionStatement>
+    </pattern>
+
+    <pattern name="null">
+        <unknown />
+    </pattern>
+
+    <pattern name="notnull">
+        <unknown />
+    </pattern>
+
+    <pattern name="deref">
+        <nested>
+            <derefExpression>
+                <var name="A" />
+            </derefExpression>
+        </nested>
+    </pattern>
+
+</automaton>
+
