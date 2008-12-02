@@ -44,7 +44,7 @@ import org.dom4j.io.XMLWriter;
 	final private Boolean normalizeTypes = false;
 	final private Boolean uniqueVariables = true;
 	final private Boolean uniqueVariablesDebug = false;
-	final private Boolean printXML = false;
+	final private Boolean printXML = true;
 
 	private void outputXML() {
 		if (!printXML)
@@ -76,8 +76,19 @@ import org.dom4j.io.XMLWriter;
 		els.add(e);
 		return e;
 	}
+	private void setPositions(Element e, CommonTree start) {
+			e.
+			addAttribute("bl", String.valueOf(start.getLine())).
+			addAttribute("bc", String.valueOf(start.getCharPositionInLine()));
+	}
 	private Element addElementBin(Element dest, String name, Element e1, Element e2) {
 		Element e = dest.addElement(name);
+		e.add(e1);
+		e.add(e2);
+		return e;
+	}
+	private Element newElementBin(String name, Element e1, Element e2) {
+		Element e = newElement(name);
 		e.add(e1);
 		e.add(e2);
 		return e;
@@ -601,16 +612,16 @@ pointer returns [List<Element> els]
 /* STATEMENTS */
 
 statement returns [Element e]
-@init {
-	$e = newElement("statement", $statement.start);
+@after {
+	setPositions($e, $statement.start);
 }
-	: labeledStatement	{ $e.add($labeledStatement.e); }
-	| compoundStatement	{ $e.add($compoundStatement.e); }
-	| expressionStatement	{ $e.add($expressionStatement.e != null ? $expressionStatement.e : newElement("emptyStatement")); }
-	| selectionStatement	{ $e.add($selectionStatement.e); }
-	| iterationStatement	{ $e.add($iterationStatement.e); }
-	| jumpStatement		{ $e.add($jumpStatement.e); }
-	| asmStatement		{ $e.add($asmStatement.e); }
+	: labeledStatement	{ $e=$labeledStatement.e; }
+	| compoundStatement	{ $e=$compoundStatement.e; }
+	| expressionStatement	{ $e=newElement("expressionStatement");$e.add($expressionStatement.e != null ? $expressionStatement.e : newElement("emptyStatement")); }
+	| selectionStatement	{ $e=$selectionStatement.e; }
+	| iterationStatement	{ $e=$iterationStatement.e; }
+	| jumpStatement		{ $e=$jumpStatement.e; }
+	| asmStatement		{ $e=$asmStatement.e; }
 	;
 
 labeledStatement returns [Element e]
@@ -712,55 +723,57 @@ expression returns [Element e]
 @init {
 	List<Element> exs = new ArrayList<Element>();
 	Element exp;
-	$e = newElement("expression", $expression.start);
+}
+@after {
+	setPositions($e, $expression.start);
 }
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) {
 		String op = $assignmentOperator.text;
-		exp = addElementBin($e, "assignExpression", $e1.e, $e2.e);
+		$e = newElementBin("assignExpression", $e1.e, $e2.e);
 		if (!op.equals("="))
-			exp.addAttribute("op", op.substring(0, op.length() - 1));
+			$e.addAttribute("op", op.substring(0, op.length() - 1));
 	}
 	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression) ^(E2 e2=expression?) ^(E3 e3=expression)) {
-		exp = $e.addElement("conditionalExpression");
-		exp.add($e1.e);
-		addElementCond(exp, $e2.e);
-		exp.add($e3.e);
+		$e=newElement("conditionalExpression");
+		$e.add($e1.e);
+		addElementCond($e, $e2.e);
+		$e.add($e3.e);
 	}
-	| ^(CAST_EXPRESSION tn=typeName e1=expression) { addElementBin($e, "castExpression", $tn.e, $e1.e); }
-	| ^(ARRAY_ACCESS e1=expression e2=expression) { addElementBin($e, "arrayAccess", $e1.e, $e2.e); }
+	| ^(CAST_EXPRESSION tn=typeName e1=expression) { $e=newElementBin("castExpression", $tn.e, $e1.e); }
+	| ^(ARRAY_ACCESS e1=expression e2=expression) { $e=newElementBin("arrayAccess", $e1.e, $e2.e); }
 	| ^(FUNCTION_CALL e1=expression (e2=expression {exs.add($e2.e);})*) {
-		exp = $e.addElement("functionCall");
-		exp.add($e1.e);
+		$e=newElement("functionCall");
+		$e.add($e1.e);
 		for (Element el: exs)
-			exp.add(el);
+			$e.add(el);
 	}
 	| ^(COMPOUND_LITERAL tn=typeName initializerList) {
 		Element me = newElement("initializer");
-		addElementBin($e, "compoundLiteral", $tn.e, me);
+		$e=newElementBin("compoundLiteral", $tn.e, me);
 		addAllElements(me, $initializerList.els);
 	}
-	| ^(',' e1=expression e2=expression)	{ addElementBin($e, "commaExpression", $e1.e, $e2.e); }
-	| ^('++' e1=expression)		{ $e.addElement("prefixExpression").addAttribute("op", "++").add($e1.e); }
-	| ^('--' e1=expression)		{ $e.addElement("prefixExpression").addAttribute("op", "--").add($e1.e); }
-	| ^(unaryOp e1=expression)	{ $e.addElement("prefixExpression").addAttribute("op", $unaryOp.op).add($e1.e); }
-	| ^('sizeof' (e1=expression|tn=typeName))	{ $e.addElement("sizeofExpression").add(e1 != null ? $e1.e : $tn.e); }
-	| ^('__alignof__' (e1=expression|tn=typeName))	{ $e.addElement("allignofExpression").add(e1 != null ? $e1.e : $tn.e); }
+	| ^(',' e1=expression e2=expression)	{ $e=newElementBin("commaExpression", $e1.e, $e2.e); }
+	| ^('++' e1=expression)		{ $e=newElement("prefixExpression");$e.addAttribute("op", "++").add($e1.e); }
+	| ^('--' e1=expression)		{ $e=newElement("prefixExpression");$e.addAttribute("op", "--").add($e1.e); }
+	| ^(unaryOp e1=expression)	{ $e=newElement("prefixExpression");$e.addAttribute("op", $unaryOp.op).add($e1.e); }
+	| ^('sizeof' (e1=expression|tn=typeName))	{ $e=newElement("sizeofExpression"); $e.add(e1 != null ? $e1.e : $tn.e); }
+	| ^('__alignof__' (e1=expression|tn=typeName))	{ $e=newElement("allignofExpression"); $e.add(e1 != null ? $e1.e : $tn.e); }
 	| ^('.' e1=expression IDENTIFIER)	{
-		exp = $e.addElement("dotExpression");
-		exp.add($e1.e);
-		exp.addElement("member").addText($IDENTIFIER.text);
+		$e=newElement("dotExpression");
+		$e.add($e1.e);
+		$e.addElement("member").addText($IDENTIFIER.text);
 	}
 	| ^('->' e1=expression IDENTIFIER) {
-		exp = $e.addElement("arrowExpression");
-		exp.add($e1.e);
-		exp.addElement("member").addText($IDENTIFIER.text);
+		$e=newElement("arrowExpression");
+		$e.add($e1.e);
+		$e.addElement("member").addText($IDENTIFIER.text);
 	}
-	| ^(AU e1=expression)	{ $e.addElement("addrExpression").add($e1.e); }
-	| ^(XU e1=expression)	{ $e.addElement("derefExpression").add($e1.e); }
-	| ^(PP e1=expression)	{ $e.addElement("postfixExpression").addAttribute("op", "++").add($e1.e); }
-	| ^(MM e1=expression)	{ $e.addElement("postfixExpression").addAttribute("op", "--").add($e1.e); }
-	| binaryExpression	{ $e.add($binaryExpression.e); }
-	| primaryExpression	{ $e.add($primaryExpression.e); }
+	| ^(AU e1=expression)	{ $e=newElement("addrExpression"); $e.add($e1.e); }
+	| ^(XU e1=expression)	{ $e=newElement("derefExpression"); $e.add($e1.e); }
+	| ^(PP e1=expression)	{ $e=newElement("postfixExpression"); $e.addAttribute("op", "++").add($e1.e); }
+	| ^(MM e1=expression)	{ $e=newElement("postfixExpression"); $e.addAttribute("op", "--").add($e1.e); }
+	| binaryExpression	{ $e=$binaryExpression.e; }
+	| primaryExpression	{ $e=$primaryExpression.e; }
 	;
 
 binaryExpression returns [Element e]

@@ -51,21 +51,25 @@
   <xs:choice>
     <xs:element name="emptyStatement" type="empty"/> <!--in GNU C only-->
     <xs:element name="compoundStatement"/>
-    <xs:element name="expression"/>
+    <xs:element name="expressionStatement">
+      <xs:complexType>
+        <xs:group ref="expression"/>
+      </xs:complexType>
+    </xs:element>
     <!--Iteration statements-->
     <xs:element name="whileStatement">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
-          <xs:element name="statement"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="statement"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
     <xs:element name="doStatement">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="statement"/>
-          <xs:element name="expression"/>
+          <xs:group ref="statement"/>
+          <xs:group ref="expression"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -73,12 +77,12 @@
       <xs:complexType>
         <xs:sequence>
 	  <xs:choice>
-	    <xs:element name="expression"/>
+	    <xs:group ref="expression"/>
 	    <xs:element name="declaration"/>
           </xs:choice>
-          <xs:element name="expression"/>
-          <xs:element name="expression"/>
-          <xs:element name="statement"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="statement"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -86,7 +90,7 @@
     <xs:element name="labelStatement">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="statement"/>
+          <xs:group ref="statement"/>
         </xs:sequence>
         <xs:attribute name="label" type="id" use="required"/>
       </xs:complexType>
@@ -94,15 +98,15 @@
     <xs:element name="caseLabelStatement">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
-          <xs:element name="statement"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="statement"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
     <xs:element name="defaultLabelStatement">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="statement"/>
+          <xs:group ref="statement"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -111,7 +115,7 @@
     <xs:element name="gotoStatement">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -120,7 +124,7 @@
     <xs:element name="returnStatement">
       <xs:complexType>
         <xs:choice minOccurs="0">
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
         </xs:choice>
       </xs:complexType>
     </xs:element>
@@ -128,25 +132,25 @@
     <xs:element name="ifStatement">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
-          <xs:element name="statement"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="statement"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
     <xs:element name="ifElseStatement">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
-          <xs:element name="statement"/>
-          <xs:element name="statement"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="statement"/>
+          <xs:group ref="statement"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
     <xs:element name="switchStatement">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
-          <xs:element name="statement"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="statement"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -157,7 +161,7 @@
   <xs:complexType>
     <xs:choice minOccurs="0" maxOccurs="unbounded">
       <xs:element name="declaration"/>
-      <xs:element name="statement"/>
+      <xs:group ref="statement"/>
       <!-- GNU nesting functions -->
       <xs:element name="functionDefinition"/>
     </xs:choice>
@@ -240,8 +244,8 @@
 <xs:element name="binaryExpression">
   <xs:complexType>
     <xs:sequence><!-- order does matter here -->
-      <xs:element name="expression"/>
-      <xs:element name="expression"/>
+      <xs:group ref="expression"/>
+      <xs:group ref="expression"/>
     </xs:sequence>
     <xs:attribute name="op" type="binaryOp" use="required"/>
   </xs:complexType>
@@ -250,8 +254,8 @@
 <xs:element name="assignExpression">
   <xs:complexType>
     <xs:sequence><!-- order does matter here -->
-      <xs:element name="expression"/>
-      <xs:element name="expression"/>
+      <xs:group ref="expression"/>
+      <xs:group ref="expression"/>
     </xs:sequence>
     <xs:attribute name="op" type="assignOp" use="optional"/>
     <!-- no op means plain assignment -->
@@ -261,7 +265,7 @@
 <xs:element name="prefixExpression">
   <xs:complexType>
     <xs:sequence>
-      <xs:element name="expression"/>
+      <xs:group ref="expression"/>
     </xs:sequence>
     <xs:attribute name="op" type="prefixOp" use="required"/>
   </xs:complexType>
@@ -270,7 +274,7 @@
 <xs:element name="postfixExpression">
   <xs:complexType>
     <xs:sequence>
-      <xs:element name="expression"/>
+      <xs:group ref="expression"/>
     </xs:sequence>
     <xs:attribute name="op" type="postfixOp" use="required"/>
   </xs:complexType>
@@ -288,8 +292,8 @@
     <xs:element name="rangeExpression">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="expression"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -300,8 +304,8 @@
     <xs:element name="arrayAccess"> <!-- part of postfixExpression -->
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="expression"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -310,8 +314,8 @@
     <xs:element name="commaExpression"><!-- should be binary with no op? -->
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
+          <xs:group ref="expression"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -319,7 +323,7 @@
       <xs:complexType>
         <xs:sequence>
 	  <!-- to avoid ambiguity -->
-          <xs:element name="expression" minOccurs="2" maxOccurs="3"/>
+          <xs:group ref="expression" minOccurs="2" maxOccurs="3"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -327,7 +331,7 @@
     <xs:element name="arrowExpression">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
           <xs:element name="member" type="id"/>
         </xs:sequence>
       </xs:complexType>
@@ -335,7 +339,7 @@
     <xs:element name="dotExpression">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
           <xs:element name="member" type="id"/>
         </xs:sequence>
       </xs:complexType>
@@ -344,14 +348,14 @@
     <xs:element name="derefExpression">
       <xs:complexType>
 	<xs:sequence>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
 	</xs:sequence>
       </xs:complexType>
     </xs:element>
     <xs:element name="addrExpression">
       <xs:complexType>
 	<xs:sequence>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
 	</xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -360,14 +364,14 @@
       <xs:complexType>
         <xs:sequence>
           <xs:element name="typeName"/>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
     <xs:element name="sizeofExpression">
       <xs:complexType>
         <xs:choice>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
           <xs:element name="typeName"/>
         </xs:choice>
       </xs:complexType>
@@ -376,14 +380,14 @@
       <xs:complexType>
         <xs:sequence>
           <xs:element name="typeName"/>
-          <xs:element name="expression" maxOccurs="unbounded"/>
+          <xs:group ref="expression" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>
     <xs:element name="allignofExpression">
       <xs:complexType>
         <xs:choice>
-          <xs:element name="expression"/>
+          <xs:group ref="expression"/>
           <xs:element name="typeName"/>
         </xs:choice>
       </xs:complexType>
@@ -392,8 +396,8 @@
     <xs:element name="functionCall">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="expression"/> <!--name-->
-          <xs:element name="expression" minOccurs="0" maxOccurs="unbounded"/><!--arguments-->
+          <xs:group ref="expression"/> <!--name-->
+          <xs:group ref="expression" minOccurs="0" maxOccurs="unbounded"/><!--arguments-->
         </xs:sequence>
       </xs:complexType>
     </xs:element>
@@ -505,7 +509,7 @@
   <xs:complexType>
     <xs:sequence>
       <xs:element name="declarator" minOccurs="0"/>
-      <xs:element name="expression" minOccurs="0"/> <!-- constant expression -->
+      <xs:group ref="expression" minOccurs="0"/> <!-- constant expression -->
     </xs:sequence>
   </xs:complexType>
 </xs:element>
@@ -522,7 +526,7 @@
 <xs:element name="enumerator">
   <xs:complexType>
     <xs:sequence>
-      <xs:element name="expression" minOccurs="0" /><!-- constant expresssion -->
+      <xs:group ref="expression" minOccurs="0" /><!-- constant expresssion -->
     </xs:sequence>
     <xs:attribute name="id" type="id" use="required"/>
   </xs:complexType>
@@ -596,7 +600,7 @@
 <xs:element name="initializer">
   <xs:complexType>
     <xs:choice>
-      <xs:element name="expression"/><!--assignmentExpression-->
+      <xs:group ref="expression"/><!--assignmentExpression-->
       <xs:sequence minOccurs="0" maxOccurs="unbounded"><!-- { initializerList ,? } -->
 	<xs:element name="designator" minOccurs="0" maxOccurs="unbounded"/>
 	<xs:element name="initializer"/>
@@ -644,7 +648,7 @@
 <xs:element name="arrayDecl">
   <xs:complexType>
     <xs:choice>
-      <xs:element name="expression" minOccurs="0"/><!-- assignment expression -->
+      <xs:group ref="expression" minOccurs="0"/><!-- assignment expression -->
       <xs:element name="asterisk" type="empty"/><!-- [*] -->
     </xs:choice>
     <xs:attribute name="static" type="xs:boolean"/>
