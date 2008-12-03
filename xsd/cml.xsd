@@ -661,12 +661,10 @@
 
 <xs:element name="functionDecl">
   <xs:complexType>
-    <xs:sequence>
-      <xs:choice>
-	<xs:element name="parameter" maxOccurs="unbounded"/>
-	<xs:element name="id" minOccurs="0" maxOccurs="unbounded"/>
-      </xs:choice>
-    </xs:sequence>
+    <xs:choice>
+      <xs:element name="parameter" maxOccurs="unbounded"/>
+	  <xs:element name="id" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:choice>
   </xs:complexType>
 </xs:element>
 
