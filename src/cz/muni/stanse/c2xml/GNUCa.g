@@ -366,6 +366,8 @@ declarator
 	;
 
 directDeclarator
+@init {boolean wasTypedef=false;}
+@after {if (wasTypedef) $declaration::isTypedef=true;}
 	:	 ( IDENTIFIER
 			{
 //			System.err.println("T: ID="+$IDENTIFIER.text+", size="+$declaration.size());
@@ -378,9 +380,9 @@ directDeclarator
 //	|	'(' attributes? declarator ')' -> declarator
 	|	'(' declarator ')' -> declarator
 		)
-	( 	// ugly hack, prevents getting function parameters into types
-		{if ($declaration.size()>0) $declaration::isTypedef=false;}
-	'[' { list_tq = null; } tq+=typeQualifier* ae=assignmentExpression? ']' -> ^(ARRAY_DECLARATOR $directDeclarator $tq* $ae?)
+	// prevents getting function parameters into types
+	{if ($declaration.size()>0&&$declaration::isTypedef) {$declaration::isTypedef=false; wasTypedef=true;}}		
+	( 	'[' { list_tq = null; } tq+=typeQualifier* ae=assignmentExpression? ']' -> ^(ARRAY_DECLARATOR $directDeclarator $tq* $ae?)
 	|	'[' { list_tq = null; } 'static' tq+=typeQualifier* ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq* $ae)
 	|	('[' typeQualifier+ 'static') => '[' { list_tq = null; } tq+=typeQualifier+ 'static' ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq+ $ae)
 	|	('[' typeQualifier* '*' ']') => '[' { list_tq = null; }  tq+=typeQualifier* '*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*' $tq*)
