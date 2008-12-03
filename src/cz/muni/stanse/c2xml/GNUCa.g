@@ -433,10 +433,11 @@ directAbstractDeclarator
 		( '[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR abstractDeclarator assignmentExpression?)
 		| ('[' '*' ']') => '[' '*' ']' -> ^(ARRAY_DECLARATOR abstractDeclarator '*')
 		| '(' parameterTypeList? ')'  ->  ^(FUNCTION_DECLARATOR abstractDeclarator parameterTypeList?)
-		)?
-	|	'[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR assignmentExpression?)
-	|	('[' '*' ']') => '[' '*' ']' -> ^(ARRAY_DECLARATOR '*')
-	|	'(' parameterTypeList? ')'  ->  ^(FUNCTION_DECLARATOR parameterTypeList?)
+		)*
+	|	( '[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR assignmentExpression?)
+		| ('[' '*' ']') => '[' '*' ']' -> ^(ARRAY_DECLARATOR '*')
+		|'(' parameterTypeList? ')'  ->  ^(FUNCTION_DECLARATOR parameterTypeList?)
+		)+
 	;
 
 typedefName
