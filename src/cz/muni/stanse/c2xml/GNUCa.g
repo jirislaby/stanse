@@ -432,7 +432,7 @@ abstractDeclarator
 
 directAbstractDeclarator
 //	:	'(' attributes? abstractDeclarator ')'
-	:	'(' abstractDeclarator ')' arrayOrFunctionDeclarator*
+	:	'('! abstractDeclarator ')'! arrayOrFunctionDeclarator*
 	|	arrayOrFunctionDeclarator+
 	;
 
