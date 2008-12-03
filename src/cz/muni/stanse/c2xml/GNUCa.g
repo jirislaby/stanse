@@ -101,6 +101,7 @@ tokens{
 	ARRAY_ACCESS;
 	PARAMETER;
 	VARARGS;
+	ABSTRACT_DECLARATOR;
 	DECLARATOR;
 	POINTER;
 	STRUCT_DECLARATOR;
@@ -422,22 +423,21 @@ typeName
 	:	specifierQualifier+ abstractDeclarator? -> ^(TYPE_NAME specifierQualifier+ abstractDeclarator?)
 	;
 
-abstractDeclarator // TODO AST
-	:	pointer directAbstractDeclarator?
-	|	directAbstractDeclarator
+abstractDeclarator
+	:	pointer directAbstractDeclarator? -> ^(ABSTRACT_DECLARATOR pointer directAbstractDeclarator?)
+	|	directAbstractDeclarator -> ^(ABSTRACT_DECLARATOR directAbstractDeclarator)
 	;
 
 directAbstractDeclarator
 //	:	'(' attributes? abstractDeclarator ')'
-	:	'(' abstractDeclarator ')'
-		( '[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR abstractDeclarator assignmentExpression?)
-		| ('[' '*' ']') => '[' '*' ']' -> ^(ARRAY_DECLARATOR abstractDeclarator '*')
-		| '(' parameterTypeList? ')'  ->  ^(FUNCTION_DECLARATOR abstractDeclarator parameterTypeList?)
-		)*
-	|	( '[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR assignmentExpression?)
-		| ('[' '*' ']') => '[' '*' ']' -> ^(ARRAY_DECLARATOR '*')
-		|'(' parameterTypeList? ')'  ->  ^(FUNCTION_DECLARATOR parameterTypeList?)
-		)+
+	:	'(' abstractDeclarator ')' arrayOrFunctionDeclarator*
+	|	arrayOrFunctionDeclarator+
+	;
+
+arrayOrFunctionDeclarator
+	:	'[' assignmentExpression? ']' -> ^(ARRAY_DECLARATOR assignmentExpression?)
+	|	('[' '*' ']') => '[' '*' ']' -> ^(ARRAY_DECLARATOR '*')
+	|	'(' parameterTypeList? ')'  ->  ^(FUNCTION_DECLARATOR parameterTypeList?)
 	;
 
 typedefName

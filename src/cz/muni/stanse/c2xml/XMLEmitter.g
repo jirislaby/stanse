@@ -410,33 +410,35 @@ abstractDeclarator returns [Element e]
 @init {
 	$e = newElement("abstractDeclarator", $abstractDeclarator.start);
 }
-	: pointer directAbstractDeclarator? {
+	: ^(ABSTRACT_DECLARATOR pointer directAbstractDeclarator?) {
 		addAllElements($e, $pointer.els);
 		addAllElements($e, $directAbstractDeclarator.els);
 	}
-	| directAbstractDeclarator { addAllElements($e, $directAbstractDeclarator.els); }
+	| ^(ABSTRACT_DECLARATOR directAbstractDeclarator) { addAllElements($e, $directAbstractDeclarator.els); }
 	;
 
 directAbstractDeclarator returns [List<Element> els]
 @init {
 	$els = new ArrayList<Element>();
 }
-	: ^(ARRAY_DECLARATOR abstractDeclarator? (expression?|ast='*')) {
-		if ($abstractDeclarator.e != null)
-			$els.add($abstractDeclarator.e);
-		Element e = newListElement($els, "arrayDecl",
-				$directAbstractDeclarator.start);
-		if ($expression.e != null)
-			e.add($expression.e);
-		else if ($ast != null)
-			e.addAttribute("asterisk", "1");
+	: abstractDeclarator (a=arrayOrFunctionDeclarator {$els.add($a.e);})* {
+		$els.add(0, $abstractDeclarator.e);
 	}
-	| ^(FUNCTION_DECLARATOR abstractDeclarator? parameterTypeList?) {
-		if ($abstractDeclarator.e != null)
-			$els.add($abstractDeclarator.e);
-		Element e = newElement("functionDecl",
-				$directAbstractDeclarator.start);
-		addAllElements(e, $parameterTypeList.els);
+	| (a=arrayOrFunctionDeclarator {$els.add($a.e);})+
+	;
+
+arrayOrFunctionDeclarator returns [Element e]
+	: ^(ARRAY_DECLARATOR (expression?|ast='*')) {
+		$e = newElement("arrayDecl", $arrayOrFunctionDeclarator.start);
+		if ($expression.e != null)
+			$e.add($expression.e);
+		else if ($ast != null)
+			$e.addElement("asterisk");
+	}
+	| ^(FUNCTION_DECLARATOR parameterTypeList?) {
+		$e = newElement("functionDecl",
+				$arrayOrFunctionDeclarator.start);
+		addAllElements($e, $parameterTypeList.els);
 	}
 	;
 
