@@ -186,9 +186,6 @@ public class ControlFlowGraph {
      */
     private CFGNode nodeCreator(CFGNode start, Element actualElement) {
 
-	if (actualElement.getName().equals("statement"))
-	    return nodeCreator(start, (Element)actualElement.node(0));
-
 	//=== unroll compoundStatement ========================================
 	if (actualElement.getName().equals("compoundStatement")) {
 	    /* (declaration, statement, functionDefinition)*
@@ -211,8 +208,7 @@ public class ControlFlowGraph {
 			    continue;
 			element = (Element)node;
 
-			if (element.nodeCount() > 0 && element.node(0).
-				getName().equals("labelStatement")) {
+			if (element.getName().equals("labelStatement")) {
 			    i--;
 			    break;
 			}
@@ -361,8 +357,8 @@ public class ControlFlowGraph {
 
 	//=== unroll switchStatement ==========================================
 	if (actualElement.getName().equals("switchStatement")) {
-	    /* 0: expression -> (id, ...)
-	     * 1: statement -> compoundStatement -> S=statement*
+	    /* 0: id | intConst | ...
+	     * 1: compoundStatement -> S*
 	     *
 	     * S -> (caseLabelStatement, defaultLabelStatement, UNREACHABLE)
 	     */
@@ -374,19 +370,17 @@ public class ControlFlowGraph {
 	    CFGNode falseSwitch = start;
 	    CFGNode defaultSwitch = null;
 
-	    Element statement = (Element)actualElement.node(1);
-	    Element compoundStatement = (Element)statement.node(0);
+	    Element compoundStatement = (Element)actualElement.node(1);
 
 	    for (int i = 0, size = compoundStatement.nodeCount(); i < size; i++) {
 		Node node = compoundStatement.node(i);
 		if (!(node instanceof Element))
 		    continue;
 
-		statement = (Element)node;
-		Element element = (Element)statement.node(0);
+		Element element = (Element)node;
 
 		if (element.getName().equals("caseLabelStatement")) {
-		    /* 0: expression
+		    /* 0: intConst | ...
 		     * 1: statement
 		     */
 		    CFGNode source = falseSwitch;
@@ -404,8 +398,7 @@ public class ControlFlowGraph {
 		    addEdge(source, falseSwitch, (Element)element.node(0), false);
 
 		    //label next to label
-		    statement = (Element)element.node(1);
-		    Element caseLabelExpression = (Element)statement.node(0);
+		    Element caseLabelExpression = (Element)element.node(1);
 		    while (caseLabelExpression.getName().equals("caseLabelStatement") ||
 			   caseLabelExpression.getName().equals("defaultLabelStatement")) {
 
@@ -423,13 +416,11 @@ public class ControlFlowGraph {
 					(Element)caseLabelExpression.node(0),
 					false);
 
-			    statement = (Element)caseLabelExpression.node(1);
-			    caseLabelExpression = (Element)statement.node(0);
+			    caseLabelExpression = (Element)caseLabelExpression.node(1);
 			} else {
 			    defaultSwitch = end;
 
-			    statement = (Element)caseLabelExpression.node(0);
-			    caseLabelExpression = (Element)statement.node(0);
+			    caseLabelExpression = (Element)caseLabelExpression.node(0);
 			}
 
 		    }
@@ -442,8 +433,7 @@ public class ControlFlowGraph {
 		    defaultSwitch = end;
 
 		    //label next to label
-		    statement = (Element)element.node(0);
-		    Element labelExpression = (Element)statement.node(0);
+		    Element labelExpression = (Element)element.node(0);
 		    if (labelExpression.getName().equals("caseLabelStatement"))
 			dump("redundant code (switch)", element);
 		    else
@@ -542,17 +532,6 @@ public class ControlFlowGraph {
 		    addEdge(p.getFirst(), end, p.getSecond(), null);
 
 	    return nodeCreator(end, (Element)actualElement.node(0));
-	}
-
-	if (actualElement.getName().equals("expression")) {
-	    /* intConst | realConst | stringConst | id | *Expression |
-	     * compoundStatement | functionCall | arrayAccess | ...
-	     */
-	    CFGNode end = new CFGNode(this);
-	    addEdge(start, end, actualElement, null);
-	    if (actualElement.nodeCount() > 0)
-		    return nodeCreator(end, (Element)actualElement.node(0));
-	    return end;
 	}
 
 	//=== otherwise (expression) ==========================================
