@@ -44,7 +44,7 @@ import org.dom4j.io.XMLWriter;
 	final private Boolean normalizeTypes = false;
 	final private Boolean uniqueVariables = true;
 	final private Boolean uniqueVariablesDebug = false;
-	final private Boolean printXML = true;
+	final private Boolean printXML = false;
 
 	private void outputXML() {
 		if (!printXML)
