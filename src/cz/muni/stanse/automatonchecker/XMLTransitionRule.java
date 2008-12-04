@@ -2,7 +2,6 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.Trinity;
-import cz.muni.stanse.utils.XMLAlgo;
 
 import java.util.HashMap;
 import java.util.Vector;
@@ -16,13 +15,12 @@ final class XMLTransitionRule {
                                                               throws Exception {
         final Trinity<String,Vector<String>,Character> fromSymbol =
             XMLRuleStringParser.parseOneSymbolRuleString(
-                XMLAlgo.readValueOfAttribute("from",XMLtransitionElement));
+                XMLtransitionElement.attribute("from").getValue());
         checkMode(fromSymbol.getThird());
         checkVars(1,-1,fromSymbol.getSecond().size());
         inSymbolID = statesSymbolTable.get(fromSymbol.getFirst());
 
-        final String toString =
-            XMLAlgo.readValueOfAttribute("to",XMLtransitionElement);
+        final String toString = XMLtransitionElement.attribute("to").getValue();
         final Trinity<String,Vector<String>,Character> toSymbol =
             (toString.isEmpty()) ?
                 new Trinity<String,Vector<String>,Character>
@@ -36,7 +34,7 @@ final class XMLTransitionRule {
 
         final Trinity<String,Vector<String>,Character> bySymbol =
             XMLRuleStringParser.parseOneSymbolRuleString(
-                XMLAlgo.readValueOfAttribute("by",XMLtransitionElement));
+                XMLtransitionElement.attribute("by").getValue());
         checkMode(bySymbol.getThird());
         checkVars(1,1,bySymbol.getSecond().size());
         matchFlags = buildMatchFlags(fromSymbol.getSecond(),

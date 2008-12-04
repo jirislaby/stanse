@@ -1,7 +1,6 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.utils.XMLAlgo;
 
 import java.util.Iterator;
 
@@ -11,7 +10,7 @@ final class XMLPattern {
 
     XMLPattern(final org.dom4j.Element XMLelement) throws Exception {
         patternXMLelement = XMLelement;
-        name = XMLAlgo.readValueOfAttribute("name",patternXMLelement);
+        name = patternXMLelement.attribute("name").getValue();
     }
 
     String getName() {
@@ -40,8 +39,8 @@ final class XMLPattern {
         if (XMLpivot.getName().equals("ignore"))
             return true;
         if (XMLpivot.getName().equals("var")) {
-            varsAssignment.put(XMLAlgo.readValueOfAttribute("name",XMLpivot),
-                               XMLelement);
+            varsAssignment.put(XMLpivot.attribute("name").getValue(),
+		    XMLelement);
             return true;
         }
         

@@ -1,25 +1,25 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.utils.XMLAlgo;
-
 import java.util.Vector;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.dom4j.Element;
+
 final class XMLAutomatonDefinition {
 
     // package-private section
 
-    XMLAutomatonDefinition(final org.dom4j.Element XMLdefinition)
+    XMLAutomatonDefinition(final Element XMLdefinition)
                                                               throws Exception {
-        automatonName =
-               XMLAlgo.readValueOfAttribute("description","name",XMLdefinition);
-        automatonDesc =
-               XMLAlgo.readValueOfAttribute("description","desc",XMLdefinition);
-        final String startSymbolName =
-               XMLAlgo.readValueOfAttribute("start","state",XMLdefinition);
+	Element desc = (Element)XMLdefinition.selectSingleNode("description");
+        automatonName = desc.attribute("name").getValue();
+        automatonDesc = desc.attribute("desc").getValue();
+
+	Element start = (Element)XMLdefinition.selectSingleNode("start");
+        final String startSymbolName = start.attribute("state").getValue();
 
         final HashMap<String,Integer> statesSymbolTable =
             buildStatesDictionary(XMLdefinition);

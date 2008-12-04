@@ -2,7 +2,6 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.Trinity;
-import cz.muni.stanse.utils.XMLAlgo;
 
 import java.util.HashMap;
 import java.util.Vector;
@@ -15,20 +14,19 @@ final class XMLErrorRule {
 
     XMLErrorRule(final org.dom4j.Element XMLelement,
              final HashMap<String,Integer> statesSymbolTable) throws Exception {
-        description = XMLAlgo.readValueOfAttribute("desc",XMLelement).
+        description = XMLelement.attribute("desc").getValue().
+                                    replaceAll("[ \t]+", " ");
+        errorLevel = Integer.decode(XMLelement.attribute("level").getValue());
+        entryMessage = XMLelement.attribute("entry").getValue().
                                     replaceAll("[ \t]+"," ");
-        errorLevel = Integer.decode(XMLAlgo.readValueOfAttribute(
-                                    "level",XMLelement));
-        entryMessage = XMLAlgo.readValueOfAttribute("entry",XMLelement).
+        beginMessage = XMLelement.attribute("begin").getValue().
                                     replaceAll("[ \t]+"," ");
-        beginMessage = XMLAlgo.readValueOfAttribute("begin",XMLelement).
+        propagMessage = XMLelement.attribute("propag").getValue().
                                     replaceAll("[ \t]+"," ");
-        propagMessage = XMLAlgo.readValueOfAttribute("propag",XMLelement).
-                                    replaceAll("[ \t]+"," ");
-        endMessage = XMLAlgo.readValueOfAttribute("end",XMLelement).
+        endMessage = XMLelement.attribute("end").getValue().
                                     replaceAll("[ \t]+"," ");
 
-        final String byString = XMLAlgo.readValueOfAttribute("by",XMLelement);
+        final String byString = XMLelement.attribute("by").getValue();
         final Trinity<String,Vector<String>,Character> bySymbol =
             (byString.isEmpty()) ?
                     new Trinity<String,Vector<String>,Character>
@@ -44,7 +42,7 @@ final class XMLErrorRule {
 
         final LinkedList<Trinity<String,Vector<String>,Character> > fromList =
             XMLRuleStringParser.parseRuleString(
-                XMLAlgo.readValueOfAttribute("from",XMLelement));
+                XMLelement.attribute("from").getValue());
         checkList(fromList);
         checkVars(1,-1,fromList);
 
