@@ -1,5 +1,7 @@
 package cz.muni.stanse.checker;
 
+import cz.muni.stanse.parser.ControlFlowGraph;
+
 import java.util.Set;
 import java.util.List;
 
@@ -12,9 +14,8 @@ public abstract class Checker {
 
     public abstract String getName();
 
-    public abstract List<CheckerError>
-    check(final Set<cz.muni.stanse.parser.ControlFlowGraph> CFGs)
-                                                 throws Exception;
+    public abstract List<CheckerError> check(final Set<ControlFlowGraph> CFGs)
+			throws Exception;
 
     @Override
     public String toString() {

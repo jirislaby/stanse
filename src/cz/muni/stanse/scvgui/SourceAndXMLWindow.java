@@ -7,22 +7,35 @@
 
 package cz.muni.stanse.scvgui;
 
-import cz.muni.stanse.callgraph.CallGraph;
-import cz.muni.stanse.checker.*;
-import cz.muni.stanse.parser.ControlFlowGraph;
-import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.parser.CParser;
-import cz.muni.stanse.utils.Pair;
-import java.util.List;
-
-import java.util.Vector;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.LinkedList;
-
-import org.antlr.runtime.RecognitionException;
 import cz.muni.stanse.automatonchecker.AutomatonChecker;
 import cz.muni.stanse.ownershipchecker.OwnershipChecker;
+import cz.muni.stanse.callgraph.CallGraph;
+import cz.muni.stanse.checker.CheckerError;
+import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CParser;
+import cz.muni.stanse.utils.Pair;
+
+import java.util.concurrent.ExecutionException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.Set;
+import java.util.Vector;
+
+import org.antlr.runtime.RecognitionException;
+
+import org.apache.log4j.Logger;
+
+import org.dom4j.Attribute;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.Node;
+import org.dom4j.io.SAXReader;
+
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -33,13 +46,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -48,15 +60,6 @@ import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import org.apache.log4j.Logger;
-import org.dom4j.Attribute;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.Node;
-import org.dom4j.io.SAXReader;
 
 /**
  * Component for working with source file and XML tree
