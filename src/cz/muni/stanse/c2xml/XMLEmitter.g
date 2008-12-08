@@ -21,6 +21,8 @@ scope Symbols {
 @header {
 package cz.muni.stanse.c2xml;
 
+import cz.muni.stanse.utils.XMLAlgo;
+
 import java.io.IOException;
 
 import java.util.HashSet;
@@ -30,9 +32,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 }
 @members {
 	protected Document xmlDocument = DocumentHelper.createDocument();
@@ -46,17 +45,6 @@ import org.dom4j.io.XMLWriter;
 	final private Boolean uniqueVariablesDebug = false;
 	final private Boolean printXML = false;
 
-	private void outputXML() {
-		if (!printXML)
-			return;
-		OutputFormat format = OutputFormat.createPrettyPrint();
-		try {
-			XMLWriter writer = new XMLWriter(System.out, format);
-			writer.write(xmlDocument);
-		} catch (IOException e) {
-			System.err.println("write failed: " + e);
-		}
-	}
 	private Element newElement(String text) {
 		return xmlFactory.createElement(text);
 	}
@@ -202,7 +190,8 @@ scope Symbols;
 }
 	: ^(TRANSLATION_UNIT (eds=externalDeclaration {root.add($eds.e);} )*) {
 		xmlDocument.setRootElement(root);
-		outputXML();
+		if (printXML)
+			XMLAlgo.outputXML(xmlDocument);
 		$d = xmlDocument;
 	}
 	;
