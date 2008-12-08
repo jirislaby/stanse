@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="build" name="stanse">
     <property name="dist" value="dist"/>
-    <property name="c2xml.location" value="src/cz/muni/stanse/c2xml"/>
+    <property name="parser.location" value="src/cz/muni/stanse/parser"/>
     <property name="antlr.location" value="tools/antlr-3.1.1.jar"/>
     <property name="antlr-runtime.location" value="${dist}/lib/antlr-3.1.1-runtime.jar"/>
     <path id="project.classpath">
@@ -25,9 +25,9 @@
     <target name="init">
         <mkdir dir="build"/>
     </target>
-    <target name="c2xml-clean">
+    <target name="parser-clean">
         <delete>
-	    <fileset dir="${c2xml.location}">
+	    <fileset dir="${parser.location}">
 		<include name="GNUCa__.g"/>
 		<include name="GNUCa.java"/>
 		<include name="GNUCa.tokens"/>
@@ -38,7 +38,7 @@
 	    </fileset>
 	</delete>
     </target>
-    <target name="clean" depends="c2xml-clean, javadoc-clean">
+    <target name="clean" depends="parser-clean, javadoc-clean">
         <delete dir="build"/>
         <delete>
             <fileset dir="dist">
@@ -46,17 +46,17 @@
             </fileset>
         </delete>
     </target>
-    <target name="c2xml">	
+    <target name="parser">
 		<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr" 
-			target="${c2xml.location}/GNUCa.g">
+			target="${parser.location}/GNUCa.g">
 		<classpath path="${antlr.location}"/>
 		</antlr:antlr3>
 		<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr" 
-			target="${c2xml.location}/XMLEmitter.g">
+			target="${parser.location}/XMLEmitter.g">
 		<classpath path="${antlr.location}"/>
 		</antlr:antlr3>
     </target>
-    <target name="build" depends="init,c2xml">
+    <target name="build" depends="init,parser">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" destdir="build">
             <src path="src"/>

@@ -10,8 +10,8 @@ final class PatternLocation {
 
     // package-private section
 
-    PatternLocation(final cz.muni.stanse.xml2cfg.ControlFlowGraph cfg,
-                    final cz.muni.stanse.xml2cfg.CFGEdge referenceEdge,
+    PatternLocation(final cz.muni.stanse.parser.ControlFlowGraph cfg,
+                    final cz.muni.stanse.parser.CFGEdge referenceEdge,
                     final Collection<TransitionRule> transitionRules,
                     final Collection<ErrorRule> errorRules) {
         CFG = cfg;
@@ -28,7 +28,7 @@ final class PatternLocation {
         return successorPatternLocations;
     }
 
-    cz.muni.stanse.xml2cfg.CFGEdge getCFGreferenceEdge() {
+    cz.muni.stanse.parser.CFGEdge getCFGreferenceEdge() {
         return CFGreferenceEdge;
     }
 
@@ -50,7 +50,7 @@ final class PatternLocation {
         return deliveredAutomataStates;
     }
 
-    public cz.muni.stanse.xml2cfg.ControlFlowGraph getCFG() {
+    public cz.muni.stanse.parser.ControlFlowGraph getCFG() {
         return CFG;
     }
 
@@ -111,8 +111,8 @@ final class PatternLocation {
         return transitionRules;
     }
 
-    private final cz.muni.stanse.xml2cfg.ControlFlowGraph CFG;
-    private final cz.muni.stanse.xml2cfg.CFGEdge CFGreferenceEdge;
+    private final cz.muni.stanse.parser.ControlFlowGraph CFG;
+    private final cz.muni.stanse.parser.CFGEdge CFGreferenceEdge;
     private final HashSet<AutomatonState> processedAutomataStates;
     private final LinkedList<AutomatonState> unprocessedAutomataStates;
     private final HashSet<AutomatonState> deliveredAutomataStates;

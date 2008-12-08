@@ -1,6 +1,6 @@
 package cz.muni.stanse.utils;
 
-import cz.muni.stanse.xml2cfg.CFGEdge;
+import cz.muni.stanse.parser.CFGEdge;
 
 public abstract class CFGvisitor {
     public abstract boolean visit(final CFGEdge edge,

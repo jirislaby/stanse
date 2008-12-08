@@ -73,7 +73,7 @@ final class XMLTransitionRule {
     }
 
     private AutomatonState buildResultState(
-                        final cz.muni.stanse.xml2cfg.ControlFlowGraph CFG,
+                        final cz.muni.stanse.parser.ControlFlowGraph CFG,
                         final Vector<Integer> matchIDs, final int locationID) {
         if (getOutSymbolID() == -1)
             return null;

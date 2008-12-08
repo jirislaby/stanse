@@ -9,7 +9,7 @@
 
 package cz.muni.stanse.ownershipchecker;
 
-import cz.muni.stanse.xml2cfg.CFGNode;
+import cz.muni.stanse.parser.CFGNode;
 
 import java.util.HashSet;
 import java.util.Map;

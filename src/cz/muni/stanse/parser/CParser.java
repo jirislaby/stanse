@@ -1,4 +1,4 @@
-package cz.muni.stanse.c2xml;
+package cz.muni.stanse.parser;
 
 import java.io.IOException;
 import java.io.InputStream;

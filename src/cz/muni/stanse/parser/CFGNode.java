@@ -5,7 +5,7 @@
  *
  */
 
-package cz.muni.stanse.xml2cfg;
+package cz.muni.stanse.parser;
 
 import java.util.Set;
 import java.util.HashSet;

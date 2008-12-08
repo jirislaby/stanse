@@ -7,7 +7,7 @@
  *
  */
 
-package cz.muni.stanse.xml2cfg;
+package cz.muni.stanse.parser;
 
 import cz.muni.stanse.utils.Pair;
 

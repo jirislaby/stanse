@@ -1,4 +1,4 @@
-package cz.muni.stanse.xml2cfg;
+package cz.muni.stanse.parser;
 
 public class CFGEdge {
 

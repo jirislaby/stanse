@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Stack;
 
-import cz.muni.stanse.xml2cfg.CFGEdge;
-import cz.muni.stanse.xml2cfg.CFGNode;
-import cz.muni.stanse.xml2cfg.ControlFlowGraph;
+import cz.muni.stanse.parser.CFGEdge;
+import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.parser.ControlFlowGraph;
 
 // Node followers --------------------------------------------------------------
 

@@ -19,7 +19,7 @@ scope Symbols {
 }
 
 @header {
-package cz.muni.stanse.c2xml;
+package cz.muni.stanse.parser;
 
 import cz.muni.stanse.utils.XMLAlgo;
 

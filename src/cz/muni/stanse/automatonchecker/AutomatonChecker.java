@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 
-import cz.muni.stanse.xml2cfg.ControlFlowGraph;
+import cz.muni.stanse.parser.ControlFlowGraph;
 
 public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
@@ -27,9 +27,9 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     @Override
     public List<cz.muni.stanse.checker.CheckerError>
-    check(final Set<cz.muni.stanse.xml2cfg.ControlFlowGraph> CFGs)
+    check(final Set<cz.muni.stanse.parser.ControlFlowGraph> CFGs)
                                                               throws Exception {
-        final HashMap<cz.muni.stanse.xml2cfg.CFGEdge,PatternLocation>
+        final HashMap<cz.muni.stanse.parser.CFGEdge,PatternLocation>
             edgeLocationDictionary = PatternLocationBuilder.
                    buildPatternLocations(CFGs,getXMLAutomatonDefinition());
 

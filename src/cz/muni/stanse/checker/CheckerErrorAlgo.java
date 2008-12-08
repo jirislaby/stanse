@@ -1,6 +1,6 @@
 package cz.muni.stanse.checker;
 
-import cz.muni.stanse.xml2cfg.CFGNode;
+import cz.muni.stanse.parser.CFGNode;
 import cz.muni.stanse.utils.Pair;
 import java.util.List;
 import java.util.ListIterator;

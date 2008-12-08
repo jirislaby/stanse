@@ -5,14 +5,14 @@ package cz.muni.stanse.main;
 
 import cz.muni.stanse.automatonchecker.AutomatonChecker;
 import cz.muni.stanse.checker.CheckerError;
-import cz.muni.stanse.c2xml.CParser;
 import cz.muni.stanse.callgraph.CallGraph;
+import cz.muni.stanse.parser.CParser;
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
 import cz.muni.stanse.scvgui.GraphViz;
 import cz.muni.stanse.scvgui.GuiMain;
 import cz.muni.stanse.scvgui.SourceAndXMLWindow;
-import cz.muni.stanse.xml2cfg.ControlFlowGraph;
+import cz.muni.stanse.parser.ControlFlowGraph;
 
 import java.io.File;
 import java.io.FileInputStream;

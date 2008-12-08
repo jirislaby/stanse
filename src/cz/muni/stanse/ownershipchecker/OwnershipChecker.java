@@ -14,8 +14,8 @@ import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.xml2cfg.CFGNode;
-import cz.muni.stanse.xml2cfg.ControlFlowGraph;
+import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.parser.ControlFlowGraph;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

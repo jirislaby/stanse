@@ -27,14 +27,14 @@ final class AutomatonState {
 
     // package-private section
 
-    AutomatonState(final cz.muni.stanse.xml2cfg.ControlFlowGraph CFG,
+    AutomatonState(final cz.muni.stanse.parser.ControlFlowGraph CFG,
                    final int symbolID, final Vector<Integer> automatonIDs) {
         this.CFG = CFG;
         this.symbolID = symbolID;
         this.automatonIDs = automatonIDs;
     }
 
-    AutomatonState(final cz.muni.stanse.xml2cfg.ControlFlowGraph CFG,
+    AutomatonState(final cz.muni.stanse.parser.ControlFlowGraph CFG,
                    final int symbolID, final Integer automatonID) {
         this.CFG = CFG;
         this.symbolID = symbolID;
@@ -42,7 +42,7 @@ final class AutomatonState {
         automatonIDs.add(automatonID);
     }
 
-    cz.muni.stanse.xml2cfg.ControlFlowGraph getCFG() {
+    cz.muni.stanse.parser.ControlFlowGraph getCFG() {
         return CFG;
     }
 
@@ -63,7 +63,7 @@ final class AutomatonState {
 
     // private section
 
-    private final cz.muni.stanse.xml2cfg.ControlFlowGraph CFG;
+    private final cz.muni.stanse.parser.ControlFlowGraph CFG;
     private final int symbolID;
     private final Vector<Integer> automatonIDs;
 }

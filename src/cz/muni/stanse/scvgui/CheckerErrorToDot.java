@@ -2,8 +2,8 @@ package cz.muni.stanse.scvgui;
 
 import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorAlgo;
-import cz.muni.stanse.xml2cfg.ControlFlowGraph;
-import cz.muni.stanse.xml2cfg.CFGNode;
+import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CFGNode;
 import org.dom4j.Element;
 import java.util.HashSet;
 

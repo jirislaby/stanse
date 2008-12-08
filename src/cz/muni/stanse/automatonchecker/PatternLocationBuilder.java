@@ -1,7 +1,7 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.xml2cfg.ControlFlowGraph;
-import cz.muni.stanse.xml2cfg.CFGEdge;
+import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CFGEdge;
 import cz.muni.stanse.utils.CFGTraversal;
 
 import java.util.LinkedList;

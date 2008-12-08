@@ -9,9 +9,9 @@ package cz.muni.stanse.scvgui;
 
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.*;
-import cz.muni.stanse.xml2cfg.ControlFlowGraph;
-import cz.muni.stanse.xml2cfg.CFGNode;
-import cz.muni.stanse.c2xml.CParser;
+import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.parser.CParser;
 import cz.muni.stanse.utils.Pair;
 import java.util.List;
 

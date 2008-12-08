@@ -129,13 +129,13 @@ scope Symbols {
 }
 
 @header{
-	package cz.muni.stanse.c2xml;
+	package cz.muni.stanse.parser;
 	import java.util.Set;
 	import java.util.HashSet;
 }
 
 @lexer::header{
-	package cz.muni.stanse.c2xml;
+	package cz.muni.stanse.parser;
 }
 
 @members{

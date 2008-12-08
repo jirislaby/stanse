@@ -11,7 +11,7 @@ final class CheckerErrorBuilder {
     // package-private section
 
     static LinkedList<CheckerError>
-    buildErrorList(final HashMap<cz.muni.stanse.xml2cfg.CFGEdge,PatternLocation>
+    buildErrorList(final HashMap<cz.muni.stanse.parser.CFGEdge,PatternLocation>
                                       edgeLocationDictionary) throws Exception {
         final LinkedList<CheckerError> errorsList = new LinkedList<CheckerError>();
         for (PatternLocation location : edgeLocationDictionary.values())
@@ -25,7 +25,7 @@ final class CheckerErrorBuilder {
 
     private static LinkedList<CheckerError> buildErrorsInLocation(
             final PatternLocation location,
-            final HashMap<cz.muni.stanse.xml2cfg.CFGEdge,PatternLocation>
+            final HashMap<cz.muni.stanse.parser.CFGEdge,PatternLocation>
                                       edgeLocationDictionary) throws Exception {
         final LinkedList<CheckerError> errorsList =
             new LinkedList<CheckerError>();
@@ -53,7 +53,7 @@ final class CheckerErrorBuilder {
     }
 
     private static String getMsgPrefix(
-            final cz.muni.stanse.xml2cfg.ControlFlowGraph cfg) {
+            final cz.muni.stanse.parser.ControlFlowGraph cfg) {
         return "In function: '" + cfg.getFunctionName() + "()' : ";
     }
 
