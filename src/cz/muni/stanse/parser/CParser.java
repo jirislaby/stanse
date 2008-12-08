@@ -21,15 +21,19 @@ public final class CParser {
     }
 
     public Document run() throws IOException, RecognitionException {
+	StanseTreeAdaptor adaptor = new StanseTreeAdaptor();
+
 	GNUCaLexer lex = new GNUCaLexer(new ANTLRInputStream(stream));
 	CommonTokenStream tokens = new CommonTokenStream(lex);
+
 	GNUCaParser parser = new GNUCaParser(tokens);
+	parser.setTreeAdaptor(adaptor);
+	GNUCaParser.translationUnit_return parserRet = parser.translationUnit();
+	StanseTree parserTree = (StanseTree)parserRet.getTree();
 
-	GNUCaParser.translationUnit_return r = parser.translationUnit();
-	CommonTree t = (CommonTree)r.getTree();
-
-	CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
+	CommonTreeNodeStream nodes = new CommonTreeNodeStream(parserTree);
 	nodes.setTokenStream(tokens);
+
 	XMLEmitter emitter = new XMLEmitter(nodes);
 	return emitter.translationUnit();
     }

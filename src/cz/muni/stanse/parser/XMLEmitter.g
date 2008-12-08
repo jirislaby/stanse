@@ -10,7 +10,7 @@
 tree grammar XMLEmitter;
 options {
 	tokenVocab=GNUCa;
-	ASTLabelType=CommonTree;
+	ASTLabelType=StanseTree;
 }
 
 scope Symbols {

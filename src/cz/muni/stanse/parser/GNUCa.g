@@ -67,6 +67,7 @@ options {
 	memoize=true;
 	k=2;
 	output = AST;
+	ASTLabelType = StanseTree;
 }
 
 // list of imaginary nodes
