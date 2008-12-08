@@ -64,10 +64,10 @@ import org.dom4j.Element;
 		els.add(e);
 		return e;
 	}
-	private void setPositions(Element e, CommonTree start) {
-			e.
-			addAttribute("bl", String.valueOf(start.getLine())).
-			addAttribute("bc", String.valueOf(start.getCharPositionInLine()));
+	private void setAttributes(StanseTree start, Element e) {
+		e.addAttribute("bl", String.valueOf(start.getLine())).
+		addAttribute("bc", String.valueOf(start.getCharPositionInLine()));
+		start.setElement(e);
 	}
 	private Element addElementBin(Element dest, String name, Element e1, Element e2) {
 		Element e = dest.addElement(name);
@@ -604,7 +604,7 @@ pointer returns [List<Element> els]
 
 statement returns [Element e]
 @after {
-	setPositions($e, $statement.start);
+	setAttributes($statement.start, $e);
 }
 	: labeledStatement	{ $e=$labeledStatement.e; }
 	| compoundStatement	{ $e=$compoundStatement.e; }
@@ -716,7 +716,7 @@ expression returns [Element e]
 	Element exp;
 }
 @after {
-	setPositions($e, $expression.start);
+	setAttributes($expression.start, $e);
 }
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) {
 		String op = $assignmentOperator.text;
