@@ -19,10 +19,10 @@ public final class XMLAlgo {
 	if (!e1.getText().equals(e2.getText()))
 	    return false;
 
-	final Iterator i = e1.elementIterator();
-	final Iterator j = e2.elementIterator();
+	final Iterator<Element> i = e1.elementIterator();
+	final Iterator<Element> j = e2.elementIterator();
 	while (i.hasNext() && j.hasNext())
-	    if (!equalElements((Element)i.next(),(Element)j.next()))
+	    if (!equalElements(i.next(), j.next()))
 		return false;
 	if (i.hasNext() || j.hasNext())
 	    return false;
