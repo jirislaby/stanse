@@ -75,7 +75,7 @@ public final class CFGTraversal {
 
     public static <T extends CFGvisitor>
     T traverseCFGToBreadthForward(final ControlFlowGraph cfg,
-                    final CFGNode startNode, final T visitor) throws Exception {
+                                  final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
                     new ForwardCFGEdgeFollowers(),
                     new CFGTraversationQueue(),
@@ -85,7 +85,7 @@ public final class CFGTraversal {
 
     public static <T extends CFGvisitor>
     T traverseCFGToBreadthBackward(final ControlFlowGraph cfg,
-                    final CFGNode startNode, final T visitor) throws Exception {
+                                   final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
                     new BackwardCFGEdgeFollowers(),
                     new CFGTraversationQueue(),
@@ -95,7 +95,7 @@ public final class CFGTraversal {
 
     public static <T extends CFGvisitor>
     T traverseCFGToDepthForward(final ControlFlowGraph cfg,
-                    final CFGNode startNode, final T visitor) throws Exception {
+                                final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
                     new ForwardCFGEdgeFollowers(),
                     new CFGTraversationStack(),
@@ -105,7 +105,7 @@ public final class CFGTraversal {
 
     public static <T extends CFGvisitor>
     T traverseCFGToDepthBackward(final ControlFlowGraph cfg,
-                    final CFGNode startNode, final T visitor) throws Exception {
+                                 final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
                     new BackwardCFGEdgeFollowers(),
                     new CFGTraversationStack(),
@@ -119,8 +119,7 @@ public final class CFGTraversal {
                                     final CFGNode startNode,
                                     final CFGEdgeFollowers nodeFollowers,
                                     final CFGTraversationContainer nodesToVisit,
-                                    final CFGvisitor visitor)
-                                    throws Exception {
+                                    final CFGvisitor visitor) {
         final HashSet<CFGEdge> visitedNodes = new HashSet<CFGEdge>();
         for (CFGEdge currentEdgeFollower : nodeFollowers.get(startNode))
             nodesToVisit.insert(currentEdgeFollower);

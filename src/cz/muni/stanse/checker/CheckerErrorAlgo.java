@@ -1,3 +1,7 @@
+/**
+ *  @brief
+ * 
+ */
 package cz.muni.stanse.checker;
 
 import cz.muni.stanse.parser.CFGNode;
@@ -5,21 +9,50 @@ import cz.muni.stanse.utils.Pair;
 import java.util.List;
 import java.util.ListIterator;
 
+/**
+ * @brief
+ *
+ * @see
+ */
 public final class CheckerErrorAlgo {
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public static Pair<CFGNode,String> getErrorNode(
                                               final CheckerError checkerError) {
         final List< Pair<CFGNode,String> > firstTraceNodes =
             checkerError.getErrorTraces().get(0).getErrorTrace();
         return firstTraceNodes.get(firstTraceNodes.size() - 1);
     }
-    
+
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public static ListIterator< Pair<CFGNode,String> >
                      findFirstNode(final ErrorTrace trace, final CFGNode node) {
 
         return findFirstNode(trace.getErrorTrace().listIterator(),node);
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public static ListIterator< Pair<CFGNode,String> > findFirstEdge(
        final ErrorTrace trace, final CFGNode startNode, final CFGNode endNode) {
 
@@ -27,6 +60,14 @@ public final class CheckerErrorAlgo {
                              startNode,endNode);
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public static ListIterator< Pair<CFGNode,String> > findFirstNode(
                                final ListIterator< Pair<CFGNode,String> > iter,
                                final CFGNode node) {
@@ -37,7 +78,15 @@ public final class CheckerErrorAlgo {
             }
         return null;
     }
-    
+
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public static ListIterator< Pair<CFGNode,String> > findFirstEdge(
                                ListIterator< Pair<CFGNode,String> > iter,
                                final CFGNode startNode, final CFGNode endNode) {

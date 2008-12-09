@@ -14,7 +14,8 @@ final class PatternLocationBuilder {
 
     static HashMap<CFGEdge,PatternLocation>
     buildPatternLocations(final Set<ControlFlowGraph> setOfAllCFGs,
-            final XMLAutomatonDefinition automatonDefinition) throws Exception {
+                          final XMLAutomatonDefinition automatonDefinition)
+                                       throws XMLAutomatonSyntaxErrorException {
         final HashMap<CFGEdge,PatternLocation> edgeLocationDictionary =
             new HashMap<CFGEdge,PatternLocation>();
 
@@ -34,7 +35,8 @@ final class PatternLocationBuilder {
 
     private static HashMap<CFGEdge,PatternLocation>
     buildPatternLocationsForOneCFG(final ControlFlowGraph cfg,
-            final XMLAutomatonDefinition automatonDefinition) throws Exception {
+                               final XMLAutomatonDefinition automatonDefinition)
+                                       throws XMLAutomatonSyntaxErrorException {
         final PatternLocationCreator patternLocationCreator =
             new PatternLocationCreator(cfg,automatonDefinition);
         final HashMap<CFGEdge,PatternLocation> edgeLocationsDictionary =

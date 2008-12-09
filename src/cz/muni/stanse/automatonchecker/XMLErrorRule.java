@@ -1,3 +1,7 @@
+/**
+ * @brief
+ *
+ */
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
@@ -8,12 +12,26 @@ import java.util.Vector;
 import java.util.LinkedList;
 import java.util.Collection;
 
+/**
+ * @brief
+ *
+ * @see
+ */
 final class XMLErrorRule {
 
     // package-private section
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     XMLErrorRule(final org.dom4j.Element XMLelement,
-             final HashMap<String,Integer> statesSymbolTable) throws Exception {
+                 final HashMap<String,Integer> statesSymbolTable)
+                                       throws XMLAutomatonSyntaxErrorException {
         description = XMLelement.attribute("desc").getValue().
                                     replaceAll("[ \t]+", " ");
         errorLevel = Integer.decode(XMLelement.attribute("level").getValue());
@@ -52,27 +70,107 @@ final class XMLErrorRule {
                                              locationVarName);
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     boolean checkForError(final Collection<AutomatonState> statesCollection,
                                                         final int automatonID) {
         return checkExcludedStates(statesCollection,automatonID) &&
                checkIncludedStates(statesCollection,automatonID);
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     int getErrorLevel() { return errorLevel; }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     String getErrorDescription() { return description; }
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     String getErrorEntryMessage() { return entryMessage; }
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     String getErrorBeginMessage() { return beginMessage; }
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     String getErrorPropagMessage() { return propagMessage; }
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     String getErrorEndMessage() { return endMessage; }
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     String getPatternName() { return patternName; }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     boolean isExitRule() {
         return getPatternName().isEmpty();
     }
 
     // private section
-    
+
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private boolean checkExcludedStates(
                             final Collection<AutomatonState> statesCollection,
                             final int automatonID) {
@@ -86,6 +184,14 @@ final class XMLErrorRule {
         return true;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private boolean checkIncludedStates(
                             final Collection<AutomatonState> statesCollection,
                             final int automatonID) {
@@ -109,6 +215,14 @@ final class XMLErrorRule {
         return !matchingFlags.contains(false);
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private static boolean stateMatch(final AutomatonState state,
                                       final int symbolID,
                                       final Vector<Boolean> flags,
@@ -126,6 +240,14 @@ final class XMLErrorRule {
         return true;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private static Vector< Pair<Integer,Vector<Boolean> > >
     buildMatchFlags(
             final LinkedList<Trinity<String,Vector<String>,Character> > symbols,
@@ -147,49 +269,112 @@ final class XMLErrorRule {
         return result;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private static void checkList(
                final LinkedList<Trinity<String,Vector<String>,Character> > list)
-                                                              throws Exception {
+                                       throws XMLAutomatonSyntaxErrorException {
         if (list.isEmpty())
-            throw new Exception("[stanse/AutomatonChecker] - " +
-                    "XMLErrorRule.checkList() :: error: " +
-                    "XML rule syntax error -> Invalid" +
-                    " number of symbols in rule string. Minimum is 1.");
+            throw new XMLAutomatonSyntaxErrorException("Invalid number of " + 
+                                       "symbols in rule string. Minimum is 1.");
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private static void checkVars(final int minVars, final int maxVars,
             final LinkedList<Trinity<String,Vector<String>,Character> > symbols)
-                                                              throws Exception {
+                                       throws XMLAutomatonSyntaxErrorException {
         for (Trinity<String,Vector<String>,Character> symbol : symbols)
             checkVars(minVars,maxVars,symbol);
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private static void checkVars(final int minVars, final int maxVars,
                           final Trinity<String,Vector<String>,Character> symbol)
-                                                              throws Exception {
+                                       throws XMLAutomatonSyntaxErrorException {
         if ((minVars >= 0 && symbol.getSecond().size() < minVars) ||
             (maxVars >= 0 && symbol.getSecond().size() > maxVars) )
-                throw new Exception("[stanse/AutomatonChecker] - " +
-                            "XMLErrorRule.checkVars() :: error: " +
-                            "XML rule syntax error -> Invalid" +
-                            " number of variables.");
+                throw new XMLAutomatonSyntaxErrorException(
+                                                "Invalid number of variables.");
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private Vector< Pair<Integer,Vector<Boolean> > > getExcludedMatchFlags() {
         return excludedMatchFlags;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private Vector< Pair<Integer,Vector<Boolean> > > getIncludedMatchFlags() {
         return includedMatchFlags;
     }
 
+    /**
+     * @brief
+     */
     private final String description;
+    /**
+     * @brief
+     */
     private final int errorLevel;
+    /**
+     * @brief
+     */
     private final String entryMessage;
+    /**
+     * @brief
+     */
     private final String beginMessage;
+    /**
+     * @brief
+     */
     private final String propagMessage;
+    /**
+     * @brief
+     */
     private final String endMessage;
+    /**
+     * @brief
+     */
     private final String patternName;
+    /**
+     * @brief
+     */
     private final Vector< Pair<Integer,Vector<Boolean> > > excludedMatchFlags;
+    /**
+     * @brief
+     */
     private final Vector< Pair<Integer,Vector<Boolean> > > includedMatchFlags;
 }

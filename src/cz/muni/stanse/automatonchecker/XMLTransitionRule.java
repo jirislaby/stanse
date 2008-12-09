@@ -1,3 +1,7 @@
+/**
+ * @brief
+ * 
+ */
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
@@ -6,13 +10,26 @@ import cz.muni.stanse.utils.Trinity;
 import java.util.HashMap;
 import java.util.Vector;
 
+/**
+ * @brief
+ *
+ * @see
+ */
 final class XMLTransitionRule {
 
     // package-private section
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     XMLTransitionRule(final org.dom4j.Element XMLtransitionElement,
                       final HashMap<String,Integer> statesSymbolTable)
-                                                              throws Exception {
+                                       throws XMLAutomatonSyntaxErrorException {
         final Trinity<String,Vector<String>,Character> fromSymbol =
             XMLRuleStringParser.parseOneSymbolRuleString(
                 XMLtransitionElement.attribute("from").getValue());
@@ -45,10 +62,26 @@ final class XMLTransitionRule {
         patternName = bySymbol.getFirst();
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     String getPatternName() {
         return patternName;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     Pair<Boolean,AutomatonState>
     transformAutomatonState(final AutomatonState state, final int automatonID) {
         if (state.getSymbolID() == getInSymbolID() &&
@@ -61,6 +94,14 @@ final class XMLTransitionRule {
 
     // private section
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private boolean matchIDsMatchesLocationID(
                     final Vector<Integer> stateMatchIDs, final int locationID) {
         if (stateMatchIDs.size() != getMatchFlags().size())
@@ -72,6 +113,14 @@ final class XMLTransitionRule {
         return true;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private AutomatonState buildResultState(
                         final cz.muni.stanse.parser.ControlFlowGraph CFG,
                         final Vector<Integer> matchIDs, final int locationID) {
@@ -87,6 +136,14 @@ final class XMLTransitionRule {
         return new AutomatonState(CFG,getOutSymbolID(),outMatchIDs);
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private static Vector<Boolean> buildMatchFlags(final Vector<String> matchIDs,
                                                  final String locationVarName) {
         final Vector<Boolean> matchFlags = new Vector<Boolean>(matchIDs.size());
@@ -95,10 +152,19 @@ final class XMLTransitionRule {
         return matchFlags;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private static Vector<Integer> buildMatchOutIndices(
                                 final Vector<String> fromVarNames,
                                 final Vector<String> toVarNames,
-                                final String locationVarName) throws Exception {
+                                final String locationVarName)
+                                       throws XMLAutomatonSyntaxErrorException {
         final Vector<Integer> matchIndices =
         new Vector<Integer>(toVarNames.size()); 
         for (int i = 0; i < toVarNames.size(); ++i)
@@ -108,54 +174,121 @@ final class XMLTransitionRule {
         return matchIndices;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private static int findVarName(final Vector<String> varNames,
-            final String searchedName) throws Exception {
+            final String searchedName) throws XMLAutomatonSyntaxErrorException {
         final int index = varNames.indexOf(searchedName);
         if (index != -1)
            return index;
-        throw new Exception("[stanse/AutomatonChecker] - " +
-                "XMLTransitionRule.findVarName() :: " +
-                "error: XML transition syntax error -> variable '" +
+        throw new XMLAutomatonSyntaxErrorException("Variable '" +
                 searchedName + "' in attribute 'to' cannot be found in 'from'" +
                 " attribute of the transition [possibilities are: " + varNames);
     }
 
-    private static void checkMode(final char mode) throws Exception {
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
+    private static void checkMode(final char mode)
+                                       throws XMLAutomatonSyntaxErrorException {
         if (mode != '+')
-            throw new Exception("[stanse/AutomatonChecker] - " +
-                    "XMLTransitionRule.checkMode() :: " +
-                    "error: XML rule syntax error -> Invalid mode of symbol. " +
-                    "Mode can only be nothing or symbol '+'.");
+            throw new XMLAutomatonSyntaxErrorException(
+                                "Invalid mode of symbol. " +
+                                "Mode can only be nothing or symbol '+'.");
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @see
+     */
     private static void checkVars(final int minVars, final int maxVars,
-                                  final int numVars) throws Exception {
+                    final int numVars) throws XMLAutomatonSyntaxErrorException {
         if ((minVars >= 0 && numVars < minVars) ||
             (maxVars >= 0 && numVars > maxVars) )
-            throw new Exception("[stanse/AutomatonChecker] - " +
-                "XMLTransitionRule.checkVars() :: " +
-                "error: XML rule syntax error -> Invalid number of variables.");
+            throw new XMLAutomatonSyntaxErrorException(
+                                                "Invalid number of variables.");
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private int getInSymbolID() {
         return inSymbolID;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private int getOutSymbolID() {
         return outSymbolID;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private Vector<Boolean> getMatchFlags() {
         return matchFlags;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private Vector<Integer> getMatchOutIndices() {
         return matchOutIndices;
     }
 
+    /**
+     * @brief
+     */
     private final String patternName;
+    /**
+     * @brief
+     */
     private final int inSymbolID;
+    /**
+     * @brief
+     */
     private final int outSymbolID;
+    /**
+     * @brief
+     */
     private final Vector<Boolean> matchFlags;
+    /**
+     * @brief
+     */
     private final Vector<Integer> matchOutIndices;
 }

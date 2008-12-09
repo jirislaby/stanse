@@ -1,11 +1,27 @@
+/**
+ *  @brief
+ * 
+ */
 package cz.muni.stanse.checker;
 
 import java.util.List;
 
+/**
+ * @brief
+ *
+ * @see
+ */
 public final class CheckerError {
 
     // public section
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @see
+     */
     public CheckerError(String shortDesc, String fullDesc, int level,
                         List<ErrorTrace> traces) {
         this.shortDesc = shortDesc;
@@ -14,22 +30,58 @@ public final class CheckerError {
         this.traces = traces;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @see
+     */
     public int getErrorLevel() {
         return level;
     }
     
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @see
+     */
     public String getShortDescription() {
         return shortDesc;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @see
+     */
     public String getFullDescription() {
         return fullDesc;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @see
+     */
     public List<ErrorTrace> getErrorTraces() {
         return traces;
     }
 
+    /**
+     * 
+     * @brief
+     *
+     * @param
+     * @return
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         String result =
@@ -43,6 +95,14 @@ public final class CheckerError {
         return result;
     }
 
+    /**
+     * 
+     * @brief
+     *
+     * @param
+     * @return
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int PRIME = 31;
@@ -54,12 +114,28 @@ public final class CheckerError {
         return result;
     }
 
+    /**
+     * 
+     * @brief
+     *
+     * @param
+     * @return
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         return (obj == null || getClass() != obj.getClass()) ?
                 false : isEqualWith((CheckerError)obj);
     }
 
+    /**
+     * 
+     * @brief
+     *
+     * @param
+     * @return
+     * @see
+     */
     public boolean isEqualWith(final CheckerError other) {
         return getShortDescription().equals(other.getShortDescription()) &&
                getFullDescription().equals(other.getFullDescription()) &&
@@ -69,8 +145,24 @@ public final class CheckerError {
 
     // private section
 
-    private final String shortDesc;
+    /**
+     *  @brief
+     * 
+     */
+    private final String shortDesc; 
+    /**
+     *  @brief
+     * 
+     */
     private final String fullDesc;
+    /**
+     *  @brief
+     * 
+     */
     private final int level;
+    /**
+     *  @brief
+     * 
+     */
     private final List<ErrorTrace> traces;
 }

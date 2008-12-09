@@ -1,13 +1,30 @@
+/**
+ * @brief
+ *  
+ */
 package cz.muni.stanse.checker;
 
 import cz.muni.stanse.parser.CFGNode;
 import cz.muni.stanse.utils.Pair;
 import java.util.List;
 
+/**
+ * @brief
+ *
+ * @see
+ */
 public final class ErrorTrace {
 
     // public section
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public ErrorTrace(String shortDesc, String fullDesc,
                       List< Pair<CFGNode,String> > trace) {
         this.shortDesc = shortDesc;
@@ -15,18 +32,50 @@ public final class ErrorTrace {
         this.trace = trace;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public String getShortDescription() {
         return shortDesc;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public String getFullDescription() {
         return fullDesc;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public List< Pair<CFGNode,String> > getErrorTrace() {
         return trace;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         String result =
@@ -41,6 +90,14 @@ public final class ErrorTrace {
         return result;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int PRIME = 31;
@@ -51,12 +108,28 @@ public final class ErrorTrace {
         return result;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         return (obj == null || getClass() != obj.getClass()) ?
                 false : isEqualWith((ErrorTrace)obj);
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     public boolean isEqualWith(final ErrorTrace other) {
         return getShortDescription().equals(other.getShortDescription()) &&
                getFullDescription().equals(other.getFullDescription()) &&
@@ -65,7 +138,21 @@ public final class ErrorTrace {
 
     // private section
 
+    /**
+     * @brief
+     *
+     */
     private final String shortDesc;
+
+    /**
+     * @brief
+     *
+     */
     private final String fullDesc;
+
+    /**
+     * @brief
+     *
+     */
     private final List< Pair<CFGNode,String> > trace;
 }

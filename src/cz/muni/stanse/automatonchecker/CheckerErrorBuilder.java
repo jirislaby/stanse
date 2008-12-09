@@ -12,8 +12,9 @@ final class CheckerErrorBuilder {
 
     static LinkedList<CheckerError>
     buildErrorList(final HashMap<cz.muni.stanse.parser.CFGEdge,PatternLocation>
-                                      edgeLocationDictionary) throws Exception {
-        final LinkedList<CheckerError> errorsList = new LinkedList<CheckerError>();
+                                                       edgeLocationDictionary) {
+        final LinkedList<CheckerError> errorsList =
+                                                 new LinkedList<CheckerError>();
         for (PatternLocation location : edgeLocationDictionary.values())
             errorsList.addAll(buildErrorsInLocation(location,
                                                     edgeLocationDictionary));
@@ -26,7 +27,7 @@ final class CheckerErrorBuilder {
     private static LinkedList<CheckerError> buildErrorsInLocation(
             final PatternLocation location,
             final HashMap<cz.muni.stanse.parser.CFGEdge,PatternLocation>
-                                      edgeLocationDictionary) throws Exception {
+                                                       edgeLocationDictionary) {
         final LinkedList<CheckerError> errorsList =
             new LinkedList<CheckerError>();
 

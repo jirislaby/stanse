@@ -73,8 +73,7 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGvisitor {
     // public section
 
     @Override
-    public boolean visit(final CFGEdge edge, final org.dom4j.Element element)
-                                                              throws Exception {
+    public boolean visit(final CFGEdge edge, final org.dom4j.Element element) {
         if (getStartEdge().equals(edge))
             return false;
 

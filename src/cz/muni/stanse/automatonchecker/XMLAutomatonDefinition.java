@@ -13,7 +13,7 @@ final class XMLAutomatonDefinition {
     // package-private section
 
     XMLAutomatonDefinition(final Element XMLdefinition)
-                                                              throws Exception {
+                                       throws XMLAutomatonSyntaxErrorException {
 	Element desc = (Element)XMLdefinition.selectSingleNode("description");
         automatonName = desc.attribute("name").getValue();
         automatonDesc = desc.attribute("desc").getValue();
@@ -25,12 +25,11 @@ final class XMLAutomatonDefinition {
             buildStatesDictionary(XMLdefinition);
 
         if (!statesSymbolTable.containsKey(startSymbolName))
-            throw new Exception("[stanse/AutomatonChecker] - " +
-                    "XMLAutomatonDefinition.XMLAutomatonDefinition() :: " +
-                    "XML document '" + XMLdefinition.getName() +
-                    "' error: Automaton start symbol '" + startSymbolName +
-                    "' is not member of set of all symbols: " +
-                    statesSymbolTable.keySet());
+            throw new XMLAutomatonSyntaxErrorException(
+                        "XML document '" + XMLdefinition.getName() +
+                        "' error: Automaton start symbol '" + startSymbolName +
+                        "' is not member of set of all symbols: " +
+                        statesSymbolTable.keySet());
         
         startSymbol = statesSymbolTable.get(startSymbolName);
 
@@ -82,13 +81,13 @@ final class XMLAutomatonDefinition {
     // private section
 
     private static Vector<XMLPattern>
-    buildXMLPatterns(final org.dom4j.Element XMLdefinition) throws Exception {
+    buildXMLPatterns(final org.dom4j.Element XMLdefinition)
+                                       throws XMLAutomatonSyntaxErrorException {
         final List patternNodes = XMLdefinition.selectNodes("//pattern");
         if (patternNodes.isEmpty())
-            throw new Exception("[stanse/AutomatonChecker] - " +
-                    "XMLAutomatonDefinition.buildXMLPatterns() :: " +
-                    "XML document '" + XMLdefinition.getName() +
-                    "' error: No pattern XML node was found.");
+            throw new XMLAutomatonSyntaxErrorException(
+                            "XML document '" + XMLdefinition.getName() +
+                            "' error: No pattern XML node was found.");
         final Vector<XMLPattern> XMLpatterns =
             new Vector<XMLPattern>(patternNodes.size());
         for (final Iterator iter = patternNodes.iterator(); iter.hasNext(); )
@@ -98,7 +97,7 @@ final class XMLAutomatonDefinition {
 
     private static final HashMap<String,Integer>
     buildStatesDictionary(final org.dom4j.Element XMLdefinition)
-                                                              throws Exception {
+                                       throws XMLAutomatonSyntaxErrorException {
         final HashMap<String,Integer> statesSymbolTable =
             new HashMap<String,Integer>();
 
@@ -122,13 +121,12 @@ final class XMLAutomatonDefinition {
     private static Vector<XMLTransitionRule>
     buildXMLTransitionRules(final org.dom4j.Element XMLdefinition,
                             final HashMap<String,Integer> statesSymbolTable)
-                                                              throws Exception {
+                                       throws XMLAutomatonSyntaxErrorException {
         final List patternNodes = XMLdefinition.selectNodes("//transition");
         if (patternNodes.isEmpty())
-            throw new Exception("[stanse/AutomatonChecker] - " +
-                "XMLAutomatonDefinition.buildXMLTransitionRules() :: " +
-                "XML document '" + XMLdefinition.getName() +
-                "' error: No transition rule XML node was found.");
+            throw new XMLAutomatonSyntaxErrorException(
+                            "XML document '" + XMLdefinition.getName() +
+                            "' error: No transition rule XML node was found.");
         final Vector<XMLTransitionRule> XMLtransitionRules =
             new Vector<XMLTransitionRule>(patternNodes.size());
         for (final Iterator iter = patternNodes.iterator(); iter.hasNext(); )
@@ -141,13 +139,12 @@ final class XMLAutomatonDefinition {
     private static Vector<XMLErrorRule>
     buildXMLErrorRules(final org.dom4j.Element XMLdefinition,
                        final HashMap<String,Integer> statesSymbolTable)
-                                                              throws Exception {
+                                       throws XMLAutomatonSyntaxErrorException {
         final List patternNodes = XMLdefinition.selectNodes("//error");
         if (patternNodes.isEmpty())
-            throw new Exception("[stanse/AutomatonChecker] - " +
-                "XMLAutomatonDefinition.buildXMLErrorRules() :: " +
-                "XML document '" + XMLdefinition.getName() +
-                "' error: No error rule XML node was found.");
+            throw new XMLAutomatonSyntaxErrorException(
+                        "XML document '" + XMLdefinition.getName() +
+                        "' error: No error rule XML node was found.");
         final Vector<XMLErrorRule> XMLerrorRules =
             new Vector<XMLErrorRule>(patternNodes.size());
         for (final Iterator iter = patternNodes.iterator(); iter.hasNext(); )

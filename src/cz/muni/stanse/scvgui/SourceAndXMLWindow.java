@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.AbstractAction;
@@ -563,7 +565,7 @@ public class SourceAndXMLWindow extends JPanel {
                 );
             }
             catch(Exception e) {
-                logger.error(e.getMessage());
+                logger.error(getStackTrace(e));
             }
 
         jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
@@ -587,7 +589,7 @@ public class SourceAndXMLWindow extends JPanel {
             );
         }
         catch(Exception e) {
-            logger.error(e.getMessage());
+            logger.error(getStackTrace(e));
         }
         //List<CheckerError> errors = (new OwnershipChecker()).check(cfgs);
 
@@ -643,5 +645,23 @@ public class SourceAndXMLWindow extends JPanel {
         }
     }
     */
+
+
+   /**
+     * @brief Creates and returns a {@link java.lang.String} from
+     *        <code>t</code>’s stacktrace 
+     * @param t Throwable whose stack trace is required
+     * @return String representing the stack trace of the exception
+     */
+    private String getStackTrace(Throwable t) {
+        StringWriter stringWritter = new StringWriter();
+        PrintWriter printWritter = new PrintWriter(stringWritter, true);
+        t.printStackTrace(printWritter);
+        printWritter.flush();
+        stringWritter.flush(); 
+
+       return stringWritter.toString();
+    } 
+    
     
 }

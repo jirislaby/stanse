@@ -1,24 +1,57 @@
+/**
+ * @brief
+ * 
+ */
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
 
 import java.util.Iterator;
 
+/**
+ * @brief
+ *
+ * @see
+ */
 final class XMLPattern {
 
     // package-private section
 
-    XMLPattern(final org.dom4j.Element XMLelement) throws Exception {
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
+    XMLPattern(final org.dom4j.Element XMLelement) {
         patternXMLelement = XMLelement;
         name = patternXMLelement.attribute("name").getValue();
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     String getName() {
         return name;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     Pair<Boolean,PatternVariablesAssignment>
-    matchesXMLElement(final org.dom4j.Element XMLelement) throws Exception {
+    matchesXMLElement(final org.dom4j.Element XMLelement) {
         final PatternVariablesAssignment varsAssignment =
             new PatternVariablesAssignment();
         return new Pair<Boolean,PatternVariablesAssignment>(
@@ -29,9 +62,17 @@ final class XMLPattern {
 
     // private section
 
-    private static boolean matchingElements(
-            final org.dom4j.Element XMLpivot, final org.dom4j.Element XMLelement,
-            final PatternVariablesAssignment varsAssignment) throws Exception {
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
+    private static boolean matchingElements(final org.dom4j.Element XMLpivot,
+                              final org.dom4j.Element XMLelement,
+                              final PatternVariablesAssignment varsAssignment) {
         if (XMLpivot.getName().equals("nested"))
             return onNested(XMLpivot,XMLelement,varsAssignment);
         if (XMLpivot.getName().equals("any"))
@@ -65,9 +106,17 @@ final class XMLPattern {
         return true;
     }
 
-    private static boolean onNested(
-            final org.dom4j.Element XMLpivot, final org.dom4j.Element XMLelement,
-            final PatternVariablesAssignment varsAssignment) throws Exception {
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
+    private static boolean onNested(final org.dom4j.Element XMLpivot,
+                              final org.dom4j.Element XMLelement,
+                              final PatternVariablesAssignment varsAssignment) {
         if (matchingElements(
                            (org.dom4j.Element)XMLpivot.elementIterator().next(),
                            XMLelement,varsAssignment))
@@ -81,10 +130,24 @@ final class XMLPattern {
         return false;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private final org.dom4j.Element getPatternXMLelement() {
         return (org.dom4j.Element)patternXMLelement.elementIterator().next();
     }
 
+    /**
+     * @brief
+     */
     private final org.dom4j.Element patternXMLelement;
+    /**
+     * @brief
+     */
     private final String name;
 }

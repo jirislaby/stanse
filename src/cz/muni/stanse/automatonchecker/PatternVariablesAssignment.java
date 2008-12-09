@@ -1,3 +1,7 @@
+/**
+ * @brief
+ *
+ */
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.XMLAlgo;
@@ -5,10 +9,23 @@ import cz.muni.stanse.utils.XMLAlgo;
 import java.util.HashMap;
 import java.util.Iterator;
 
+/**
+ * @brief
+ *
+ * @see
+ */
 final class PatternVariablesAssignment {
 
     // public section
-
+    
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int PRIME = 31;
@@ -19,6 +36,14 @@ final class PatternVariablesAssignment {
         return result;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(final Object obj) {
         if (obj == null || getClass() != obj.getClass())
@@ -28,15 +53,39 @@ final class PatternVariablesAssignment {
 
     // package-private section
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     PatternVariablesAssignment() {
         varsAssignments = new HashMap<String,org.dom4j.Element>(); 
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     org.dom4j.Element put(final String varName,
                           final org.dom4j.Element XMLelement) {
         return getVarsAssignments().put(varName,XMLelement);
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     boolean isEqualWith(final PatternVariablesAssignment other) {
         if (!getVarsAssignments().keySet().equals(
                 getVarsAssignments().keySet()))
@@ -53,9 +102,20 @@ final class PatternVariablesAssignment {
 
     // private section
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     private HashMap<String,org.dom4j.Element> getVarsAssignments() {
         return varsAssignments;
     }
 
+    /**
+     * @brief
+     */
     private final HashMap<String,org.dom4j.Element> varsAssignments;
 }

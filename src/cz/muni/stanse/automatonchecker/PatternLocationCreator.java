@@ -13,8 +13,7 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
     // public section
 
     @Override
-    public boolean visit(final CFGEdge edge, final org.dom4j.Element element)
-                                                              throws Exception {
+    public boolean visit(final CFGEdge edge, final org.dom4j.Element element) {
         final Vector<XMLPattern> XMLpatterns =
             getXMLAutomatonDefinition().getXMLpatterns();
         for (int i = 0; i < XMLpatterns.size(); ++i) {
