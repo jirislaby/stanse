@@ -32,11 +32,10 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import org.dom4j.Element;
+
+import cz.muni.stanse.utils.XMLAlgo;
 }
 @members {
-	private enum Stop { BREAK, CONTINUE, GOTO, RETURN }
-	private Stop stop;
-
 	private CFG createCFG() {
 		CFG cfg = new CFG();
 		CFGNode n = new CFGNode();
@@ -130,21 +129,27 @@ compoundStatement returns [CFG g]
 	LinkedList<CFG> cfgs = new LinkedList<CFG>();
 	CFG cfg = createCFG();
 	cfgs.add(cfg);
+	boolean isBreak = false;
 }
 @after {
 	$g = cfgs.getFirst();
-//	$g.append($st.g);
 	$g.append(new CFGNode());
 }
 	: ^(COMPOUND_STATEMENT (declaration |
 		fd=functionDefinition {cfgs.add($fd.g);} |
 		st=statement {
-			cfg.append($st.g);
-			if (stop != null) {
+			if (isBreak) {
+				System.err.println("Unreachable:");
+				XMLAlgo.outputXML($st.start.getElement());
+				System.err.println("\n============");
 				cfg = createCFG();
 				cfgs.add(cfg);
-				stop = null;
+				isBreak = false;
 			}
+			if ($st.g.getEndNode() instanceof CFGBreakNode)
+				isBreak = true;
+			cfg.append($st.g);
+
 		})*)
 	;
 
@@ -396,11 +401,9 @@ jumpStatement returns [CFG g]
 	}
 	| 'break' {
 		$Iteration::breaks.add(n);
-		stop = Stop.BREAK;
 	}
 	| ^('return' expression?) {
 		$Function::rets.add(n);
-		stop = Stop.RETURN;
 	}
 	;
 
