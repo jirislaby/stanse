@@ -208,6 +208,7 @@ functionDefinition returns [Element e]
 @init {
 	List<Element> ds = new ArrayList<Element>();
 	$e = newElement("functionDefinition", $functionDefinition.start);
+	$functionDefinition.start.setElement($e);
 }
 	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator (d=declaration {ds.add($d.e);})* compoundStatement) {
 		$e.add($declarationSpecifiers.e);

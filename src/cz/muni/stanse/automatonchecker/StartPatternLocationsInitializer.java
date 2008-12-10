@@ -1,6 +1,5 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.parser.CFGEdge;
 import java.util.HashMap;
 import java.util.LinkedList;
 

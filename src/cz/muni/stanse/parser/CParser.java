@@ -3,16 +3,20 @@ package cz.muni.stanse.parser;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 
 import org.dom4j.Document;
 
 public final class CParser {
     private InputStream stream;
+    private Document xmlDocument;
+    private Set<FunctionCFG> CFGs;
 
     private CParser() { }
 
@@ -20,7 +24,15 @@ public final class CParser {
 	this.stream = stream;
     }
 
-    public Document run() throws IOException, RecognitionException {
+    public Document getXMLDocument() {
+	return xmlDocument;
+    }
+
+    public Set<FunctionCFG> getCFGs() {
+	return Collections.unmodifiableSet(CFGs);
+    }
+
+    public void run() throws IOException, RecognitionException {
 	StanseTreeAdaptor adaptor = new StanseTreeAdaptor();
 
 	GNUCaLexer lex = new GNUCaLexer(new ANTLRInputStream(stream));
@@ -34,7 +46,12 @@ public final class CParser {
 	CommonTreeNodeStream nodes = new CommonTreeNodeStream(parserTree);
 	nodes.setTokenStream(tokens);
 
-	XMLEmitter emitter = new XMLEmitter(nodes);
-	return emitter.translationUnit();
+	XMLEmitter xmlEmitter = new XMLEmitter(nodes);
+	xmlDocument = xmlEmitter.translationUnit();
+
+	nodes.reset();
+
+	CFGEmitter cfgEmitter = new CFGEmitter(nodes);
+	CFGs = cfgEmitter.translationUnit();
     }
 }

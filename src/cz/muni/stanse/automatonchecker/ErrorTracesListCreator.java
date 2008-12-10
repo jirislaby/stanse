@@ -2,7 +2,6 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.parser.CFGEdge;
 import cz.muni.stanse.parser.ControlFlowGraph;
 import cz.muni.stanse.utils.Pair;
 

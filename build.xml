@@ -35,6 +35,8 @@
 		<include name="GNUCaParser.java"/>
 		<include name="XMLEmitter.java"/>
 		<include name="XMLEmitter.tokens"/>
+		<include name="CFGEmitter.java"/>
+		<include name="CFGEmitter.tokens"/>
 	    </fileset>
 	</delete>
     </target>
@@ -55,11 +57,22 @@
 			target="${parser.location}/XMLEmitter.g">
 		<classpath path="${antlr.location}"/>
 		</antlr:antlr3>
+		<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr"
+			target="${parser.location}/CFGEmitter.g">
+		<classpath path="${antlr.location}"/>
+		</antlr:antlr3>
     </target>
     <target name="build" depends="init,parser">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" destdir="build">
             <src path="src"/>
+	    <exclude name="cz/muni/stanse/automatonchecker/*"/>
+	    <exclude name="cz/muni/stanse/ownershipchecker/*"/>
+	    <exclude name="cz/muni/stanse/props/LoggerConfigurator.java"/>
+	    <exclude name="cz/muni/stanse/scvgui/*"/>
+	    <exclude name="cz/muni/stanse/main/SCV.java"/>
+	    <exclude name="cz/muni/stanse/utils/CFGvisitor.java"/>
+	    <exclude name="cz/muni/stanse/utils/CFGTraversal.java"/>
             <classpath refid="project.classpath"/>
         </javac>
 	<!-- Copy .properties to the build directory, so they get included in the Jar -->

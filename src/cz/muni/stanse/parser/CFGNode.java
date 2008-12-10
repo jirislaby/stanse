@@ -1,33 +1,41 @@
 /*
- * CFGNode.java
+ * Copyright (c) 2008 Jiri Slaby <jirislaby@gmail.com>
  *
- * @author Jaroslav Novotný <jarek@jarek.cz>
- *
+ * Distributed under GPLv2
  */
 
 package cz.muni.stanse.parser;
 
-import java.util.Set;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.dom4j.Element;
 
 /**
  * Represents a node in control-flow graph (class ControlFlowGraph in this
  * package)
  */
 public class CFGNode {
-
-    private static int numberCounter=0; // for generating an unique node number
-    private int number; // node number, used in print
-    private ControlFlowGraph cfg; // corresponding control-flow graph
-    private Set<CFGNode> predecessors = new HashSet<CFGNode>(); // represents predecessors of this node
-    private Set<CFGNode> successors = new HashSet<CFGNode>(); // represents successors of this node
+    private static int numberCounter;
+    private int number;
+    private Element element;
+    private List<CFGNode> preds = new ArrayList<CFGNode>();
+    private List<CFGNode> succs = new ArrayList<CFGNode>();
 
     /**
      * Creates a new instance of CFGNode
      */
-    protected CFGNode(ControlFlowGraph cfg) {
-        number = numberCounter++; // generating an unique node number
-        this.cfg = cfg;
+    public CFGNode() {
+	number = numberCounter++;
+    }
+
+    /**
+     * Creates a new instance of CFGNode
+     */
+    public CFGNode(Element e) {
+	number = numberCounter++;
+	element = e;
     }
 
     /**
@@ -35,27 +43,31 @@ public class CFGNode {
      * @return unique node number
      */
     public int getNumber() {
-        return number;
+	return number;
+    }
+
+    /**
+     * Get element corresponding to this node
+     * @return element
+     */
+    public Element getElement() {
+	return element;
     }
 
     /**
      * Get all predecessors of node
      * @return (read only) set of this node's predecessors
      */
-    public Set<CFGNode> getPredecessors() {
-        Set<CFGNode> copy = new HashSet<CFGNode>();
-        copy.addAll(predecessors);
-        return copy;
+    public List<CFGNode> getPredecessors() {
+	return Collections.unmodifiableList(preds);
     }
 
     /**
      * Get all successors of node
      * @return (read only) set of this node's successors
      */
-    public Set<CFGNode> getSuccessors() {
-        Set<CFGNode> copy = new HashSet<CFGNode>();
-        copy.addAll(successors);
-        return copy;
+    public List<CFGNode> getSuccessors() {
+	return Collections.unmodifiableList(succs);
     }
 
     /**
@@ -63,7 +75,7 @@ public class CFGNode {
      * @param pred new predecesor
      */
     protected void addPred(CFGNode pred) {
-        predecessors.add(pred);
+	preds.add(pred);
     }
 
     /**
@@ -71,71 +83,41 @@ public class CFGNode {
      * @param succ new successor
      */
     protected void addSucc(CFGNode succ) {
-        successors.add(succ);
+	succs.add(succ);
     }
 
     /**
-     * Get corresponding control-flow graph
-     * @return control-flow graph
+     * Adds an edge between two nodes
+     * @param label label
+     * @param from starting node
+     * @param to ending node
      */
-    public ControlFlowGraph getCFG() {
-        return cfg;
-    }
-
-    /**
-     * Join node with another node
-     * @param temp node to join with
-     */
-    protected void joinWithNode(CFGNode temp) {
-
-        // correct all edges to "temp"
-        predecessors.addAll(temp.predecessors);
-        for (CFGNode tempPred : temp.predecessors) {
-            if (tempPred.successors.remove(temp)) {
-                tempPred.successors.add(this);
-            }
-        }
-
-        // correct all edges from "temp"
-        successors.addAll(temp.successors);
-        for (CFGNode tempSucc : temp.successors) {
-            if (tempSucc.predecessors.remove(temp)) {
-                tempSucc.predecessors.add(this);
-            }
-        }
-
+    public void addEdge(CFGNode to) {
+	addSucc(to);
+	to.addPred(this);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final CFGNode other = (CFGNode) obj;
-        if (this.number != other.number) {
-            return false;
-        }
-        if (this.cfg != other.cfg && (this.cfg == null || !this.cfg.equals(other.cfg))) {
-            return false;
-        }
-        return true;
+	if (obj == null)
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	final CFGNode other = (CFGNode)obj;
+	if (number != other.getNumber())
+	    return false;
+	return true;
     }
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 59 * hash + this.number;
-        hash = 59 * hash + (this.cfg != null ? this.cfg.hashCode() : 0);
-        return hash;
+	int hash = 5;
+	hash = 59 * hash + number;
+	return hash;
     }
 
     @Override
     public String toString() {
-        return new Integer(number).toString();
+	return new Integer(number).toString();
     }
-
 }
-
