@@ -13,28 +13,45 @@ package cz.muni.stanse.automatonchecker;
  *
  * @see java.lang.Exception 
  */
-public class XMLAutomatonSyntaxErrorException extends Exception {
+public class XMLAutomatonSyntaxErrorException extends
+                                       cz.muni.stanse.checker.CheckerException {
 
     // public section 
 
     /**
-     * @brief Creates exception class with string message, which describes
-     *        a syntax error in XML file with automaton definition. 
+     * @brief Initializes the class by message, which describes syntax error
+     *        in XML file with automaton definition.
      *
-     * The passed error message gets prefix, which identifies a location
-     * in the code where the exception was thrown.
-     *
-     * @param errorMessage Raw description of a syntax error in XML automaton
-     *        definition file.
+     * Exception description message is directly passed to the base class. 
+     * 
+     * @param errorMessage Description of a error which occurs in the checker. 
      */
     public XMLAutomatonSyntaxErrorException(final String errorMessage) {
         super(errorMessage); 
     }
 
+    /**
+     * @brief Initializes the class by cause object, which describes syntax
+     *        error in XML file with automaton definition.
+     *
+     * Exception cause object is directly passed to the base class. 
+     * 
+     * @param cause Cause of the exception which occurs in the checker. 
+     */
     public XMLAutomatonSyntaxErrorException(final Throwable cause) {
         super(cause); 
     }
 
+    /**
+     * @brief Initializes the class by message and cause, which together
+     *        describes syntax error in XML file with automaton definition.
+     *
+     * Exception description message is directly passed to the base class. 
+     * Exception cause object is directly passed to the base class as well. 
+     * 
+     * @param errorMessage Description of a error which occurs in the checker. 
+     * @param cause Cause of the exception which occurs in the checker. 
+     */
     public XMLAutomatonSyntaxErrorException(final String errorMessage,
                                             final Throwable cause) {
         super(errorMessage,cause); 

@@ -1,6 +1,8 @@
 /**
- * @brief
- *
+ * @brief Defines public final class AutomatonChecker which provides static
+ *        program verification specialized to locking problems, interrupts
+ *        enabling/disabling problems, unnecessary check optimizations and
+ *        points-to problems like null pointer dereference and memory leaks.
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -12,9 +14,19 @@ import java.util.LinkedList;
 import cz.muni.stanse.parser.ControlFlowGraph;
 
 /**
- * @brief
+ * @brief Static checker which is able to detect locking problems, interrupts
+ *        enabling/disabling problems, unnecessary check optimizations and
+ *        points-to problems like null pointer dereference and memory leaks.
  *
- * @see
+ * The checker is based on execution of finite automata specified in XML file
+ * whose states are propagated through program locations. Some automata states
+ * are considered as erroneous, so when automaton's transition to such erroneous
+ * state is invoked in some program location, then appropriate error message is
+ * reported. Program locations, which are considered for automata state
+ * propagation are found by pattern matching. These pattern are specified in
+ * the XML file defining automata as well.
+ *
+ * @see cz.muni.stanse.checker.Checker
  */
 public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 

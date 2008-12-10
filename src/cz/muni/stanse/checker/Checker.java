@@ -1,7 +1,6 @@
 /**
- * @brief
- * 
- *  
+ * @brief defines public abstract class Checker. 
+ * @author xtrtik2
  */
 package cz.muni.stanse.checker;
 
@@ -11,42 +10,56 @@ import java.util.Set;
 import java.util.List;
 
 /**
- * @brief
+ * @brief Defines mandatory interface for all the checkers. It provides
+ *        easy integration of new checkers to Stanse's framework.
  *
- * @see
+ * All the checkers are manipulated only through this base class. There are
+ * only two functions required to all the checker 1) getName() - to get unique
+ * name for the checker, 2) check() - to perform verification itself
  */
 public abstract class Checker {
 
     // public section
 
     /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @see
+     * @brief Explicitly does nothing.
      */
     public Checker() {
     }
 
     /**
-     * @brief
+     * @brief Forces all the children to define name of the checker.
+     * 
+     * The name should be unique.
      *
-     * @param
-     * @return
-     * @see
+     * @return Unique name of the checker. 
      */
     public abstract String getName();
 
+    /**
+     * @brief Performs checking itself. Accepts set of CFGs and runs the
+     *        checking on them to produce list of errors found in the CFGs.   
+     *
+     * Derived checker can implement cheking procedure as it likes. It is
+     * assumed, that verification is interprocedural on the set of accepted
+     * set of CFGs.
+     *
+     * @param  CFGs Set of control-flow graphs, which should be checked for
+     *         errors.
+     * @return List of errors found in accepted CFGs.
+     * @throws CheckerException All the exceptions thrown by child checker.
+     *         Children should derive their own exception classes from
+     *         CheckerException class. 
+     *         
+     * @see cz.muni.stanse.checker#CheckerError
+     *      cz.muni.stanse.checker#CheckerException
+     */
     public abstract List<CheckerError> check(final Set<ControlFlowGraph> CFGs)
-			throws Exception;
+                        throws CheckerException;
 
     /**
-     * 
-     * @brief
-     *
-     * @param
-     * @return
+     * @brief Implements standard string conversion method.
+     * @return String desctioption of the checker.
      * @see java.lang.Object#toString()
      */
     @Override
