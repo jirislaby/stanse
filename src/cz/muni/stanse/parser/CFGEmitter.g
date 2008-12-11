@@ -19,6 +19,9 @@ scope Iteration {
 }
 scope Function {
 	Set<CFGBreakNode> rets;
+	List<Pair<String, CFGBreakNode>> gotos;
+	Map<String, CFGNode> labels;
+	List<CFG> unreachables;
 }
 
 @header {
@@ -26,13 +29,16 @@ package cz.muni.stanse.parser;
 
 import java.io.IOException;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 
 import org.dom4j.Element;
 
+import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.XMLAlgo;
 }
 @members {
@@ -71,10 +77,27 @@ functionDefinition returns [FunctionCFG g]
 scope Function;
 @init {
 	$Function::rets = new HashSet<CFGBreakNode>();
+	$Function::labels = new HashMap<String, CFGNode>();
+	$Function::gotos = new LinkedList<Pair<String, CFGBreakNode>>();
+	$Function::unreachables = new LinkedList<CFG>();
 }
-	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator declaration* compoundStatement) { $g = FunctionCFG.createFromCFG($compoundStatement.g, $functionDefinition.start.getElement());
+	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator declaration* compoundStatement) {
+		$g = FunctionCFG.createFromCFG($compoundStatement.g,
+				$functionDefinition.start.getElement());
 		for (CFGBreakNode n: $Function::rets)
 			n.addBreakEdge($g.getEndNode());
+		for (Pair<String, CFGBreakNode> gotoPair: $Function::gotos) {
+			CFGNode labelNode =
+				$Function::labels.get(gotoPair.getFirst());
+			gotoPair.getSecond().addBreakEdge(labelNode);
+		}
+		for (CFG cfg: $Function::unreachables)
+			if (cfg.getStartNode().getPredecessors().size() == 0) {
+				System.err.println("Unreachable:");
+				System.err.println(cfg.toStringGraph());
+				System.err.println("\n============");
+			}
+
 //		System.err.println($g.toStringGraph());
 	}
 	;
@@ -132,16 +155,19 @@ compoundStatement returns [CFG g]
 	boolean isBreak = false;
 }
 @after {
-	$g = cfgs.getFirst();
+	$g = cfgs.removeFirst();
 	$g.append(new CFGNode());
+
+	for (CFG cfg1: cfgs) {
+		if (cfg1.getStartNode().getPredecessors().size() == 0)
+			$Function::unreachables.add(cfg1);
+		else
+			System.err.println("Gak.");
+	}
 }
-	: ^(COMPOUND_STATEMENT (declaration |
-		fd=functionDefinition {cfgs.add($fd.g);} |
+	: ^(COMPOUND_STATEMENT (declaration | functionDefinition |
 		st=statement {
 			if (isBreak) {
-				System.err.println("Unreachable:");
-				XMLAlgo.outputXML($st.start.getElement());
-				System.err.println("\n============");
 				cfg = createCFG();
 				cfgs.add(cfg);
 				isBreak = false;
@@ -149,7 +175,6 @@ compoundStatement returns [CFG g]
 			if ($st.g.getEndNode() instanceof CFGBreakNode)
 				isBreak = true;
 			cfg.append($st.g);
-
 		})*)
 	;
 
@@ -282,7 +307,10 @@ statement returns [CFG g]
 	;
 
 labeledStatement returns [CFG g]
-	: ^(LABEL IDENTIFIER statement)		{ $g = $statement.g; }
+	: ^(LABEL IDENTIFIER statement)		{
+		$g = $statement.g;
+		$Function::labels.put($IDENTIFIER.text, $g.getStartNode());
+	}
 	| ^('case' expression statement)	{ $g = $statement.g; }
 	| ^('default' statement)		{ $g = $statement.g; }
 	;
@@ -342,7 +370,7 @@ scope Iteration;
 	$Iteration::breaks = new HashSet<CFGBreakNode>();
 	$Iteration::conts = new HashSet<CFGNode>();
 	CFGNode breakNode = null;
-	CFGNode contNode;
+	CFGNode contNode = null;
 }
 @after {
 	/* backpatch */
@@ -351,32 +379,57 @@ scope Iteration;
 }
 	: ^('while' expression statement) {
 		/* fork */
-		CFGNode n1 = new CFGBranchNode($expression.start.getElement());
+		contNode = new CFGBranchNode($expression.start.getElement());
 		/* junction */
 		breakNode = new CFGNode();
-		$g.setStartNode(n1);
+		$g.setStartNode(contNode);
 		$g.setEndNode(breakNode);
-		n1.addEdge($statement.g.getStartNode());
 		/* true */
-		$statement.g.getEndNode().addEdge(n1);
+		contNode.addEdge($statement.g.getStartNode());
+		$statement.g.getEndNode().addEdge(contNode);
 		/* false */
-		n1.addEdge(breakNode);
+		contNode.addEdge(breakNode);
 	}
 	| ^('do' statement expression) {
 		/* fork */
-		CFGNode n1 = new CFGBranchNode($expression.start.getElement());
+		contNode = new CFGBranchNode($expression.start.getElement());
 		/* junction */
 		breakNode = new CFGNode();
+
 		$g.setStartNode($statement.g.getStartNode());
 		$g.setEndNode(breakNode);
-		$statement.g.getEndNode().addEdge(n1);
+		$statement.g.getEndNode().addEdge(contNode);
 		/* true */
-		n1.addEdge($statement.g.getStartNode());
+		contNode.addEdge($statement.g.getStartNode());
 		/* false */
-		n1.addEdge(breakNode);
+		contNode.addEdge(breakNode);
 	}
 	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) ^(E3 e3=expression?) statement) {
+		CFGNode n1, n2;
+		if ($e1.g == null)
+			n1 = new CFGNode();
+		else
+			n1 = new CFGNode($e1.start.getElement());
+		$g.setStartNode(n1);
+		if ($e2.g == null)
+			n2 = new CFGNode();
+		else
+			n2 = new CFGBranchNode($e2.start.getElement());
+		if ($e3.g == null)
+			contNode = new CFGNode();
+		else
+			contNode = new CFGNode($e3.start.getElement());
+		n1.addEdge(n2);
+		contNode.addEdge(n2);
 		breakNode = new CFGNode();
+		$g.setEndNode(breakNode);
+		/* true */
+		n2.addEdge($statement.g.getStartNode());
+		/* false */
+		if ($e2.g != null)
+			n2.addEdge(breakNode);
+
+		$statement.g.getEndNode().addEdge(contNode);
 	}
 	;
 
@@ -388,9 +441,10 @@ jumpStatement returns [CFG g]
 	$g.setEndNode(n);
 }
 	: ^('goto' IDENTIFIER) {
+		$Function::gotos.add(
+			new Pair<String, CFGBreakNode>($IDENTIFIER.text, n));
 	}
-	| ^('goto' XU expression) {
-	}
+	| ^('goto' XU expression)
 	| 'continue' {
 		/* conts (opposing to breaks) are not there for switch,
 		   find deeper in the stack */
@@ -399,12 +453,8 @@ jumpStatement returns [CFG g]
 			a++;
 		$Iteration[-a]::conts.add(n);
 	}
-	| 'break' {
-		$Iteration::breaks.add(n);
-	}
-	| ^('return' expression?) {
-		$Function::rets.add(n);
-	}
+	| 'break' { $Iteration::breaks.add(n); }
+	| ^('return' expression?) { $Function::rets.add(n); }
 	;
 
 asmStatement returns [CFG g]
