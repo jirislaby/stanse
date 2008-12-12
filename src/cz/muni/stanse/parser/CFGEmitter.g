@@ -13,9 +13,10 @@ options {
 	ASTLabelType=StanseTree;
 }
 
-scope Iteration {
+scope IterSwitch {
 	Set<CFGBreakNode> breaks;
-	Set<CFGNode> conts;
+	Set<CFGBreakNode> conts;
+	Map<Integer, CFGNode> cases;
 }
 scope Function {
 	Set<CFGBreakNode> rets;
@@ -35,6 +36,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.dom4j.Element;
 
@@ -42,13 +44,6 @@ import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.XMLAlgo;
 }
 @members {
-	private CFGPart createCFG() {
-		CFGPart cfg = new CFGPart();
-		CFGNode n = new CFGNode();
-		cfg.setStartNode(n);
-		cfg.setEndNode(n);
-		return cfg;
-	}
 	private CFGPart createCFG(Element e) {
 		CFGPart cfg = new CFGPart();
 		CFGNode n = new CFGNode(e);
@@ -150,13 +145,12 @@ designator
 compoundStatement returns [CFGPart g]
 @init {
 	LinkedList<CFGPart> cfgs = new LinkedList<CFGPart>();
-	CFGPart cfg = createCFG();
+	CFGPart cfg = new CFGPart();
 	cfgs.add(cfg);
 	boolean isBreak = false;
 }
 @after {
 	$g = cfgs.removeFirst();
-	$g.append(new CFGNode());
 
 	for (CFGPart cfg1: cfgs) {
 		if (cfg1.getStartNode().getPredecessors().size() == 0)
@@ -168,7 +162,7 @@ compoundStatement returns [CFGPart g]
 	: ^(COMPOUND_STATEMENT (declaration | functionDefinition |
 		st=statement {
 			if (isBreak) {
-				cfg = createCFG();
+				cfg = new CFGPart();
 				cfgs.add(cfg);
 				isBreak = false;
 			}
@@ -311,8 +305,16 @@ labeledStatement returns [CFGPart g]
 		$g = $statement.g;
 		$Function::labels.put($IDENTIFIER.text, $g.getStartNode());
 	}
-	| ^('case' expression statement)	{ $g = $statement.g; }
-	| ^('default' statement)		{ $g = $statement.g; }
+	| ^('case' expression statement) {
+		$g = $statement.g;
+		Element labelElement = $expression.start.getElement();
+		int label = Integer.decode(labelElement.node(0).getText());
+		$IterSwitch::cases.put(label, $g.getStartNode());
+	}
+	| ^('default' statement) {
+		$g = $statement.g;
+		$IterSwitch::cases.put(Integer.MIN_VALUE, $g.getStartNode());
+	}
 	;
 
 expressionStatement returns [CFGPart g]
@@ -327,10 +329,11 @@ expressionStatement returns [CFGPart g]
 	;
 
 selectionStatement returns [CFGPart g]
-scope Iteration;
-@init {
-	$Iteration::breaks = new HashSet<CFGBreakNode>();
-}
+	: selectionStatementIf		{ $g = $selectionStatementIf.g; }
+	| selectionStatementSwitch	{ $g = $selectionStatementSwitch.g; }
+	;
+
+selectionStatementIf returns [CFGPart g]
 	: ^('if' expression s1=statement s2=statement?) {
 		$g = new CFGPart();
 		/* fork */
@@ -349,33 +352,48 @@ scope Iteration;
 		} else
 			n1.addEdge(n2);
 	}
-	| ^('switch' expression statement) {
+	;
+
+selectionStatementSwitch returns [CFGPart g]
+scope IterSwitch;
+@init {
+	$IterSwitch::breaks = new HashSet<CFGBreakNode>();
+	$IterSwitch::cases = new TreeMap<Integer, CFGNode>();
+}
+	: ^('switch' expression statement) {
 		$g = new CFGPart();
-		CFGNode n = new CFGNode($expression.start.getElement());
+		CFGBranchNode n = new CFGBranchNode($expression.start.
+				getElement());
 		$g.setStartNode(n);
-		$g.setEndNode(n);
-		$g.append($statement.g);
-//		System.err.println("---");
-		for (CFGBreakNode c: $Iteration::breaks) {
-			c.addBreakEdge($g.getEndNode());
-//			System.err.println(c);
-		}
+		CFGNode breakNode = new CFGNode();
+		$g.setEndNode(breakNode);
+		Set <Integer> labels = $IterSwitch::cases.keySet();
+		for (Integer label: labels)
+			n.addEdge($IterSwitch::cases.get(label), label);
+		/* add default if not present */
+		if (!labels.contains(Integer.MIN_VALUE))
+			n.addEdge(breakNode, Integer.MIN_VALUE);
+		/* backpatch break */
+		for (CFGBreakNode c: $IterSwitch::breaks)
+			c.addBreakEdge(breakNode);
 	}
 	;
 
 iterationStatement returns [CFGPart g]
-scope Iteration;
+scope IterSwitch;
 @init {
 	$g = new CFGPart();
-	$Iteration::breaks = new HashSet<CFGBreakNode>();
-	$Iteration::conts = new HashSet<CFGNode>();
+	$IterSwitch::breaks = new HashSet<CFGBreakNode>();
+	$IterSwitch::conts = new HashSet<CFGBreakNode>();
 	CFGNode breakNode = null;
 	CFGNode contNode = null;
 }
 @after {
 	/* backpatch */
-	for (CFGBreakNode n: $Iteration::breaks)
+	for (CFGBreakNode n: $IterSwitch::breaks)
 		n.addBreakEdge(breakNode);
+	for (CFGBreakNode n: $IterSwitch::conts)
+		n.addBreakEdge(contNode);
 }
 	: ^('while' expression statement) {
 		/* fork */
@@ -449,11 +467,11 @@ jumpStatement returns [CFGPart g]
 		/* conts (opposing to breaks) are not there for switch,
 		   find deeper in the stack */
 		int a = 0;
-		while ($Iteration[-a]::conts == null)
+		while ($IterSwitch[-a]::conts == null)
 			a++;
-		$Iteration[-a]::conts.add(n);
+		$IterSwitch[-a]::conts.add(n);
 	}
-	| 'break' { $Iteration::breaks.add(n); }
+	| 'break' { $IterSwitch::breaks.add(n); }
 	| ^('return' expression?) { $Function::rets.add(n); }
 	;
 

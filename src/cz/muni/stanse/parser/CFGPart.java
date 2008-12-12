@@ -58,6 +58,11 @@ public class CFGPart {
      * @param g a CFG to append at the end of this instance
      */
     public void append(CFGPart g) {
+	if (getEndNode() == null) {
+	    setStartNode(g.getStartNode());
+	    setEndNode(g.getEndNode());
+	    return;
+	}
 	getEndNode().addEdge(g.getStartNode());
 	setEndNode(g.getEndNode());
     }
@@ -67,6 +72,11 @@ public class CFGPart {
      * @param n a CFGNode to append at the end of this CFG
      */
     public void append(CFGNode n) {
+	if (getEndNode() == null) {
+	    setStartNode(n);
+	    setEndNode(n);
+	    return;
+	}
 	getEndNode().addEdge(n);
 	setEndNode(n);
     }
