@@ -16,7 +16,7 @@ import org.dom4j.Document;
 public final class CParser {
     private InputStream stream;
     private Document xmlDocument;
-    private Set<FunctionCFG> CFGs;
+    private Set<CFG> CFGs;
 
     private CParser() { }
 
@@ -28,7 +28,7 @@ public final class CParser {
 	return xmlDocument;
     }
 
-    public Set<FunctionCFG> getCFGs() {
+    public Set<CFG> getCFGs() {
 	return Collections.unmodifiableSet(CFGs);
     }
 

@@ -4,7 +4,7 @@
  */
 package cz.muni.stanse.checker;
 
-import cz.muni.stanse.parser.FunctionCFG;
+import cz.muni.stanse.parser.CFG;
 
 import java.util.Set;
 import java.util.List;
@@ -54,7 +54,7 @@ public abstract class Checker {
      * @see cz.muni.stanse.checker#CheckerError
      *      cz.muni.stanse.checker#CheckerException
      */
-    public abstract List<CheckerError> check(final Set<FunctionCFG> CFGs)
+    public abstract List<CheckerError> check(final Set<CFG> CFGs)
                         throws CheckerException;
 
     /**

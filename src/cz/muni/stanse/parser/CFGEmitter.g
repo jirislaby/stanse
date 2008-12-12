@@ -21,7 +21,7 @@ scope Function {
 	Set<CFGBreakNode> rets;
 	List<Pair<String, CFGBreakNode>> gotos;
 	Map<String, CFGNode> labels;
-	List<CFG> unreachables;
+	List<CFGPart> unreachables;
 }
 
 @header {
@@ -42,15 +42,15 @@ import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.XMLAlgo;
 }
 @members {
-	private CFG createCFG() {
-		CFG cfg = new CFG();
+	private CFGPart createCFG() {
+		CFGPart cfg = new CFGPart();
 		CFGNode n = new CFGNode();
 		cfg.setStartNode(n);
 		cfg.setEndNode(n);
 		return cfg;
 	}
-	private CFG createCFG(Element e) {
-		CFG cfg = new CFG();
+	private CFGPart createCFG(Element e) {
+		CFGPart cfg = new CFGPart();
 		CFGNode n = new CFGNode(e);
 		cfg.setStartNode(n);
 		cfg.setEndNode(n);
@@ -58,9 +58,9 @@ import cz.muni.stanse.utils.XMLAlgo;
 	}
 }
 
-translationUnit returns [Set<FunctionCFG> g]
+translationUnit returns [Set<CFG> g]
 @init {
-	$g = new LinkedHashSet<FunctionCFG>();
+	$g = new LinkedHashSet<CFG>();
 }
 	: ^(TRANSLATION_UNIT (externalDeclaration {
 		if ($externalDeclaration.g != null)
@@ -68,21 +68,21 @@ translationUnit returns [Set<FunctionCFG> g]
 	} )*)
 	;
 
-externalDeclaration returns [FunctionCFG g]
+externalDeclaration returns [CFG g]
 	: functionDefinition	{ $g=$functionDefinition.g; }
 	| declaration
 	;
 
-functionDefinition returns [FunctionCFG g]
+functionDefinition returns [CFG g]
 scope Function;
 @init {
 	$Function::rets = new HashSet<CFGBreakNode>();
 	$Function::labels = new HashMap<String, CFGNode>();
 	$Function::gotos = new LinkedList<Pair<String, CFGBreakNode>>();
-	$Function::unreachables = new LinkedList<CFG>();
+	$Function::unreachables = new LinkedList<CFGPart>();
 }
 	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator declaration* compoundStatement) {
-		$g = FunctionCFG.createFromCFG($compoundStatement.g,
+		$g = CFG.createFromCFGPart($compoundStatement.g,
 				$functionDefinition.start.getElement());
 		for (CFGBreakNode n: $Function::rets)
 			n.addBreakEdge($g.getEndNode());
@@ -91,7 +91,7 @@ scope Function;
 				$Function::labels.get(gotoPair.getFirst());
 			gotoPair.getSecond().addBreakEdge(labelNode);
 		}
-		for (CFG cfg: $Function::unreachables)
+		for (CFGPart cfg: $Function::unreachables)
 			if (cfg.getStartNode().getPredecessors().size() == 0) {
 				System.err.println("Unreachable:");
 				System.err.println(cfg.toStringGraph());
@@ -147,10 +147,10 @@ designator
 	| IDENTIFIER
 	;
 
-compoundStatement returns [CFG g]
+compoundStatement returns [CFGPart g]
 @init {
-	LinkedList<CFG> cfgs = new LinkedList<CFG>();
-	CFG cfg = createCFG();
+	LinkedList<CFGPart> cfgs = new LinkedList<CFGPart>();
+	CFGPart cfg = createCFG();
 	cfgs.add(cfg);
 	boolean isBreak = false;
 }
@@ -158,7 +158,7 @@ compoundStatement returns [CFG g]
 	$g = cfgs.removeFirst();
 	$g.append(new CFGNode());
 
-	for (CFG cfg1: cfgs) {
+	for (CFGPart cfg1: cfgs) {
 		if (cfg1.getStartNode().getPredecessors().size() == 0)
 			$Function::unreachables.add(cfg1);
 		else
@@ -296,7 +296,7 @@ pointer
 
 /* STATEMENTS */
 
-statement returns [CFG g]
+statement returns [CFGPart g]
 	: labeledStatement	{ $g=$labeledStatement.g; }
 	| compoundStatement	{ $g=$compoundStatement.g; }
 	| expressionStatement	{ $g=$expressionStatement.g; }
@@ -306,7 +306,7 @@ statement returns [CFG g]
 	| asmStatement		{ $g=$asmStatement.g; }
 	;
 
-labeledStatement returns [CFG g]
+labeledStatement returns [CFGPart g]
 	: ^(LABEL IDENTIFIER statement)		{
 		$g = $statement.g;
 		$Function::labels.put($IDENTIFIER.text, $g.getStartNode());
@@ -315,7 +315,7 @@ labeledStatement returns [CFG g]
 	| ^('default' statement)		{ $g = $statement.g; }
 	;
 
-expressionStatement returns [CFG g]
+expressionStatement returns [CFGPart g]
 	: ^(EXPRESSION_STATEMENT expression?) {
 		if ($expression.g == null) {
 			/* emptyStatement is a child */
@@ -326,13 +326,13 @@ expressionStatement returns [CFG g]
 	}
 	;
 
-selectionStatement returns [CFG g]
+selectionStatement returns [CFGPart g]
 scope Iteration;
 @init {
 	$Iteration::breaks = new HashSet<CFGBreakNode>();
 }
 	: ^('if' expression s1=statement s2=statement?) {
-		$g = new CFG();
+		$g = new CFGPart();
 		/* fork */
 		CFGNode n1 = new CFGBranchNode($expression.start.getElement());
 		/* junction */
@@ -350,7 +350,7 @@ scope Iteration;
 			n1.addEdge(n2);
 	}
 	| ^('switch' expression statement) {
-		$g = new CFG();
+		$g = new CFGPart();
 		CFGNode n = new CFGNode($expression.start.getElement());
 		$g.setStartNode(n);
 		$g.setEndNode(n);
@@ -363,10 +363,10 @@ scope Iteration;
 	}
 	;
 
-iterationStatement returns [CFG g]
+iterationStatement returns [CFGPart g]
 scope Iteration;
 @init {
-	$g = new CFG();
+	$g = new CFGPart();
 	$Iteration::breaks = new HashSet<CFGBreakNode>();
 	$Iteration::conts = new HashSet<CFGNode>();
 	CFGNode breakNode = null;
@@ -433,9 +433,9 @@ scope Iteration;
 	}
 	;
 
-jumpStatement returns [CFG g]
+jumpStatement returns [CFGPart g]
 @init {
-	$g = new CFG();
+	$g = new CFGPart();
 	CFGBreakNode n = new CFGBreakNode($jumpStatement.start.getElement());
 	$g.setStartNode(n);
 	$g.setEndNode(n);
@@ -457,14 +457,14 @@ jumpStatement returns [CFG g]
 	| ^('return' expression?) { $Function::rets.add(n); }
 	;
 
-asmStatement returns [CFG g]
+asmStatement returns [CFGPart g]
 	: ASM		{ $g = createCFG($asmStatement.start.getElement()); }	;
 
 /* STATEMENTS END */
 
 /* EXPRESSIONS */
 
-expression returns [CFG g]
+expression returns [CFGPart g]
 @init {
 	$g = createCFG($expression.start.getElement());
 }
