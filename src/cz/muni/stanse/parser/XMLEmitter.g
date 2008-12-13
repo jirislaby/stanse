@@ -48,7 +48,7 @@ import org.dom4j.Element;
 	private Element newElement(String text) {
 		return xmlFactory.createElement(text);
 	}
-	private Element newElement(String text, CommonTree start) {
+	private Element newElement(String text, StanseTree start) {
 		return newElement(text).
 			addAttribute("bl", String.valueOf(start.getLine())).
 			addAttribute("bc", String.valueOf(start.getCharPositionInLine()));
@@ -59,7 +59,7 @@ import org.dom4j.Element;
 		return e;
 	}
 	private Element newListElement(List<Element> els, String text,
-			CommonTree start) {
+			StanseTree start) {
 		Element e = newElement(text, start);
 		els.add(e);
 		return e;

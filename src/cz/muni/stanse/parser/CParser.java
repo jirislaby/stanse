@@ -43,7 +43,7 @@ public final class CParser {
 	GNUCaParser.translationUnit_return parserRet = parser.translationUnit();
 	StanseTree parserTree = (StanseTree)parserRet.getTree();
 
-	CommonTreeNodeStream nodes = new CommonTreeNodeStream(parserTree);
+	CommonTreeNodeStream nodes = new CommonTreeNodeStream(adaptor, parserTree);
 	nodes.setTokenStream(tokens);
 
 	XMLEmitter xmlEmitter = new XMLEmitter(nodes);

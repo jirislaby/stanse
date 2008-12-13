@@ -7,6 +7,7 @@
 package cz.muni.stanse.parser;
 
 import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.Token;
 
 import org.dom4j.Element;
@@ -16,6 +17,14 @@ public class StanseTree extends CommonTree {
 
     public StanseTree(Token t) {
 	super(t);
+    }
+
+    public StanseTree(StanseTree node) {
+	super(node);
+    }
+
+    public Tree dupNode() {
+	return new StanseTree(this);
     }
 
     public void setElement(Element e) {
