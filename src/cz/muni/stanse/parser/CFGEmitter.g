@@ -151,12 +151,14 @@ compoundStatement returns [CFGPart g]
 }
 @after {
 	$g = cfgs.removeFirst();
+	/* add emptytStatement node if empty */
+	if ($g.getStartNode() == null)
+		$g.append(new CFGNode((Element)$compoundStatement.start.
+					getElement().node(0)));
 
 	for (CFGPart cfg1: cfgs) {
 		if (cfg1.getStartNode().getPredecessors().size() == 0)
 			$Function::unreachables.add(cfg1);
-		else
-			System.err.println("Gak.");
 	}
 }
 	: ^(COMPOUND_STATEMENT (declaration | functionDefinition |
@@ -308,8 +310,14 @@ labeledStatement returns [CFGPart g]
 	| ^('case' expression statement) {
 		$g = $statement.g;
 		Element labelElement = $expression.start.getElement();
-		int label = Integer.decode(labelElement.node(0).getText());
-		$IterSwitch::cases.put(label, $g.getStartNode());
+		try {
+			int label = Integer.decode(labelElement.node(0).
+					getText());
+			$IterSwitch::cases.put(label, $g.getStartNode());
+		} catch (NumberFormatException e) {
+			System.err.println("labeledStatement -- NaN: " +
+					labelElement.node(0).getText());
+		}
 	}
 	| ^('default' statement) {
 		$g = $statement.g;

@@ -370,6 +370,9 @@ compoundStatement returns [Element e]
 	: ^(COMPOUND_STATEMENT (d=declaration {els.add($d.e);}|fd=functionDefinition{els.add($fd.e);}|st=statement{els.add($st.e);})*) {
 		$e = newElement("compoundStatement", $compoundStatement.start);
 		addAllElements($e, els);
+		if (els.size() == 0)
+			$e.addElement("emptyStatement");
+		$compoundStatement.start.setElement($e);
 		popUntil(".");
 	}
 	;
