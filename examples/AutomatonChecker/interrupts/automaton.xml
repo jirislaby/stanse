@@ -4,28 +4,22 @@
                  desc="Checks the interrupts enable/disable discipline" />
 
     <pattern name="disableInterrupts">
-        <expressionStatement>
-            <functionCall>
-                <id>cli</id>
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>cli</id>
+        </functionCall>
     </pattern>
 
     <pattern name="enableInterrupts">
-        <expressionStatement>
-            <functionCall>
-                <id>sti</id>
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>sti</id>
+        </functionCall>
     </pattern>
 
     <pattern name="enableInterrupts">
-        <expressionStatement>
-            <functionCall>
-                <id>restore_flags</id>
-                <ignore />
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>restore_flags</id>
+            <ignore />
+        </functionCall>
     </pattern>
 
     <start state="Enabled" />

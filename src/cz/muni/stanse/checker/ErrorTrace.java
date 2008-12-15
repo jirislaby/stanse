@@ -87,7 +87,7 @@ public final class ErrorTrace {
         for (Trinity<CFGNode,String,CFG> node : getErrorTrace())
             result += "        - <" + node.getFirst().toString() + "," +
                                       node.getSecond() + "," +
-                                      node.getSecond().toString() + ">\n";
+                                      node.getThird().toString() + ">\n";
 
         return result;
     }
