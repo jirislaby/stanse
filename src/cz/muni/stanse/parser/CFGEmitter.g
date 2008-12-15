@@ -82,8 +82,10 @@ scope Function;
 	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator declaration* compoundStatement) {
 		$g = CFG.createFromCFGPart($compoundStatement.g,
 				$functionDefinition.start.getElement());
+		CFGNode endNode = new CFGNode();
+		$g.append(endNode);
 		for (CFGBreakNode n: $Function::rets)
-			n.addBreakEdge($g.getEndNode());
+			n.addBreakEdge(endNode);
 		for (Pair<String, CFGBreakNode> gotoPair: $Function::gotos) {
 			CFGNode labelNode =
 				$Function::labels.get(gotoPair.getFirst());
