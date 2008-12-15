@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -44,6 +45,8 @@ import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.XMLAlgo;
 }
 @members {
+	private Random random = new Random();
+
 	private CFGPart createCFG(Element e) {
 		CFGPart cfg = new CFGPart();
 		CFGNode n = new CFGNode(e);
@@ -310,14 +313,16 @@ labeledStatement returns [CFGPart g]
 	| ^('case' expression statement) {
 		$g = $statement.g;
 		Element labelElement = $expression.start.getElement();
+		int label;
 		try {
-			int label = Integer.decode(labelElement.node(0).
-					getText());
-			$IterSwitch::cases.put(label, $g.getStartNode());
+			if (labelElement.getName().equals("intConst"))
+				label = Integer.decode(labelElement.getText());
+			else
+				label = random.nextInt();
 		} catch (NumberFormatException e) {
-			System.err.println("labeledStatement -- NaN: " +
-					labelElement.node(0).getText());
+			label = random.nextInt();
 		}
+		$IterSwitch::cases.put(label, $g.getStartNode());
 	}
 	| ^('default' statement) {
 		$g = $statement.g;
@@ -375,7 +380,7 @@ scope IterSwitch;
 		$g.setStartNode(n);
 		CFGNode breakNode = new CFGNode();
 		$g.setEndNode(breakNode);
-		Set <Integer> labels = $IterSwitch::cases.keySet();
+		Set<Integer> labels = $IterSwitch::cases.keySet();
 		for (Integer label: labels)
 			n.addEdge($IterSwitch::cases.get(label), label);
 		/* add default if not present */
