@@ -66,82 +66,64 @@
 
 
     <pattern name="lock">
-        <expressionStatement>
-            <functionCall>
-                <id>lock</id>
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>lock</id>
+        </functionCall>
     </pattern>
 
     <pattern name="lock">
-        <expressionStatement>
-            <functionCall>
-                <id>lock</id>
-                <var name="A" />
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>lock</id>
+            <var name="A" />
+        </functionCall>
     </pattern>
 
     <pattern name="lock">
-        <expressionStatement>
-            <functionCall>
-                <id>lock_kernel</id>
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>lock_kernel</id>
+        </functionCall>
     </pattern>
 
 
 
     <pattern name="unlock">
-        <expressionStatement>
-            <functionCall>
-                <id>unlock</id>
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>unlock</id>
+        </functionCall>
     </pattern>
 
     <pattern name="unlock">
-        <expressionStatement>
-            <functionCall>
-                <id>unlock</id>
-                <var name="A" />
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>unlock</id>
+            <var name="A" />
+        </functionCall>
     </pattern>
 
     <pattern name="unlock">
-        <expressionStatement>
-            <functionCall>
-                <id>unlock_kernel</id>
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>unlock_kernel</id>
+        </functionCall>
     </pattern>
 
 
 
     <pattern name="islocked">
-        <expressionStatement>
-            <functionCall>
-                <id>islocked</id>
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>islocked</id>
+        </functionCall>
     </pattern>
 
     <pattern name="islocked">
-        <expressionStatement>
-            <functionCall>
-                <id>islocked</id>
-                <var name="A" />
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>islocked</id>
+            <var name="A" />
+        </functionCall>
     </pattern>
 
     <pattern name="islocked">
-        <expressionStatement>
-            <functionCall>
-                <id>locked_kernel</id>
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>locked_kernel</id>
+        </functionCall>
     </pattern>
 
 </automaton>

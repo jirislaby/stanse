@@ -66,13 +66,8 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" destdir="build">
             <src path="src"/>
-	    <exclude name="cz/muni/stanse/automatonchecker/*"/>
 	    <exclude name="cz/muni/stanse/ownershipchecker/*"/>
 	    <exclude name="cz/muni/stanse/props/LoggerConfigurator.java"/>
-	    <exclude name="cz/muni/stanse/scvgui/*"/>
-	    <exclude name="cz/muni/stanse/main/SCV.java"/>
-	    <exclude name="cz/muni/stanse/utils/CFGvisitor.java"/>
-	    <exclude name="cz/muni/stanse/utils/CFGTraversal.java"/>
             <classpath refid="project.classpath"/>
         </javac>
 	<!-- Copy .properties to the build directory, so they get included in the Jar -->

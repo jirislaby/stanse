@@ -9,11 +9,10 @@
 package cz.muni.stanse.scvgui;
 
 import cz.muni.stanse.checker.CheckerError;
-import cz.muni.stanse.checker.CheckerErrorAlgo;
 import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.parser.ControlFlowGraph;
-import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.parser.CFG;
+import cz.muni.stanse.utils.Trinity;
 
 import java.awt.Component;
 import java.io.File;
@@ -97,9 +96,12 @@ public class ErrorForm extends javax.swing.JFrame {
      * @param bottom bottom control flow graph node
      * @param bottom top control flow graph node
      */
-    private void highlightElement(ControlFlowGraph cfg, CFGNode bottom, CFGNode top) {
-        //System.out.println("--- highLight: <" + bottom.toString() + "," + top.toString() + ">");
-        Element element = cfg.getEdgeElement(top, bottom);
+    private void highlightElement(CFGNode node) {
+        final Element element = node.getElement();
+// TODO: remove this check, when ALL the CFG nodes will contain related XML
+//       element. 
+if (element == null)
+    return;
         sourceAndXMLWindow.setMappingXMLToSource(true); // TODO: check the checkbox in the menu.
         treeXML.goToNode(element);
         TreeSelectionEvent event = new TreeSelectionEvent(element,null, false, null, null);
@@ -157,22 +159,20 @@ public class ErrorForm extends javax.swing.JFrame {
     }
     
     private void moveInTrace(MoveInTraceDirection direction) {
-        if(actualTrace == null || actualTrace.getErrorTrace().size() < 2) {
+        if(actualTrace == null || actualTrace.getErrorTrace().size() < 1) {
             setButtonEnabled(jButtonNext,false);
             setButtonEnabled(jButtonPrevious,false);
             setButtonEnabled(jButtonFirst,false);
             setButtonEnabled(jButtonLast,false);
             return;
-        } else if(actualTrace.getErrorTrace().size() == 2) {
+        } else if(actualTrace.getErrorTrace().size() == 1) {
             setButtonEnabled(jButtonNext,false);
             setButtonEnabled(jButtonPrevious,false);
             setButtonEnabled(jButtonFirst,false);
             setButtonEnabled(jButtonLast,false);
             
-            highlightElement(actualTrace.getErrorTrace().get(actualIndex).
-                                getFirst().getCFG(),
-                             actualTrace.getErrorTrace().get(1).getFirst(),
-                             actualTrace.getErrorTrace().get(0).getFirst());
+            highlightElement(actualTrace.getErrorTrace().
+                             get(actualIndex).getFirst());
             return;
         }
         
@@ -196,7 +196,7 @@ public class ErrorForm extends javax.swing.JFrame {
                 
             case up:
                 // we are at the top - no move
-                if(actualIndex == 1) {
+                if(actualIndex == 0) {
                     bottom = actualIndex;
                     top = actualIndex - 1;
                 }
@@ -224,10 +224,8 @@ public class ErrorForm extends javax.swing.JFrame {
                 
         }
 
-        highlightElement(actualTrace.getErrorTrace().get(actualIndex).
-                            getFirst().getCFG(),
-                         actualTrace.getErrorTrace().get(bottom).getFirst(),
-                         actualTrace.getErrorTrace().get(top).getFirst());
+        highlightElement(actualTrace.getErrorTrace().
+                         get(actualIndex).getFirst());
         
         
         // we are at the last node
@@ -238,7 +236,7 @@ public class ErrorForm extends javax.swing.JFrame {
             setButtonEnabled(jButtonLast,false);
         }
         // we are at the first node
-        else if(actualIndex == 1) {
+        else if(actualIndex == 0) {
             setButtonEnabled(jButtonNext,true);
             setButtonEnabled(jButtonPrevious,false);
             setButtonEnabled(jButtonFirst,false);
@@ -261,10 +259,10 @@ public class ErrorForm extends javax.swing.JFrame {
 
             //CheckerErrorQueries.findFirstNode(actualTrace, node)
             
-            this.actualIndex = (actualTrace.getErrorTrace().size() > 1) ? 1 : 0;
+            this.actualIndex = 0;
             // tady je chyba
             moveInTrace(MoveInTraceDirection.none);
-            jTextPane1.setText(buildActualCFGEdgeDescription());
+            jTextPane1.setText(buildActualCFGNodeDescription());
         } else {
             setButtonEnabled(jButtonNext,false);
             setButtonEnabled(jButtonPrevious,false);
@@ -431,7 +429,7 @@ public class ErrorForm extends javax.swing.JFrame {
     private void jComboTracesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboTracesActionPerformed
         selectErrorTrace(jComboTraces.getSelectedItem());
         if(jComboError.getSelectedItem() instanceof CheckerError) {
-            jTextPane1.setText(buildActualCFGEdgeDescription());
+            jTextPane1.setText(buildActualCFGNodeDescription());
             buildTraceGraphPictureAndShowIt();
         }
     }//GEN-LAST:event_jComboTracesActionPerformed
@@ -439,23 +437,23 @@ public class ErrorForm extends javax.swing.JFrame {
     private void jButtonLastActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLastActionPerformed
         actualIndex = actualTrace.getErrorTrace().size() - 1;
         moveInTrace(MoveInTraceDirection.none);
-        jTextPane1.setText(buildActualCFGEdgeDescription());
+        jTextPane1.setText(buildActualCFGNodeDescription());
     }//GEN-LAST:event_jButtonLastActionPerformed
     
     private void jButtonFirstActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFirstActionPerformed
-        actualIndex = 1;
+        actualIndex = 0;
         moveInTrace(MoveInTraceDirection.none);
-        jTextPane1.setText(buildActualCFGEdgeDescription());//GEN-LAST:event_jButtonFirstActionPerformed
+        jTextPane1.setText(buildActualCFGNodeDescription());//GEN-LAST:event_jButtonFirstActionPerformed
     }                                            
     
     private void jButtonNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonNextActionPerformed
         moveInTrace(MoveInTraceDirection.down);
-        jTextPane1.setText(buildActualCFGEdgeDescription());//GEN-LAST:event_jButtonNextActionPerformed
+        jTextPane1.setText(buildActualCFGNodeDescription());//GEN-LAST:event_jButtonNextActionPerformed
     }                                           
     
     private void jButtonPreviousActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPreviousActionPerformed
         moveInTrace(MoveInTraceDirection.up);
-        jTextPane1.setText(buildActualCFGEdgeDescription());//GEN-LAST:event_jButtonPreviousActionPerformed
+        jTextPane1.setText(buildActualCFGNodeDescription());//GEN-LAST:event_jButtonPreviousActionPerformed
     }                                               
     
     private void jComboErrorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboErrorActionPerformed
@@ -465,7 +463,7 @@ public class ErrorForm extends javax.swing.JFrame {
             
             loadTracesList((CheckerError) jComboError.getSelectedItem());
             
-            jTextPane1.setText(buildActualCFGEdgeDescription());
+            jTextPane1.setText(buildActualCFGNodeDescription());
             buildTraceGraphPictureAndShowIt();
 
         } else {
@@ -483,7 +481,7 @@ public class ErrorForm extends javax.swing.JFrame {
     
     private final void buildTraceGraphPictureAndShowIt() {
         final GraphViz gv = new GraphViz();
-        gv.graph.append(CheckerErrorToDot.run(actualTrace,false));
+        gv.graph.append(CheckerErrorToDot.run(actualTrace));
         try {
             final File out = File.createTempFile("SCVGraph",".png");
             out.deleteOnExit();
@@ -495,18 +493,13 @@ public class ErrorForm extends javax.swing.JFrame {
         }
     }
 
-    private final String buildActualCFGEdgeDescription() {
+    private final String buildActualCFGNodeDescription() {
 
-        final Pair<CFGNode,String> startNode =
-                actualTrace.getErrorTrace().get(
-                                      (actualIndex == 0) ? 0 : actualIndex - 1);
-        final Pair<CFGNode,String> endNode =
+        final Trinity<CFGNode,String,CFG> node =
                 actualTrace.getErrorTrace().get(actualIndex);
-        return "<" + startNode.getFirst().toString() + ','
-                   + startNode.getSecond() + ">\n" +
-               "    === here should be shown related C statement ===\n" +
-               "<" + endNode.getFirst().toString() + ','
-                   + endNode.getSecond() + '>';
+        return "<" + node.getFirst().toString() + ','
+                   + node.getSecond() + ","
+                   + node.getThird().toString() + ">\n";
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

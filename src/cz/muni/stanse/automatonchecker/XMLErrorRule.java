@@ -261,7 +261,7 @@ final class XMLErrorRule {
                 final Vector<Boolean> flags =
                     new Vector<Boolean>(symbol.getSecond().size());
                 for (int i = 0; i < symbol.getSecond().size(); ++i)
-                    flags.add(symbol.getSecond().get(i).equals(locationVarName));
+                   flags.add(symbol.getSecond().get(i).equals(locationVarName));
                 result.add(new Pair< Integer,Vector<Boolean> >
                               (statesSymbolTable.get(symbol.getFirst()),flags));
             }

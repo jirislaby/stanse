@@ -1,61 +1,57 @@
 package cz.muni.stanse.scvgui;
 
 import cz.muni.stanse.checker.ErrorTrace;
-import cz.muni.stanse.checker.CheckerErrorAlgo;
-import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CFG;
 import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.utils.Trinity;
+
 import org.dom4j.Element;
 import java.util.HashSet;
 
 
 final class CheckerErrorToDot {
 
-    public static String run(final ErrorTrace trace, boolean showEntryAndExit) {
+    public static String run(final ErrorTrace trace) {
 
         final StringBuilder output = new StringBuilder();
-        String label = "";
-        String color = "";
         final HashSet<CFGNode> nodesToDo = new HashSet<CFGNode>();
         final HashSet<CFGNode> nodesDone = new HashSet<CFGNode>();
         final CFGNode errNode = trace.getErrorTrace().get(
                                    trace.getErrorTrace().size() - 1).getFirst();
-        final ControlFlowGraph cfg = errNode.getCFG();
+        final HashSet<CFGNode> traceNodes = new HashSet<CFGNode>();
+        for (Trinity<CFGNode,String,CFG> nodeID : trace.getErrorTrace())
+            traceNodes.add(nodeID.getFirst());
 
-        output.append("digraph CFG { \n")
-                .append("   node [shape=circle, fixedsize=true, height=0.4]; \n")
-                .append("   node [fontsize=12]; \n");
+        output.append("digraph CFG { \n");
         
-        nodesToDo.add(showEntryAndExit ? cfg.getEntryNode() : cfg.getStartNode());
+        nodesToDo.add(trace.getErrorTrace().get(0).getThird().getStartNode());
         
         while (!nodesToDo.isEmpty()) {
-            CFGNode node = nodesToDo.iterator().next();
+            final CFGNode node = nodesToDo.iterator().next();
             nodesToDo.remove(node);
-
-            label = "\"" + node.toString() + "\"";
-           
-            color = "black";
-            if (CheckerErrorAlgo.findFirstNode(trace,node) != null) {
-                color = "green";
-                if (errNode == node) color += ",style = filled";
-            }
-                        
-            output.append("   ")
-                    .append(node.getNumber())
-                    .append(" [label=")
-                    .append(label)
-                    .append(",color=")
-                    .append(color)
-                    .append("]; \n");
             
+            final boolean inTrace = traceNodes.contains(node);
+
+            output.append("   ")
+                  .append(node.getNumber())
+                  .append(" [label=")
+                  .append("\"" + node.getNumber() + ": "
+                               + elementToString(node.getElement()) + "\"")
+                  .append(",color=")
+                  .append((inTrace) ? "green" + ((errNode == node)?
+                                                        ",style = filled" :
+                                                        "") :
+                                      "black")
+                  .append("]; \n");
+
             nodesDone.add(node);
             
             for (CFGNode succ : node.getSuccessors()) { 
-                if (!showEntryAndExit && succ.equals(cfg.getExitNode()))
-                    continue;
-                
-                output.append("   " + edgeToDot(trace,cfg,node,succ) + "; \n");
-                
-                if (!nodesDone.contains(succ)) nodesToDo.add(succ);
+                output.append("   " + edgeToDot(trace,node,succ,inTrace,
+                                                traceNodes.contains(succ)) +
+                              "; \n");
+                if (!nodesDone.contains(succ))
+                    nodesToDo.add(succ);
             }
         }
         
@@ -66,39 +62,19 @@ final class CheckerErrorToDot {
     
     
     private static String edgeToDot(final ErrorTrace trace,
-                                    final ControlFlowGraph cfg,
-                                    final CFGNode from, final CFGNode to) {
-
-        final String color =
-                (CheckerErrorAlgo.findFirstEdge(trace,from,to) == null) ?
-                    "black" : "green";
-
-        final Element element = cfg.getEdgeElement(from, to);
-        final StringBuilder label = new StringBuilder();
-        label.append("\"").append(elementToString(element)).append("\"");
-        
-        if (cfg.getEdgeConditionType(from, to) != null) {
-            if (cfg.getEdgeConditionType(from, to) == true) {
-                label.append(",fontcolor=blue");
-            } else {
-                label.append(",fontcolor=red");
-            }
-        }
-
-        final StringBuilder output = new StringBuilder(); 
-        output.append(from.getNumber())
-                .append(" -> ")
-                .append(to.getNumber())
-                .append(" [color=")
-                .append(color)
-                .append(",label=")
-                .append(label)
-                .append("]");
-        
-        return output.toString();
+                                    final CFGNode from, final CFGNode to,
+                                    final boolean fromIsInTrace,
+                                    final boolean toIsInTrace) {
+        return from.getNumber() + " -> " + to.getNumber() + " [color=" +
+               ((fromIsInTrace && toIsInTrace) ? "green" : "black") +
+               ",label=\"\"]";
     }     
     
     private static String elementToString(final Element element) {
+// TODO: remove this check, when ALL the CFG nodes will contain related XML
+//       element. 
+if (element == null)
+    return "null";
         if (element.getName().equals("functionCall")) {
             final Element e = (Element) element.node(0);   
             return e.getText()+"()";

@@ -10,12 +10,12 @@ final class PatternLocation {
 
     // package-private section
 
-    PatternLocation(final cz.muni.stanse.parser.ControlFlowGraph cfg,
-                    final cz.muni.stanse.parser.CFGEdge referenceEdge,
+    PatternLocation(final cz.muni.stanse.parser.CFG cfg,
+                    final cz.muni.stanse.parser.CFGNode referenceNode,
                     final Collection<TransitionRule> transitionRules,
                     final Collection<ErrorRule> errorRules) {
-        CFG = cfg;
-        CFGreferenceEdge = referenceEdge;
+        this.cfg = cfg;
+        CFGreferenceNode = referenceNode;
         processedAutomataStates = new HashSet<AutomatonState>();
         unprocessedAutomataStates = new LinkedList<AutomatonState>();
         deliveredAutomataStates = new HashSet<AutomatonState>();
@@ -28,8 +28,8 @@ final class PatternLocation {
         return successorPatternLocations;
     }
 
-    cz.muni.stanse.parser.CFGEdge getCFGreferenceEdge() {
-        return CFGreferenceEdge;
+    cz.muni.stanse.parser.CFGNode getCFGreferenceNode() {
+        return CFGreferenceNode;
     }
 
     void setInitialAutomataStates(
@@ -50,8 +50,8 @@ final class PatternLocation {
         return deliveredAutomataStates;
     }
 
-    public cz.muni.stanse.parser.ControlFlowGraph getCFG() {
-        return CFG;
+    public cz.muni.stanse.parser.CFG getCFG() {
+        return cfg;
     }
 
     LinkedList<ErrorRule> getErrorRules() {
@@ -111,8 +111,8 @@ final class PatternLocation {
         return transitionRules;
     }
 
-    private final cz.muni.stanse.parser.ControlFlowGraph CFG;
-    private final cz.muni.stanse.parser.CFGEdge CFGreferenceEdge;
+    private final cz.muni.stanse.parser.CFG cfg;
+    private final cz.muni.stanse.parser.CFGNode CFGreferenceNode;
     private final HashSet<AutomatonState> processedAutomataStates;
     private final LinkedList<AutomatonState> unprocessedAutomataStates;
     private final HashSet<AutomatonState> deliveredAutomataStates;

@@ -1,6 +1,7 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.checker.CheckerError;
+import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.utils.CFGTraversal;
 
 import java.util.HashMap;
@@ -11,7 +12,7 @@ final class CheckerErrorBuilder {
     // package-private section
 
     static LinkedList<CheckerError>
-    buildErrorList(final HashMap<cz.muni.stanse.parser.CFGEdge,PatternLocation>
+    buildErrorList(final HashMap<cz.muni.stanse.parser.CFGNode,PatternLocation>
                                                        edgeLocationDictionary) {
         final LinkedList<CheckerError> errorsList =
                                                  new LinkedList<CheckerError>();
@@ -26,36 +27,39 @@ final class CheckerErrorBuilder {
 
     private static LinkedList<CheckerError> buildErrorsInLocation(
             final PatternLocation location,
-            final HashMap<cz.muni.stanse.parser.CFGEdge,PatternLocation>
+            final HashMap<cz.muni.stanse.parser.CFGNode,PatternLocation>
                                                        edgeLocationDictionary) {
         final LinkedList<CheckerError> errorsList =
             new LinkedList<CheckerError>();
 
         for (ErrorRule rule : location.getErrorRules())
-            if (rule.checkForError(location.getProcessedAutomataStates()))
-                errorsList.add(
-                    new CheckerError(
-                            getMsgPrefix(location.getCFG()) +
-                                rule.getErrorDescription(),
-                            getMsgPrefix(location.getCFG()) +
-                                rule.getErrorDescription(),
-                            rule.getErrorLevel(),
-                            CFGTraversal.traverseCFGToDepthBackward(
-                                location.getCFG(),
-                                location.getCFGreferenceEdge().getFrom(),
-                                (new ErrorTracesListCreator(
-                                        rule,edgeLocationDictionary,
-                                        location.getCFGreferenceEdge(),
-                                        location.getCFG()))
-                            ).GetTraceErrorsList())
-                    );
+            if (rule.checkForError(location.getProcessedAutomataStates())) {
+                final LinkedList<ErrorTrace> traces =
+                    CFGTraversal.traverseCFGPathsBackward(
+                        location.getCFG(),location.getCFGreferenceNode(),
+                        (new ErrorTracesListCreator(rule,edgeLocationDictionary,
+                                      location.getCFGreferenceNode(),
+                                      location.getCFG()))).getErrorTracesList();
+                final String shortDesc = getMsgPrefix(location.getCFG()) +
+                                         rule.getErrorDescription() +
+                                         getMsgPostfix(traces.size());
+                // TODO: full description should contains more info then short
+                //       one ... :-)
+                final String fullDesc = shortDesc;
+                errorsList.add(new CheckerError(shortDesc,fullDesc,
+                                                rule.getErrorLevel(),traces));
+            }
 
         return errorsList;
     }
 
     private static String getMsgPrefix(
-            final cz.muni.stanse.parser.ControlFlowGraph cfg) {
+            final cz.muni.stanse.parser.CFG cfg) {
         return "In function: '" + cfg.getFunctionName() + "()' : ";
+    }
+
+    private static String getMsgPostfix(final int numTraces) {
+        return " [num traces: " + numTraces + "]";
     }
 
     private CheckerErrorBuilder() {

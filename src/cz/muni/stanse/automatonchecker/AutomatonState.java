@@ -41,7 +41,7 @@ final class AutomatonState {
     public int hashCode() {
         final int PRIME = 31;
         int result = 1;
-        result = PRIME * result + ((CFG == null) ? 0 : CFG.hashCode());
+        result = PRIME * result + ((cfg == null) ? 0 : cfg.hashCode());
 
         result = PRIME * result + ((automatonIDs == null) ?
                                                    0 : automatonIDs.hashCode());
@@ -52,23 +52,23 @@ final class AutomatonState {
 
     // package-private section
 
-    AutomatonState(final cz.muni.stanse.parser.ControlFlowGraph CFG,
+    AutomatonState(final cz.muni.stanse.parser.CFG cfg,
                    final int symbolID, final Vector<Integer> automatonIDs) {
-        this.CFG = CFG;
+        this.cfg = cfg;
         this.symbolID = symbolID;
         this.automatonIDs = automatonIDs;
     }
 
-    AutomatonState(final cz.muni.stanse.parser.ControlFlowGraph CFG,
+    AutomatonState(final cz.muni.stanse.parser.CFG cfg,
                    final int symbolID, final Integer automatonID) {
-        this.CFG = CFG;
+        this.cfg = cfg;
         this.symbolID = symbolID;
         this.automatonIDs = new Vector<Integer>(1);
         automatonIDs.add(automatonID);
     }
 
-    cz.muni.stanse.parser.ControlFlowGraph getCFG() {
-        return CFG;
+    cz.muni.stanse.parser.CFG getCFG() {
+        return cfg;
     }
 
     /**
@@ -115,7 +115,7 @@ final class AutomatonState {
     /**
      * @brief
      */
-    private final cz.muni.stanse.parser.ControlFlowGraph CFG;
+    private final cz.muni.stanse.parser.CFG cfg;
     /**
      * @brief
      */

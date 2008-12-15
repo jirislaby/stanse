@@ -1,6 +1,5 @@
 /**
  * @brief defines public abstract class Checker. 
- * @author xtrtik2
  */
 package cz.muni.stanse.checker;
 

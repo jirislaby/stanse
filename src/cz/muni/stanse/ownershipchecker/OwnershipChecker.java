@@ -13,9 +13,9 @@ import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;
-import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.utils.Trinity;
 import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CFG;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -39,7 +39,7 @@ import org.jgrapht.traverse.DepthFirstIterator;
  */
 public final class OwnershipChecker extends Checker {
     
-    //private Vector<ControlFlowGraph> cfgs = new Vector<ControlFlowGraph>();
+    //private Vector<CFG> cfgs = new Vector<CFG>();
     
     private Map<CFGNode, Map<String, PointerOwnership>> nodesWithOwnerships;
 
@@ -51,7 +51,7 @@ public final class OwnershipChecker extends Checker {
     
     private FunctionOwnershipInfo ownershipInfo;
     
-    private Vector<ControlFlowGraph> topologicalSortedCG;
+    private Vector<CFG> topologicalSortedCG;
     
     // obsahuje vzdy posledni uzel na spravne vetvi pred sloucenim dvou vetvi
     private HashSet<CFGNode> nodeOnCorrectTrace;
@@ -68,9 +68,9 @@ public final class OwnershipChecker extends Checker {
         return "OwnershipChecker";
     }
             
-    public List<CheckerError> check(final Set<ControlFlowGraph> cfgs) {
+    public List<CheckerError> check(final Set<CFG> cfgs) {
         return convertAllErrorsFromOld(
-                    checkOld( new Vector<ControlFlowGraph>(cfgs) ) );
+                    checkOld( new Vector<CFG>(cfgs) ) );
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -103,18 +103,19 @@ public final class OwnershipChecker extends Checker {
         return result;
     }
 
-    private List< Pair<CFGNode,String> > convertAllCFGNodesFromOld(
+    private List< Trinity<CFGNode,String,CFG> > convertAllCFGNodesFromOld(
                                                  final ErrorTraceOld oldTrace) {
-        final LinkedList< Pair<CFGNode,String> > result =
-                new LinkedList< Pair<CFGNode,String> >();
+        final LinkedList< Trinity<CFGNode,String,CFG> > result =
+                new LinkedList< Trinity<CFGNode,String,CFG> >();
         for (CFGNode node : oldTrace)
-            result.addLast( new Pair<CFGNode,String>(node,"No description " +
-                                                          "provided. Sorry.") );
+            result.addLast( new Trinity<CFGNode,String,CFG>(node,
+                                    "No description provided. Sorry.",
+                                    topologicalSortedCG.firstElement()) );
 
         return result;
     }
 
-    private Set<CheckerErrorOld> checkOld(Vector<ControlFlowGraph> cfgs) {
+    private Set<CheckerErrorOld> checkOld(Vector<CFG> cfgs) {
         //nacteni globalnich ukazatelu
         Element rootElement = cfgs.elementAt(0).getFunctionDefinition().getDocument().getRootElement();
         for (Object declaration : rootElement.selectNodes("declaration")) {
@@ -137,7 +138,7 @@ public final class OwnershipChecker extends Checker {
         topologicalSortedCG = topologicalSortedCallGraph(cfgs);
         
         // intraproceduralni analyza
-        for (ControlFlowGraph cfg : topologicalSortedCG) {
+        for (CFG cfg : topologicalSortedCG) {
             functionName = cfg.getFunctionName();
             Element fdElement = cfg.getFunctionDefinition();
             Element fdDeclarator = (Element) fdElement.selectSingleNode("declarator");
@@ -191,7 +192,7 @@ public final class OwnershipChecker extends Checker {
                 functions.get(fun).setChanged(false);
             }
 
-            for (ControlFlowGraph cfg : topologicalSortedCG) {
+            for (CFG cfg : topologicalSortedCG) {
                 functionName = cfg.getFunctionName();
                 if (functionsToAnalyze.contains(functionName)) {
                     functionName = cfg.getFunctionName();
@@ -231,7 +232,7 @@ public final class OwnershipChecker extends Checker {
         return errors;
     }
 
-    private void /*Set<CheckerErrorOld>*/ check(ControlFlowGraph cfg, boolean inter) {
+    private void /*Set<CheckerErrorOld>*/ check(CFG cfg, boolean inter) {
         Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         nodesWithOwnerships = new HashMap<CFGNode, Map<String, PointerOwnership>>();
         nodeOnCorrectTrace = new HashSet<CFGNode>();
@@ -292,7 +293,7 @@ public final class OwnershipChecker extends Checker {
      * @param cfg control flow graf funkce, která bude analyzována
      * @param inter true odpovídá interprocedurální analýze, false odpovídá intraprocedurální analýze
      */
-    private void /*Set<CheckerErrorOld>*/ forwardAnalysis(ControlFlowGraph cfg, boolean inter) {
+    private void /*Set<CheckerErrorOld>*/ forwardAnalysis(CFG cfg, boolean inter) {
         Stack<CFGNode> nodesToDo = new Stack<CFGNode>();
         Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
         
@@ -815,7 +816,7 @@ public final class OwnershipChecker extends Checker {
      * @param cfg control flow graf funkce, která bude analyzována
      * @param inter true odpovídá interprocedurální analýze, false odpovídá intraprocedurální analýze
      */
-    private void /*Set<CheckerErrorOld>*/ backwardAnalysis(ControlFlowGraph cfg, boolean inter) {
+    private void /*Set<CheckerErrorOld>*/ backwardAnalysis(CFG cfg, boolean inter) {
         Stack<CFGNode> nodesToDo = new Stack<CFGNode>();
         Stack<CFGNode> nodesDone = new Stack<CFGNode>();
         Set<CheckerErrorOld> errors = new HashSet<CheckerErrorOld>();
@@ -1169,14 +1170,14 @@ public final class OwnershipChecker extends Checker {
      * vrací control flow grafy v reverzním topologickém pořadí podle call grafu
      * @return vector obsahující control flow grafy
      */
-    private Vector<ControlFlowGraph> topologicalSortedCallGraph(
-                                             final Vector<ControlFlowGraph> cfgs) {
+    private Vector<CFG> topologicalSortedCallGraph(
+                                             final Vector<CFG> cfgs) {
     // funkce pouzije silne souvisle komponenty z call grafu, ktere by meli byt topologicky usporadane a urci navic nejake poradi
     // zpracovani jednotlivych funkci ze techto ss-komponent (v soucasnosti DFS)
         
         List<Element> rootElements = new ArrayList<Element>();
         
-        for(ControlFlowGraph cfg : cfgs) {
+        for(CFG cfg : cfgs) {
             rootElements.add(cfg.getFunctionDefinition());
         }
 
@@ -1227,18 +1228,18 @@ public final class OwnershipChecker extends Checker {
             }
         }
         
-        Vector<ControlFlowGraph> topol = new Vector<ControlFlowGraph>();
-        Vector<ControlFlowGraph> topol2 = new Vector<ControlFlowGraph>();
+        Vector<CFG> topol = new Vector<CFG>();
+        Vector<CFG> topol2 = new Vector<CFG>();
         
         topol.setSize(topologicalSortedCG.size());
         
-        for(ControlFlowGraph cfg : cfgs) {
+        for(CFG cfg : cfgs) {
             // vytvori se poradi CFG podle urceneho poradi funkci
             topol.set(topologicalSortedCG.indexOf(cfg.getFunctionName()), cfg);
         }
         
         // musi se vyhazel prazdna misto po funkcich C, napr. free, malloc apod., tj. tech ktere nemaji CFG
-        for(ControlFlowGraph cfg : topol) {
+        for(CFG cfg : topol) {
             if (cfg != null) topol2.add(cfg);
         }
         

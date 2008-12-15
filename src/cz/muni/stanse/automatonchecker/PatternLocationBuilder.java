@@ -1,6 +1,7 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CFG;
+import cz.muni.stanse.parser.CFGNode;
 import cz.muni.stanse.utils.CFGTraversal;
 
 import java.util.LinkedList;
@@ -11,20 +12,20 @@ final class PatternLocationBuilder {
 
     // package-private section
 
-    static HashMap<CFGEdge,PatternLocation>
-    buildPatternLocations(final Set<ControlFlowGraph> setOfAllCFGs,
+    static HashMap<CFGNode,PatternLocation>
+    buildPatternLocations(final Set<CFG> setOfAllCFGs,
                           final XMLAutomatonDefinition automatonDefinition)
                                        throws XMLAutomatonSyntaxErrorException {
-        final HashMap<CFGEdge,PatternLocation> edgeLocationDictionary =
-            new HashMap<CFGEdge,PatternLocation>();
+        final HashMap<CFGNode,PatternLocation> nodeLocationDictionary =
+            new HashMap<CFGNode,PatternLocation>();
 
-        for (final ControlFlowGraph cfg : setOfAllCFGs) {
-            final HashMap<CFGEdge,PatternLocation> locationsForCurrentCFG =
+        for (final CFG cfg : setOfAllCFGs) {
+            final HashMap<CFGNode,PatternLocation> locationsForCurrentCFG =
                         buildPatternLocationsForOneCFG(cfg,automatonDefinition);
-            edgeLocationDictionary.putAll(locationsForCurrentCFG);
+            nodeLocationDictionary.putAll(locationsForCurrentCFG);
         }
 
-        return edgeLocationDictionary;
+        return nodeLocationDictionary;
     }
 
     // private section
@@ -32,37 +33,36 @@ final class PatternLocationBuilder {
     private PatternLocationBuilder() {
     }
 
-    private static HashMap<CFGEdge,PatternLocation>
-    buildPatternLocationsForOneCFG(final ControlFlowGraph cfg,
+    private static HashMap<CFGNode,PatternLocation>
+    buildPatternLocationsForOneCFG(final CFG cfg,
                                final XMLAutomatonDefinition automatonDefinition)
                                        throws XMLAutomatonSyntaxErrorException {
         final PatternLocationCreator patternLocationCreator =
             new PatternLocationCreator(cfg,automatonDefinition);
-        final HashMap<CFGEdge,PatternLocation> edgeLocationsDictionary =
+        final HashMap<CFGNode,PatternLocation> nodeLocationsDictionary =
             CFGTraversal.traverseCFGToBreadthForward(cfg,cfg.getStartNode(),
                     patternLocationCreator).getCreatedPatternLocations();
 
-        edgeLocationsDictionary.get(cfg.getEntryEdge()).
+        nodeLocationsDictionary.get(cfg.getStartNode()).
             setInitialAutomataStates(getInitialStates(
                             cfg,automatonDefinition.getStartSymbol(),
                             patternLocationCreator.getNumDistinctLocations()));
-        edgeLocationsDictionary.get(cfg.getExitEdge()).
+        nodeLocationsDictionary.get(cfg.getEndNode()).
             getErrorRules().addAll(getExitErrorRules(
                             automatonDefinition.getExitErrorRules(),
                             patternLocationCreator.getNumDistinctLocations()));
 
-        for (final PatternLocation location : edgeLocationsDictionary.values())
+        for (final PatternLocation location : nodeLocationsDictionary.values())
             CFGTraversal.traverseCFGToBreadthForward(cfg,
-                location.getCFGreferenceEdge().getTo(),
-                new ConnectPatternLocationToSuccessors(
-                        location,edgeLocationsDictionary));
+                        location.getCFGreferenceNode(),
+                        new ConnectPatternLocationToSuccessors(
+                                location,nodeLocationsDictionary));
 
-        return edgeLocationsDictionary;
+        return nodeLocationsDictionary;
     }
 
-    private static LinkedList<AutomatonState> getInitialStates(
-                          final ControlFlowGraph cfg, final int startSymbol,
-                          final int numDistinctLocations) {
+    private static LinkedList<AutomatonState> getInitialStates(final CFG cfg,
+                        final int startSymbol, final int numDistinctLocations) {
         final LinkedList<AutomatonState> initStates =
             new LinkedList<AutomatonState>();
 

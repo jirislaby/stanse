@@ -1,5 +1,6 @@
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.parser.CFGNode;
 import java.util.HashMap;
 
 final class ConnectPatternLocationToSuccessors extends
@@ -8,18 +9,18 @@ final class ConnectPatternLocationToSuccessors extends
     // public section
 
     @Override
-    public boolean visit(final CFGEdge edge, final org.dom4j.Element element) {
-        final PatternLocation edgeLocation = 
-            getEdgeLocationsDictionary().get(edge);
+    public boolean visit(final CFGNode node, final org.dom4j.Element element) {
+        final PatternLocation nodeLocation = 
+            getNodeLocationsDictionary().get(node);
 
-        if (edgeLocation == null)
+        if (nodeLocation == null || nodeLocation == getReferenceLocation())
             return true;
 
-        assert(edge == edgeLocation.getCFGreferenceEdge());
+        assert(node == nodeLocation.getCFGreferenceNode());
         if (!getReferenceLocation().getSuccessorPatternLocations().
-                contains(edgeLocation))
+                contains(nodeLocation))
             getReferenceLocation().getSuccessorPatternLocations().
-                add(edgeLocation);
+                add(nodeLocation);
 
         return false;
     }
@@ -28,10 +29,10 @@ final class ConnectPatternLocationToSuccessors extends
 
     ConnectPatternLocationToSuccessors(
                         final PatternLocation location,
-                        final HashMap<CFGEdge,PatternLocation> dictionary) {
+                        final HashMap<CFGNode,PatternLocation> dictionary) {
         super();
         referenceLocation = location;
-        edgeLocationsDictionary = dictionary;
+        nodeLocationsDictionary = dictionary;
     }
 
     // private section
@@ -40,10 +41,10 @@ final class ConnectPatternLocationToSuccessors extends
         return referenceLocation; 
     }
 
-    private HashMap<CFGEdge,PatternLocation> getEdgeLocationsDictionary() {
-        return edgeLocationsDictionary; 
+    private HashMap<CFGNode,PatternLocation> getNodeLocationsDictionary() {
+        return nodeLocationsDictionary; 
     }
 
     private PatternLocation referenceLocation;
-    private HashMap<CFGEdge,PatternLocation> edgeLocationsDictionary;
+    private HashMap<CFGNode,PatternLocation> nodeLocationsDictionary;
 }

@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 
-import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CFG;
 
 /**
  * @brief Static checker which is able to detect locking problems, interrupts
@@ -71,16 +71,15 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      */
     @Override
     public List<cz.muni.stanse.checker.CheckerError>
-    check(final Set<cz.muni.stanse.parser.ControlFlowGraph> CFGs)
-                                       throws XMLAutomatonSyntaxErrorException {
-        final HashMap<cz.muni.stanse.parser.CFGEdge,PatternLocation>
-            edgeLocationDictionary = PatternLocationBuilder.
+    check(final Set<CFG> CFGs) throws XMLAutomatonSyntaxErrorException {
+        final HashMap<cz.muni.stanse.parser.CFGNode,PatternLocation>
+            nodeLocationDictionary = PatternLocationBuilder.
                    buildPatternLocations(CFGs,getXMLAutomatonDefinition());
 
         final LinkedList<PatternLocation> progressQueue =
                 new LinkedList<PatternLocation>();
-        for (final ControlFlowGraph cfg : CFGs)
-            progressQueue.add(edgeLocationDictionary.get(cfg.getEntryEdge()));
+        for (final CFG cfg : CFGs)
+            progressQueue.add(nodeLocationDictionary.get(cfg.getStartNode()));
 
         while (!progressQueue.isEmpty()) {
             final PatternLocation currentLocation = progressQueue.remove();
@@ -92,7 +91,7 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                 progressQueue.addAll(
                         currentLocation.getSuccessorPatternLocations());
         }
-        return CheckerErrorBuilder.buildErrorList(edgeLocationDictionary);
+        return CheckerErrorBuilder.buildErrorList(nodeLocationDictionary);
     }
 
     // private section

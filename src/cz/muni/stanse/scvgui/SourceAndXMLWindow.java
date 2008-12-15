@@ -8,11 +8,11 @@
 package cz.muni.stanse.scvgui;
 
 import cz.muni.stanse.automatonchecker.AutomatonChecker;
-import cz.muni.stanse.ownershipchecker.OwnershipChecker;
+//import cz.muni.stanse.ownershipchecker.OwnershipChecker;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CFG;
 import cz.muni.stanse.parser.CParser;
 import cz.muni.stanse.utils.Pair;
 
@@ -70,6 +70,7 @@ import javax.swing.SwingWorker;
 public class SourceAndXMLWindow extends JPanel {
     
     private Document documentXML = null; // XML reprezentace kodu
+    private Set<CFG> cfgs = null; // CFG reprezentace kodu
     private File sourceFile = null; // zdrojovy kod
     private boolean mappingXMLtoSource = false;
     private TreeSelectionListener treeXMLMappingListener; // pri kliku na XML se zvyrazni odpovidajici zdrojovy text (pokud je to v artibutech uzlu)
@@ -470,11 +471,13 @@ public class SourceAndXMLWindow extends JPanel {
         Cursor originalCursor = getCursor();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         CParser parser = new CParser(new FileInputStream(sourceFile));
-        documentXML = parser.run();
+        parser.run();
+        documentXML = parser.getXMLDocument();
         documentXML.setName(sourceFile.getName());
         if(documentXML != null) {
             treeXML.setXMLDocument(documentXML);
         }
+        cfgs = parser.getCFGs();
         setCursor(originalCursor);
     }
     
@@ -516,18 +519,18 @@ public class SourceAndXMLWindow extends JPanel {
         }
     }
     
-    private static final HashSet<ControlFlowGraph> buildCFGsFromXML(
+    private static final HashSet<CFG> buildCFGsFromXML(
                                                    final Document documentXML) {
         if (documentXML == null)
             return null;
 
-	final HashSet<ControlFlowGraph> cfgs = new HashSet<ControlFlowGraph>();
+	final HashSet<CFG> cfgs = new HashSet<CFG>();
 	{
 	    final Element rootElement = documentXML.getRootElement();
 	    List<Element> edecls = rootElement.elements("externalDeclaration");
 	    for (Element e: edecls)
 		if (e.element("functionDefinition") != null)
-		    cfgs.add(new ControlFlowGraph(e.element("functionDefinition")));
+		    cfgs.add(new CFG(e.element("functionDefinition")));
 	}
 
         return cfgs;
@@ -550,13 +553,13 @@ public class SourceAndXMLWindow extends JPanel {
             logger.error("Error: No automaton XML file provided.");
             return;
         }
-
-        final HashSet<ControlFlowGraph> cfgs = buildCFGsFromXML(documentXML);
+/*
+        final HashSet<CFG> cfgs = buildCFGsFromXML(documentXML);
         if (cfgs == null) {
             logger.error("Error: No CFG provided.");
             return;
         }
-
+*/
         final LinkedList<CheckerError> errors = new LinkedList<CheckerError>(); 
         for (File f : configFiles)
             try {
@@ -577,21 +580,18 @@ public class SourceAndXMLWindow extends JPanel {
      * Run ownership checker.
      */
     public void checkOwnership() {
-
-        final HashSet<ControlFlowGraph> cfgs = buildCFGsFromXML(documentXML);
+/*
+        final HashSet<CFG> cfgs = buildCFGsFromXML(documentXML);
         if (cfgs == null)
             return;
-
+*/
         final LinkedList<CheckerError> errors = new LinkedList<CheckerError>(); 
         try {
-            errors.addAll(
-                (new OwnershipChecker()).check(cfgs)
-            );
+            //errors.addAll((new OwnershipChecker()).check(cfgs));
         }
         catch(Exception e) {
             logger.error(getStackTrace(e));
         }
-        //List<CheckerError> errors = (new OwnershipChecker()).check(cfgs);
 
         jTextPaneOutput.setText(convertCheckerErrorListToString(errors));
         ErrorForm errorForm = new ErrorForm(errors, treeXML, this);
@@ -631,7 +631,7 @@ public class SourceAndXMLWindow extends JPanel {
     /*
     private static void addFunctionsToChecker(Checker checker, Document document) {
         
-        //for every functionDefinition add ControlFlowGraph to checker
+        //for every functionDefinition add CFG to checker
         Element rootElement = document.getRootElement();
         for (int i = 0, size = rootElement.nodeCount(); i < size; i++) {
             Node node = rootElement.node(i);
@@ -639,7 +639,7 @@ public class SourceAndXMLWindow extends JPanel {
                 Element element = (Element) node;
                 
                 if (element.getName().equals("functionDefinition")) {
-                    checker.addCFG(new ControlFlowGraph(element));
+                    checker.addCFG(new CFG(element));
                 }
             }
         }

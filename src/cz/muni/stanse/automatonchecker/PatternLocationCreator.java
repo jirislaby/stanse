@@ -1,5 +1,6 @@
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.parser.CFGNode;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.LinkedList;
@@ -11,7 +12,12 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
     // public section
 
     @Override
-    public boolean visit(final CFGEdge edge, final org.dom4j.Element element) {
+    public boolean visit(final CFGNode node, final org.dom4j.Element element) {
+
+// TODO: remove this check, when ALL the CFG nodes will contain related XML
+//       element. 
+{if (element == null) return true;}
+
         final Vector<XMLPattern> XMLpatterns =
             getXMLAutomatonDefinition().getXMLpatterns();
         for (int i = 0; i < XMLpatterns.size(); ++i) {
@@ -23,8 +29,8 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
                 if (automatonID == null)
                     getAutomataIDs().put(matchResult.getSecond(),
                                          automatonID = getUniqueAutomatonID());
-                getCreatedPatternLocations().put(edge,
-                        createPatternLocation(i,edge,automatonID) );
+                getCreatedPatternLocations().put(node,
+                        createPatternLocation(i,node,automatonID) );
                 break;
             }
         }
@@ -34,12 +40,12 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
     // package-private section
 
     PatternLocationCreator(
-            final cz.muni.stanse.parser.ControlFlowGraph cfg,
+            final cz.muni.stanse.parser.CFG cfg,
             final XMLAutomatonDefinition XMLdefinition) {
         super();
-        CFG = cfg;
+        this.cfg = cfg;
         automatonDefinition = XMLdefinition;
-        createdPatternLocations = new HashMap<CFGEdge,PatternLocation>();
+        createdPatternLocations = new HashMap<CFGNode,PatternLocation>();
 
         automataIDs = new HashMap<PatternVariablesAssignment,Integer>();
 
@@ -49,7 +55,7 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
         createExitLocation();
     }
 
-    HashMap<CFGEdge,PatternLocation> getCreatedPatternLocations() {
+    HashMap<CFGNode,PatternLocation> getCreatedPatternLocations() {
         return createdPatternLocations; 
     }
 
@@ -60,21 +66,21 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
     // private section
 
     private void createEntryLocation() {
-        final CFGEdge edge = getCFG().getEntryEdge();
-        getCreatedPatternLocations().put(edge,
-            new PatternLocation(getCFG(),edge,new LinkedList<TransitionRule>(),
+        final CFGNode node = getCFG().getStartNode();
+        getCreatedPatternLocations().put(node,
+            new PatternLocation(getCFG(),node,new LinkedList<TransitionRule>(),
                                 new LinkedList<ErrorRule>()));
     }
 
     private void createExitLocation() {
-        final CFGEdge edge = getCFG().getExitEdge();
-        getCreatedPatternLocations().put(edge,
-            new PatternLocation(getCFG(),edge,new LinkedList<TransitionRule>(),
+        final CFGNode node = getCFG().getEndNode();
+        getCreatedPatternLocations().put(node,
+            new PatternLocation(getCFG(),node,new LinkedList<TransitionRule>(),
                                 new LinkedList<ErrorRule>()));
     }
 
     private PatternLocation createPatternLocation(final int patternIndex,
-                                    final CFGEdge edge, final int automatonID) {
+                                    final CFGNode node, final int automatonID) {
         final LinkedList<TransitionRule> transitionRules =
                 new LinkedList<TransitionRule>();
         for (final XMLTransitionRule XMLtransitionRule :
@@ -88,11 +94,11 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
                                        getXMLerrorRulesForPattern(patternIndex))
             errorRules.add(new ErrorRule(XMLerrorRule,automatonID));
 
-        return new PatternLocation(getCFG(),edge,transitionRules,errorRules);
+        return new PatternLocation(getCFG(),node,transitionRules,errorRules);
     }
 
-    private cz.muni.stanse.parser.ControlFlowGraph getCFG() {
-        return CFG;
+    private cz.muni.stanse.parser.CFG getCFG() {
+        return cfg;
     }
 
     private XMLAutomatonDefinition getXMLAutomatonDefinition() {
@@ -108,9 +114,9 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
         return patternAutomataCounter++;
     }
 
-    private final cz.muni.stanse.parser.ControlFlowGraph CFG;
+    private final cz.muni.stanse.parser.CFG cfg;
     private final XMLAutomatonDefinition automatonDefinition;
-    private final HashMap<CFGEdge,PatternLocation> createdPatternLocations;
+    private final HashMap<CFGNode,PatternLocation> createdPatternLocations;
     private final HashMap<PatternVariablesAssignment,Integer> automataIDs;
     private int patternAutomataCounter; 
 }

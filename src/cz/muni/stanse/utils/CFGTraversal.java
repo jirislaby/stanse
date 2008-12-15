@@ -1,69 +1,59 @@
 package cz.muni.stanse.utils;
 
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
+import java.util.Collections;
 
+import cz.muni.stanse.parser.CFG;
 import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.parser.ControlFlowGraph;
 
 // Node followers --------------------------------------------------------------
 
-abstract class CFGEdgeFollowers { 
-    abstract LinkedList<CFGEdge> get(final CFGEdge edge);
-    abstract LinkedList<CFGEdge> get(final CFGNode node);
+abstract class CFGNodeFollowers { 
+    abstract List<CFGNode> get(final CFGNode node);
 }
 
-final class ForwardCFGEdgeFollowers extends CFGEdgeFollowers {
-    ForwardCFGEdgeFollowers() { super(); }
+final class ForwardCFGNodeFollowers extends CFGNodeFollowers {
+    ForwardCFGNodeFollowers() { super(); }
     @Override
-    LinkedList<CFGEdge> get(final CFGEdge edge) { return get(edge.getTo()); }
-    LinkedList<CFGEdge> get(final CFGNode node) {
-        final LinkedList<CFGEdge> edges = new LinkedList<CFGEdge>();
-        for (CFGNode nod : node.getSuccessors())
-            edges.add(CFGEdge.getInstance(node,nod));
-        return edges;
-    }
+    List<CFGNode> get(final CFGNode node) { return node.getSuccessors(); }
 }
 
-final class BackwardCFGEdgeFollowers extends CFGEdgeFollowers {
-    BackwardCFGEdgeFollowers() { super(); }
+final class BackwardCFGNodeFollowers extends CFGNodeFollowers {
+    BackwardCFGNodeFollowers() { super(); }
     @Override
-    LinkedList<CFGEdge> get(final CFGEdge edge) { return get(edge.getFrom()); }
-    LinkedList<CFGEdge> get(final CFGNode node) {
-        final LinkedList<CFGEdge> edges = new LinkedList<CFGEdge>();
-        for (CFGNode nod : node.getPredecessors())
-            edges.add(CFGEdge.getInstance(nod,node));
-        return edges;
-    }
+    List<CFGNode> get(final CFGNode node) { return node.getPredecessors(); }
 }
 
 // Traversation container ------------------------------------------------------
 
-abstract class CFGTraversationContainer {
-    abstract void insert(final CFGEdge edge);
-    abstract CFGEdge remove();
+abstract class CFGTraversationContainer<T> {
+    abstract void insert(final T node);
+    abstract T remove();
     abstract boolean isEmpty();
 }
 
-final class CFGTraversationQueue extends CFGTraversationContainer {
-    CFGTraversationQueue() { super(); queue = new LinkedList<CFGEdge>(); }
+final class CFGTraversationQueue<T> extends CFGTraversationContainer<T> {
+    CFGTraversationQueue() { super(); queue = new LinkedList<T>(); }
 
-    void insert(final CFGEdge edge) { queue.add(edge); }
-    CFGEdge remove() { return queue.remove(); }
+    void insert(final T obj) { queue.add(obj); }
+    T remove() { return queue.remove(); }
     boolean isEmpty() { return queue.isEmpty(); }
 
-    private final LinkedList<CFGEdge> queue;
+    private final LinkedList<T> queue;
 }
 
-final class CFGTraversationStack extends CFGTraversationContainer {
-    CFGTraversationStack() { super(); stack = new Stack<CFGEdge>(); }
+final class CFGTraversationStack<T> extends CFGTraversationContainer<T> {
+    CFGTraversationStack() { super(); stack = new Stack<T>(); }
 
-    void insert(final CFGEdge edge) { stack.push(edge); }
-    CFGEdge remove() { return stack.pop(); }
+    void insert(final T obj) { stack.push(obj); }
+    T remove() { return stack.pop(); }
     boolean isEmpty() { return stack.isEmpty(); }
 
-    private final Stack<CFGEdge> stack;
+    private final Stack<T> stack;
 }
 
 // CFG traversal itself --------------------------------------------------------
@@ -73,65 +63,110 @@ public final class CFGTraversal {
     // public section
 
     public static <T extends CFGvisitor>
-    T traverseCFGToBreadthForward(final ControlFlowGraph cfg,
+    T traverseCFGToBreadthForward(final CFG cfg,
                                   final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
-                    new ForwardCFGEdgeFollowers(),
-                    new CFGTraversationQueue(),
+                    new ForwardCFGNodeFollowers(),
+                    new CFGTraversationQueue<CFGNode>(),
                     visitor);
         return visitor;        
     }
 
     public static <T extends CFGvisitor>
-    T traverseCFGToBreadthBackward(final ControlFlowGraph cfg,
+    T traverseCFGToBreadthBackward(final CFG cfg,
                                    final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
-                    new BackwardCFGEdgeFollowers(),
-                    new CFGTraversationQueue(),
+                    new BackwardCFGNodeFollowers(),
+                    new CFGTraversationQueue<CFGNode>(),
                     visitor);
         return visitor;        
     }
 
     public static <T extends CFGvisitor>
-    T traverseCFGToDepthForward(final ControlFlowGraph cfg,
+    T traverseCFGToDepthForward(final CFG cfg,
                                 final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
-                    new ForwardCFGEdgeFollowers(),
-                    new CFGTraversationStack(),
+                    new ForwardCFGNodeFollowers(),
+                    new CFGTraversationStack<CFGNode>(),
                     visitor);
         return visitor;        
     }
 
     public static <T extends CFGvisitor>
-    T traverseCFGToDepthBackward(final ControlFlowGraph cfg,
+    T traverseCFGToDepthBackward(final CFG cfg,
                                  final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
-                    new BackwardCFGEdgeFollowers(),
-                    new CFGTraversationStack(),
+                    new BackwardCFGNodeFollowers(),
+                    new CFGTraversationStack<CFGNode>(),
                     visitor);
+        return visitor;        
+    }
+
+    public static <T extends CFGPathVisitor>
+    T traverseCFGPathsForward(final CFG cfg,
+                              final CFGNode startNode,final T visitor) {
+        final LinkedList<CFGNode> path = new LinkedList<CFGNode>();
+        path.add(startNode);
+        traverseCFGPaths(cfg,path,
+                         new ForwardCFGNodeFollowers(),
+                         visitor,new HashSet<Pair<CFGNode,CFGNode>>());
+        return visitor;        
+    }
+
+    public static <T extends CFGPathVisitor>
+    T traverseCFGPathsBackward(final CFG cfg,
+                              final CFGNode startNode,final T visitor) {
+        final LinkedList<CFGNode> path = new LinkedList<CFGNode>();
+        path.add(startNode);
+        traverseCFGPaths(cfg,path,
+                         new BackwardCFGNodeFollowers(),
+                         visitor,new HashSet<Pair<CFGNode,CFGNode>>());
         return visitor;        
     }
 
     // private section
-    
-    private static void traverseCFG(final ControlFlowGraph cfg,
-                                    final CFGNode startNode,
-                                    final CFGEdgeFollowers nodeFollowers,
-                                    final CFGTraversationContainer nodesToVisit,
-                                    final CFGvisitor visitor) {
-        final HashSet<CFGEdge> visitedNodes = new HashSet<CFGEdge>();
-        for (CFGEdge currentEdgeFollower : nodeFollowers.get(startNode))
-            nodesToVisit.insert(currentEdgeFollower);
-        while (!nodesToVisit.isEmpty()) {
-            final CFGEdge currentEdge = nodesToVisit.remove();
-            if (visitedNodes.contains(currentEdge))
+
+    private static void traverseCFG(final CFG cfg,
+                           final CFGNode startNode,
+                           final CFGNodeFollowers nodeFollowers,
+                           final CFGTraversationContainer<CFGNode> nodesToVisit,
+                           final CFGvisitor visitor) {
+        final HashSet<CFGNode> visitedNodes = new HashSet<CFGNode>();
+        nodesToVisit.insert(startNode);
+        do {
+            final CFGNode currentNode = nodesToVisit.remove();
+            if (visitedNodes.contains(currentNode))
                 continue;
-            visitedNodes.add(currentEdge);
-            if (!visitor.visit(currentEdge,cfg.getEdgeElement(
-                                    currentEdge.getFrom(),currentEdge.getTo())))
+            visitedNodes.add(currentNode);
+            if (!visitor.visit(currentNode,currentNode.getElement()))
                 continue;
-            for (CFGEdge currentEdgeFollower : nodeFollowers.get(currentEdge))
-                nodesToVisit.insert(currentEdgeFollower);
+            for (CFGNode currentNodeFollower : nodeFollowers.get(currentNode))
+                nodesToVisit.insert(currentNodeFollower);
+        }
+        while (!nodesToVisit.isEmpty());
+    }
+
+    private static void traverseCFGPaths(final CFG cfg,
+                            final LinkedList<CFGNode> path,
+                            final CFGNodeFollowers nodeFollowers,
+                            final CFGPathVisitor visitor,
+                            final HashSet<Pair<CFGNode,CFGNode>> visitedEdges) {
+        if (!visitor.visit(Collections.unmodifiableList(path)))
+            return;
+
+        for (CFGNode currentNodeFollower : nodeFollowers.get(path.getFirst())) {
+            final Pair<CFGNode,CFGNode> edge =
+                new Pair<CFGNode,CFGNode>(path.getFirst(),currentNodeFollower);
+            if (visitedEdges.contains(edge))
+                continue;
+
+            path.addFirst(currentNodeFollower);
+            visitedEdges.add(edge);
+
+            traverseCFGPaths(cfg,path,nodeFollowers,visitor,visitedEdges);
+
+            visitedEdges.remove(edge);
+            path.removeFirst();
         }
     }
 

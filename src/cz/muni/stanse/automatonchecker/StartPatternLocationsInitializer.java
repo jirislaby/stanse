@@ -1,5 +1,7 @@
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.parser.CFGNode;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -9,14 +11,14 @@ final class StartPatternLocationsInitializer extends
     // public section
 
     @Override
-    public boolean visit(final CFGEdge edge, final org.dom4j.Element element) {
-        final PatternLocation edgeLocation =
-            getEdgeLocationsDictionary().get(edge);
+    public boolean visit(final CFGNode node, final org.dom4j.Element element) {
+        final PatternLocation nodeLocation =
+            getNodeLocationsDictionary().get(node);
 
-        if (edgeLocation == null)
+        if (nodeLocation == null)
             return true;
 
-        edgeLocation.setInitialAutomataStates(getInitStates());
+        nodeLocation.setInitialAutomataStates(getInitStates());
 
         return false;
     }
@@ -24,23 +26,23 @@ final class StartPatternLocationsInitializer extends
     // package-private section
 
     StartPatternLocationsInitializer(
-                        final HashMap<CFGEdge,PatternLocation> dictionary,
+                        final HashMap<CFGNode,PatternLocation> dictionary,
                         final LinkedList<AutomatonState> initStates) {
         super();
-        edgeLocationsDictionary = dictionary;
+        nodeLocationsDictionary = dictionary;
         this.initStates = initStates;
     }
     
     // private section
 
-    private HashMap<CFGEdge,PatternLocation> getEdgeLocationsDictionary() {
-        return edgeLocationsDictionary; 
+    private HashMap<CFGNode,PatternLocation> getNodeLocationsDictionary() {
+        return nodeLocationsDictionary; 
     }
 
     private LinkedList<AutomatonState> getInitStates() {
         return initStates;
     }
 
-    private HashMap<CFGEdge,PatternLocation> edgeLocationsDictionary;
+    private HashMap<CFGNode,PatternLocation> nodeLocationsDictionary;
     final LinkedList<AutomatonState> initStates;
 }

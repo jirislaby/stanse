@@ -12,7 +12,7 @@ import cz.muni.stanse.props.Properties;
 import cz.muni.stanse.scvgui.GraphViz;
 import cz.muni.stanse.scvgui.GuiMain;
 import cz.muni.stanse.scvgui.SourceAndXMLWindow;
-import cz.muni.stanse.parser.ControlFlowGraph;
+import cz.muni.stanse.parser.CFG;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -366,7 +366,8 @@ public class SCV {
 
             CParser parser = new CParser(new FileInputStream(filename));
             try {
-                returnDocument = parser.run();
+                parser.run();
+                returnDocument = parser.getXMLDocument();
                 File file = new File(filename);
                 returnDocument.setName(file.getName());
                 sourceFilesParsed.put(filename, returnDocument);
@@ -416,14 +417,14 @@ public class SCV {
     for(String filename: sourceFiles) {
         try {
             Document compiledSource = getXMLDocumentByFilename(filename);
-	    HashSet<ControlFlowGraph> cfgs = new HashSet<ControlFlowGraph>();
+	    HashSet<CFG> cfgs = new HashSet<CFG>();
 	    Element rootElement = compiledSource.getRootElement();
 
 	    /* code duplication -- the same is performed for gui */
 	    List<Element> edecls = rootElement.elements("externalDeclaration");
 	    for (Element e: edecls)
 		if (e.element("functionDefinition") != null)
-		    cfgs.add(new ControlFlowGraph(e.element("functionDefinition")));
+		    cfgs.add(new CFG(e.element("functionDefinition")));
         for(String xmlName: checkerDefinitions) {
             final AutomatonChecker checker =
                 new AutomatonChecker((new SAXReader()).read(new File(xmlName)));

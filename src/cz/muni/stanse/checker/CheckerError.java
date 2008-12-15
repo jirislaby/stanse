@@ -1,5 +1,6 @@
 /**
- *  @brief
+ *  @brief Defines public final class CheckerError. It represents the error
+ *         found in source program (reprezented by set of CFGs).
  * 
  */
 package cz.muni.stanse.checker;
@@ -7,20 +8,32 @@ package cz.muni.stanse.checker;
 import java.util.List;
 
 /**
- * @brief
+ * @brief Represent output from checkers, which is the error found in the
+ *        source file (reprezented by set of CFGs). 
  *
- * @see
+ * Found error is described by short and full string description, level of
+ * error importance and by list of error-traces. Each checker is under
+ * obligation to report all its errors via instances of this class.  
+ *
+ * @see cz.muni.stanse.checker#Checker
+ *      cz.muni.stanse.checker#ErrorTrace
  */
 public final class CheckerError {
 
     // public section
 
     /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @see
+     * @brief Accepts all the data necessary to construct instance of this
+     *        class (wich are short and full string description, level of
+     *        error importance and by list of error-traces), and stores them
+     *        in created instance.
+     * @param shortDesc Short description of error, like null-dereference,
+     *                  memory-leak, and so on
+     * @param fullDesc Complete descriprion of error. Checker can put here
+     *                 the message as much detailed as it likes.
+     * @param level Level of importance of the error message.
+     * @param traces List of error traces. (See ErrorTrace class for more info)
+     * @see cz.muni.stanse.checker#ErrorTrace 
      */
     public CheckerError(String shortDesc, String fullDesc, int level,
                         List<ErrorTrace> traces) {

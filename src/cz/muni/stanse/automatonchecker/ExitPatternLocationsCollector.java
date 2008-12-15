@@ -1,5 +1,7 @@
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.parser.CFGNode;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -9,14 +11,14 @@ final class ExitPatternLocationsCollector extends
     // public section
 
     @Override
-    public boolean visit(final CFGEdge edge, final org.dom4j.Element element) {
-        final PatternLocation edgeLocation =
-            getEdgeLocationsDictionary().get(edge);
+    public boolean visit(final CFGNode node, final org.dom4j.Element element) {
+        final PatternLocation nodeLocation =
+            getNodeLocationsDictionary().get(node);
 
-        if (edgeLocation == null)
+        if (nodeLocation == null)
             return true;
 
-        getCollectedLocations().add(edgeLocation);
+        getCollectedLocations().add(nodeLocation);
 
         return false;
     }
@@ -24,9 +26,9 @@ final class ExitPatternLocationsCollector extends
     // package-private section
 
     ExitPatternLocationsCollector(
-                        final HashMap<CFGEdge,PatternLocation> dictionary) {
+                        final HashMap<CFGNode,PatternLocation> dictionary) {
         super();
-        edgeLocationsDictionary = dictionary;
+        nodeLocationsDictionary = dictionary;
         collectedLocations = new LinkedList<PatternLocation>();
     }
     
@@ -36,10 +38,10 @@ final class ExitPatternLocationsCollector extends
 
     // private section
 
-    private HashMap<CFGEdge,PatternLocation> getEdgeLocationsDictionary() {
-        return edgeLocationsDictionary; 
+    private HashMap<CFGNode,PatternLocation> getNodeLocationsDictionary() {
+        return nodeLocationsDictionary; 
     }
 
-    private HashMap<CFGEdge,PatternLocation> edgeLocationsDictionary;
+    private HashMap<CFGNode,PatternLocation> nodeLocationsDictionary;
     private final LinkedList<PatternLocation> collectedLocations;
 }

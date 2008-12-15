@@ -122,7 +122,7 @@ final class XMLTransitionRule {
      * @see
      */
     private AutomatonState buildResultState(
-                        final cz.muni.stanse.parser.ControlFlowGraph CFG,
+                        final cz.muni.stanse.parser.CFG cfg,
                         final Vector<Integer> matchIDs, final int locationID) {
         if (getOutSymbolID() == -1)
             return null;
@@ -133,7 +133,7 @@ final class XMLTransitionRule {
             outMatchIDs.add((getMatchOutIndices().get(i) == -1) ? locationID :
                                     matchIDs.get(getMatchOutIndices().get(i)));
         }
-        return new AutomatonState(CFG,getOutSymbolID(),outMatchIDs);
+        return new AutomatonState(cfg,getOutSymbolID(),outMatchIDs);
     }
 
     /**
