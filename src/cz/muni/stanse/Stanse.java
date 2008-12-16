@@ -7,12 +7,12 @@ import cz.muni.stanse.automatonchecker.AutomatonChecker;
 import cz.muni.stanse.automatonchecker.XMLAutomatonSyntaxErrorException;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.callgraph.CallGraph;
+import cz.muni.stanse.gui.GraphViz;
+import cz.muni.stanse.gui.GuiMain;
+import cz.muni.stanse.gui.SourceAndXMLWindow;
 import cz.muni.stanse.parser.CParser;
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
-import cz.muni.stanse.scvgui.GraphViz;
-import cz.muni.stanse.scvgui.GuiMain;
-import cz.muni.stanse.scvgui.SourceAndXMLWindow;
 import cz.muni.stanse.parser.CFG;
 
 import java.io.File;

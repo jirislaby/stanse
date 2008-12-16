@@ -5,7 +5,7 @@
  *
  */
 
-package cz.muni.stanse.scvgui;
+package cz.muni.stanse.gui;
 
 import cz.muni.stanse.automatonchecker.AutomatonChecker;
 //import cz.muni.stanse.ownershipchecker.OwnershipChecker;

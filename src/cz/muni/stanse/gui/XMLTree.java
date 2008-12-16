@@ -5,7 +5,7 @@
  *
  */
 
-package cz.muni.stanse.scvgui;
+package cz.muni.stanse.gui;
 
 import java.awt.Color;
 import java.awt.Component;

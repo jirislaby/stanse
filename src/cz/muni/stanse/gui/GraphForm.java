@@ -4,7 +4,7 @@
  * Created on 16. �erven 2006, 16:56
  */
 
-package cz.muni.stanse.scvgui;
+package cz.muni.stanse.gui;
 
 
 import java.io.File;

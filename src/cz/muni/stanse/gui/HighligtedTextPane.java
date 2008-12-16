@@ -5,7 +5,7 @@
  *
  */
 
-package cz.muni.stanse.scvgui;
+package cz.muni.stanse.gui;
 
 import com.Ostermiller.Syntax.HighlightedDocument;
 import java.awt.Color;

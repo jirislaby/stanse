@@ -4,7 +4,7 @@
  * Created on 11. duben 2006, 15:15
  */
 
-package cz.muni.stanse.scvgui;
+package cz.muni.stanse.gui;
 
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.props.LoggerConfigurator;

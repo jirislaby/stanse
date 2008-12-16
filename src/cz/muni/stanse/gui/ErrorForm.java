@@ -6,7 +6,7 @@
  * @author Jan Stastny
  */
 
-package cz.muni.stanse.scvgui;
+package cz.muni.stanse.gui;
 
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;

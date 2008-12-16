@@ -1,4 +1,4 @@
-package cz.muni.stanse.scvgui;
+package cz.muni.stanse.gui;
 
 import java.io.*;
 import java.util.*;
