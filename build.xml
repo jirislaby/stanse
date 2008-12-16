@@ -67,7 +67,6 @@
         <javac debug="true" destdir="build">
             <src path="src"/>
 	    <exclude name="cz/muni/stanse/ownershipchecker/*"/>
-	    <exclude name="cz/muni/stanse/props/LoggerConfigurator.java"/>
             <classpath refid="project.classpath"/>
         </javac>
 	<!-- Copy .properties to the build directory, so they get included in the Jar -->
