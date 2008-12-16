@@ -22,8 +22,8 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
 //       element. 
 {if (path.listIterator().next().getElement() == null) return true;}
 
-        //if (getStartNode().equals(node))
-        //    return true;
+        if (getStartNode().equals(node))
+            return true;
 
         final PatternLocation location = getNodeLocationDictionary().get(node);
 

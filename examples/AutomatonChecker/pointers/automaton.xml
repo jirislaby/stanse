@@ -19,7 +19,7 @@
     <error  from="U[A]" by="free[A]"
             desc="releasing of not allocated memory."
             level="0"
-            entry=""
+            entry="pointer is not initialized at function entry."
             begin="pointer is not initialized."
             propag="not affected --> pointer is still not initialized."
             end="pointer is not initialized, but releasing it here." />
@@ -27,7 +27,7 @@
     <error  from="I[A]" by="free[A]"
             desc="releasing not allocated memory."
             level="0"
-            entry=""
+            entry="pointer is not initialized at function entry."
             begin="pointer does not points to valid memory."
             propag="not affected --> pointer still does not points to valid memory."
             end="pointer is not initialized, but releasing it here." />
@@ -59,15 +59,15 @@
     <error  from="U[A]" by="deref[A]"
             desc="dereferencing not valid pointer"
             level="0"
-            entry=""
-            begin="pointer is not initialized."
-            propag="not affected --> pointer is still not initialized."
+            entry="pointer is not valid at function entry."
+            begin="pointer is not valid here."
+            propag="not affected --> pointer is still not valid."
             end="dereferencing not valid pointer here." />
 
     <error  from="I[A]" by="deref[A]"
             desc="dereferencing not valid pointer"
             level="0"
-            entry=""
+            entry="pointer does not points to valid memory at function entry."
             begin="pointer does not points to valid memory."
             propag="not affected --> pointer still does not points to valid memory."
             end="dereferencing not valid pointer here." />
@@ -75,7 +75,7 @@
     <error  from="N[A]" by="deref[A]"
             desc="dereferencing not valid pointer"
             level="0"
-            entry=""
+            entry="pointer does not points to valid memory at function entry."
             begin="pointer does not points to valid memory."
             propag="not affected --> pointer still does not points to valid memory."
             end="dereferencing not valid pointer here." />
@@ -83,7 +83,7 @@
     <error  from="D[A]" by="deref[A]"
             desc="dereferencing not valid pointer"
             level="0"
-            entry=""
+            entry="pointer does not points to valid memory at function entry."
             begin="pointer does not points to valid memory."
             propag="not affected --> pointer still does not points to valid memory."
             end="dereferencing not valid pointer here." />
@@ -120,12 +120,10 @@
     </pattern>
 
     <pattern name="free">
-        <expressionStatement>
-            <functionCall>
-                <id>free</id>
-                <var name="A" />
-            </functionCall>
-        </expressionStatement>
+        <functionCall>
+            <id>free</id>
+            <var name="A" />
+        </functionCall>
     </pattern>
 
     <pattern name="null">
