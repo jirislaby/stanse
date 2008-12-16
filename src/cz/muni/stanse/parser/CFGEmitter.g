@@ -46,7 +46,7 @@ import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.XMLAlgo;
 }
 @members {
-	private Element defaultLabel, falseLabel;
+	private Element defaultLabel, falseLabel, emptyStatement;
 	private DocumentFactory xmlFactory = DocumentFactory.getInstance();
 
 	private CFGPart createCFG(Element e) {
@@ -61,6 +61,7 @@ import cz.muni.stanse.utils.XMLAlgo;
 translationUnit returns [Set<CFG> g]
 @init {
 	$g = new LinkedHashSet<CFG>();
+	emptyStatement = xmlFactory.createElement("emptyStatement");
 	defaultLabel = xmlFactory.createElement("default");
 	falseLabel = xmlFactory.createElement("intConst");
 	falseLabel.setText("0");
@@ -443,14 +444,14 @@ scope IterSwitch;
 	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) ^(E3 e3=expression?) statement) {
 		CFGNode n1, n2;
 		if ($e1.g == null) /* no initial */
-			n1 = new CFGNode();
+			n1 = new CFGNode(emptyStatement);
 		else
 			n1 = new CFGNode($e1.start.getElement());
 		$g.setStartNode(n1);
 		breakNode = new CFGNode();
 		$g.setEndNode(breakNode);
 		if ($e2.g == null) { /* no test */
-			n2 = new CFGNode();
+			n2 = new CFGNode(emptyStatement);
 			n2.addEdge($statement.g.getStartNode());
 		} else {
 			CFGBranchNode branch =
@@ -463,7 +464,7 @@ scope IterSwitch;
 			n2 = branch;
 		}
 		if ($e3.g == null) /* no post */
-			contNode = new CFGNode();
+			contNode = new CFGNode(emptyStatement);
 		else
 			contNode = new CFGNode($e3.start.getElement());
 		n1.addEdge(n2);
