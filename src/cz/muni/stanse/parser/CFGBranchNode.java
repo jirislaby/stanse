@@ -17,7 +17,7 @@ import org.dom4j.Element;
  * package)
  */
 public class CFGBranchNode extends CFGNode {
-    private List<Integer> labels = new ArrayList<Integer>();
+    private List<Element> labels = new ArrayList<Element>();
 
     private CFGBranchNode() {
     }
@@ -29,7 +29,7 @@ public class CFGBranchNode extends CFGNode {
 	super(e);
     }
 
-    public Integer getEdgeLabel(int edge) {
+    public Element getEdgeLabel(int edge) {
 	return labels.get(edge);
     }
 
@@ -37,7 +37,7 @@ public class CFGBranchNode extends CFGNode {
 	addEdge(to, null);
     }
 
-    public void addEdge(CFGNode to, Integer label) {
+    public void addEdge(CFGNode to, Element label) {
 	super.addEdge(to);
 	labels.add(label);
     }

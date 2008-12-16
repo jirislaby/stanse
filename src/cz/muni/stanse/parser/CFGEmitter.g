@@ -16,7 +16,8 @@ options {
 scope IterSwitch {
 	Set<CFGBreakNode> breaks;
 	Set<CFGBreakNode> conts;
-	Map<Integer, CFGNode> cases;
+	Set<Pair<Element, CFGNode>> cases;
+	boolean haveDefault;
 }
 scope Function {
 	Set<CFGBreakNode> rets;
@@ -35,17 +36,18 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.XMLAlgo;
 }
 @members {
-	private Random random = new Random();
+	private Element defaultLabel, falseLabel;
+	private DocumentFactory xmlFactory = DocumentFactory.getInstance();
 
 	private CFGPart createCFG(Element e) {
 		CFGPart cfg = new CFGPart();
@@ -59,6 +61,9 @@ import cz.muni.stanse.utils.XMLAlgo;
 translationUnit returns [Set<CFG> g]
 @init {
 	$g = new LinkedHashSet<CFG>();
+	defaultLabel = xmlFactory.createElement("default");
+	falseLabel = xmlFactory.createElement("intConst");
+	falseLabel.setText("0");
 }
 	: ^(TRANSLATION_UNIT (externalDeclaration {
 		if ($externalDeclaration.g != null)
@@ -99,6 +104,7 @@ scope Function;
 			}
 
 //		System.err.println($g.toStringGraph());
+//		System.err.println($g.toDot());
 	}
 	;
 
@@ -314,21 +320,13 @@ labeledStatement returns [CFGPart g]
 	}
 	| ^('case' expression statement) {
 		$g = $statement.g;
-		Element labelElement = $expression.start.getElement();
-		int label;
-		try {
-			if (labelElement.getName().equals("intConst"))
-				label = Integer.decode(labelElement.getText());
-			else
-				label = random.nextInt();
-		} catch (NumberFormatException e) {
-			label = random.nextInt();
-		}
-		$IterSwitch::cases.put(label, $g.getStartNode());
+		$IterSwitch::cases.add(new Pair($expression.start.getElement(),
+			$g.getStartNode()));
 	}
 	| ^('default' statement) {
 		$g = $statement.g;
-		$IterSwitch::cases.put(Integer.MIN_VALUE, $g.getStartNode());
+		$IterSwitch::cases.add(new Pair(defaultLabel, $g.getStartNode()));
+		$IterSwitch::haveDefault = true;
 	}
 	;
 
@@ -352,20 +350,21 @@ selectionStatementIf returns [CFGPart g]
 	: ^('if' expression s1=statement s2=statement?) {
 		$g = new CFGPart();
 		/* fork */
-		CFGNode n1 = new CFGBranchNode($expression.start.getElement());
-		/* junction */
+		CFGBranchNode n1 =
+			new CFGBranchNode($expression.start.getElement());
+		/* join */
 		CFGNode n2 = new CFGNode();
 		$g.setStartNode(n1);
 		$g.setEndNode(n2);
 		/* true */
-		n1.addEdge($s1.g.getStartNode());
+		n1.addEdge($s1.g.getStartNode(), defaultLabel);
 		$s1.g.getEndNode().addEdge(n2);
 		/* false */
 		if (s2 != null) {
-			n1.addEdge($s2.g.getStartNode());
+			n1.addEdge($s2.g.getStartNode(), falseLabel);
 			$s2.g.getEndNode().addEdge(n2);
 		} else
-			n1.addEdge(n2);
+			n1.addEdge(n2, falseLabel);
 	}
 	;
 
@@ -373,7 +372,8 @@ selectionStatementSwitch returns [CFGPart g]
 scope IterSwitch;
 @init {
 	$IterSwitch::breaks = new HashSet<CFGBreakNode>();
-	$IterSwitch::cases = new TreeMap<Integer, CFGNode>();
+	$IterSwitch::cases = new HashSet<Pair<Element, CFGNode>>();
+	$IterSwitch::haveDefault = false;
 }
 	: ^('switch' expression statement) {
 		$g = new CFGPart();
@@ -382,12 +382,11 @@ scope IterSwitch;
 		$g.setStartNode(n);
 		CFGNode breakNode = new CFGNode();
 		$g.setEndNode(breakNode);
-		Set<Integer> labels = $IterSwitch::cases.keySet();
-		for (Integer label: labels)
-			n.addEdge($IterSwitch::cases.get(label), label);
+		for (Pair<Element, CFGNode> pair: $IterSwitch::cases)
+			n.addEdge(pair.getSecond(), pair.getFirst());
 		/* add default if not present */
-		if (!labels.contains(Integer.MIN_VALUE))
-			n.addEdge(breakNode, Integer.MIN_VALUE);
+		if (!$IterSwitch::haveDefault)
+			n.addEdge(breakNode, defaultLabel);
 		/* backpatch break */
 		for (CFGBreakNode c: $IterSwitch::breaks)
 			c.addBreakEdge(breakNode);
@@ -412,55 +411,63 @@ scope IterSwitch;
 }
 	: ^('while' expression statement) {
 		/* fork */
-		contNode = new CFGBranchNode($expression.start.getElement());
-		/* junction */
+		CFGBranchNode branch =
+			new CFGBranchNode($expression.start.getElement());
+		/* join */
 		breakNode = new CFGNode();
-		$g.setStartNode(contNode);
+		$g.setStartNode(branch);
 		$g.setEndNode(breakNode);
 		/* true */
-		contNode.addEdge($statement.g.getStartNode());
-		$statement.g.getEndNode().addEdge(contNode);
+		branch.addEdge($statement.g.getStartNode(), defaultLabel);
+		$statement.g.getEndNode().addEdge(branch);
 		/* false */
-		contNode.addEdge(breakNode);
+		branch.addEdge(breakNode, falseLabel);
+		contNode = branch;
 	}
 	| ^('do' statement expression) {
 		/* fork */
-		contNode = new CFGBranchNode($expression.start.getElement());
-		/* junction */
+		CFGBranchNode branch =
+			new CFGBranchNode($expression.start.getElement());
+		/* join */
 		breakNode = new CFGNode();
 
 		$g.setStartNode($statement.g.getStartNode());
 		$g.setEndNode(breakNode);
-		$statement.g.getEndNode().addEdge(contNode);
+		$statement.g.getEndNode().addEdge(branch);
 		/* true */
-		contNode.addEdge($statement.g.getStartNode());
+		branch.addEdge($statement.g.getStartNode(), defaultLabel);
 		/* false */
-		contNode.addEdge(breakNode);
+		branch.addEdge(breakNode, falseLabel);
+		contNode = branch;
 	}
 	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) ^(E3 e3=expression?) statement) {
 		CFGNode n1, n2;
-		if ($e1.g == null)
+		if ($e1.g == null) /* no initial */
 			n1 = new CFGNode();
 		else
 			n1 = new CFGNode($e1.start.getElement());
 		$g.setStartNode(n1);
-		if ($e2.g == null)
+		breakNode = new CFGNode();
+		$g.setEndNode(breakNode);
+		if ($e2.g == null) { /* no test */
 			n2 = new CFGNode();
-		else
-			n2 = new CFGBranchNode($e2.start.getElement());
-		if ($e3.g == null)
+			n2.addEdge($statement.g.getStartNode());
+		} else {
+			CFGBranchNode branch =
+				new CFGBranchNode($e2.start.getElement());
+			/* true */
+			branch.addEdge($statement.g.getStartNode(),
+					defaultLabel);
+			/* false */
+			branch.addEdge(breakNode, falseLabel);
+			n2 = branch;
+		}
+		if ($e3.g == null) /* no post */
 			contNode = new CFGNode();
 		else
 			contNode = new CFGNode($e3.start.getElement());
 		n1.addEdge(n2);
 		contNode.addEdge(n2);
-		breakNode = new CFGNode();
-		$g.setEndNode(breakNode);
-		/* true */
-		n2.addEdge($statement.g.getStartNode());
-		/* false */
-		if ($e2.g != null)
-			n2.addEdge(breakNode);
 
 		$statement.g.getEndNode().addEdge(contNode);
 	}
