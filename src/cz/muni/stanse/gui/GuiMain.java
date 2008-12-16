@@ -648,35 +648,6 @@ public class GuiMain extends javax.swing.JFrame {
         if (err) {this.setSize(newSize);}
     }//GEN-LAST:event_MainWindowResized
     
-    /**
-     * GUI main method
-     * @param args First param is source file to open and all the next params 
-     * are xml definitions of the tests to be run at the source file
-     */
-    public static void main(final String args[]) {
-        LoggerConfigurator.doConfigure();
-        
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                GuiMain gui = new GuiMain();
-                gui.setVisible(true);
-                if(args.length >= 1 && args[0] != null) {
-                    File file = new File(args[0]);
-                    gui.openSourceFile(file);
-                    
-                    Set<File> files = new HashSet<File>();
-                    for(int i = 1; i < args.length; i++) {
-                        files.add(new File(args[i]));
-                    }
-                    if(!files.isEmpty()) {
-                        ((SourceAndXMLWindow) gui.jTabbedPane1.getSelectedComponent()).runStaticChecker(files);
-                    }
-                }
-            }
-        });
-        
-    }
-    
     public void openSourceFile(File file) {
         SourceAndXMLWindow dataPanel = new SourceAndXMLWindow();
         dataPanel.openSourceFile(file, highlight);
