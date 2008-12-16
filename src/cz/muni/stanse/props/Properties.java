@@ -70,7 +70,7 @@ public class Properties {
         OutputStream os = null;
         try {
             os = new BufferedOutputStream(new FileOutputStream(xml));
-            properties.storeToXML(os, "SCV properties");
+            properties.storeToXML(os, "Stanse properties");
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {

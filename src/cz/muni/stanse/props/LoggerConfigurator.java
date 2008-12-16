@@ -8,7 +8,7 @@
  */
 package cz.muni.stanse.props;
 
-import cz.muni.stanse.main.SCV;
+import cz.muni.stanse.Stanse;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -43,7 +43,7 @@ public class LoggerConfigurator {
     private LoggerConfigurator() {
         java.util.Properties properties = new java.util.Properties();
         Level loggingLevel = null;
-        switch (SCV.getVerbosityLevel()) {
+        switch (Stanse.getVerbosityLevel()) {
             case SILENT:
                 Logger.getRootLogger().setLevel(Level.OFF);
                 loggingLevel = Level.OFF;
@@ -65,7 +65,7 @@ public class LoggerConfigurator {
         try {
         	try {
 
-        		if(SCV.getDebug()) {
+        		if(Stanse.getDebug()) {
         			ConsoleAppender consoleAppender = new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR);
         			consoleAppender.setThreshold(loggingLevel);
         			Logger.getRootLogger().addAppender(consoleAppender);

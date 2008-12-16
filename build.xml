@@ -84,7 +84,7 @@
 	   </tstamp>	     
 	<manifest file="manifest.mf">
 	        <attribute name="Built-By" value="${user.name}"/>
-	        <attribute name="Main-Class" value="cz.muni.stanse.main.SCV"/>
+	        <attribute name="Main-Class" value="cz.muni.stanse.Stanse"/>
 		<attribute name="Implementation-Version" value="Revision: ${svnrevision}, Built on: ${TODAY}" />
 	        <attribute name="Class-Path" value="lib/swing-layout-1.0.jar lib/AbsoluteLayout.jar lib/antlr-3.1.1-runtime.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/swing-layout-1.0.jar lib/syntax.jar lib/jgrapht-jdk1.5.jar lib/log4j-1.2.14.jar lib/jopt-simple-2.4.1.jar lib/saxon8.jar lib/saxon8-dom4j.jar lib/saxon8-xpath.jar"/>
 	    </manifest>

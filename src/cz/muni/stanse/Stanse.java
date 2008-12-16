@@ -1,7 +1,7 @@
 /*
  * Main class of the project.
  */
-package cz.muni.stanse.main;
+package cz.muni.stanse;
 
 import cz.muni.stanse.automatonchecker.AutomatonChecker;
 import cz.muni.stanse.automatonchecker.XMLAutomatonSyntaxErrorException;
@@ -54,7 +54,7 @@ import org.antlr.runtime.RecognitionException;
  * 
  * @version $Id$
  */
-public class SCV {
+public class Stanse {
 
     private static final String OPT_HELP = "help";
     private static final String OPT_USAGE = "usage";
@@ -70,7 +70,7 @@ public class SCV {
     private static final String OPT_CALLGRAPHMULTI = "cgm";
     
     
-    private static Logger logger = Logger.getLogger(SCV.class);
+    private static Logger logger = Logger.getLogger(Stanse.class);
     
     private static Properties.VerbosityLevel VERBOSITY_LEVEL = Properties.VerbosityLevel.LOW;
     
@@ -140,14 +140,14 @@ public class SCV {
                 try {
                     optionsParser.printHelpOn(System.out);
                 } catch (IOException ex) {
-                    Logger.getLogger(SCV.class.getName()).log(Level.FATAL, null, ex);
+                    Logger.getLogger(Stanse.class.getName()).log(Level.FATAL, null, ex);
                 } finally {
                     System.exit(0);
                 }
             }
             
             if(options.has(OPT_VERSION)) {
-                System.out.println(SCV.class.getPackage().getImplementationVersion());
+                System.out.println(Stanse.class.getPackage().getImplementationVersion());
                 System.exit(0);
             }
 
@@ -197,12 +197,12 @@ public class SCV {
             for (Object nonOptionArgument : options.nonOptionArguments()) {
                 sources.add((String) nonOptionArgument);
             }
-            SCV scv = new SCV(sources);
+            Stanse stanse = new Stanse(sources);
             
             if (options.has(OPT_CALLGRAPH)) {
                 String filename = options.argumentOf(OPT_CALLGRAPH);
                 if (!filename.isEmpty()) {
-                    scv.generateCallGraphToFile(filename,
+                    stanse.generateCallGraphToFile(filename,
 			options.has(OPT_STRONGLYCONNECTED),
 			options.has(OPT_CALLGRAPHMULTI));
                     startGui = false;
@@ -218,7 +218,7 @@ public class SCV {
                 }
             }
             
-            scv.setCheckerDefinitions(checkers);
+            stanse.setCheckerDefinitions(checkers);
             
             
             if(options.has(OPT_REPORT)) {
@@ -235,11 +235,11 @@ public class SCV {
 
             // Start GUI?
             if (startGui) {
-                scv.startGui();
+                stanse.startGui();
             } else {
                 // Dont start gui, but run checkers
                 if(!checkers.isEmpty())
-                    scv.runCheckers();
+                    stanse.runCheckers();
             }
 
 
@@ -258,7 +258,7 @@ public class SCV {
      * Constructor
      * @param filenames List of filenames to be worked with
      */
-    public SCV(List<String> filenames) {
+    public Stanse(List<String> filenames) {
         this.sourceFiles = filenames;
     }
 
