@@ -11,7 +11,6 @@ import cz.muni.stanse.automatonchecker.AutomatonChecker;
 //import cz.muni.stanse.ownershipchecker.OwnershipChecker;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.CheckerError;
-import cz.muni.stanse.parser.CFGNode;
 import cz.muni.stanse.parser.CFG;
 import cz.muni.stanse.parser.CParser;
 import cz.muni.stanse.utils.Pair;
@@ -440,45 +439,44 @@ public class SourceAndXMLWindow extends JPanel {
      * @param highlight Whether to highlight source code or not
      */
     public void openSourceFile(final File file, boolean highlight) {
-        sourceFile = file;
-        if(highlight) {
-            sourceText.openFile(file, sourceText.DOCUMENT_STYLE_C);
-        } else {
-            sourceText.openFile(file, null);
-        }
-        try {
-            transformCSourceFileToXML();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+	sourceFile = file;
+	if (highlight)
+	    sourceText.openFile(file, sourceText.DOCUMENT_STYLE_C);
+	else
+	    sourceText.openFile(file, null);
+	try {
+	    transformCSourceFileToXML();
+	} catch (RecognitionException ex) {
+	    ex.printStackTrace();
+	} catch (FileNotFoundException ex) {
+	    ex.printStackTrace();
+	} catch (IOException ex) {
+	    ex.printStackTrace();
+	}
     }
 
     public HighligtedTextPane getSourceText() {
         return sourceText;
     }
-    
-    
-    
+
     /**
      * transform C source file to XML tree
      * Called automatically when opening a source code.
      */
     public void transformCSourceFileToXML() throws FileNotFoundException,
 					IOException, RecognitionException {
-        if(sourceFile.length() <= 0) {
-            return;
-        }
-        Cursor originalCursor = getCursor();
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        CParser parser = new CParser(new FileInputStream(sourceFile));
-        parser.run();
-        documentXML = parser.getXMLDocument();
-        documentXML.setName(sourceFile.getName());
-        if(documentXML != null) {
-            treeXML.setXMLDocument(documentXML);
-        }
-        cfgs = parser.getCFGs();
-        setCursor(originalCursor);
+	if (sourceFile.length() <= 0)
+	    return;
+	Cursor originalCursor = getCursor();
+	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	CParser parser = new CParser(new FileInputStream(sourceFile));
+	parser.run();
+	documentXML = parser.getXMLDocument();
+	documentXML.setName(sourceFile.getName());
+	if (documentXML != null)
+	    treeXML.setXMLDocument(documentXML);
+	cfgs = parser.getCFGs();
+	setCursor(originalCursor);
     }
     
     
@@ -519,23 +517,6 @@ public class SourceAndXMLWindow extends JPanel {
         }
     }
     
-    private static final HashSet<CFG> buildCFGsFromXML(
-                                                   final Document documentXML) {
-        if (documentXML == null)
-            return null;
-
-	final HashSet<CFG> cfgs = new HashSet<CFG>();
-	{
-	    final Element rootElement = documentXML.getRootElement();
-	    List<Element> edecls = rootElement.elements("externalDeclaration");
-	    for (Element e: edecls)
-		if (e.element("functionDefinition") != null)
-		    cfgs.add(new CFG(e.element("functionDefinition")));
-	}
-
-        return cfgs;
-    }
-
     private static final String convertCheckerErrorListToString(
                                              final List<CheckerError> errList) {
         String result = "";
@@ -553,13 +534,7 @@ public class SourceAndXMLWindow extends JPanel {
             logger.error("Error: No automaton XML file provided.");
             return;
         }
-/*
-        final HashSet<CFG> cfgs = buildCFGsFromXML(documentXML);
-        if (cfgs == null) {
-            logger.error("Error: No CFG provided.");
-            return;
-        }
-*/
+
         final LinkedList<CheckerError> errors = new LinkedList<CheckerError>(); 
         for (File f : configFiles)
             try {
@@ -580,11 +555,6 @@ public class SourceAndXMLWindow extends JPanel {
      * Run ownership checker.
      */
     public void checkOwnership() {
-/*
-        final HashSet<CFG> cfgs = buildCFGsFromXML(documentXML);
-        if (cfgs == null)
-            return;
-*/
         final LinkedList<CheckerError> errors = new LinkedList<CheckerError>(); 
         try {
             //errors.addAll((new OwnershipChecker()).check(cfgs));
@@ -628,24 +598,6 @@ public class SourceAndXMLWindow extends JPanel {
     public Document getDocumentXML() {
         return documentXML;
     }
-    /*
-    private static void addFunctionsToChecker(Checker checker, Document document) {
-        
-        //for every functionDefinition add CFG to checker
-        Element rootElement = document.getRootElement();
-        for (int i = 0, size = rootElement.nodeCount(); i < size; i++) {
-            Node node = rootElement.node(i);
-            if (node instanceof Element) {
-                Element element = (Element) node;
-                
-                if (element.getName().equals("functionDefinition")) {
-                    checker.addCFG(new CFG(element));
-                }
-            }
-        }
-    }
-    */
-
 
    /**
      * @brief Creates and returns a {@link java.lang.String} from

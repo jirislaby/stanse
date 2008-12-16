@@ -4,6 +4,7 @@
 package cz.muni.stanse.main;
 
 import cz.muni.stanse.automatonchecker.AutomatonChecker;
+import cz.muni.stanse.automatonchecker.XMLAutomatonSyntaxErrorException;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.parser.CParser;
@@ -414,37 +415,36 @@ public class SCV {
     }
         
     public void runCheckers() {
-    for(String filename: sourceFiles) {
-        try {
-            Document compiledSource = getXMLDocumentByFilename(filename);
-	    HashSet<CFG> cfgs = new HashSet<CFG>();
-	    Element rootElement = compiledSource.getRootElement();
-
-	    /* code duplication -- the same is performed for gui */
-	    List<Element> edecls = rootElement.elements("externalDeclaration");
-	    for (Element e: edecls)
-		if (e.element("functionDefinition") != null)
-		    cfgs.add(new CFG(e.element("functionDefinition")));
-        for(String xmlName: checkerDefinitions) {
-            final AutomatonChecker checker =
-                new AutomatonChecker((new SAXReader()).read(new File(xmlName)));
-            for (CheckerError error : checker.check(cfgs)) {
-                logger.error("not really. it is just output from checker :-)\n"
-                             + error.toString());
-            }
-        }
-        } catch (IllegalArgumentException ex) {
-           logger.error(null, ex);
-        } catch (FileNotFoundException ex) {
-            logger.error(null, ex);
-        } catch (DocumentException ex) {
-            logger.error(null, ex);
-        } catch (Exception ex) {
-            logger.error(null, ex);
-        }
-
-    }
-
+	for (String filename: sourceFiles) {
+	    CParser parser = null;
+	    try {
+		parser = new CParser(new FileInputStream(filename));
+		parser.run();
+	    } catch (RecognitionException ex) {
+		logger.error(null, ex);
+	    } catch (FileNotFoundException ex) {
+		logger.error(null, ex);
+	    } catch (IOException ex) {
+		logger.error(null, ex);
+	    }
+	    if (parser == null)
+		continue;
+	    try {
+		for (String xmlName: checkerDefinitions) {
+		    Document doc = new SAXReader().read(new File(xmlName));
+		    AutomatonChecker checker = new AutomatonChecker(doc);
+		    for (CheckerError error : checker.check(parser.getCFGs()))
+			logger.error("not really. it is just output from " +
+				"checker :-)\n" + error.toString());
+		}
+	    } catch (XMLAutomatonSyntaxErrorException ex) {
+		logger.error(null, ex);
+	    } catch (IllegalArgumentException ex) {
+		logger.error(null, ex);
+	    } catch (DocumentException ex) {
+		logger.error(null, ex);
+	    }
+	}
     }
     
     
