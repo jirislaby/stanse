@@ -128,6 +128,7 @@ public class CFGPart {
 
     public String toStringGraph() {
 	StringBuilder sb = new StringBuilder();
+	String eol = System.getProperty("line.separator");
 	boolean shorten = false;
 
 	for (CFGNode n: getAllNodes()) {
@@ -142,7 +143,8 @@ public class CFGPart {
 		bn = (CFGBranchNode)n;
 	    int edge = 0;
 	    for (CFGNode succ: n.getSuccessors()) {
-		sb.append("\n  -");
+		sb.append(eol);
+		sb.append("  -");
 		if (bn != null) {
 		    sb.append(bn.getEdgeLabel(edge));
 		    sb.append('-');
@@ -151,12 +153,71 @@ public class CFGPart {
 		sb.append("> ");
 		sb.append(succ.toString());
 	    }
-	    sb.append("\n");
+	    sb.append(eol);
 	    shorten = true;
 	}
 
 	if (shorten)
 	    sb.setLength(sb.length() - 1);
+
+	return sb.toString();
+    }
+
+    public String toDot() {
+	String eol = System.getProperty("line.separator");
+	StringBuilder sb = new StringBuilder("digraph CFG {");
+	Set<CFGNode> allNodes = getAllNodes();
+
+	sb.append(eol);
+	sb.append("\tnode [shape=box];");
+	sb.append(eol);
+
+	for (CFGNode n: allNodes) {
+	    sb.append('\t');
+	    sb.append(n.getNumber());
+	    Element e = n.getElement();
+	    if (e != null) {
+		sb.append(" [label=\"");
+		sb.append(n.getNumber());
+		sb.append(": ");
+		String label = e.getName();
+		if (e.getName().equals("functionCall")) {
+		    Element funName = (Element)e.node(0);
+		    if (funName != null)
+			label = funName.getText();
+		}
+		sb.append(label);
+		sb.append("\"];");
+	    }
+	    sb.append(eol);
+	}
+
+	for (CFGNode n: allNodes) {
+	    CFGBranchNode bn = null;
+	    if (n instanceof CFGBranchNode)
+		bn = (CFGBranchNode)n;
+	    int edge = 0;
+	    for (CFGNode succ: n.getSuccessors()) {
+		sb.append('\t');
+		sb.append(n.getNumber());
+		sb.append(" -> ");
+		sb.append(succ.getNumber());
+		if (bn != null) {
+		    sb.append(" [label=\"");
+		    Element label = bn.getEdgeLabel(edge);
+		    if (label.getName().equals("intConst"))
+			sb.append(label.getText());
+		    else
+			sb.append(label.getName());
+		    sb.append("\"]");
+		    edge++;
+		}
+		sb.append(";");
+		sb.append(eol);
+	    }
+	}
+
+	sb.append("}");
 
 	return sb.toString();
     }
