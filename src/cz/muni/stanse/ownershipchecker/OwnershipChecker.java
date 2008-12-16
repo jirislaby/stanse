@@ -13,7 +13,7 @@ import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;
-import cz.muni.stanse.utils.Trinity;
+import cz.muni.stanse.utils.Triple;
 import cz.muni.stanse.parser.CFGNode;
 import cz.muni.stanse.parser.CFG;
 
@@ -103,12 +103,12 @@ public final class OwnershipChecker extends Checker {
         return result;
     }
 
-    private List< Trinity<CFGNode,String,CFG> > convertAllCFGNodesFromOld(
+    private List< Triple<CFGNode,String,CFG> > convertAllCFGNodesFromOld(
                                                  final ErrorTraceOld oldTrace) {
-        final LinkedList< Trinity<CFGNode,String,CFG> > result =
-                new LinkedList< Trinity<CFGNode,String,CFG> >();
+        final LinkedList< Triple<CFGNode,String,CFG> > result =
+                new LinkedList< Triple<CFGNode,String,CFG> >();
         for (CFGNode node : oldTrace)
-            result.addLast( new Trinity<CFGNode,String,CFG>(node,
+            result.addLast( new Triple<CFGNode,String,CFG>(node,
                                     "No description provided. Sorry.",
                                     topologicalSortedCG.firstElement()) );
 

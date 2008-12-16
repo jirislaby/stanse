@@ -5,7 +5,7 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.utils.Trinity;
+import cz.muni.stanse.utils.Triple;
 
 import java.util.HashMap;
 import java.util.Vector;
@@ -45,9 +45,9 @@ final class XMLErrorRule {
                                     replaceAll("[ \t]+"," ");
 
         final String byString = XMLelement.attribute("by").getValue();
-        final Trinity<String,Vector<String>,Character> bySymbol =
+        final Triple<String,Vector<String>,Character> bySymbol =
             (byString.isEmpty()) ?
-                    new Trinity<String,Vector<String>,Character>
+                    new Triple<String,Vector<String>,Character>
                                         ("",new Vector<String>(),'+') :
                     XMLRuleStringParser.parseOneSymbolRuleString(byString);
         if (!byString.isEmpty())
@@ -58,7 +58,7 @@ final class XMLErrorRule {
 
         patternName = bySymbol.getFirst();
 
-        final LinkedList<Trinity<String,Vector<String>,Character> > fromList =
+        final LinkedList<Triple<String,Vector<String>,Character> > fromList =
             XMLRuleStringParser.parseRuleString(
                 XMLelement.attribute("from").getValue());
         checkList(fromList);
@@ -250,13 +250,13 @@ final class XMLErrorRule {
      */
     private static Vector< Pair<Integer,Vector<Boolean> > >
     buildMatchFlags(
-            final LinkedList<Trinity<String,Vector<String>,Character> > symbols,
+            final LinkedList<Triple<String,Vector<String>,Character> > symbols,
             final char mode,
             final HashMap<String,Integer> statesSymbolTable,
             final String locationVarName) {
         final Vector< Pair<Integer,Vector<Boolean> > > result =
             new Vector< Pair<Integer,Vector<Boolean> > >();
-        for (Trinity<String,Vector<String>,Character> symbol : symbols) {
+        for (Triple<String,Vector<String>,Character> symbol : symbols) {
             if (symbol.getThird().equals(mode)) {
                 final Vector<Boolean> flags =
                     new Vector<Boolean>(symbol.getSecond().size());
@@ -278,7 +278,7 @@ final class XMLErrorRule {
      * @see
      */
     private static void checkList(
-               final LinkedList<Trinity<String,Vector<String>,Character> > list)
+               final LinkedList<Triple<String,Vector<String>,Character> > list)
                                        throws XMLAutomatonSyntaxErrorException {
         if (list.isEmpty())
             throw new XMLAutomatonSyntaxErrorException("Invalid number of " + 
@@ -294,9 +294,9 @@ final class XMLErrorRule {
      * @see
      */
     private static void checkVars(final int minVars, final int maxVars,
-            final LinkedList<Trinity<String,Vector<String>,Character> > symbols)
+            final LinkedList<Triple<String,Vector<String>,Character> > symbols)
                                        throws XMLAutomatonSyntaxErrorException {
-        for (Trinity<String,Vector<String>,Character> symbol : symbols)
+        for (Triple<String,Vector<String>,Character> symbol : symbols)
             checkVars(minVars,maxVars,symbol);
     }
 
@@ -309,7 +309,7 @@ final class XMLErrorRule {
      * @see
      */
     private static void checkVars(final int minVars, final int maxVars,
-                          final Trinity<String,Vector<String>,Character> symbol)
+                          final Triple<String,Vector<String>,Character> symbol)
                                        throws XMLAutomatonSyntaxErrorException {
         if ((minVars >= 0 && symbol.getSecond().size() < minVars) ||
             (maxVars >= 0 && symbol.getSecond().size() > maxVars) )

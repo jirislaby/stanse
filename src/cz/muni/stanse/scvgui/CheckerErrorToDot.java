@@ -3,7 +3,7 @@ package cz.muni.stanse.scvgui;
 import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.parser.CFG;
 import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.utils.Trinity;
+import cz.muni.stanse.utils.Triple;
 
 import org.dom4j.Element;
 import java.util.HashSet;
@@ -19,7 +19,7 @@ final class CheckerErrorToDot {
         final CFGNode errNode = trace.getErrorTrace().get(
                                    trace.getErrorTrace().size() - 1).getFirst();
         final HashSet<CFGNode> traceNodes = new HashSet<CFGNode>();
-        for (Trinity<CFGNode,String,CFG> nodeID : trace.getErrorTrace())
+        for (Triple<CFGNode,String,CFG> nodeID : trace.getErrorTrace())
             traceNodes.add(nodeID.getFirst());
 
         output.append("digraph CFG { \n");

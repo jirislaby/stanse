@@ -12,7 +12,7 @@ import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.parser.CFGNode;
 import cz.muni.stanse.parser.CFG;
-import cz.muni.stanse.utils.Trinity;
+import cz.muni.stanse.utils.Triple;
 
 import java.awt.Component;
 import java.io.File;
@@ -495,7 +495,7 @@ if (element == null)
 
     private final String buildActualCFGNodeDescription() {
 
-        final Trinity<CFGNode,String,CFG> node =
+        final Triple<CFGNode,String,CFG> node =
                 actualTrace.getErrorTrace().get(actualIndex);
         return "<" + node.getFirst().toString() + ','
                    + node.getSecond() + ","

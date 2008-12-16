@@ -5,7 +5,7 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.utils.Trinity;
+import cz.muni.stanse.utils.Triple;
 
 import java.util.HashMap;
 import java.util.Vector;
@@ -30,7 +30,7 @@ final class XMLTransitionRule {
     XMLTransitionRule(final org.dom4j.Element XMLtransitionElement,
                       final HashMap<String,Integer> statesSymbolTable)
                                        throws XMLAutomatonSyntaxErrorException {
-        final Trinity<String,Vector<String>,Character> fromSymbol =
+        final Triple<String,Vector<String>,Character> fromSymbol =
             XMLRuleStringParser.parseOneSymbolRuleString(
                 XMLtransitionElement.attribute("from").getValue());
         checkMode(fromSymbol.getThird());
@@ -38,9 +38,9 @@ final class XMLTransitionRule {
         inSymbolID = statesSymbolTable.get(fromSymbol.getFirst());
 
         final String toString = XMLtransitionElement.attribute("to").getValue();
-        final Trinity<String,Vector<String>,Character> toSymbol =
+        final Triple<String,Vector<String>,Character> toSymbol =
             (toString.isEmpty()) ?
-                new Trinity<String,Vector<String>,Character>
+                new Triple<String,Vector<String>,Character>
                                             ("",new Vector<String>(),'+') :
                 XMLRuleStringParser.parseOneSymbolRuleString(toString);
         checkMode(toSymbol.getThird());
@@ -49,7 +49,7 @@ final class XMLTransitionRule {
         final Integer outSymbol = statesSymbolTable.get(toSymbol.getFirst());
         outSymbolID = (outSymbol == null) ? -1 : (int)outSymbol;
 
-        final Trinity<String,Vector<String>,Character> bySymbol =
+        final Triple<String,Vector<String>,Character> bySymbol =
             XMLRuleStringParser.parseOneSymbolRuleString(
                 XMLtransitionElement.attribute("by").getValue());
         checkMode(bySymbol.getThird());

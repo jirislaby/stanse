@@ -6,7 +6,7 @@ package cz.muni.stanse.checker;
 
 import cz.muni.stanse.parser.CFG;
 import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.utils.Trinity;
+import cz.muni.stanse.utils.Triple;
 import java.util.List;
 
 /**
@@ -27,7 +27,7 @@ public final class ErrorTrace {
      * @see
      */
     public ErrorTrace(String shortDesc, String fullDesc,
-                      List< Trinity<CFGNode,String,CFG> > trace) {
+                      List< Triple<CFGNode,String,CFG> > trace) {
         this.shortDesc = shortDesc;
         this.fullDesc = fullDesc;
         this.trace = trace;
@@ -65,7 +65,7 @@ public final class ErrorTrace {
      * @throws
      * @see
      */
-    public List< Trinity<CFGNode,String,CFG> > getErrorTrace() {
+    public List< Triple<CFGNode,String,CFG> > getErrorTrace() {
         return trace;
     }
 
@@ -84,7 +84,7 @@ public final class ErrorTrace {
             "    - shortDesc: " + getShortDescription() + '\n'+
             "    - fullDesc: " + getFullDescription() + '\n' +
             "    - CFGNodes:\n";
-        for (Trinity<CFGNode,String,CFG> node : getErrorTrace())
+        for (Triple<CFGNode,String,CFG> node : getErrorTrace())
             result += "        - <" + node.getFirst().toString() + "," +
                                       node.getSecond() + "," +
                                       node.getThird().toString() + ">\n";
@@ -156,5 +156,5 @@ public final class ErrorTrace {
      * @brief
      *
      */
-    private final List< Trinity<CFGNode,String,CFG> > trace;
+    private final List< Triple<CFGNode,String,CFG> > trace;
 }

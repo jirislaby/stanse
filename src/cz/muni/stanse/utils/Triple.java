@@ -9,7 +9,7 @@ package cz.muni.stanse.utils;
  *
  * @see
  */
-public final class Trinity<A,B,C> {
+public final class Triple<A,B,C> {
 
     // public section
 
@@ -21,7 +21,7 @@ public final class Trinity<A,B,C> {
      * @throws
      * @see
      */
-    public Trinity(final A first, final B second, final C third) {
+    public Triple(final A first, final B second, final C third) {
         this.first = first;
         this.second = second;
         this.third = third;
@@ -84,7 +84,7 @@ public final class Trinity<A,B,C> {
     @Override
     public boolean equals(final Object obj) {
         return (obj == null || getClass() != obj.getClass()) ?
-                false : isEqualWith((Trinity<A,B,C>)obj);
+                false : isEqualWith((Triple<A,B,C>)obj);
     }
 
     /**
@@ -95,7 +95,7 @@ public final class Trinity<A,B,C> {
      * @throws
      * @see
      */
-    public boolean isEqualWith(final Trinity<A,B,C> other) {
+    public boolean isEqualWith(final Triple<A,B,C> other) {
         return first.equals(other.first) &&
                second.equals(other.second) &&
                third.equals(other.third);

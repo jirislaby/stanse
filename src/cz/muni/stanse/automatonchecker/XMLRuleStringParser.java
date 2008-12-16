@@ -5,7 +5,7 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.utils.Trinity;
+import cz.muni.stanse.utils.Triple;
 
 import java.util.LinkedList;
 import java.util.Vector;
@@ -27,9 +27,9 @@ final class XMLRuleStringParser {
      * @throws
      * @see
      */
-    static Trinity<String,Vector<String>,Character> parseOneSymbolRuleString(
+    static Triple<String,Vector<String>,Character> parseOneSymbolRuleString(
                   final String string) throws XMLAutomatonSyntaxErrorException {
-        final LinkedList< Trinity<String,Vector<String>,Character> > result =
+        final LinkedList< Triple<String,Vector<String>,Character> > result =
             parseRuleString(string);
         if (result.size() != 1)
             throw new XMLAutomatonSyntaxErrorException("AttributeName" + "=\"" +
@@ -46,11 +46,11 @@ final class XMLRuleStringParser {
      * @throws
      * @see
      */
-    static LinkedList< Trinity<String,Vector<String>,Character> >
+    static LinkedList< Triple<String,Vector<String>,Character> >
     parseRuleString(final String string)
                                        throws XMLAutomatonSyntaxErrorException {
-        final LinkedList< Trinity<String,Vector<String>,Character> > result =
-            new LinkedList< Trinity<String,Vector<String>,Character> >();
+        final LinkedList< Triple<String,Vector<String>,Character> > result =
+            new LinkedList< Triple<String,Vector<String>,Character> >();
         for (String symbol : splitStringToGenericsSymbolsParts(string))
             result.add(parseGenericSymbol(symbol));
         return result;
@@ -86,7 +86,7 @@ final class XMLRuleStringParser {
      * @throws
      * @see
      */
-    static Trinity<String,Vector<String>,Character>
+    static Triple<String,Vector<String>,Character>
     parseGenericSymbol(final String stateString)
                                        throws XMLAutomatonSyntaxErrorException {
         Pair<String,String> split = splitStateString(stateString,"\\[");
@@ -102,7 +102,7 @@ final class XMLRuleStringParser {
             split = splitStateString(split.getSecond(),"\\][.*^\\[]*\\[|\\]");
             varsSymbols.add(split.getFirst());
         }
-        return new Trinity<String,Vector<String>,Character>
+        return new Triple<String,Vector<String>,Character>
                                 (stateSymbol,varsSymbols,mode);
     }
 

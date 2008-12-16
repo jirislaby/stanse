@@ -3,7 +3,7 @@ package cz.muni.stanse.automatonchecker;
 import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.parser.CFGNode;
 import cz.muni.stanse.parser.CFG;
-import cz.muni.stanse.utils.Trinity;
+import cz.muni.stanse.utils.Triple;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -77,18 +77,18 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
                                        final String innerMsg,
                                        final String endMsg,
                                        final List<CFGNode> path) {
-        final List< Trinity<CFGNode,String,CFG> > trace =
-                                new LinkedList< Trinity<CFGNode,String,CFG> >();
-        trace.add(new Trinity<CFGNode,String,CFG>(path.get(0),
+        final List< Triple<CFGNode,String,CFG> > trace =
+                                new LinkedList< Triple<CFGNode,String,CFG> >();
+        trace.add(new Triple<CFGNode,String,CFG>(path.get(0),
                                                   beginMsg,getCFG()));
         if (path.size() > 1)
             for (CFGNode item : path.subList(1,path.size() - 1))
 // TODO: remove this check, when ALL the CFG nodes will contain related XML
 //       element. 
 if (item.getElement() != null)
-                trace.add(new Trinity<CFGNode,String,CFG>
+                trace.add(new Triple<CFGNode,String,CFG>
                                                       (item,innerMsg,getCFG()));
-        trace.add(new Trinity<CFGNode,String,CFG>(path.get(path.size() - 1),
+        trace.add(new Triple<CFGNode,String,CFG>(path.get(path.size() - 1),
                                                   endMsg,getCFG()));
         return new ErrorTrace(
                         "error-trace [" + (getErrorTracesList().size()+1) + "]",
