@@ -86,15 +86,37 @@ public class CFGNode {
 	succs.add(succ);
     }
 
+    protected void addSucc(int index, CFGNode succ) {
+	succs.add(index, succ);
+    }
+
+    protected void removeSucc(int index) {
+	succs.remove(index);
+    }
+
+    protected int indexOfSucc(CFGNode succ) {
+	return succs.indexOf(succ);
+    }
+
     /**
      * Adds an edge between two nodes
-     * @param label label
-     * @param from starting node
      * @param to ending node
      */
     public void addEdge(CFGNode to) {
 	addSucc(to);
 	to.addPred(this);
+    }
+
+    /**
+     * Replaces an edge between two nodes with a new edge
+     * @param oldTo which node to replace
+     * @param newTo which node use as a replacement
+     */
+    public void replaceEdge(CFGNode oldTo, CFGNode newTo) {
+	int idx = indexOfSucc(oldTo);
+	removeSucc(idx);
+	addSucc(idx, newTo);
+	newTo.addPred(this);
     }
 
     @Override

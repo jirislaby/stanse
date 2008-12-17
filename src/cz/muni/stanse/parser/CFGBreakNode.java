@@ -31,6 +31,13 @@ public class CFGBreakNode extends CFGNode {
 	super.addEdge(to);
     }
 
+    public void replaceEdge(CFGNode oldTo, CFGNode newTo) {
+	int idx = indexOfSucc(oldTo);
+	removeSucc(idx);
+	addSucc(idx, newTo);
+	newTo.addPred(this);
+    }
+
     @Override
     public String toString() {
 	return "X " + super.toString();

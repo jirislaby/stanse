@@ -354,7 +354,7 @@ selectionStatementIf returns [CFGPart g]
 		CFGBranchNode n1 =
 			new CFGBranchNode($expression.start.getElement());
 		/* join */
-		CFGNode n2 = new CFGNode();
+		CFGNode n2 = new CFGJoinNode();
 		$g.setStartNode(n1);
 		$g.setEndNode(n2);
 		/* true */
@@ -381,7 +381,7 @@ scope IterSwitch;
 		CFGBranchNode n = new CFGBranchNode($expression.start.
 				getElement());
 		$g.setStartNode(n);
-		CFGNode breakNode = new CFGNode();
+		CFGNode breakNode = new CFGJoinNode();
 		$g.setEndNode(breakNode);
 		for (Pair<Element, CFGNode> pair: $IterSwitch::cases)
 			n.addEdge(pair.getSecond(), pair.getFirst());
@@ -415,7 +415,7 @@ scope IterSwitch;
 		CFGBranchNode branch =
 			new CFGBranchNode($expression.start.getElement());
 		/* join */
-		breakNode = new CFGNode();
+		breakNode = new CFGJoinNode();
 		$g.setStartNode(branch);
 		$g.setEndNode(breakNode);
 		/* true */
@@ -430,7 +430,7 @@ scope IterSwitch;
 		CFGBranchNode branch =
 			new CFGBranchNode($expression.start.getElement());
 		/* join */
-		breakNode = new CFGNode();
+		breakNode = new CFGJoinNode();
 
 		$g.setStartNode($statement.g.getStartNode());
 		$g.setEndNode(breakNode);
@@ -448,7 +448,7 @@ scope IterSwitch;
 		else
 			n1 = new CFGNode($e1.start.getElement());
 		$g.setStartNode(n1);
-		breakNode = new CFGNode();
+		breakNode = new CFGJoinNode();
 		$g.setEndNode(breakNode);
 		if ($e2.g == null) { /* no test */
 			n2 = new CFGNode(emptyStatement);
