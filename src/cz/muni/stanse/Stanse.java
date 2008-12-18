@@ -27,10 +27,10 @@ import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import java.util.ArrayList;
 import static java.util.Arrays.*;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSpec;
@@ -65,9 +65,9 @@ public final class Stanse {
 	 */
 	private static File outputDirectory = new File(".");
 
-	private static List<File> sources = new ArrayList<File>();	
+	private static List<File> sources = new LinkedList<File>();	
 	
-	private static List<Unit> units = new ArrayList<Unit>();
+	private static List<Unit> units = new LinkedList<Unit>();
 	
 	/**
 	 * @param args
@@ -116,8 +116,8 @@ public final class Stanse {
 		.ofType(File.class);		
 
 		// split arguments for the checker and for the tool
-		List<String> argsStanse = new ArrayList<String>();
-		List<String> argsChecker = new ArrayList<String>();
+		List<String> argsStanse = new LinkedList<String>();
+		List<String> argsChecker = new LinkedList<String>();
 
 		for (String option : args) {
 			if (option.startsWith("-X") || option.startsWith("--X")) {
@@ -219,7 +219,7 @@ public final class Stanse {
 			// PARSING, CONVERSION to XML and CFG
 			Unit unit;
 			Document unitAST;
-			Set<CFG> unitCFG;
+			List<CFG> unitCFG;
 			File xmlFile;
 			File cfgFile;
 			String fileName;

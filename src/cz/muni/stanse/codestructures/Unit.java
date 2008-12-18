@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 
 import org.antlr.runtime.RecognitionException;
 
@@ -17,7 +17,7 @@ import cz.muni.stanse.codestructures.CFG;
 public abstract class Unit {
     protected String name;
     protected Document xmlDocument;
-    protected Set<CFG> CFGs;
+    protected List<CFG> CFGs;
 
     // constructors
     public Unit() {}
@@ -37,7 +37,7 @@ public abstract class Unit {
 	return xmlDocument;
     }
 
-    public Set<CFG> getCFGs() {
-	return Collections.unmodifiableSet(CFGs);
+    public List<CFG> getCFGs() {
+	return Collections.unmodifiableList(CFGs);
     }
 }

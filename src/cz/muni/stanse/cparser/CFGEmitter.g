@@ -60,9 +60,9 @@ import cz.muni.stanse.utils.XMLAlgo;
 	}
 }
 
-translationUnit returns [Set<CFG> g]
+translationUnit returns [List<CFG> g]
 @init {
-	$g = new LinkedHashSet<CFG>();
+	$g = new LinkedList<CFG>();
 	emptyStatement = xmlFactory.createElement("emptyStatement");
 	defaultLabel = xmlFactory.createElement("default");
 	falseLabel = xmlFactory.createElement("intConst");
