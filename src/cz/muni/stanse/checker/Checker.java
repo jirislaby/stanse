@@ -3,7 +3,7 @@
  */
 package cz.muni.stanse.checker;
 
-import cz.muni.stanse.cparser.CUnit;
+import cz.muni.stanse.codestructures.Unit;
 
 import java.util.List;
 
@@ -60,7 +60,7 @@ public abstract class Checker {
      * @see cz.muni.stanse.checker#CheckerError
      * @see cz.muni.stanse.checker#CheckerException
      */
-    public abstract List<CheckerError> check(final List<CUnit> units)
+    public abstract List<CheckerError> check(final List<Unit> units)
                         throws CheckerException;
 
     /**

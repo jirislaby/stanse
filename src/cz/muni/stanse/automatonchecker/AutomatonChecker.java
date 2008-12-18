@@ -19,7 +19,7 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 
 import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.cparser.CUnit;
+import cz.muni.stanse.codestructures.Unit;
 
 /**
  * @brief Static checker which is able to detect locking problems, interrupts
@@ -99,14 +99,14 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      */
     @Override
     public List<cz.muni.stanse.checker.CheckerError>
-    check(final List<CUnit> units) throws XMLAutomatonSyntaxErrorException {
+    check(final List<Unit> units) throws XMLAutomatonSyntaxErrorException {
         final HashMap<cz.muni.stanse.codestructures.CFGNode,PatternLocation>
             nodeLocationDictionary = PatternLocationBuilder.
                    buildPatternLocations(units, getXMLAutomatonDefinition());
 
         final LinkedList<PatternLocation> progressQueue =
                 new LinkedList<PatternLocation>();
-        for (final CUnit unit : units) {
+        for (final Unit unit : units) {
         	for (final CFG cfg : unit.getCFGs())
         		progressQueue.add(nodeLocationDictionary.get(cfg.getStartNode()));
         }

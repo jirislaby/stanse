@@ -7,6 +7,7 @@ import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.cparser.CUnit;
 
 // import cz.muni.stanse.gui.GuiMain;
@@ -28,7 +29,6 @@ import java.lang.reflect.InvocationTargetException;
 
 import java.util.ArrayList;
 import static java.util.Arrays.*;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -67,7 +67,7 @@ public final class Stanse {
 
 	private static List<File> sources = new ArrayList<File>();	
 	
-	private static List<CUnit> units = new ArrayList<CUnit>();
+	private static List<Unit> units = new ArrayList<Unit>();
 	
 	/**
 	 * @param args
@@ -217,7 +217,7 @@ public final class Stanse {
 			// TODO: single hyphen is a non-option argument, and as such should be present only if no file names are present
 
 			// PARSING, CONVERSION to XML and CFG
-			CUnit unit;
+			Unit unit;
 			Document unitAST;
 			Set<CFG> unitCFG;
 			File xmlFile;
@@ -227,6 +227,8 @@ public final class Stanse {
 			{		
 				try {
 					fileName = unitFile.getName();
+					// we know we are dealing with C
+					// TODO make this universal
 					unit = new CUnit(unitFile);
 					units.add(unit);
 					

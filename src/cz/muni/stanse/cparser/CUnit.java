@@ -2,34 +2,23 @@ package cz.muni.stanse.cparser;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-
-import java.util.Collections;
-import java.util.Set;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 
-import org.dom4j.Document;
-
-import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.cparser.CFGEmitter;
 
-public final class CUnit {
-    private String name;
-    private Document xmlDocument;
-    private Set<CFG> CFGs;
+public final class CUnit extends Unit {
 
-    // constructors
-    
     public CUnit(File file) throws IOException, RecognitionException {
-    this(new FileInputStream(file), file.getName());
-    }
-    
+        this(new FileInputStream(file), file.getName());
+        }
+	
     public CUnit(InputStream stream, String name) throws IOException, RecognitionException {
 	this.name = name;
 	
@@ -55,19 +44,4 @@ public final class CUnit {
 	CFGs = cfgEmitter.translationUnit();
    }
 
-    // getters
-    
-    public String getName() {
-    return name;
-    }
-    
-    public Document getXMLDocument() {
-	return xmlDocument;
-    }
-
-    public Set<CFG> getCFGs() {
-	return Collections.unmodifiableSet(CFGs);
-    }
-
-    // remaining members    
 }
