@@ -9,12 +9,8 @@ import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.cparser.CUnit;
 
-// import cz.muni.stanse.callgraph.CallGraph;
-// import cz.muni.stanse.gui.GraphViz;
-
-import cz.muni.stanse.gui.GuiMain;
-import cz.muni.stanse.gui.SourceAndXMLWindow;
-
+// import cz.muni.stanse.gui.GuiMain;
+// import cz.muni.stanse.gui.SourceAndXMLWindow;
 
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
@@ -25,8 +21,6 @@ import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
@@ -51,11 +45,6 @@ import org.apache.log4j.Priority;
 import org.apache.log4j.spi.LoggingEvent;
 
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
-import org.dom4j.DocumentException;
-
 import org.antlr.runtime.RecognitionException;
 
 /**
@@ -77,9 +66,9 @@ public final class Stanse {
 	private static File outputDirectory = new File(".");
 
 	private static List<File> sources = new ArrayList<File>();	
-	private static Set<CFG> cfgs = new LinkedHashSet<CFG>();
-	private static List<Document> asts = new ArrayList<Document>();
-
+	
+	private static List<CUnit> units = new ArrayList<CUnit>();
+	
 	/**
 	 * @param args
 	 *            the command line arguments Command line argument parsed using
@@ -228,7 +217,7 @@ public final class Stanse {
 			// TODO: single hyphen is a non-option argument, and as such should be present only if no file names are present
 
 			// PARSING, CONVERSION to XML and CFG
-			CUnit cparser;
+			CUnit unit;
 			Document unitAST;
 			Set<CFG> unitCFG;
 			File xmlFile;
@@ -237,29 +226,18 @@ public final class Stanse {
 			for (File unitFile : sources)			
 			{		
 				try {
-					cparser = new CUnit(new FileInputStream(unitFile));
-					try {
-						cparser.run();
-					} catch (NullPointerException e) {
-						logger.log(Level.FATAL, null, e);
-					} catch (RecognitionException e) {
-						logger.log(Level.FATAL, null, e);
-					} catch (IOException e) {
-						logger.log(Level.FATAL, null, e);
-					}
-
-					unitAST = cparser.getXMLDocument();
-					asts.add(unitAST);
-					unitCFG = cparser.getCFGs();
-					cfgs.addAll(unitCFG);
-
 					fileName = unitFile.getName();
+					unit = new CUnit(unitFile);
+					units.add(unit);
+					
 					// DUMP-XML
 					if (options.has(dumpXML)) {
-						xmlFile = new File(outputDirectory,fileName+".xml");
+						unitAST = unit.getXMLDocument();
+						xmlFile = new File(outputDirectory, fileName + ".xml");
 						try {
-							// BufferedWriter out = new BufferedWriter(new FileWriter(xmlFile));
-							XMLAlgo.outputXML(unitAST, new PrintStream(xmlFile));
+							// BufferedWriter out = new BufferedWriter(new
+							// FileWriter(xmlFile));
+							XMLAlgo.outputXML(unitAST,	new PrintStream(xmlFile));
 							// out.close();
 						} catch (IOException e) {
 							// TODO
@@ -268,10 +246,13 @@ public final class Stanse {
 					}
 					// DUMP-CFG
 					if (options.has(dumpCFG)) {
+						unitCFG = unit.getCFGs();
 						for (CFG cfg : unitCFG) {
-							cfgFile = new File(outputDirectory, fileName+"."+cfg.getFunctionName()+".dot");
+							cfgFile = new File(outputDirectory, fileName + "."
+									+ cfg.getFunctionName() + ".dot");
 							try {
-								BufferedWriter out = new BufferedWriter(new FileWriter(cfgFile));
+								BufferedWriter out = new BufferedWriter(
+										new FileWriter(cfgFile));
 								out.write(cfg.toDot());
 								out.close();
 							} catch (IOException e) {
@@ -279,11 +260,14 @@ public final class Stanse {
 							}
 						}
 					}
-
-				} catch (FileNotFoundException e1) {
-					// TODO this should not happen - we have already checked
-					e1.printStackTrace();
+				} catch (NullPointerException e) {
+					logger.log(Level.FATAL, null, e);
+				} catch (RecognitionException e) {
+					logger.log(Level.FATAL, null, e);
+				} catch (IOException e) {
+					logger.log(Level.FATAL, null, e);
 				}
+
 			}
 
 			// TODO: create callgraph
@@ -323,7 +307,7 @@ public final class Stanse {
 				Constructor c = cl.getConstructor(new Class[] { String[].class });
 				Checker checker = (Checker)c.newInstance((Object) argsChecker.toArray(new String[0]));
 								
-				for (CheckerError e : checker.check(cfgs)){
+				for (CheckerError e : checker.check(units)){
 					// TODO: better output
 					System.out.println(e.toString());
 				}

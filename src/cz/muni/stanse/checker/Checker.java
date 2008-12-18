@@ -3,9 +3,8 @@
  */
 package cz.muni.stanse.checker;
 
-import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.cparser.CUnit;
 
-import java.util.Set;
 import java.util.List;
 
 /**
@@ -44,16 +43,16 @@ public abstract class Checker {
     public abstract String getName();
 
     /**
-     * @brief Performs checking itself. Accepts set of CFGs and runs the
-     *        checking on them to produce list of errors found in the CFGs.   
+     * @brief Performs checking itself. Accepts set of compilation units and runs the
+     *        checking on them to produce list of errors found in the units.   
      *
      * Derived checker can implement checking procedure as it likes. It is
      * assumed, that verification is interprocedural on the set of accepted
-     * set of CFGs.
+     * set of units.
      *
-     * @param  CFGs Set of control-flow graphs, which should be checked for
+     * @param  units Set of compilation units, which should be checked for
      *         errors.
-     * @return List of errors found in accepted CFGs.
+     * @return List of errors found.
      * @throws CheckerException All the exceptions thrown by child checker.
      *         Children should derive their own exception classes from
      *         CheckerException class. 
@@ -61,7 +60,7 @@ public abstract class Checker {
      * @see cz.muni.stanse.checker#CheckerError
      * @see cz.muni.stanse.checker#CheckerException
      */
-    public abstract List<CheckerError> check(final Set<CFG> CFGs)
+    public abstract List<CheckerError> check(final List<CUnit> units)
                         throws CheckerException;
 
     /**

@@ -1,5 +1,8 @@
 package cz.muni.stanse.cparser;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -17,25 +20,19 @@ import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.cparser.CFGEmitter;
 
 public final class CUnit {
-    private InputStream stream;
+    private String name;
     private Document xmlDocument;
     private Set<CFG> CFGs;
 
-    private CUnit() { }
-
-    public CUnit(InputStream stream) {
-	this.stream = stream;
+    // constructors
+    
+    public CUnit(File file) throws IOException, RecognitionException {
+    this(new FileInputStream(file), file.getName());
     }
-
-    public Document getXMLDocument() {
-	return xmlDocument;
-    }
-
-    public Set<CFG> getCFGs() {
-	return Collections.unmodifiableSet(CFGs);
-    }
-
-    public void run() throws IOException, RecognitionException {
+    
+    public CUnit(InputStream stream, String name) throws IOException, RecognitionException {
+	this.name = name;
+	
 	StanseTreeAdaptor adaptor = new StanseTreeAdaptor();
 
 	GNUCaLexer lex = new GNUCaLexer(new ANTLRInputStream(stream));
@@ -56,5 +53,21 @@ public final class CUnit {
 
 	CFGEmitter cfgEmitter = new CFGEmitter(nodes);
 	CFGs = cfgEmitter.translationUnit();
+   }
+
+    // getters
+    
+    public String getName() {
+    return name;
     }
+    
+    public Document getXMLDocument() {
+	return xmlDocument;
+    }
+
+    public Set<CFG> getCFGs() {
+	return Collections.unmodifiableSet(CFGs);
+    }
+
+    // remaining members    
 }

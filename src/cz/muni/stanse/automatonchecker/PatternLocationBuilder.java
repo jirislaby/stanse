@@ -2,10 +2,11 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
+import cz.muni.stanse.cparser.CUnit;
 import cz.muni.stanse.utils.CFGTraversal;
 
 import java.util.LinkedList;
-import java.util.Set;
+import java.util.List;
 import java.util.HashMap;
 
 final class PatternLocationBuilder {
@@ -13,16 +14,18 @@ final class PatternLocationBuilder {
     // package-private section
 
     static HashMap<CFGNode,PatternLocation>
-    buildPatternLocations(final Set<CFG> setOfAllCFGs,
+    buildPatternLocations(final List<CUnit> units,
                           final XMLAutomatonDefinition automatonDefinition)
                                        throws XMLAutomatonSyntaxErrorException {
         final HashMap<CFGNode,PatternLocation> nodeLocationDictionary =
             new HashMap<CFGNode,PatternLocation>();
 
-        for (final CFG cfg : setOfAllCFGs) {
-            final HashMap<CFGNode,PatternLocation> locationsForCurrentCFG =
-                        buildPatternLocationsForOneCFG(cfg,automatonDefinition);
-            nodeLocationDictionary.putAll(locationsForCurrentCFG);
+        for (final CUnit unit : units) {
+        	for (final CFG cfg : unit.getCFGs()) {
+        		final HashMap<CFGNode,PatternLocation> locationsForCurrentCFG =
+        			buildPatternLocationsForOneCFG(cfg,automatonDefinition);
+        		nodeLocationDictionary.putAll(locationsForCurrentCFG);
+        	}
         }
 
         return nodeLocationDictionary;

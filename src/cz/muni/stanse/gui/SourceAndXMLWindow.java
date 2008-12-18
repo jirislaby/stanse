@@ -469,8 +469,7 @@ public class SourceAndXMLWindow extends JPanel {
 	    return;
 	Cursor originalCursor = getCursor();
 	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-	CUnit parser = new CUnit(new FileInputStream(sourceFile));
-	parser.run();
+	CUnit parser = new CUnit(sourceFile);
 	documentXML = parser.getXMLDocument();
 	documentXML.setName(sourceFile.getName());
 	if (documentXML != null)

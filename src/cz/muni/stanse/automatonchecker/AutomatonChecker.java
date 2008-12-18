@@ -7,13 +7,11 @@
 package cz.muni.stanse.automatonchecker;
 
 import java.io.File;
-import java.util.Set;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 
 import joptsimple.OptionParser;
@@ -21,6 +19,7 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.cparser.CUnit;
 
 /**
  * @brief Static checker which is able to detect locking problems, interrupts
@@ -57,20 +56,7 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     
     public AutomatonChecker(String[] args) throws XMLAutomatonSyntaxErrorException, Exception {
-    	this(getDocument(args));
-//    	OptionParser parser = new OptionParser();
-//    	OptionSpec<File> automaton = parser.accepts("Xautomaton" , "Checking automaton.")
-//		.withRequiredArg()
-//		.describedAs("file")
-//		.ofType(File.class);
-//    	
-//    	final OptionSet options = parser.parse(args);
-//    	if(options.has(automaton)) {
-//    		this((new SAXReader()).read(options.valueOf(automaton)));
-//    	}else {
-//    		// TODO spadni!
-//    	}
-    		
+    	this(getDocument(args));    		
     }
     
     private static Document getDocument(String[] args) throws Exception {
@@ -81,10 +67,8 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 		.ofType(File.class);
     	
     	final OptionSet options = parser.parse(args);
-    	// if(options.has(automaton)) {
-    		
-				return ((new SAXReader()).read(options.valueOf(automaton)));
-			
+//    	 if(options.has(automaton)) {
+    	return ((new SAXReader()).read(options.valueOf(automaton)));			
 //    	}else {
 //    		// TODO spadni!
 //    	}
@@ -115,16 +99,18 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      */
     @Override
     public List<cz.muni.stanse.checker.CheckerError>
-    check(final Set<CFG> CFGs) throws XMLAutomatonSyntaxErrorException {
+    check(final List<CUnit> units) throws XMLAutomatonSyntaxErrorException {
         final HashMap<cz.muni.stanse.codestructures.CFGNode,PatternLocation>
             nodeLocationDictionary = PatternLocationBuilder.
-                   buildPatternLocations(CFGs,getXMLAutomatonDefinition());
+                   buildPatternLocations(units, getXMLAutomatonDefinition());
 
         final LinkedList<PatternLocation> progressQueue =
                 new LinkedList<PatternLocation>();
-        for (final CFG cfg : CFGs)
-            progressQueue.add(nodeLocationDictionary.get(cfg.getStartNode()));
-
+        for (final CUnit unit : units) {
+        	for (final CFG cfg : unit.getCFGs())
+        		progressQueue.add(nodeLocationDictionary.get(cfg.getStartNode()));
+        }
+        
         while (!progressQueue.isEmpty()) {
             final PatternLocation currentLocation = progressQueue.remove();
             if (!currentLocation.hasUnprocessedAutomataStates())
