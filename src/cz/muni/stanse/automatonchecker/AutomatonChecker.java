@@ -6,10 +6,19 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import java.io.File;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 
 import cz.muni.stanse.parser.CFG;
 
@@ -46,6 +55,41 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                                                 XMLdefinition.getRootElement());
     }
 
+    
+    public AutomatonChecker(String[] args) throws XMLAutomatonSyntaxErrorException, Exception {
+    	this(getDocument(args));
+//    	OptionParser parser = new OptionParser();
+//    	OptionSpec<File> automaton = parser.accepts("Xautomaton" , "Checking automaton.")
+//		.withRequiredArg()
+//		.describedAs("file")
+//		.ofType(File.class);
+//    	
+//    	final OptionSet options = parser.parse(args);
+//    	if(options.has(automaton)) {
+//    		this((new SAXReader()).read(options.valueOf(automaton)));
+//    	}else {
+//    		// TODO spadni!
+//    	}
+    		
+    }
+    
+    private static Document getDocument(String[] args) throws Exception {
+    	OptionParser parser = new OptionParser();
+    	OptionSpec<File> automaton = parser.accepts("Xautomaton" , "Checking automaton.")
+		.withRequiredArg()
+		.describedAs("file")
+		.ofType(File.class);
+    	
+    	final OptionSet options = parser.parse(args);
+    	// if(options.has(automaton)) {
+    		
+				return ((new SAXReader()).read(options.valueOf(automaton)));
+			
+//    	}else {
+//    		// TODO spadni!
+//    	}
+    }
+    
     /**
      * @brief
      *

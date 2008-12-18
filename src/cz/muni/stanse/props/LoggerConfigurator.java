@@ -65,11 +65,11 @@ public class LoggerConfigurator {
         try {
         	try {
 
-        		if(Stanse.getDebug()) {
-        			ConsoleAppender consoleAppender = new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR);
-        			consoleAppender.setThreshold(loggingLevel);
-        			Logger.getRootLogger().addAppender(consoleAppender);
-        		}
+//        		if(Stanse.getDebug()) {
+//        			ConsoleAppender consoleAppender = new ConsoleAppender(new SimpleLayout(), ConsoleAppender.SYSTEM_ERR);
+//        			consoleAppender.setThreshold(loggingLevel);
+//        			Logger.getRootLogger().addAppender(consoleAppender);
+//        		}
 
         		InputStream bis=new BufferedInputStream(new FileInputStream("log4j.properties"));             
         		properties.load(bis);

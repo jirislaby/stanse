@@ -27,6 +27,14 @@ public abstract class Checker {
     }
 
     /**
+     * @brief Initializes checker by supplied command-line arguments.
+     * 
+     * The options must all start with -X/--X. 
+     */
+    public Checker(String[] args){
+    }
+    
+    /**
      * @brief Forces all the children to define name of the checker.
      * 
      * The name should be unique.
@@ -39,7 +47,7 @@ public abstract class Checker {
      * @brief Performs checking itself. Accepts set of CFGs and runs the
      *        checking on them to produce list of errors found in the CFGs.   
      *
-     * Derived checker can implement cheking procedure as it likes. It is
+     * Derived checker can implement checking procedure as it likes. It is
      * assumed, that verification is interprocedural on the set of accepted
      * set of CFGs.
      *
@@ -51,14 +59,14 @@ public abstract class Checker {
      *         CheckerException class. 
      *         
      * @see cz.muni.stanse.checker#CheckerError
-     *      cz.muni.stanse.checker#CheckerException
+     * @see cz.muni.stanse.checker#CheckerException
      */
     public abstract List<CheckerError> check(final Set<CFG> CFGs)
                         throws CheckerException;
 
     /**
      * @brief Implements standard string conversion method.
-     * @return String desctioption of the checker.
+     * @return String description of the checker.
      * @see java.lang.Object#toString()
      */
     @Override
