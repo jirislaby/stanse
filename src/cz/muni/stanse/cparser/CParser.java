@@ -14,7 +14,7 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
 import org.dom4j.Document;
 
 import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.codestructures.CFGEmitter;
+import cz.muni.stanse.cparser.CFGEmitter;
 
 public final class CParser {
     private InputStream stream;
