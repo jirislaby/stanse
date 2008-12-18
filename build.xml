@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="build" name="stanse">
     <property name="dist" value="dist"/>
-    <property name="parser.location" value="src/cz/muni/stanse/parser"/>
+    <property name="parser.location" value="src/cz/muni/stanse/cparser"/>
     <property name="antlr.location" value="tools/antlr-3.1.1.jar"/>
     <property name="antlr-runtime.location" value="${dist}/lib/antlr-3.1.1-runtime.jar"/>
     <path id="project.classpath">
