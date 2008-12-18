@@ -4,7 +4,7 @@
  * Distributed under GPLv2
  */
 
-package cz.muni.stanse.parser;
+package cz.muni.stanse.codestructures;
 
 import java.util.ArrayList;
 import java.util.Collections;

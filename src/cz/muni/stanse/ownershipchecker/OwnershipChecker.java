@@ -13,9 +13,9 @@ import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Triple;
-import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.parser.CFG;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

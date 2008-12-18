@@ -1,4 +1,4 @@
-package cz.muni.stanse.parser;
+package cz.muni.stanse.cparser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +12,9 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 
 import org.dom4j.Document;
+
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGEmitter;
 
 public final class CParser {
     private InputStream stream;

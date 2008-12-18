@@ -122,7 +122,7 @@ final class XMLTransitionRule {
      * @see
      */
     private AutomatonState buildResultState(
-                        final cz.muni.stanse.parser.CFG cfg,
+                        final cz.muni.stanse.codestructures.CFG cfg,
                         final Vector<Integer> matchIDs, final int locationID) {
         if (getOutSymbolID() == -1)
             return null;

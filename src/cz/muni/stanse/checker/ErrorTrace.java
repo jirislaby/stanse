@@ -4,8 +4,8 @@
  */
 package cz.muni.stanse.checker;
 
-import cz.muni.stanse.parser.CFG;
-import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Triple;
 import java.util.List;
 

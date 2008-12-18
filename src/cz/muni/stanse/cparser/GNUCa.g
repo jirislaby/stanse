@@ -130,13 +130,13 @@ scope Symbols {
 }
 
 @header{
-	package cz.muni.stanse.parser;
+	package cz.muni.stanse.cparser;
 	import java.util.Set;
 	import java.util.HashSet;
 }
 
 @lexer::header{
-	package cz.muni.stanse.parser;
+	package cz.muni.stanse.cparser;
 }
 
 @members{

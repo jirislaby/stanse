@@ -4,7 +4,7 @@
  * Distributed under GPLv2
  */
 
-package cz.muni.stanse.parser;
+package cz.muni.stanse.codestructures;
 
 import org.dom4j.Element;
 
@@ -16,7 +16,7 @@ public class CFG extends CFGPart {
     private String functionName; // name of the corespondenting function
     private Element functionDefinition; // function definition in xml
 
-    static CFG createFromCFGPart(CFGPart cfgPart, Element functionDefinition) {
+    public static CFG createFromCFGPart(CFGPart cfgPart, Element functionDefinition) {
 	CFG cfg = new CFG(functionDefinition);
 	cfg.setStartNode(cfgPart.getStartNode());
 	cfg.setEndNode(cfgPart.getEndNode());

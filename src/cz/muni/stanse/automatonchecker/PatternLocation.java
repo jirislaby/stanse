@@ -10,8 +10,8 @@ final class PatternLocation {
 
     // package-private section
 
-    PatternLocation(final cz.muni.stanse.parser.CFG cfg,
-                    final cz.muni.stanse.parser.CFGNode referenceNode,
+    PatternLocation(final cz.muni.stanse.codestructures.CFG cfg,
+                    final cz.muni.stanse.codestructures.CFGNode referenceNode,
                     final Collection<TransitionRule> transitionRules,
                     final Collection<ErrorRule> errorRules) {
         this.cfg = cfg;
@@ -28,7 +28,7 @@ final class PatternLocation {
         return successorPatternLocations;
     }
 
-    cz.muni.stanse.parser.CFGNode getCFGreferenceNode() {
+    cz.muni.stanse.codestructures.CFGNode getCFGreferenceNode() {
         return CFGreferenceNode;
     }
 
@@ -50,7 +50,7 @@ final class PatternLocation {
         return deliveredAutomataStates;
     }
 
-    public cz.muni.stanse.parser.CFG getCFG() {
+    public cz.muni.stanse.codestructures.CFG getCFG() {
         return cfg;
     }
 
@@ -111,8 +111,8 @@ final class PatternLocation {
         return transitionRules;
     }
 
-    private final cz.muni.stanse.parser.CFG cfg;
-    private final cz.muni.stanse.parser.CFGNode CFGreferenceNode;
+    private final cz.muni.stanse.codestructures.CFG cfg;
+    private final cz.muni.stanse.codestructures.CFGNode CFGreferenceNode;
     private final HashSet<AutomatonState> processedAutomataStates;
     private final LinkedList<AutomatonState> unprocessedAutomataStates;
     private final HashSet<AutomatonState> deliveredAutomataStates;

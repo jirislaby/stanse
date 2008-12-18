@@ -1,6 +1,6 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.LinkedList;
@@ -40,7 +40,7 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
     // package-private section
 
     PatternLocationCreator(
-            final cz.muni.stanse.parser.CFG cfg,
+            final cz.muni.stanse.codestructures.CFG cfg,
             final XMLAutomatonDefinition XMLdefinition) {
         super();
         this.cfg = cfg;
@@ -97,7 +97,7 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
         return new PatternLocation(getCFG(),node,transitionRules,errorRules);
     }
 
-    private cz.muni.stanse.parser.CFG getCFG() {
+    private cz.muni.stanse.codestructures.CFG getCFG() {
         return cfg;
     }
 
@@ -114,7 +114,7 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
         return patternAutomataCounter++;
     }
 
-    private final cz.muni.stanse.parser.CFG cfg;
+    private final cz.muni.stanse.codestructures.CFG cfg;
     private final XMLAutomatonDefinition automatonDefinition;
     private final HashMap<CFGNode,PatternLocation> createdPatternLocations;
     private final HashMap<PatternVariablesAssignment,Integer> automataIDs;

@@ -1,7 +1,7 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.parser.CFG;
-import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.CFGTraversal;
 
 import java.util.LinkedList;

@@ -3,7 +3,7 @@
  */
 package cz.muni.stanse.checker;
 
-import cz.muni.stanse.parser.CFG;
+import cz.muni.stanse.codestructures.CFG;
 
 import java.util.Set;
 import java.util.List;

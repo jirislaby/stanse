@@ -12,7 +12,7 @@ final class CheckerErrorBuilder {
     // package-private section
 
     static LinkedList<CheckerError>
-    buildErrorList(final HashMap<cz.muni.stanse.parser.CFGNode,PatternLocation>
+    buildErrorList(final HashMap<cz.muni.stanse.codestructures.CFGNode,PatternLocation>
                                                        edgeLocationDictionary) {
         final LinkedList<CheckerError> errorsList =
                                                  new LinkedList<CheckerError>();
@@ -27,7 +27,7 @@ final class CheckerErrorBuilder {
 
     private static LinkedList<CheckerError> buildErrorsInLocation(
             final PatternLocation location,
-            final HashMap<cz.muni.stanse.parser.CFGNode,PatternLocation>
+            final HashMap<cz.muni.stanse.codestructures.CFGNode,PatternLocation>
                                                        edgeLocationDictionary) {
         final LinkedList<CheckerError> errorsList =
             new LinkedList<CheckerError>();
@@ -54,7 +54,7 @@ final class CheckerErrorBuilder {
     }
 
     private static String getMsgPrefix(
-            final cz.muni.stanse.parser.CFG cfg) {
+            final cz.muni.stanse.codestructures.CFG cfg) {
         return "In function: '" + cfg.getFunctionName() + "()' : ";
     }
 

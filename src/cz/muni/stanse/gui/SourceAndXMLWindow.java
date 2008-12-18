@@ -11,8 +11,8 @@ import cz.muni.stanse.automatonchecker.AutomatonChecker;
 //import cz.muni.stanse.ownershipchecker.OwnershipChecker;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.CheckerError;
-import cz.muni.stanse.parser.CFG;
-import cz.muni.stanse.parser.CParser;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.cparser.CParser;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.concurrent.ExecutionException;

@@ -20,7 +20,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 
-import cz.muni.stanse.parser.CFG;
+import cz.muni.stanse.codestructures.CFG;
 
 /**
  * @brief Static checker which is able to detect locking problems, interrupts
@@ -116,7 +116,7 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     @Override
     public List<cz.muni.stanse.checker.CheckerError>
     check(final Set<CFG> CFGs) throws XMLAutomatonSyntaxErrorException {
-        final HashMap<cz.muni.stanse.parser.CFGNode,PatternLocation>
+        final HashMap<cz.muni.stanse.codestructures.CFGNode,PatternLocation>
             nodeLocationDictionary = PatternLocationBuilder.
                    buildPatternLocations(CFGs,getXMLAutomatonDefinition());
 

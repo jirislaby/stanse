@@ -6,6 +6,8 @@ package cz.muni.stanse;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.cparser.CParser;
 
 // import cz.muni.stanse.callgraph.CallGraph;
 // import cz.muni.stanse.gui.GraphViz;
@@ -13,8 +15,6 @@ import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.gui.GuiMain;
 import cz.muni.stanse.gui.SourceAndXMLWindow;
 
-import cz.muni.stanse.parser.CParser;
-import cz.muni.stanse.parser.CFG;
 
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;

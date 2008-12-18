@@ -10,8 +10,8 @@ package cz.muni.stanse.gui;
 
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;
-import cz.muni.stanse.parser.CFGNode;
-import cz.muni.stanse.parser.CFG;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Triple;
 
 import java.awt.Component;

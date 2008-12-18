@@ -52,14 +52,14 @@ final class AutomatonState {
 
     // package-private section
 
-    AutomatonState(final cz.muni.stanse.parser.CFG cfg,
+    AutomatonState(final cz.muni.stanse.codestructures.CFG cfg,
                    final int symbolID, final Vector<Integer> automatonIDs) {
         this.cfg = cfg;
         this.symbolID = symbolID;
         this.automatonIDs = automatonIDs;
     }
 
-    AutomatonState(final cz.muni.stanse.parser.CFG cfg,
+    AutomatonState(final cz.muni.stanse.codestructures.CFG cfg,
                    final int symbolID, final Integer automatonID) {
         this.cfg = cfg;
         this.symbolID = symbolID;
@@ -67,7 +67,7 @@ final class AutomatonState {
         automatonIDs.add(automatonID);
     }
 
-    cz.muni.stanse.parser.CFG getCFG() {
+    cz.muni.stanse.codestructures.CFG getCFG() {
         return cfg;
     }
 
@@ -115,7 +115,7 @@ final class AutomatonState {
     /**
      * @brief
      */
-    private final cz.muni.stanse.parser.CFG cfg;
+    private final cz.muni.stanse.codestructures.CFG cfg;
     /**
      * @brief
      */

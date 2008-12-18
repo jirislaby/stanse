@@ -27,7 +27,9 @@ scope Function {
 }
 
 @header {
-package cz.muni.stanse.parser;
+package cz.muni.stanse.cparser;
+
+import cz.muni.stanse.codestructures.*;
 
 import java.io.IOException;
 

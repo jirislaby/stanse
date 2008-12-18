@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Stack;
 import java.util.Collections;
 
-import cz.muni.stanse.parser.CFG;
-import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
 
 // Node followers --------------------------------------------------------------
 

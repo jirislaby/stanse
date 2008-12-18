@@ -4,7 +4,7 @@
  * Distributed under GPLv2
  */
 
-package cz.muni.stanse.parser;
+package cz.muni.stanse.cparser;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;

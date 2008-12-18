@@ -1,6 +1,6 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.codestructures.CFGNode;
 
 import java.util.HashMap;
 import java.util.LinkedList;

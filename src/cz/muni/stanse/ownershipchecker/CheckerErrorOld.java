@@ -7,7 +7,7 @@
 
 package cz.muni.stanse.ownershipchecker;
 
-import cz.muni.stanse.parser.CFGNode;
+import cz.muni.stanse.codestructures.CFGNode;
 
 import java.util.TreeSet;
 
