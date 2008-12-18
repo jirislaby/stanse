@@ -12,7 +12,7 @@ import cz.muni.stanse.automatonchecker.AutomatonChecker;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.cparser.CParser;
+import cz.muni.stanse.cparser.CUnit;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.concurrent.ExecutionException;
@@ -469,7 +469,7 @@ public class SourceAndXMLWindow extends JPanel {
 	    return;
 	Cursor originalCursor = getCursor();
 	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-	CParser parser = new CParser(new FileInputStream(sourceFile));
+	CUnit parser = new CUnit(new FileInputStream(sourceFile));
 	parser.run();
 	documentXML = parser.getXMLDocument();
 	documentXML.setName(sourceFile.getName());

@@ -7,7 +7,7 @@ import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.cparser.CParser;
+import cz.muni.stanse.cparser.CUnit;
 
 // import cz.muni.stanse.callgraph.CallGraph;
 // import cz.muni.stanse.gui.GraphViz;
@@ -228,7 +228,7 @@ public final class Stanse {
 			// TODO: single hyphen is a non-option argument, and as such should be present only if no file names are present
 
 			// PARSING, CONVERSION to XML and CFG
-			CParser cparser;
+			CUnit cparser;
 			Document unitAST;
 			Set<CFG> unitCFG;
 			File xmlFile;
@@ -237,7 +237,7 @@ public final class Stanse {
 			for (File unitFile : sources)			
 			{		
 				try {
-					cparser = new CParser(new FileInputStream(unitFile));
+					cparser = new CUnit(new FileInputStream(unitFile));
 					try {
 						cparser.run();
 					} catch (NullPointerException e) {

@@ -16,14 +16,14 @@ import org.dom4j.Document;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.cparser.CFGEmitter;
 
-public final class CParser {
+public final class CUnit {
     private InputStream stream;
     private Document xmlDocument;
     private Set<CFG> CFGs;
 
-    private CParser() { }
+    private CUnit() { }
 
-    public CParser(InputStream stream) {
+    public CUnit(InputStream stream) {
 	this.stream = stream;
     }
 
