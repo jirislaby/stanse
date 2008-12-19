@@ -10,8 +10,8 @@ import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.cparser.CUnit;
 
-// import cz.muni.stanse.gui.GuiMain;
-// import cz.muni.stanse.gui.SourceAndXMLWindow;
+import cz.muni.stanse.gui.GuiMain;
+import cz.muni.stanse.gui.SourceAndXMLWindow;
 
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
@@ -31,7 +31,6 @@ import static java.util.Arrays.*;
 import java.util.LinkedList;
 import java.util.List;
 
-
 import joptsimple.OptionParser;
 import joptsimple.OptionSpec;
 import joptsimple.OptionSet;
@@ -48,10 +47,8 @@ import org.dom4j.Document;
 import org.antlr.runtime.RecognitionException;
 
 /**
- * Main class of the project. Includes the static main method, which is started
- * from the command line. This class takes care of command line arguments.
- * 
- * @author xstastn
+ * Class containing the main() method. Not supposed to be instantiated.
+ * The main functionality is command-line parsing.
  * 
  * @version $Id$
  */
@@ -65,27 +62,40 @@ public final class Stanse {
 	 */
 	private static File outputDirectory = new File(".");
 
+	/**
+	 * List of sourcefiles.
+	 */
 	private static List<File> sources = new LinkedList<File>();	
 	
-	private static List<Unit> units = new LinkedList<Unit>();
+	/**
+	 * List of compilation units.
+	 */
+	 static List<Unit> units = new LinkedList<Unit>();
 	
 	/**
-	 * @param args
-	 *            the command line arguments Command line argument parsed using
-	 *            JOpt simple. Homepage: http://jopt-simple.sourceforge.net/
+	 * @brief Reads command line and invokes the relevant methods. 
+	 * 
+	 * Calls parser for compilation units specified on the command line.
+	 * Calls the given checker (not if --gui was specified)
+	 * Currently depends on the --long-option=xxx syntax for the -X/--X options
+	 *  
+	 * Parsing done using JOpt simple. 
+	 * Homepage: http://jopt-simple.sourceforge.net/
+	 * 
+	 * @param args Command-line options
 	 */
-	public static void main(String[] args) {
+	 // TODO Should return an exitcode.
+	 public static void main(String[] args) {
 		OptionParser parser = new OptionParser();
 		OptionSpec<Void> help = parser.acceptsAll( asList( "h", "?", "help" ), 
 		"Shows this help message and exits." );	
-//		OptionSpec<Void> gui = parser.acceptsAll( asList( "g", "gui" ), "Starts GUI" );
+		OptionSpec<Void> gui = parser.acceptsAll( asList( "g", "gui" ), "Starts GUI" );
 		OptionSpec<Void> version = parser.accepts( "version", "Prints the program version and exits" );
 		OptionSpec<String> checkerClass = parser.acceptsAll( asList( "c", "checker"), 
 		"Checker to be run. Can occur more than once.")
 		.withRequiredArg()
 		.describedAs("className")
 		.ofType(String.class);
-		// TODO: argumenty checkeru	
 		// TODO: change to gcc style?
 //		OptionSpec<Integer> warnLevel = parser.acceptsAll( asList("w", "warn-level"),
 //		"Sets the reported warning level")
@@ -116,6 +126,7 @@ public final class Stanse {
 		.ofType(File.class);		
 
 		// split arguments for the checker and for the tool
+		// TODO requires --xxx=yyy notation for checker arguments!
 		List<String> argsStanse = new LinkedList<String>();
 		List<String> argsChecker = new LinkedList<String>();
 
@@ -216,6 +227,19 @@ public final class Stanse {
 			}
 			// TODO: single hyphen is a non-option argument, and as such should be present only if no file names are present
 
+			
+			// GUI
+			// GUI parses its files, so must be called here
+			// Also dumping is not compatible with GUI.
+			if (options.has(gui)) {
+				startGui();
+				return;
+			}
+			
+			// TODO: GUI has to know about checkers somehow! (properties file?)
+			// GUI has to be able to start any checker! (allow clasSpec in gui)
+			// in GUI give a checkbox/radiobutton chooser between checkers
+			
 			// PARSING, CONVERSION to XML and CFG
 			Unit unit;
 			Document unitAST;
@@ -275,16 +299,6 @@ public final class Stanse {
 			// TODO: create callgraph
 			// DUMP-CALL GRAPH
 
-			// GUI
-			// if checkers are specified, they (together with their parameters) should be passed to GUI
-			// or run?
-			// TODO: GUI has to know about checkers somehow! (properties file?)
-			// GUI has to be able to start any checker! (allow clasSpec in gui)
-			// in GUI give a checkbox/radiobutton chooser between checkers
-//			if (options.has(gui)) {
-//			// TODO:	stanse.startGui();
-//				return;
-//			}
 
 			// CHECKERS (only if --gui was not specified)
 			// here we should parse checker related arguments. For now we allow only a single checker
@@ -370,36 +384,41 @@ public final class Stanse {
 		//
 		//	}
 
-//		public static void startGui() {
-//
-//			java.awt.EventQueue.invokeLater(new Runnable() {
-//
-//				public void run() {
-//					GuiMain gui = new GuiMain();
-//					gui.setVisible(true);
-//					if (!sourceFiles.isEmpty()) {
-//						for (String filename : sourceFiles) {
-//							File file = new File(filename);
-//							gui.openSourceFile(file);
-//						}
-//
-//						Set<File> files = new HashSet<File>();
-//						for (String checkerDefinition : checkerDefinitions) {
-//							files.add(new File(checkerDefinition));
-//						}
-//
-//						if (!files.isEmpty()) {
-//
-//							((SourceAndXMLWindow) gui.getJTabbedPane1()
-//									.getSelectedComponent())
-//									.runStaticChecker(files);
-//						}
+	
+	/**
+	 * @brief Starts GUI, reading in the files specified on the command line.
+	 * 
+	 *  No checker definitions are read, and no checks are executed.
+	 *  Waiting for the GUI rewrite.
+	 */
+	public static void startGui() {
+		java.awt.EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				GuiMain gui = new GuiMain();
+				gui.setVisible(true);
+				if (!sources.isEmpty()) {
+					// read sources
+					// TODO replace with parsing done in Unit(source)!
+					for (File source : sources) {
+						gui.openSourceFile(source);
+					}
+
+					// Too automatonChecker centered
+					// GUI badly needs to be rewritten
+//					Set<File> files = new HashSet<File>();
+//					for (String checkerDefinition : checkerDefinitions) {
+//						files.add(new File(checkerDefinition));
 //					}
 //
-//				}
-//			});
-//
-//		}
+//					if (!files.isEmpty()) {
+//						((SourceAndXMLWindow) gui.getJTabbedPane1()
+//								.getSelectedComponent())
+//								.runStaticChecker(files);
+//					}
+				}
+			}
+		});
+	}
 
 
 		/**

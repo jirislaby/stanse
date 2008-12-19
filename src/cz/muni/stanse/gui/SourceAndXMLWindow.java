@@ -12,6 +12,7 @@ import cz.muni.stanse.automatonchecker.AutomatonChecker;
 import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.cparser.CUnit;
 import cz.muni.stanse.utils.Pair;
 
@@ -67,10 +68,9 @@ import javax.swing.SwingWorker;
  * @author Ondrej Zivotsky ( ondrej@zivotsky.cz )
  */
 public class SourceAndXMLWindow extends JPanel {
+    private Unit unit; // compilation unit 
+    private File sourceFile; // compilation's unit file
     
-    private Document documentXML = null; // XML reprezentace kodu
-    private Set<CFG> cfgs = null; // CFG reprezentace kodu
-    private File sourceFile = null; // zdrojovy kod
     private boolean mappingXMLtoSource = false;
     private TreeSelectionListener treeXMLMappingListener; // pri kliku na XML se zvyrazni odpovidajici zdrojovy text (pokud je to v artibutech uzlu)
     
@@ -262,7 +262,8 @@ public class SourceAndXMLWindow extends JPanel {
         
         final ActionListener findKlik = new ActionListener() { // listener pro stisk tlacitka Find nebo ENTER v TextFieldu
             public void actionPerformed(ActionEvent e) {
-                if (documentXML == null) { return; }
+// TODO can this be null?
+//                if (documentXML == null) { return; }
                 if (jCheckBoxXPath.isSelected()) {
                     treeXML.setHighlightedNodes(treeXML.findXPath(jTextFieldFindInXML.getText()));
                 } else {
@@ -275,7 +276,8 @@ public class SourceAndXMLWindow extends JPanel {
         
         final ActionListener findNextKlik = new ActionListener() { // listener pro stisk tlacitka FindNext nebo ENTER v TextFieldu
             public void actionPerformed(ActionEvent e) {
-                if (documentXML == null) { return; }
+// TODO can this be null?
+//                if (documentXML == null) { return; }
                 treeXML.goToNextHighlighted();
             }
         };
@@ -469,12 +471,12 @@ public class SourceAndXMLWindow extends JPanel {
 	    return;
 	Cursor originalCursor = getCursor();
 	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-	CUnit parser = new CUnit(sourceFile);
-	documentXML = parser.getXMLDocument();
+	unit = new CUnit(sourceFile);
+	final Document documentXML = unit.getXMLDocument();
+	//  ??? I don't get this ... 
 	documentXML.setName(sourceFile.getName());
 	if (documentXML != null)
 	    treeXML.setXMLDocument(documentXML);
-	cfgs = parser.getCFGs();
 	setCursor(originalCursor);
     }
     
@@ -535,10 +537,11 @@ public class SourceAndXMLWindow extends JPanel {
         }
 
         final LinkedList<CheckerError> errors = new LinkedList<CheckerError>(); 
+        final LinkedList<Unit> units = new LinkedList<Unit>(); units.add(unit);
         for (File f : configFiles)
             try {
                 errors.addAll(
-                   (new AutomatonChecker((new SAXReader()).read(f))).check(cfgs)
+                   (new AutomatonChecker((new SAXReader()).read(f))).check(units)
                 );
             }
             catch(Exception e) {
@@ -576,8 +579,8 @@ public class SourceAndXMLWindow extends JPanel {
      * Show call graph of the current document
      */
     void showCallGraph() {
-        CallGraph callGraph = new CallGraph(documentXML.getRootElement().selectNodes("//functionDefinition"));
-        GraphForm graph = new GraphForm(sourceFile.getName() + " -> Call Graph",callGraph.toDot());
+        CallGraph callGraph = new CallGraph(unit.getXMLDocument().getRootElement().selectNodes("//functionDefinition"));
+        GraphForm graph = new GraphForm(unit.getName() + " -> Call Graph",callGraph.toDot());
     }
     
     /**
@@ -595,7 +598,7 @@ public class SourceAndXMLWindow extends JPanel {
      * @return documentXML
      */
     public Document getDocumentXML() {
-        return documentXML;
+        return unit.getXMLDocument();
     }
 
    /**
