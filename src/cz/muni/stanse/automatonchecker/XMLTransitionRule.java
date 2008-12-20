@@ -88,39 +88,23 @@ final class XMLTransitionRule {
                 matchIDsMatchesLocationID(state.getAutomatonIDs(),automatonID))
             return new Pair<Boolean,AutomatonState>(
                          true,buildResultState(state.getCFG(),
-                                           state.getAutomatonIDs(),automatonID));
+                                          state.getAutomatonIDs(),automatonID));
         return new Pair<Boolean,AutomatonState>(false,null);
     }
 
     // private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private boolean matchIDsMatchesLocationID(
                     final Vector<Integer> stateMatchIDs, final int locationID) {
         if (stateMatchIDs.size() != getMatchFlags().size())
             return false;
         for (int i = 0; i < stateMatchIDs.size(); ++i)
-            if (( getMatchFlags().get(i) && stateMatchIDs.get(i) != locationID) ||
-                (!getMatchFlags().get(i) && stateMatchIDs.get(i) == locationID) )
+           if ((getMatchFlags().get(i) && stateMatchIDs.get(i) != locationID) ||
+               (!getMatchFlags().get(i) && stateMatchIDs.get(i) == locationID) )
                 return false;
         return true;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private AutomatonState buildResultState(
                         final cz.muni.stanse.codestructures.CFG cfg,
                         final Vector<Integer> matchIDs, final int locationID) {
@@ -136,30 +120,14 @@ final class XMLTransitionRule {
         return new AutomatonState(cfg,getOutSymbolID(),outMatchIDs);
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
-    private static Vector<Boolean> buildMatchFlags(final Vector<String> matchIDs,
-                                                 final String locationVarName) {
+    private static Vector<Boolean> buildMatchFlags(
+                  final Vector<String> matchIDs, final String locationVarName) {
         final Vector<Boolean> matchFlags = new Vector<Boolean>(matchIDs.size());
         for (int i = 0; i < matchIDs.size(); ++i)
             matchFlags.add(matchIDs.get(i).equals(locationVarName));
         return matchFlags;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static Vector<Integer> buildMatchOutIndices(
                                 final Vector<String> fromVarNames,
                                 final Vector<String> toVarNames,
@@ -174,14 +142,6 @@ final class XMLTransitionRule {
         return matchIndices;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static int findVarName(final Vector<String> varNames,
             final String searchedName) throws XMLAutomatonSyntaxErrorException {
         final int index = varNames.indexOf(searchedName);
@@ -192,14 +152,6 @@ final class XMLTransitionRule {
                 " attribute of the transition [possibilities are: " + varNames);
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static void checkMode(final char mode)
                                        throws XMLAutomatonSyntaxErrorException {
         if (mode != '+')
@@ -208,13 +160,6 @@ final class XMLTransitionRule {
                                 "Mode can only be nothing or symbol '+'.");
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @see
-     */
     private static void checkVars(final int minVars, final int maxVars,
                     final int numVars) throws XMLAutomatonSyntaxErrorException {
         if ((minVars >= 0 && numVars < minVars) ||
@@ -223,72 +168,25 @@ final class XMLTransitionRule {
                                                 "Invalid number of variables.");
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private int getInSymbolID() {
         return inSymbolID;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private int getOutSymbolID() {
         return outSymbolID;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private Vector<Boolean> getMatchFlags() {
         return matchFlags;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private Vector<Integer> getMatchOutIndices() {
         return matchOutIndices;
     }
 
-    /**
-     * @brief
-     */
     private final String patternName;
-    /**
-     * @brief
-     */
     private final int inSymbolID;
-    /**
-     * @brief
-     */
     private final int outSymbolID;
-    /**
-     * @brief
-     */
     private final Vector<Boolean> matchFlags;
-    /**
-     * @brief
-     */
     private final Vector<Integer> matchOutIndices;
 }

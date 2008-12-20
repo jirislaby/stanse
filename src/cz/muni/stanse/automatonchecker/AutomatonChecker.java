@@ -37,11 +37,11 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     // public section
 
     /**
-     * @brief
+     * @brief Parses accepted XML automata definition and initializes internal
+     *        structures related to automata definition. 
      *
      * @param XMLdefinition XML representation of AST
-     * @throws 
-     * @see
+     * @throws XMLAutomatonSyntaxErrorException 
      */
     public AutomatonChecker(final org.dom4j.Document XMLdefinition)
                                        throws XMLAutomatonSyntaxErrorException {
@@ -50,17 +50,28 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                                                 XMLdefinition.getRootElement());
     }
 
+    /**
+     * @brief Parses accepted arguments which corresponds to arguments specified
+     *        in the command-line of Stanse. The only purpose of this construc-
+     *        tor is to find and load XML file which defines automata, and then
+     *        calls constructor of this class, which accepts loaded XML automata
+     *        definition. 
+     *
+     * @param args Stanse's command line arguments related to this checker.
+     * @throws XMLAutomatonSyntaxErrorException This may occur when calling
+     *              other constructor, which really constructs instance. 
+     * @throws Exception This may occur when parsing command-line arguments
+     * @see cz.muni.stanse.automatonchecker#AutomatonChecker(org.dom4j.Document)
+     */
     public AutomatonChecker(final String[] args)
                             throws XMLAutomatonSyntaxErrorException, Exception {
         this(getDocument(args));    		
     }
     
     /**
-     * @brief
+     * @brief Uniquelly identifies the checker by the string identifier. 
      *
-     * @param
-     * @return
-     * @throws
+     * @return String which uniquelly identifies the checker.
      * @see cz.muni.stanse.checker.Checker#getName()
      */
     @Override
@@ -71,11 +82,35 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     }
 
     /**
-     * @brief
+     * @brief Does the source code checking itself. 
      *
-     * @param
-     * @return
-     * @throws
+     * Method searches through source code to find matching patterns defined
+     * in XML automata definition file. Each such matched location in the source
+     * code is assigned an instance of PatternLocation class. Initial location
+     * in the program is always introduced and is initialized with initial
+     * states of all autoamta to be run on the source code.
+     * 
+     * The computation itself is simple distribution of automata states between
+     * instances of PatternLocation class (locations are linked together with
+     * respect to control-flow of source code). Automata states are transformed
+     * with respect to transition rules assigned to each PatternLocation and
+     * then distributed to linked locations. This procedure is finished, when
+     * no location was delivered automaton state, which was not processed in
+     * that location.
+     * 
+     * Error detection is the final phase of the procedure. All PatternLocations
+     * are crossed and checked for error states. Eeach PatternLocation has
+     * assigned set of error transition rules which are applied to all processed
+     * states in the location. If some error transition rule can be applied to
+     * processed states, then it means the source code contains error. Each
+     * error rule contains description of an error it checks for. Those error
+     * transition rules are defined in XML automaton definition file. 
+     *
+     * @param units List of translations units (described in internal structures
+     *              like CFGs and ASTs)
+     * @return List of errors found in the source code.
+     * @throws XMLAutomatonSyntaxErrorException Is thrown, when some semantic
+     *              error is detected in XML automata definition.
      * @see cz.muni.stanse.checker.Checker#check(java.util.Set)
      */
     @Override

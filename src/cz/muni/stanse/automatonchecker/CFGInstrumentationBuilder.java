@@ -1,3 +1,9 @@
+/**
+ * @brief Implements class which builds deep copy of CFG (or whole set of CFGs)
+ *        and the copied CFG has replaced all its branch nodes by assertion
+ *        nodes (i.e. common CFGNodes with special XML element assigned to
+ *        them).
+ */
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFG;
@@ -12,10 +18,24 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+/**
+ * @brief Implements class which builds deep copy of CFG (or whole set of CFGs)
+ *        and the copied CFG has replaced all its branch nodes by assertion
+ *        nodes (i.e. common CFGNodes with special XML element assigned to
+ *        them).
+ */
 final class CFGInstrumentationBuilder {
 
     // package-private section
 
+    /**
+     * @brief Accepts set of CFGs and for each of them calls method run(CFG) to
+     *        produce deep copy and branch-to-asserts-modified of original ones. 
+     *
+     * @param CFGs Set of CFGs to be deep-copied and branch-to-asserts-modified.
+     * @return Set of deep-copied and branch-to-asserts-modified CFGs.
+     * @see cz.muni.stanse.automatonchecker.CFGInstrumentationBuilder#run(CFG)
+     */
     static Pair< HashMap<CFG,CFG>,HashMap<CFGNode,CFGNode> >
     run(final Set<CFG> CFGs) {
         final HashMap<CFGNode,CFGNode> nodeBackMapping =
@@ -32,6 +52,14 @@ final class CFGInstrumentationBuilder {
                                                (cfgBackMapping,nodeBackMapping);
     }
 
+    /**
+     * @brief Produces deep copy of passed CFG which is additionally modified
+     *        the way, that each branch node is replaced by assert nodes (i.e.
+     *         common CFGNodes with special XML element assigned to them).
+     *
+     * @param CFG CFG to be deep-copied and branch-to-asserts-modified.
+     * @return Deep-copied and branch-to-asserts-modified CFGs.
+     */
     static Pair< CFG,HashMap<CFGNode,CFGNode> >
     run(final CFG origCFG) {
         final Pair< HashMap<CFGNode,CFGNode>,HashMap<CFGNode,CFGNode> >
