@@ -1,6 +1,6 @@
 /**
- * @brief
- *
+ * @file .java
+ * @brief 
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -126,35 +126,14 @@ final class ErrorRule {
 
     // private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private XMLErrorRule getXMLrule() {
         return XMLrule;
     }
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
+
     private int getAutomatonID() {
         return automatonID;
     }
 
-    /**
-     * @brief
-     */
     private final XMLErrorRule XMLrule;
-    /**
-     * @brief
-     */
     private final int automatonID;
 }

@@ -1,6 +1,6 @@
 /**
- * @brief
- * 
+ * @file .java
+ * @brief 
  */
 package cz.muni.stanse.automatonchecker;
 

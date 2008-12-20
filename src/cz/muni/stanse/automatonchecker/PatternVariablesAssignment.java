@@ -1,6 +1,6 @@
 /**
- * @brief
- *
+ * @file .java
+ * @brief 
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -102,20 +102,9 @@ final class PatternVariablesAssignment {
 
     // private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private HashMap<String,org.dom4j.Element> getVarsAssignments() {
         return varsAssignments;
     }
 
-    /**
-     * @brief
-     */
     private final HashMap<String,org.dom4j.Element> varsAssignments;
 }

@@ -1,6 +1,6 @@
 /**
- * @brief
- *
+ * @file .java
+ * @brief 
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -163,14 +163,6 @@ final class XMLErrorRule {
 
     // private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private boolean checkExcludedStates(
                             final Collection<AutomatonState> statesCollection,
                             final int automatonID) {
@@ -184,14 +176,6 @@ final class XMLErrorRule {
         return true;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private boolean checkIncludedStates(
                             final Collection<AutomatonState> statesCollection,
                             final int automatonID) {
@@ -215,14 +199,6 @@ final class XMLErrorRule {
         return !matchingFlags.contains(false);
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static boolean stateMatch(final AutomatonState state,
                                       final int symbolID,
                                       final Vector<Boolean> flags,
@@ -240,14 +216,6 @@ final class XMLErrorRule {
         return true;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static Vector< Pair<Integer,Vector<Boolean> > >
     buildMatchFlags(
             final LinkedList<Triple<String,Vector<String>,Character> > symbols,
@@ -269,14 +237,6 @@ final class XMLErrorRule {
         return result;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static void checkList(
                final LinkedList<Triple<String,Vector<String>,Character> > list)
                                        throws XMLAutomatonSyntaxErrorException {
@@ -285,14 +245,6 @@ final class XMLErrorRule {
                                        "symbols in rule string. Minimum is 1.");
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static void checkVars(final int minVars, final int maxVars,
             final LinkedList<Triple<String,Vector<String>,Character> > symbols)
                                        throws XMLAutomatonSyntaxErrorException {
@@ -300,14 +252,6 @@ final class XMLErrorRule {
             checkVars(minVars,maxVars,symbol);
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static void checkVars(final int minVars, final int maxVars,
                           final Triple<String,Vector<String>,Character> symbol)
                                        throws XMLAutomatonSyntaxErrorException {
@@ -317,64 +261,21 @@ final class XMLErrorRule {
                                                 "Invalid number of variables.");
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private Vector< Pair<Integer,Vector<Boolean> > > getExcludedMatchFlags() {
         return excludedMatchFlags;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private Vector< Pair<Integer,Vector<Boolean> > > getIncludedMatchFlags() {
         return includedMatchFlags;
     }
 
-    /**
-     * @brief
-     */
     private final String description;
-    /**
-     * @brief
-     */
     private final int errorLevel;
-    /**
-     * @brief
-     */
     private final String entryMessage;
-    /**
-     * @brief
-     */
     private final String beginMessage;
-    /**
-     * @brief
-     */
     private final String propagMessage;
-    /**
-     * @brief
-     */
     private final String endMessage;
-    /**
-     * @brief
-     */
     private final String patternName;
-    /**
-     * @brief
-     */
     private final Vector< Pair<Integer,Vector<Boolean> > > excludedMatchFlags;
-    /**
-     * @brief
-     */
     private final Vector< Pair<Integer,Vector<Boolean> > > includedMatchFlags;
 }

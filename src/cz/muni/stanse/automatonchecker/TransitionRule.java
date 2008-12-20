@@ -1,6 +1,6 @@
 /**
- * @brief
- *
+ * @file .java
+ * @brief 
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -55,24 +55,10 @@ final class TransitionRule {
 
     // private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private XMLTransitionRule getXMLrule() {
         return XMLrule;
     }
 
-    /**
-     * @brief
-     */
     private final XMLTransitionRule XMLrule;
-    /**
-     * @brief
-     */
     private final int automatonID;
 }

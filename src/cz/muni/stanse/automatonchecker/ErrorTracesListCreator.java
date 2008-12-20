@@ -1,3 +1,7 @@
+/**
+ * @file .java
+ * @brief 
+ */
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.checker.ErrorTrace;
@@ -6,7 +10,6 @@ import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Triple;
 
 import java.util.List;
-import java.util.ListIterator;
 import java.util.LinkedList;
 import java.util.HashMap;
 
@@ -79,9 +82,6 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
                                                   beginMsg,getCFG()));
         if (path.size() > 1)
             for (CFGNode item : path.subList(1,path.size() - 1))
-// TODO: remove this check, when ALL the CFG nodes will contain related XML
-//       element. 
-if (item.getElement() != null)
                 trace.add(new Triple<CFGNode,String,CFG>
                                                       (item,innerMsg,getCFG()));
         trace.add(new Triple<CFGNode,String,CFG>(path.get(path.size() - 1),

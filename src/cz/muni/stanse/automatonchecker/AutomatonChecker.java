@@ -1,4 +1,5 @@
 /**
+ * @file AutomatonChecker.java 
  * @brief Defines public final class AutomatonChecker which provides static
  *        program verification specialized to locking problems, interrupts
  *        enabling/disabling problems, unnecessary check optimizations and

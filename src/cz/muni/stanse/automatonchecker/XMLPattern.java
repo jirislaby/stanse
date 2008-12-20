@@ -1,6 +1,6 @@
 /**
- * @brief
- * 
+ * @file .java
+ * @brief 
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -44,6 +44,14 @@ final class XMLPattern {
         return name;
     }
 
+    /**
+     * @brief
+     *
+     * @param
+     * @return
+     * @throws
+     * @see
+     */
     boolean isSonstructive() {
         return constructive;
     }
@@ -68,14 +76,6 @@ final class XMLPattern {
 
     // private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static boolean matchingElements(final org.dom4j.Element XMLpivot,
                               final org.dom4j.Element XMLelement,
                               final PatternVariablesAssignment varsAssignment) {
@@ -113,14 +113,6 @@ final class XMLPattern {
         return true;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static boolean onNested(final org.dom4j.Element XMLpivot,
                               final org.dom4j.Element XMLelement,
                               final PatternVariablesAssignment varsAssignment) {
@@ -137,14 +129,6 @@ final class XMLPattern {
         return false;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private org.dom4j.Element getPatternXMLelement() {
         return (org.dom4j.Element)patternXMLelement.elementIterator().next();
     }
@@ -165,13 +149,7 @@ final class XMLPattern {
         return elemName;
     }
             
-    /**
-     * @brief
-     */
     private final org.dom4j.Element patternXMLelement;
-    /**
-     * @brief
-     */
     private final String name;
     private final boolean constructive;
 }

@@ -1,4 +1,5 @@
 /**
+ * @file AutomatonState.java 
  * @brief Here are defined automata states for all the automata defined in XML
  *        automata definition file of automatonchecker package.   
  */

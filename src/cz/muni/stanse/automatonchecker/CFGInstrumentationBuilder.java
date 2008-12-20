@@ -1,8 +1,9 @@
 /**
- * @brief Implements class which builds deep copy of CFG (or whole set of CFGs)
- *        and the copied CFG has replaced all its branch nodes by assertion
- *        nodes (i.e. common CFGNodes with special XML element assigned to
- *        them).
+ * @file CFGInstrumentationBuilder.java 
+ * @brief Implements final class CFGInstrumentationBuilder which builds deep
+ *        copy of CFG (or whole set of CFGs) and the copied CFG has replaced all
+ *        its branch nodes by assertion nodes (i.e. common CFGNodes with special
+ *        XML element assigned to them).
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -23,6 +24,8 @@ import java.util.LinkedList;
  *        and the copied CFG has replaced all its branch nodes by assertion
  *        nodes (i.e. common CFGNodes with special XML element assigned to
  *        them).
+ *
+ * Class is not intended to be instantiated.
  */
 final class CFGInstrumentationBuilder {
 

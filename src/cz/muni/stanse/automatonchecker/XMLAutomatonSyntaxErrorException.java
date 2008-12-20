@@ -1,4 +1,5 @@
 /**
+ * @file XMLAutomatonSyntaxErrorException.java
  * @brief Implements exception class which represents any syntax error in XML
  *        files, which contains automaton definitions.
  */

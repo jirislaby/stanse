@@ -1,6 +1,6 @@
 /**
- * @brief
- * 
+ * @file .java
+ * @brief 
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -108,14 +108,6 @@ final class XMLRuleStringParser {
 
     // private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private static Pair<String,String> splitStateString(
                                    final String stateString, final String regex)
                                        throws XMLAutomatonSyntaxErrorException {
@@ -134,14 +126,6 @@ final class XMLRuleStringParser {
                                        splittedStringArray[1]);
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     private XMLRuleStringParser() {
     }
 }

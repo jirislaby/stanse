@@ -1,3 +1,7 @@
+/**
+ * @file .java
+ * @brief 
+ */
 package cz.muni.stanse.automatonchecker;
 
 import java.util.Vector;
