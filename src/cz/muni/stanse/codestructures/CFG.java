@@ -36,6 +36,22 @@ public class CFG extends CFGPart {
     }
 
     /**
+     * @brief Copy constructor. It creates shallow copy of original one.  
+     *
+     * Nothing is duplicated! All CFGNodes are shared with original CFG. This
+     * sharing holds for function name and XML representation of AST as well.
+     *  
+     * @param cfg Original CFG to be copied. 
+     */
+    public CFG(final CFG cfg) {
+        super();
+        this.functionDefinition = cfg.functionDefinition;
+        this.functionName = cfg.getFunctionName();
+        setStartNode(cfg.getStartNode());
+        setEndNode(cfg.getEndNode());
+    }
+
+    /**
      * Returns function name of procedure
      * @return function name
      */
