@@ -18,10 +18,6 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
     public boolean visit(final List<CFGNode> path) {
         final CFGNode node = path.iterator().next();
 
-// TODO: remove this check, when ALL the CFG nodes will contain related XML
-//       element. 
-{if (path.listIterator().next().getElement() == null) return true;}
-
         if (getStartNode().equals(node))
             return true;
 

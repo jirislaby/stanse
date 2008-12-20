@@ -2,11 +2,10 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.utils.CFGTraversal;
 
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Set;
 import java.util.HashMap;
 
 final class PatternLocationBuilder {
@@ -14,18 +13,16 @@ final class PatternLocationBuilder {
     // package-private section
 
     static HashMap<CFGNode,PatternLocation>
-    buildPatternLocations(final List<Unit> units,
+    buildPatternLocations(final Set<CFG> setOfAllCFGs,
                           final XMLAutomatonDefinition automatonDefinition)
                                        throws XMLAutomatonSyntaxErrorException {
-        final HashMap<CFGNode,PatternLocation> nodeLocationDictionary =
-            new HashMap<CFGNode,PatternLocation>();
+        final HashMap<CFGNode,PatternLocation>
+            nodeLocationDictionary = new HashMap<CFGNode,PatternLocation>();
 
-        for (final Unit unit : units) {
-        	for (final CFG cfg : unit.getCFGs()) {
-        		final HashMap<CFGNode,PatternLocation> locationsForCurrentCFG =
-        			buildPatternLocationsForOneCFG(cfg,automatonDefinition);
-        		nodeLocationDictionary.putAll(locationsForCurrentCFG);
-        	}
+        for (final CFG cfg : setOfAllCFGs) {
+    		final HashMap<CFGNode,PatternLocation> locationsForCurrentCFG =
+    			buildPatternLocationsForOneCFG(cfg,automatonDefinition);
+    		nodeLocationDictionary.putAll(locationsForCurrentCFG);
         }
 
         return nodeLocationDictionary;
@@ -44,32 +41,33 @@ final class PatternLocationBuilder {
             new PatternLocationCreator(cfg,automatonDefinition);
         final HashMap<CFGNode,PatternLocation> nodeLocationsDictionary =
             CFGTraversal.traverseCFGToBreadthForward(cfg,cfg.getStartNode(),
-                    patternLocationCreator).getCreatedPatternLocations();
+                           patternLocationCreator).getCreatedPatternLocations();
 
-        nodeLocationsDictionary.get(cfg.getStartNode()).
-            setInitialAutomataStates(getInitialStates(
-                            cfg,automatonDefinition.getStartSymbol(),
-                            patternLocationCreator.getNumDistinctLocations()));
-        nodeLocationsDictionary.get(cfg.getEndNode()).
-            getErrorRules().addAll(getExitErrorRules(
-                            automatonDefinition.getExitErrorRules(),
-                            patternLocationCreator.getNumDistinctLocations()));
+            nodeLocationsDictionary.get(cfg.getStartNode()).
+                setInitialAutomataStates(getInitialStates(
+                                 cfg,automatonDefinition.getStartSymbol(),
+                                 patternLocationCreator.getValidAutomataIDs()));
+            nodeLocationsDictionary.get(cfg.getEndNode()).
+                getErrorRules().addAll(getExitErrorRules(
+                                 automatonDefinition.getExitErrorRules(),
+                                 patternLocationCreator.getValidAutomataIDs()));
 
-        for (final PatternLocation location : nodeLocationsDictionary.values())
-            CFGTraversal.traverseCFGToBreadthForward(cfg,
-                        location.getCFGreferenceNode(),
-                        new ConnectPatternLocationToSuccessors(
-                                location,nodeLocationsDictionary));
+            for (final PatternLocation location :
+                                               nodeLocationsDictionary.values())
+                CFGTraversal.traverseCFGToBreadthForward(cfg,
+                            location.getCFGreferenceNode(),
+                            new ConnectPatternLocationToSuccessors(location,
+                                                      nodeLocationsDictionary));
 
         return nodeLocationsDictionary;
     }
 
     private static LinkedList<AutomatonState> getInitialStates(final CFG cfg,
-                        final int startSymbol, final int numDistinctLocations) {
+                 final int startSymbol, final LinkedList<Integer> automataIDs) {
         final LinkedList<AutomatonState> initStates =
             new LinkedList<AutomatonState>();
 
-        for (int i = 0; i < numDistinctLocations; ++i)
+        for (final Integer i : automataIDs)
             initStates.add(new AutomatonState(cfg,startSymbol,i));
 
         return initStates;
@@ -77,11 +75,11 @@ final class PatternLocationBuilder {
 
     private static LinkedList<ErrorRule> getExitErrorRules(
                                         final LinkedList<XMLErrorRule> XMLrules,
-                                        final int numDistinctLocations) {
+                                        final LinkedList<Integer> automataIDs) {
         final LinkedList<ErrorRule> errorRules = new LinkedList<ErrorRule>();
 
         for (XMLErrorRule rule : XMLrules)
-            for (int i = 0; i < numDistinctLocations; ++i)
+            for (final Integer i : automataIDs)
                 errorRules.add(new ErrorRule(rule,i));
 
         return errorRules;

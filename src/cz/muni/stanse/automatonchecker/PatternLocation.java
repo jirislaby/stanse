@@ -50,7 +50,7 @@ final class PatternLocation {
         return deliveredAutomataStates;
     }
 
-    public cz.muni.stanse.codestructures.CFG getCFG() {
+    cz.muni.stanse.codestructures.CFG getCFG() {
         return cfg;
     }
 

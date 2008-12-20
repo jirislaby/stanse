@@ -14,11 +14,11 @@ final class XMLAutomatonDefinition {
 
     XMLAutomatonDefinition(final Element XMLdefinition)
                                        throws XMLAutomatonSyntaxErrorException {
-	Element desc = (Element)XMLdefinition.selectSingleNode("description");
+        Element desc = (Element)XMLdefinition.selectSingleNode("description");
         automatonName = desc.attribute("name").getValue();
         automatonDesc = desc.attribute("desc").getValue();
 
-	Element start = (Element)XMLdefinition.selectSingleNode("start");
+        Element start = (Element)XMLdefinition.selectSingleNode("start");
         final String startSymbolName = start.attribute("state").getValue();
 
         final HashMap<String,Integer> statesSymbolTable =

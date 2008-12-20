@@ -6,20 +6,16 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import java.io.File;
+import cz.muni.stanse.codestructures.Unit;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
+import cz.muni.stanse.utils.Pair;
+
+import java.util.Set;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
-
-import org.dom4j.Document;
-import org.dom4j.io.SAXReader;
-
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
-
-import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.codestructures.Unit;
 
 /**
  * @brief Static checker which is able to detect locking problems, interrupts
@@ -54,24 +50,9 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                                                 XMLdefinition.getRootElement());
     }
 
-    
-    public AutomatonChecker(String[] args) throws XMLAutomatonSyntaxErrorException, Exception {
-    	this(getDocument(args));    		
-    }
-    
-    private static Document getDocument(String[] args) throws Exception {
-    	OptionParser parser = new OptionParser();
-    	OptionSpec<File> automaton = parser.accepts("Xautomaton" , "Checking automaton.")
-		.withRequiredArg()
-		.describedAs("file")
-		.ofType(File.class);
-    	
-    	final OptionSet options = parser.parse(args);
-//    	 if(options.has(automaton)) {
-    	return ((new SAXReader()).read(options.valueOf(automaton)));			
-//    	}else {
-//    		// TODO spadni!
-//    	}
+    public AutomatonChecker(final String[] args)
+                            throws XMLAutomatonSyntaxErrorException, Exception {
+        this(getDocument(args));    		
     }
     
     /**
@@ -100,17 +81,19 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     @Override
     public List<cz.muni.stanse.checker.CheckerError>
     check(final List<Unit> units) throws XMLAutomatonSyntaxErrorException {
-        final HashMap<cz.muni.stanse.codestructures.CFGNode,PatternLocation>
-            nodeLocationDictionary = PatternLocationBuilder.
-                   buildPatternLocations(units, getXMLAutomatonDefinition());
+        final Pair< HashMap<CFG,CFG>,HashMap<CFGNode,CFGNode> > CFGbackMapping =
+            CFGInstrumentationBuilder.run(buildSetOfCFGs(units));
+        final Set<CFG> CFGs = CFGbackMapping.getFirst().keySet();
+
+        final HashMap<CFGNode,PatternLocation> nodeLocationDictionary =
+            PatternLocationBuilder.buildPatternLocations(CFGs,
+                                                   getXMLAutomatonDefinition());
 
         final LinkedList<PatternLocation> progressQueue =
                 new LinkedList<PatternLocation>();
-        for (final Unit unit : units) {
-        	for (final CFG cfg : unit.getCFGs())
-        		progressQueue.add(nodeLocationDictionary.get(cfg.getStartNode()));
-        }
-        
+        for (final CFG cfg : CFGs)
+            progressQueue.add(nodeLocationDictionary.get(cfg.getStartNode()));
+
         while (!progressQueue.isEmpty()) {
             final PatternLocation currentLocation = progressQueue.remove();
             if (!currentLocation.hasUnprocessedAutomataStates())
@@ -121,25 +104,39 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                 progressQueue.addAll(
                         currentLocation.getSuccessorPatternLocations());
         }
-        return CheckerErrorBuilder.buildErrorList(nodeLocationDictionary);
+        return CFGInstrumentationEraser.run(CFGbackMapping,
+                    CheckerErrorBuilder.buildErrorList(nodeLocationDictionary));
     }
 
     // private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
+    private static org.dom4j.Document
+    getDocument(String[] args) throws Exception {
+        joptsimple.OptionParser parser = new joptsimple.OptionParser();
+        joptsimple.OptionSpec<java.io.File> automaton =
+                            parser.accepts("Xautomaton" , "Checking automaton.")
+                                  .withRequiredArg()
+                                  .describedAs("file")
+                                  .ofType(java.io.File.class);
+        final joptsimple.OptionSet options = parser.parse(args);
+//       if(options.has(automaton)) {
+        return ((new org.dom4j.io.SAXReader()).
+                        read(options.valueOf(automaton)));            
+//      }else {
+//          // TODO spadni!
+//      }
+    }
+
+    private static HashSet<CFG> buildSetOfCFGs(final List<Unit> units) {
+        final HashSet<CFG> CFGs = new HashSet<CFG>();
+        for (final Unit unit : units)
+            CFGs.addAll(unit.getCFGs());
+        return CFGs;
+    }
+
     private XMLAutomatonDefinition getXMLAutomatonDefinition() {
         return XMLAutomatonDefinition;
     }
 
-    /**
-     * @brief
-     */
     private final XMLAutomatonDefinition XMLAutomatonDefinition;
 }

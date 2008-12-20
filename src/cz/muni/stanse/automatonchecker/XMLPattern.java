@@ -28,6 +28,8 @@ final class XMLPattern {
     XMLPattern(final org.dom4j.Element XMLelement) {
         patternXMLelement = XMLelement;
         name = patternXMLelement.attribute("name").getValue();
+        constructive = XMLelement.selectNodes(
+                                   ".//var[@constructive=\"false\"]").isEmpty();
     }
 
     /**
@@ -42,6 +44,10 @@ final class XMLPattern {
         return name;
     }
 
+    boolean isSonstructive() {
+        return constructive;
+    }
+
     /**
      * @brief
      *
@@ -53,11 +59,11 @@ final class XMLPattern {
     Pair<Boolean,PatternVariablesAssignment>
     matchesXMLElement(final org.dom4j.Element XMLelement) {
         final PatternVariablesAssignment varsAssignment =
-            new PatternVariablesAssignment();
+                new PatternVariablesAssignment();
         return new Pair<Boolean,PatternVariablesAssignment>(
-                                matchingElements(getPatternXMLelement(),
-                                                 XMLelement,varsAssignment),
-                                varsAssignment);
+                          matchingElements(getPatternXMLelement(),XMLelement,
+                                           varsAssignment),
+                          varsAssignment);
     }
 
     // private section
@@ -81,11 +87,12 @@ final class XMLPattern {
             return true;
         if (XMLpivot.getName().equals("var")) {
             varsAssignment.put(XMLpivot.attribute("name").getValue(),
-		    XMLelement);
+                               XMLelement);
             return true;
         }
         
-        if (!XMLpivot.getName().equals(XMLelement.getName()))
+        //if (!XMLpivot.getName().equals(XMLelement.getName()))
+        if (!XMLpivot.getName().equals(getAliasedName(XMLelement)))
             return false;
         if (XMLpivot.isTextOnly() != XMLelement.isTextOnly())
             return false;
@@ -138,10 +145,26 @@ final class XMLPattern {
      * @throws
      * @see
      */
-    private final org.dom4j.Element getPatternXMLelement() {
+    private org.dom4j.Element getPatternXMLelement() {
         return (org.dom4j.Element)patternXMLelement.elementIterator().next();
     }
+    
+    private static String getAliasedName(final org.dom4j.Element element) {
+        final String elemName = element.getName();
 
+        if (elemName.equals("prefixExpression") &&
+            element.attribute("op").getText().equals("!"))
+            return "prefixExpressionLogicalNot";  
+        if (elemName.equals("binaryExpression") &&
+            element.attribute("op").getText().equals("=="))
+            return "binaryExpressionEquality";
+        if (elemName.equals("binaryExpression") &&
+            element.attribute("op").getText().equals("!="))
+            return "binaryExpressionNonEquality";
+
+        return elemName;
+    }
+            
     /**
      * @brief
      */
@@ -150,4 +173,5 @@ final class XMLPattern {
      * @brief
      */
     private final String name;
+    private final boolean constructive;
 }
