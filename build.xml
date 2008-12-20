@@ -20,7 +20,9 @@
 	<pathelement location="${dist}/lib/jopt-simple-3.0-beta1.jar"/>
     </path>
     <target name="run" depends="jar">
-        <java jar="${dist}/${ant.project.name}.jar" fork="true"/>
+        <java jar="${dist}/${ant.project.name}.jar" fork="true" >
+            <arg line="${stanse.args}"/>
+        </java>
     </target>
     <target name="init">
         <mkdir dir="build"/>
