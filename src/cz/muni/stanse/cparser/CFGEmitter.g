@@ -24,6 +24,7 @@ scope Function {
 	List<Pair<String, CFGBreakNode>> gotos;
 	Map<String, CFGNode> labels;
 	List<CFGPart> unreachables;
+	CFGNode lastStatement;
 }
 
 @header {
@@ -91,9 +92,10 @@ scope Function;
 		$g = CFG.createFromCFGPart($compoundStatement.g,
 				$functionDefinition.start.getElement());
 		CFGNode endNode = new CFGNode();
-		$g.append(endNode);
+		$g.setEndNode(endNode);
 		for (CFGBreakNode n: $Function::rets)
 			n.addBreakEdge(endNode);
+		$Function::lastStatement.addEdge(endNode);
 		for (Pair<String, CFGBreakNode> gotoPair: $Function::gotos) {
 			CFGNode labelNode =
 				$Function::labels.get(gotoPair.getFirst());
@@ -169,6 +171,7 @@ compoundStatement returns [CFGPart g]
 	if ($g.getStartNode() == null)
 		$g.append(new CFGNode((Element)$compoundStatement.start.
 					getElement().node(0)));
+	$Function::lastStatement = cfg.getEndNode();
 
 	for (CFGPart cfg1: cfgs) {
 		if (cfg1.getStartNode().getPredecessors().size() == 0)
