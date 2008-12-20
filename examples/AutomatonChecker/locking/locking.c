@@ -35,8 +35,12 @@ void test1()
 
 void test2()
 {
-    if (1) lock(a);
-    if (1) lock(b);
-    if (1) unlock(a);
-    if (1) unlock(b);
+    if (1)
+        lock(a);
+    if (1)
+        lock(b);
+    if (1)
+        unlock(a);
+    if (1)
+        unlock(b);
 }

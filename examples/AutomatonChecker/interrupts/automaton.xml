@@ -31,21 +31,21 @@
            level="0"
            entry="Function entered in enalbled state."
            begin="Here the interrupts are enabled."
-           propag="not affected --> interrupts are still enabled."
+           propag="not affected ==> interrupts are still enabled."
            end="Interrupts have already been enabled, and enabling it twice here." />
     <error from="Disabled[A]" by="disableInterrupts[A]"
            desc="Itenrrupts double disable error"
            level="0"
            entry="Function entered in disalbled state."
            begin="Here the interrupts are disabled."
-           propag="not affected --> interrupts are still disabled."
+           propag="not affected ==> interrupts are still disabled."
            end="Interrupts have already been disabled, and disabling it twice here." />
     <error from="Disabled[*]" by=""
            desc="Leaving function with interrupts disabled state."
            level="0"
            entry="The function called with interrupts disabled state."
            begin="The interrupts are disabled  here."
-           propag="not affected --> the interrupts are still disabled ."
+           propag="not affected ==> the interrupts are still disabled ."
            end="Leaving function with interrupts disabled state." />
 </automaton>
 
