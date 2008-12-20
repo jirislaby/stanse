@@ -41,7 +41,7 @@ import org.dom4j.Element;
 
 	/* configuration */
 	final private Boolean normalizeTypes = false;
-	final private Boolean uniqueVariables = true;
+	final private Boolean uniqueVariables = false;
 	final private Boolean uniqueVariablesDebug = false;
 	final private Boolean printXML = false;
 
