@@ -45,6 +45,9 @@ public final class Pair<A,B> {
      */
     public B getSecond() { return second; }
 
+    public void setFirst(final A value) { first = value; }
+    public void setSecond(final B value) { second = value; }
+
     /**
      * @brief
      *
@@ -115,9 +118,9 @@ public final class Pair<A,B> {
     /**
      * @brief 
      */
-    private final A first;
+    private A first;
     /**
      * @brief 
      */
-    private final B second;
+    private B second;
 }

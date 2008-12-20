@@ -55,6 +55,10 @@ public final class Triple<A,B,C> {
      */
     public C getThird() { return third; }
 
+    public void setFirst(final A value) { first = value; }
+    public void setSecond(final B value) { second = value; }
+    public void setThird(final C value) { third = value; }
+
     /**
      * @brief
      *
@@ -106,13 +110,13 @@ public final class Triple<A,B,C> {
     /**
      * @brief
      */
-    private final A first;
+    private A first;
     /**
      * @brief
      */
-    private final B second;
+    private B second;
     /**
      * @brief
      */
-    private final C third;
+    private C third;
 }
