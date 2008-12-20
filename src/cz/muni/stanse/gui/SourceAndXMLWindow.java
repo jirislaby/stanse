@@ -528,7 +528,7 @@ public class SourceAndXMLWindow extends JPanel {
 
     /**
      * Open a new window with Automaton (static) checker results.
-     * @param files files with definition of the checker.
+     * @param configFiles files with definition of the checker.
      */
     public void runStaticChecker(final Set<File> configFiles) {
         if (configFiles == null || configFiles.isEmpty()) {

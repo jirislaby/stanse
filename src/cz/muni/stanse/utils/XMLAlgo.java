@@ -13,6 +13,14 @@ import org.dom4j.io.XMLWriter;
 
 public final class XMLAlgo {
 
+    /**
+     * Check if two elements are (recursively) equal
+     *
+     * TODO: remove and use equality tester from dom4j pkg
+     *
+     * @param e1 first element
+     * @param e2 second element
+     */
     public static boolean equalElements(final Element e1, final Element e2) {
 	if (!e1.getName().equals(e2.getName()))
 	    return false;
@@ -30,6 +38,12 @@ public final class XMLAlgo {
 	return true;
     }
 
+    /**
+     * Pretty-print XML node to a stream
+     *
+     * @param n node to dump
+     * @param o stream to dump to
+     */
     public static void outputXML(Node n, PrintStream o) {
 	OutputFormat format = OutputFormat.createPrettyPrint();
 	try {
@@ -40,11 +54,14 @@ public final class XMLAlgo {
 	}
     }
 
+    /**
+     * Pretty-print XML node to the System.err
+     *
+     * @param n node to dump
+     */
     public static void outputXML(Node n) {
 	outputXML(n, System.err);
     }
-
-    // private section
 
     private XMLAlgo() {
     }

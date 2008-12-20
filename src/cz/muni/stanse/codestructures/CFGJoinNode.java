@@ -17,16 +17,14 @@ public class CFGJoinNode extends CFGNode {
 	super();
     }
 
-    @Override
+    /**
+     * Overriden addEdge for CFGJoinNode
+     *
+     * @param to which node to add the edge to
+     */
     public void addEdge(CFGNode to) {
-	for (CFGNode n: getPredecessors()) {
-/*	    if (!(n instanceof CFGBreakNode)) {
-		System.out.println("PROB: " + n.toString() + "->" + to.toString());
-		cz.muni.stanse.utils.XMLAlgo.outputXML(n.getElement(), System.out);
-		System.out.println("");
-	    }*/
+	for (CFGNode n: getPredecessors())
 	    n.replaceEdge(this, to);
-	}
     }
 
     @Override

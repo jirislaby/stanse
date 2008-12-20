@@ -32,6 +32,7 @@ public class CFGNode {
 
     /**
      * Creates a new instance of CFGNode
+     * @param e element to assign to this node
      */
     public CFGNode(Element e) {
 	number = numberCounter++;
@@ -55,7 +56,7 @@ public class CFGNode {
     }
 
     /**
-     * Get all predecessors of node
+     * Get all predecessors of the node
      * @return (read only) set of this node's predecessors
      */
     public List<CFGNode> getPredecessors() {
@@ -63,7 +64,7 @@ public class CFGNode {
     }
 
     /**
-     * Get all successors of node
+     * Get all successors of the node
      * @return (read only) set of this node's successors
      */
     public List<CFGNode> getSuccessors() {
@@ -71,36 +72,50 @@ public class CFGNode {
     }
 
     /**
-     * Insert node to predecessors set
-     * @param pred new predecesor
+     * Adds the node to the predecessors
+     * @param pred new predecessor
      */
     protected void addPred(CFGNode pred) {
 	preds.add(pred);
     }
 
     /**
-     * Insert node to successors set
+     * Adds the node to the successors
      * @param succ new successor
      */
     protected void addSucc(CFGNode succ) {
 	succs.add(succ);
     }
 
+    /**
+     * Inserts the node to the successors at specified position
+     * @param index index at which the specified element is to be inserted
+     * @param succ new successor
+     */
     protected void addSucc(int index, CFGNode succ) {
 	succs.add(index, succ);
     }
 
+    /**
+     * Removes the node from the successors
+     * @param index the index of the element to be removed
+     */
     protected void removeSucc(int index) {
 	succs.remove(index);
     }
 
+    /**
+     * Returns index of the specified successor
+     * @param succ successor to get index for
+     * @return the index in the list
+     */
     protected int indexOfSucc(CFGNode succ) {
 	return succs.indexOf(succ);
     }
 
     /**
      * Adds an edge between two nodes
-     * @param to ending node
+     * @param to which node to add the edge to
      */
     public void addEdge(CFGNode to) {
 	addSucc(to);

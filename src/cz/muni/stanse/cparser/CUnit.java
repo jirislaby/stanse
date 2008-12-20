@@ -20,15 +20,17 @@ import cz.muni.stanse.cparser.CFGEmitter;
  * 
  *  1. parse C and create an AST (GNUCa.g)
  *  2. parse AST and generate an XML representation of the AST (XMLEmitter.g)
- *  3. parse AST and generate its CFG, with pointers to the relevant XML nodes (CFGEmitter.g)
+ *  3. parse AST and generate its CFG, with pointers to the relevant XML
+ *     nodes (CFGEmitter.g)
  */
 public final class CUnit extends Unit {
 
     public CUnit(File file) throws IOException, RecognitionException {
-        this(new FileInputStream(file), file.getName());
-        }
+	this(new FileInputStream(file), file.getName());
+    }
 	
-    public CUnit(InputStream stream, String name) throws IOException, RecognitionException {
+    public CUnit(InputStream stream, String name) throws IOException,
+				RecognitionException {
 	this.name = name;
 	
 	StanseTreeAdaptor adaptor = new StanseTreeAdaptor();
@@ -51,6 +53,5 @@ public final class CUnit extends Unit {
 
 	CFGEmitter cfgEmitter = new CFGEmitter(nodes);
 	CFGs = cfgEmitter.translationUnit();
-   }
-
+    }
 }

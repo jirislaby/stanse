@@ -9,14 +9,21 @@ package cz.muni.stanse.codestructures;
 import org.dom4j.Element;
 
 /**
- * Represents a control-flow graph of a procedure
+ * Represents a control-flow graph of a function
  */
 public class CFG extends CFGPart {
+    private String functionName;
+    private Element functionDefinition;
 
-    private String functionName; // name of the corespondenting function
-    private Element functionDefinition; // function definition in xml
-
-    public static CFG createFromCFGPart(CFGPart cfgPart, Element functionDefinition) {
+    /**
+     * Creates a new instance of CFG
+     *
+     * @param cfgPart CFGPart to create CFG from
+     * @param functionDefinition XML representation of a function definition
+     * @return CFG created from CFGPart
+     */
+    public static CFG createFromCFGPart(CFGPart cfgPart,
+		Element functionDefinition) {
 	CFG cfg = new CFG(functionDefinition);
 	cfg.setStartNode(cfgPart.getStartNode());
 	cfg.setEndNode(cfgPart.getEndNode());
@@ -24,9 +31,9 @@ public class CFG extends CFGPart {
     }
 
     /**
-     * Creates a new instance of FunctionCFG
-     * @param functionDefinition function definition of procedure representated
-     * as org.dom4j.Element with name "functionDefinition"
+     * Creates a new instance of CFG
+     *
+     * @param functionDefinition XML representation of a function definition
      */
     public CFG(Element functionDefinition) {
 	super();
@@ -36,23 +43,24 @@ public class CFG extends CFGPart {
     }
 
     /**
-     * @brief Copy constructor. It creates shallow copy of original one.  
+     * @brief Copy constructor. It creates shallow copy of original one.
      *
      * Nothing is duplicated! All CFGNodes are shared with original CFG. This
      * sharing holds for function name and XML representation of AST as well.
-     *  
-     * @param cfg Original CFG to be copied. 
+     *
+     * @param cfg Original CFG to be copied
      */
     public CFG(final CFG cfg) {
-        super();
-        this.functionDefinition = cfg.functionDefinition;
-        this.functionName = cfg.getFunctionName();
-        setStartNode(cfg.getStartNode());
-        setEndNode(cfg.getEndNode());
+	super();
+	this.functionDefinition = cfg.functionDefinition;
+	this.functionName = cfg.getFunctionName();
+	setStartNode(cfg.getStartNode());
+	setEndNode(cfg.getEndNode());
     }
 
     /**
-     * Returns function name of procedure
+     * Returns function name assigned to this CFG
+     *
      * @return function name
      */
     public String getFunctionName() {

@@ -22,7 +22,7 @@ public class CFGPart {
     private CFGNode endNode;
 
     /**
-     * Returns start of the control-flow graph
+     * Returns start of the CFG
      * @return start node
      */
     public CFGNode getStartNode() {
@@ -30,7 +30,7 @@ public class CFGPart {
     }
 
     /**
-     * Sets start of the control-flow graph
+     * Sets start of the CFG
      * @param n start node
      */
     public void setStartNode(CFGNode n) {
@@ -38,7 +38,7 @@ public class CFGPart {
     }
 
     /**
-     * Returns end of control-flow graph
+     * Returns end of the CFG
      * @return end node
      */
     public CFGNode getEndNode() {
@@ -46,7 +46,7 @@ public class CFGPart {
     }
 
     /**
-     * Sets end of the control-flow graph
+     * Sets end of the CFG
      * @param n end node
      */
     public void setEndNode(CFGNode n) {
@@ -81,6 +81,10 @@ public class CFGPart {
 	setEndNode(n);
     }
 
+    /**
+     * Returns all nodes in this CFG
+     * @return list of all nodes
+     */
     public Set<CFGNode> getAllNodes() {
 	Set<CFGNode> nodesToDo = new HashSet<CFGNode>();
 	Set<CFGNode> nodesDone = new LinkedHashSet<CFGNode>();
@@ -126,6 +130,13 @@ public class CFGPart {
 	    Integer.toString(getEndNode().getNumber());
     }
 
+    /**
+     * @brief Converts CFGPart to a string representation
+     *
+     * Useful for dumping to logs or console.
+     *
+     * @return string representation
+     */
     public String toStringGraph() {
 	StringBuilder sb = new StringBuilder();
 	String eol = System.getProperty("line.separator");
@@ -163,6 +174,14 @@ public class CFGPart {
 	return sb.toString();
     }
 
+    /**
+     * @brief Converts CFGPart to a dot graph representation
+     *
+     * Useful for dumping cfgs to a file and generating e.g. PostScript from it.
+     * See Graphviz software.
+     *
+     * @return dot representation stored in a string
+     */
     public String toDot() {
 	String eol = System.getProperty("line.separator");
 	StringBuilder sb = new StringBuilder("digraph CFG {");

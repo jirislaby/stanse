@@ -17,20 +17,39 @@ public class CFGBreakNode extends CFGNode {
     }
 
     /**
-     * Creates a new instance of CFGBreakNode
+     * Creates an instance of the CFGBreakNode with assigned element
+     *
+     * @param e element to assign to this node
      */
     public CFGBreakNode(Element e) {
 	super(e);
     }
 
+    /**
+     * Overriden addEdge which does (intentionally) nothing
+     *
+     * We want to ignore all added edges, since we are a node which breaks
+     * code flow such as goto, break, return, etc.
+     *
+     * @param to ignored parameter
+     */
     public void addEdge(CFGNode to) {
 	/* nothing */
     }
 
+    /**
+     * Real addEdge for CFGBreakNode
+     *
+     * Usually used when backpatching, when we know it's a break node and
+     * should be handled specifically.
+     *
+     * @param to which node to add the edge to
+     */
     public void addBreakEdge(CFGNode to) {
 	super.addEdge(to);
     }
 
+    @Override
     public void replaceEdge(CFGNode oldTo, CFGNode newTo) {
 	int idx = indexOfSucc(oldTo);
 	removeSucc(idx);

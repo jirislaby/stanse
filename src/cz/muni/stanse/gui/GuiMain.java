@@ -682,8 +682,9 @@ public class GuiMain extends javax.swing.JFrame {
     }
 
     /**
-     * @Todo: this is not a good way of solving a problem. This has to be fixed
      * @return Tabbed pane
+     *
+     * TODO: this is not a good way of solving a problem. This has to be fixed
      */
     public JTabbedPane getJTabbedPane1() {
         return jTabbedPane1;
