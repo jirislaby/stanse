@@ -231,7 +231,7 @@
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionEquality>
-                        <var name="A" />
+                        <var name="A" constructive="false" />
                         <intConst>0</intConst>
                     </binaryExpressionEquality>
                     <intConst>0</intConst>
@@ -243,7 +243,7 @@
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionEquality>
-                    <var name="A" />
+                    <var name="A" constructive="false" />
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
                 <intConst>0</intConst>
@@ -256,7 +256,7 @@
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionEquality>
-                        <var name="A" />
+                        <var name="A" constructive="false" />
                         <castExpression>
                             <ignore />
                             <intConst>0</intConst>
@@ -271,7 +271,7 @@
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionEquality>
-                    <var name="A" />
+                    <var name="A" constructive="false" />
                     <castExpression>
                         <ignore />
                         <intConst>0</intConst>
@@ -286,7 +286,7 @@
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionNonEquality>
-                    <var name="A" />
+                    <var name="A" constructive="false" />
                     <intConst>0</intConst>
                 </binaryExpressionNonEquality>
                 <intConst>0</intConst>
@@ -298,7 +298,7 @@
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionNonEquality>
-                        <var name="A" />
+                        <var name="A" constructive="false" />
                         <intConst>0</intConst>
                     </binaryExpressionNonEquality>
                     <intConst>0</intConst>
@@ -311,7 +311,7 @@
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionNonEquality>
-                    <var name="A" />
+                    <var name="A" constructive="false" />
                     <castExpression>
                         <ignore />
                         <intConst>0</intConst>
@@ -326,7 +326,7 @@
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionNonEquality>
-                        <var name="A" />
+                        <var name="A" constructive="false" />
                         <castExpression>
                             <ignore />
                             <intConst>0</intConst>
@@ -344,7 +344,7 @@
                 <binaryExpressionEquality>
                     <binaryExpressionEquality>
                         <intConst>0</intConst>
-                        <var name="A" />
+                        <var name="A" constructive="false" />
                     </binaryExpressionEquality>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
@@ -356,7 +356,7 @@
             <binaryExpressionEquality>
                 <binaryExpressionEquality>
                     <intConst>0</intConst>
-                    <var name="A" />
+                    <var name="A" constructive="false" />
                 </binaryExpressionEquality>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
@@ -372,7 +372,7 @@
                             <ignore />
                             <intConst>0</intConst>
                         </castExpression>
-                        <var name="A" />
+                        <var name="A" constructive="false" />
                     </binaryExpressionEquality>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
@@ -387,7 +387,7 @@
                         <ignore />
                         <intConst>0</intConst>
                     </castExpression>
-                    <var name="A" />
+                    <var name="A" constructive="false" />
                 </binaryExpressionEquality>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
@@ -399,7 +399,7 @@
             <binaryExpressionEquality>
                 <binaryExpressionNonEquality>
                     <intConst>0</intConst>
-                    <var name="A" />
+                    <var name="A" constructive="false" />
                 </binaryExpressionNonEquality>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
@@ -411,7 +411,7 @@
                 <binaryExpressionEquality>
                     <binaryExpressionNonEquality>
                         <intConst>0</intConst>
-                        <var name="A" />
+                        <var name="A" constructive="false" />
                     </binaryExpressionNonEquality>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
@@ -427,7 +427,7 @@
                         <ignore />
                         <intConst>0</intConst>
                     </castExpression>
-                    <var name="A" />
+                    <var name="A" constructive="false" />
                 </binaryExpressionNonEquality>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
@@ -442,7 +442,7 @@
                             <ignore />
                             <intConst>0</intConst>
                         </castExpression>
-                        <var name="A" />
+                        <var name="A" constructive="false" />
                     </binaryExpressionNonEquality>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
