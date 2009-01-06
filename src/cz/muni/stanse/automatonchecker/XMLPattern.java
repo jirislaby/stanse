@@ -7,6 +7,7 @@ package cz.muni.stanse.automatonchecker;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.Iterator;
+import java.util.HashSet;
 
 /**
  * @brief
@@ -80,7 +81,14 @@ final class XMLPattern {
                               final org.dom4j.Element XMLelement,
                               final PatternVariablesAssignment varsAssignment) {
         if (XMLpivot.getName().equals("nested"))
+        {
+            final String elementAliasedName = getAliasedName(XMLelement);
+            for (final Iterator j = XMLpivot.attributeIterator(); j.hasNext(); )
+                if (elementAliasedName.equals(
+                        ((org.dom4j.Attribute)j.next()).getValue()))
+                    return false;
             return onNested(XMLpivot,XMLelement,varsAssignment);
+        }
         if (XMLpivot.getName().equals("any"))
             return true;
         if (XMLpivot.getName().equals("ignore"))
