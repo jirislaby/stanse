@@ -72,7 +72,9 @@ if ($do_check) {
     die "unable to find stanse jar file ($stansejar), " .
 	"try to set STANSE_JAR environment variable" unless -f $stansejar;
     print "$check\n" if $verbose;
-    $check = $check . "; java -jar $stansejar -nogui -ch $checker_def $output";
+    $check = $check . "; java -jar $stansejar -c " .
+	"cz.muni.stanse.automatonchecker.AutomatonChecker " .
+	"-Xautomaton=$checker_def $output";
     if ($do_compile) {
 	system ($check);
     } else {
