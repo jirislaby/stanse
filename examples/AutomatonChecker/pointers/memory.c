@@ -1,3 +1,8 @@
+void sizeOf()
+{
+    x = (int*)malloc(sizeof(*x));
+}
+
 void foo()
 {
     int* p;

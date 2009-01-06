@@ -159,7 +159,7 @@
     </pattern>
 
     <pattern name="deref">
-        <nested>
+        <nested exclude0="sizeofExpression">
             <derefExpression>
                 <var name="A" constructive="false" />
             </derefExpression>
@@ -167,7 +167,7 @@
     </pattern>
 
     <pattern name="deref">
-        <nested>
+        <nested exclude0="sizeofExpression">
             <arrowExpression>
                 <var name="A" constructive="false" />
                 <ignore />
@@ -176,7 +176,7 @@
     </pattern>
 
     <pattern name="deref">
-        <nested>
+        <nested exclude0="sizeofExpression">
             <arrayAccess>
                 <var name="A" constructive="false" />
                 <ignore />
