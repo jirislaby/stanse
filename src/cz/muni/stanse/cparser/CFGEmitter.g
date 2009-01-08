@@ -14,13 +14,13 @@ options {
 }
 
 scope IterSwitch {
-	Set<CFGBreakNode> breaks;
-	Set<CFGBreakNode> conts;
-	Set<Pair<Element, CFGNode>> cases;
+	List<CFGBreakNode> breaks;
+	List<CFGBreakNode> conts;
+	List<Pair<Element, CFGNode>> cases;
 	boolean haveDefault;
 }
 scope Function {
-	Set<CFGBreakNode> rets;
+	List<CFGBreakNode> rets;
 	List<Pair<String, CFGBreakNode>> gotos;
 	Map<String, CFGNode> labels;
 	List<CFGPart> unreachables;
@@ -35,11 +35,8 @@ import cz.muni.stanse.codestructures.*;
 import java.io.IOException;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.dom4j.DocumentFactory;
@@ -83,7 +80,7 @@ externalDeclaration returns [CFG g]
 functionDefinition returns [CFG g]
 scope Function;
 @init {
-	$Function::rets = new HashSet<CFGBreakNode>();
+	$Function::rets = new LinkedList<CFGBreakNode>();
 	$Function::labels = new HashMap<String, CFGNode>();
 	$Function::gotos = new LinkedList<Pair<String, CFGBreakNode>>();
 	$Function::unreachables = new LinkedList<CFGPart>();
@@ -377,8 +374,8 @@ selectionStatementIf returns [CFGPart g]
 selectionStatementSwitch returns [CFGPart g]
 scope IterSwitch;
 @init {
-	$IterSwitch::breaks = new HashSet<CFGBreakNode>();
-	$IterSwitch::cases = new HashSet<Pair<Element, CFGNode>>();
+	$IterSwitch::breaks = new LinkedList<CFGBreakNode>();
+	$IterSwitch::cases = new LinkedList<Pair<Element, CFGNode>>();
 	$IterSwitch::haveDefault = false;
 }
 	: ^('switch' expression statement) {
@@ -403,8 +400,8 @@ iterationStatement returns [CFGPart g]
 scope IterSwitch;
 @init {
 	$g = new CFGPart();
-	$IterSwitch::breaks = new HashSet<CFGBreakNode>();
-	$IterSwitch::conts = new HashSet<CFGBreakNode>();
+	$IterSwitch::breaks = new LinkedList<CFGBreakNode>();
+	$IterSwitch::conts = new LinkedList<CFGBreakNode>();
 	CFGNode breakNode = null;
 	CFGNode contNode = null;
 }

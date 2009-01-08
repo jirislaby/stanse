@@ -25,8 +25,7 @@ import cz.muni.stanse.utils.XMLAlgo;
 
 import java.io.IOException;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedList;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
@@ -50,8 +49,8 @@ import org.dom4j.Element;
 	}
 	private Element newElement(String text, StanseTree start) {
 		return newElement(text).
-			addAttribute("bl", String.valueOf(start.getLine())).
-			addAttribute("bc", String.valueOf(start.getCharPositionInLine()));
+			addAttribute("bl", Integer.toString(start.getLine())).
+			addAttribute("bc", Integer.toString(start.getCharPositionInLine()));
 	}
 	private Element newListElement(List<Element> els, String text) {
 		Element e = newElement(text);
@@ -65,8 +64,8 @@ import org.dom4j.Element;
 		return e;
 	}
 	private void setAttributes(StanseTree start, Element e) {
-		e.addAttribute("bl", String.valueOf(start.getLine())).
-		addAttribute("bc", String.valueOf(start.getCharPositionInLine()));
+		e.addAttribute("bl", Integer.toString(start.getLine())).
+		addAttribute("bc", Integer.toString(start.getCharPositionInLine()));
 		start.setElement(e);
 	}
 	private Element addElementBin(Element dest, String name, Element e1, Element e2) {
@@ -133,7 +132,7 @@ import org.dom4j.Element;
 		String type = sb.toString();
 		for (String[] rule: rewrite)
 			if (rule[0].equals(type)) {
-				tss = new ArrayList<Element>();
+				tss = new LinkedList<Element>();
 				for (String baseType: rule[1].split(" "))
 					newListElement(tss, "typeSpecifier").addElement("baseType").addText(baseType);
 				break;
@@ -206,7 +205,7 @@ externalDeclaration returns [Element e]
 
 functionDefinition returns [Element e]
 @init {
-	List<Element> ds = new ArrayList<Element>();
+	List<Element> ds = new LinkedList<Element>();
 	$e = newElement("functionDefinition", $functionDefinition.start);
 	$functionDefinition.start.setElement($e);
 }
@@ -221,7 +220,7 @@ functionDefinition returns [Element e]
 
 declaration returns [Element e]
 @init {
-	List<Element> ids = new ArrayList<Element>();
+	List<Element> ids = new LinkedList<Element>();
 	$e = newElement("declaration", $declaration.start);
 }
 	: ^('typedef' declarationSpecifiers? (id=initDeclarator {ids.add($id.e);})*) {
@@ -241,10 +240,10 @@ declaration returns [Element e]
 
 declarationSpecifiers returns [Element e]
 @init {
-	List<Element> tss = new ArrayList<Element>();
-	Set<String> tqs = new HashSet<String>();
-	Set<String> scs = new HashSet<String>();
-	Set<String> fss = new HashSet<String>();
+	List<Element> tss = new LinkedList<Element>();
+	List<String> tqs = new LinkedList<String>();
+	List<String> scs = new LinkedList<String>();
+	List<String> fss = new LinkedList<String>();
 }
 	: ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER (ts=typeSpecifier {tss.add($ts.e);})*) ^(XTYPE_QUALIFIER (tq=typeQualifier {tqs.add($tq.s);})*) ^(XSTORAGE_CLASS (sc=storageClassSpecifier {scs.add($sc.s);}|fs=functionSpecifier {fss.add($fs.s);})*)) {
 		$e = newElement("declarationSpecifiers",
@@ -269,7 +268,7 @@ declarator returns [Element e]
 
 directDeclarator returns [List<Element> els]
 @init {
-	$els = new ArrayList<Element>();
+	$els = new LinkedList<Element>();
 }
 	: IDENTIFIER {
 		String newName = renameVariable($IDENTIFIER.text);
@@ -285,9 +284,9 @@ directDeclarator returns [List<Element> els]
 
 directDeclarator1 returns [List<Element> els]
 @init {
-	Set<String> tqs = new HashSet<String>();
-	List<Element> l = new ArrayList<Element>();
-	$els = new ArrayList<Element>();
+	List<String> tqs = new LinkedList<String>();
+	List<Element> l = new LinkedList<Element>();
+	$els = new LinkedList<Element>();
 }
 	: ^(ARRAY_DECLARATOR (IDENTIFIER|dd=directDeclarator1) ('static' {tqs.add("static");}|asterisk='*')? (tq=typeQualifier {tqs.add(tq);})* expression?) {
 		if ($IDENTIFIER != null) {
@@ -340,7 +339,7 @@ initializer returns [Element e]
 
 initializerList returns [List<Element> els]
 @init {
-	$els = new ArrayList<Element>();
+	$els = new LinkedList<Element>();
 }
 	: ((d=designator {$els.add($d.e);})* initializer {
 		$els.add($initializer.e);
@@ -364,7 +363,7 @@ designator returns [Element e]
 
 compoundStatement returns [Element e]
 @init {
-	List<Element> els = new ArrayList<Element>();
+	List<Element> els = new LinkedList<Element>();
 	pushSymbol(".", ".", 0);
 }
 	: ^(COMPOUND_STATEMENT (d=declaration {els.add($d.e);}|fd=functionDefinition{els.add($fd.e);}|st=statement{els.add($st.e);})*) {
@@ -379,7 +378,7 @@ compoundStatement returns [Element e]
 
 parameterTypeList returns [List<Element> els]
 @init {
-	$els = new ArrayList<Element>();
+	$els = new LinkedList<Element>();
 }
 	: (p=parameterDeclaration {$els.add($p.e);})+ VARARGS? {
 		if ($VARARGS != null) {
@@ -412,7 +411,7 @@ abstractDeclarator returns [Element e]
 
 directAbstractDeclarator returns [List<Element> els]
 @init {
-	$els = new ArrayList<Element>();
+	$els = new LinkedList<Element>();
 }
 	: abstractDeclarator (a=arrayOrFunctionDeclarator {$els.add($a.e);})* {
 		$els.add(0, $abstractDeclarator.e);
@@ -450,10 +449,10 @@ identifier returns [Element e]
 
 typeName returns [Element e]
 @init {
-	List<specifierQualifier_return> sqs = new ArrayList<specifierQualifier_return>();
+	List<specifierQualifier_return> sqs = new LinkedList<specifierQualifier_return>();
 }
 	: ^(TYPE_NAME (sq=specifierQualifier {sqs.add(sq);})+ abstractDeclarator?) {
-		List <Element> tss = new ArrayList<Element>();
+		List <Element> tss = new LinkedList<Element>();
 		$e = newElement("typeName", $typeName.start);
 		for (specifierQualifier_return sqr: sqs)
 			if (sqr.qual != null)
@@ -502,7 +501,7 @@ typeSpecifier returns [Element e]
 
 structOrUnionSpecifier returns [Element e]
 @init {
-	List<Element> sds = new ArrayList<Element>();
+	List<Element> sds = new LinkedList<Element>();
 	symbolsEnabled = false;
 }
 	: ^(structOrUnion ^(XID IDENTIFIER?) (sd=structDeclaration {sds.add($sd.e);})*) {
@@ -521,11 +520,11 @@ structOrUnion returns [String s]
 
 structDeclaration returns [Element e]
 @init {
-	List<specifierQualifier_return> sqs = new ArrayList<specifierQualifier_return>();
-	List<Element> sds = new ArrayList<Element>();
+	List<specifierQualifier_return> sqs = new LinkedList<specifierQualifier_return>();
+	List<Element> sds = new LinkedList<Element>();
 }
 	: ^(STRUCT_DECLARATION (sq=specifierQualifier {sqs.add(sq);})+ (sd=structDeclarator {sds.add($sd.e);})*) {
-		List <Element> tss = new ArrayList<Element>();
+		List <Element> tss = new LinkedList<Element>();
 		$e = newElement("structDeclaration", $structDeclaration.start);
 		for (specifierQualifier_return sqr: sqs)
 			if (sqr.qual != null)
@@ -548,7 +547,7 @@ structDeclarator returns [Element e]
 
 enumSpecifier returns [Element e]
 @init {
-	List<Element> ens = new ArrayList<Element>();
+	List<Element> ens = new LinkedList<Element>();
 }
 	: ^('enum' (^(XID IDENTIFIER))? (en=enumerator {ens.add($en.e);})*) {
 		$e = newElement("enum", $enumSpecifier.start);
@@ -589,8 +588,8 @@ functionSpecifier returns [String s]
 
 pointer returns [List<Element> els]
 @init {
-	Set<String> tqs = new HashSet<String>();
-	$els = new ArrayList<Element>();
+	List<String> tqs = new LinkedList<String>();
+	$els = new LinkedList<Element>();
 }
 	: ^(POINTER (tq=typeQualifier {tqs.add(tq);})* ptr=pointer?) {
 		Element e = newElement("pointer");
@@ -716,7 +715,7 @@ asmStatement returns [Element e]
 
 expression returns [Element e]
 @init {
-	List<Element> exs = new ArrayList<Element>();
+	List<Element> exs = new LinkedList<Element>();
 	Element exp;
 }
 @after {
@@ -812,7 +811,7 @@ primaryExpression returns [Element e]
 
 sTRING_LITERAL returns [String text]
 @init {
-	List<String> sls = new ArrayList<String>();
+	List<String> sls = new LinkedList<String>();
 }
 	: ^(STR_LITERAL (STRING_LITERAL {sls.add($STRING_LITERAL.text);})+) {
 		StringBuilder sb = new StringBuilder();
