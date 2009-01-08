@@ -350,11 +350,14 @@ selectionStatement returns [CFGPart g]
 	;
 
 selectionStatementIf returns [CFGPart g]
-	: ^('if' expression s1=statement s2=statement?) {
-		$g = new CFGPart();
+@init {
+	CFGBranchNode n1;
+}
+	: ^('if' expression {
 		/* fork */
-		CFGBranchNode n1 =
-			new CFGBranchNode($expression.start.getElement());
+		n1 = new CFGBranchNode($expression.start.getElement());
+	} s1=statement s2=statement?) {
+		$g = new CFGPart();
 		/* join */
 		CFGNode n2 = new CFGJoinNode();
 		$g.setStartNode(n1);
@@ -377,11 +380,12 @@ scope IterSwitch;
 	$IterSwitch::breaks = new LinkedList<CFGBreakNode>();
 	$IterSwitch::cases = new LinkedList<Pair<Element, CFGNode>>();
 	$IterSwitch::haveDefault = false;
+	CFGBranchNode n;
 }
-	: ^('switch' expression statement) {
+	: ^('switch' expression {
+		n = new CFGBranchNode($expression.start.getElement());
+	} statement) {
 		$g = new CFGPart();
-		CFGBranchNode n = new CFGBranchNode($expression.start.
-				getElement());
 		$g.setStartNode(n);
 		CFGNode breakNode = new CFGJoinNode();
 		$g.setEndNode(breakNode);
@@ -404,6 +408,7 @@ scope IterSwitch;
 	$IterSwitch::conts = new LinkedList<CFGBreakNode>();
 	CFGNode breakNode = null;
 	CFGNode contNode = null;
+	CFGNode n1, n2;
 }
 @after {
 	/* backpatch */
@@ -412,10 +417,11 @@ scope IterSwitch;
 	for (CFGBreakNode n: $IterSwitch::conts)
 		n.addBreakEdge(contNode);
 }
-	: ^('while' expression statement) {
+	: ^('while' expression { /* to preserve sequential numbers */
 		/* fork */
 		CFGBranchNode branch =
 			new CFGBranchNode($expression.start.getElement());
+	} statement) {
 		/* join */
 		breakNode = new CFGJoinNode();
 		$g.setStartNode(branch);
@@ -443,8 +449,7 @@ scope IterSwitch;
 		branch.addEdge(breakNode, falseLabel);
 		contNode = branch;
 	}
-	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) ^(E3 e3=expression?) statement) {
-		CFGNode n1, n2;
+	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) {
 		if ($e1.g == null) /* no initial */
 			n1 = new CFGNode(emptyStatement);
 		else
@@ -454,22 +459,27 @@ scope IterSwitch;
 		$g.setEndNode(breakNode);
 		if ($e2.g == null) { /* no test */
 			n2 = new CFGNode(emptyStatement);
-			n2.addEdge($statement.g.getStartNode());
 		} else {
 			CFGBranchNode branch =
 				new CFGBranchNode($e2.start.getElement());
+			n2 = branch;
+		}
+		n1.addEdge(n2);
+	} ^(E3 e3=expression?) statement) {
+		if ($e2.g == null)
+			n2.addEdge($statement.g.getStartNode());
+		else {
+			CFGBranchNode branch = (CFGBranchNode)n2;
 			/* true */
 			branch.addEdge($statement.g.getStartNode(),
 					defaultLabel);
 			/* false */
 			branch.addEdge(breakNode, falseLabel);
-			n2 = branch;
 		}
 		if ($e3.g == null) /* no post */
 			contNode = new CFGNode(emptyStatement);
 		else
 			contNode = new CFGNode($e3.start.getElement());
-		n1.addEdge(n2);
 		contNode.addEdge(n2);
 
 		$statement.g.getEndNode().addEdge(contNode);
