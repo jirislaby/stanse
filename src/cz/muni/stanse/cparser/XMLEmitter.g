@@ -42,7 +42,6 @@ import org.dom4j.Element;
 	final private Boolean normalizeTypes = false;
 	final private Boolean uniqueVariables = false;
 	final private Boolean uniqueVariablesDebug = false;
-	final private Boolean printXML = false;
 
 	private Element newElement(String text) {
 		return xmlFactory.createElement(text);
@@ -189,8 +188,6 @@ scope Symbols;
 }
 	: ^(TRANSLATION_UNIT (eds=externalDeclaration {root.add($eds.e);} )*) {
 		xmlDocument.setRootElement(root);
-		if (printXML)
-			XMLAlgo.outputXML(xmlDocument);
 		$d = xmlDocument;
 	}
 	;
