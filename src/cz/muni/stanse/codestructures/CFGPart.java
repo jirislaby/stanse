@@ -102,6 +102,9 @@ public class CFGPart {
 		    nodesToDo.add(succ);
 	}
 
+	/* endNode might be unavailable, add it unconditionally */
+	nodesDone.add(getEndNode());
+
 	return Collections.unmodifiableSet(nodesDone);
     }
 
