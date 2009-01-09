@@ -397,6 +397,7 @@ scope IterSwitch;
 		/* backpatch break */
 		for (CFGBreakNode c: $IterSwitch::breaks)
 			c.addBreakEdge(breakNode);
+		$Function::lastStatement.addEdge(breakNode);
 	}
 	;
 
