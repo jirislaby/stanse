@@ -351,11 +351,14 @@ selectionStatement returns [CFGPart g]
 selectionStatementIf returns [CFGPart g]
 @init {
 	CFGBranchNode n1;
+	CFGNode s1Last;
 }
 	: ^('if' expression {
 		/* fork */
 		n1 = new CFGBranchNode($expression.start.getElement());
-	} s1=statement s2=statement?) {
+	} s1=statement {
+		s1Last = $Function::lastStatement;
+	} s2=statement?) {
 		$g = new CFGPart();
 		/* join */
 		CFGNode n2 = new CFGJoinNode();
@@ -363,11 +366,18 @@ selectionStatementIf returns [CFGPart g]
 		$g.setEndNode(n2);
 		/* true */
 		n1.addEdge($s1.g.getStartNode(), defaultLabel);
+		if ($s1.start.getType() == COMPOUND_STATEMENT)
+			s1Last.addEdge(n2);
+		else
+			$s1.g.getEndNode().addEdge(n2);
 		$s1.g.getEndNode().addEdge(n2);
 		/* false */
 		if (s2 != null) {
 			n1.addEdge($s2.g.getStartNode(), falseLabel);
-			$s2.g.getEndNode().addEdge(n2);
+			if ($s2.start.getType() == COMPOUND_STATEMENT)
+				$Function::lastStatement.addEdge(n2);
+			else
+				$s2.g.getEndNode().addEdge(n2);
 		} else
 			n1.addEdge(n2, falseLabel);
 	}
@@ -409,6 +419,8 @@ scope IterSwitch;
 	CFGNode breakNode = null;
 	CFGNode contNode = null;
 	CFGNode n1, n2;
+	CFGPart statementCFG = null;
+	int statementType = 0;
 }
 @after {
 	/* backpatch */
@@ -416,38 +428,44 @@ scope IterSwitch;
 		n.addBreakEdge(breakNode);
 	for (CFGBreakNode n: $IterSwitch::conts)
 		n.addBreakEdge(contNode);
+	if (statementType == COMPOUND_STATEMENT)
+		$Function::lastStatement.addEdge(contNode);
+	else
+		statementCFG.getEndNode().addEdge(contNode);
 }
 	: ^('while' expression { /* to preserve sequential numbers */
 		/* fork */
 		CFGBranchNode branch =
 			new CFGBranchNode($expression.start.getElement());
 	} statement) {
+		statementCFG = $statement.g;
 		/* join */
 		breakNode = new CFGJoinNode();
 		$g.setStartNode(branch);
 		$g.setEndNode(breakNode);
 		/* true */
-		branch.addEdge($statement.g.getStartNode(), defaultLabel);
-		$statement.g.getEndNode().addEdge(branch);
+		branch.addEdge(statementCFG.getStartNode(), defaultLabel);
 		/* false */
 		branch.addEdge(breakNode, falseLabel);
 		contNode = branch;
+		statementType = $statement.start.getType();
 	}
 	| ^('do' statement expression) {
+		statementCFG = $statement.g;
 		/* fork */
 		CFGBranchNode branch =
 			new CFGBranchNode($expression.start.getElement());
 		/* join */
 		breakNode = new CFGJoinNode();
 
-		$g.setStartNode($statement.g.getStartNode());
+		$g.setStartNode(statementCFG.getStartNode());
 		$g.setEndNode(breakNode);
-		$statement.g.getEndNode().addEdge(branch);
 		/* true */
 		branch.addEdge($statement.g.getStartNode(), defaultLabel);
 		/* false */
 		branch.addEdge(breakNode, falseLabel);
 		contNode = branch;
+		statementType = $statement.start.getType();
 	}
 	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) {
 		if ($e1.g == null) /* no initial */
@@ -466,12 +484,13 @@ scope IterSwitch;
 		}
 		n1.addEdge(n2);
 	} ^(E3 e3=expression?) statement) {
+		statementCFG = $statement.g;
 		if ($e2.g == null)
 			n2.addEdge($statement.g.getStartNode());
 		else {
 			CFGBranchNode branch = (CFGBranchNode)n2;
 			/* true */
-			branch.addEdge($statement.g.getStartNode(),
+			branch.addEdge(statementCFG.getStartNode(),
 					defaultLabel);
 			/* false */
 			branch.addEdge(breakNode, falseLabel);
@@ -482,7 +501,7 @@ scope IterSwitch;
 			contNode = new CFGNode($e3.start.getElement());
 		contNode.addEdge(n2);
 
-		$statement.g.getEndNode().addEdge(contNode);
+		statementType = $statement.start.getType();
 	}
 	;
 
