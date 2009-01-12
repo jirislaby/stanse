@@ -6,6 +6,8 @@
 
 package cz.muni.stanse.codestructures;
 
+import cz.muni.stanse.utils.XMLAlgo;
+
 import org.dom4j.Element;
 
 /**
@@ -38,8 +40,26 @@ public class CFG extends CFGPart {
     public CFG(Element functionDefinition) {
 	super();
 	this.functionDefinition = functionDefinition;
-	functionName = functionDefinition.selectSingleNode("./declarator/id").
-		getText();
+	Element declarator = (Element)functionDefinition.
+		selectSingleNode("./declarator");
+	while (true) {
+	    String node0 = declarator.node(0).getName();
+	    if (node0.equals("declarator"))
+		declarator = (Element)declarator.node(0);
+	    else if (node0.equals("pointer") &&
+			declarator.node(1).getName().equals("declarator"))
+		declarator = (Element)declarator.node(1);
+	    else
+		break;
+	}
+	Element nameElem = (Element)declarator.selectSingleNode("./id");
+	if (nameElem == null) {
+	    functionName = "UNKNOWN";
+	    System.err.println("Unknown function definition:");
+	    XMLAlgo.outputXML(functionDefinition);
+	    System.err.println("\n============");
+	} else
+	    functionName = nameElem.getText();
     }
 
     /**

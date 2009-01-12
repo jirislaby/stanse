@@ -43,7 +43,6 @@ import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.utils.XMLAlgo;
 }
 @members {
 	private Element defaultLabel, falseLabel, emptyStatement;
