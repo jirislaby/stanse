@@ -370,7 +370,6 @@ selectionStatementIf returns [CFGPart g]
 			s1Last.addEdge(n2);
 		else
 			$s1.g.getEndNode().addEdge(n2);
-		$s1.g.getEndNode().addEdge(n2);
 		/* false */
 		if (s2 != null) {
 			n1.addEdge($s2.g.getStartNode(), falseLabel);
