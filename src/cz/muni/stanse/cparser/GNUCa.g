@@ -389,8 +389,8 @@ directDeclarator
 	|	('[' typeQualifier* '*' ']') => '[' { list_tq = null; }  tq+=typeQualifier* '*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*' $tq*)
 		// LPAREN ID (COMMA | RPAREN) is identifierList. Lookahead k=3 should work, but does not :(
 		// adding a syntactic predicate
-	|	'(' parameterTypeList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator parameterTypeList)
 	|	('(' (IDENTIFIER (',' | ')')| ')') ) => '(' identifierList? ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList?)
+	|	'(' parameterTypeList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator parameterTypeList)
 	)*
 	;
 
