@@ -17,28 +17,28 @@
     <transition from="I[A]" by="free[A]" to="D[A]" />
 
     <error  from="U[A]" by="free[A]"
-            desc="releasing of not allocated memory."
+            desc="releasing of unallocated memory."
             level="0"
             entry="pointer is not initialized at function entry."
             begin="pointer is not initialized."
             propag="not affected ==> pointer is still not initialized."
-            end="pointer is not initialized, but releasing it here." />
+            end="pointer is not initialized, but is released here." />
 
     <error  from="I[A]" by="free[A]"
-            desc="releasing not allocated memory."
+            desc="releasing unallocated memory."
             level="0"
             entry="pointer is not initialized at function entry."
-            begin="pointer does not points to valid memory."
-            propag="not affected ==> pointer still does not points to valid memory."
-            end="pointer is not initialized, but releasing it here." />
+            begin="pointer does not point to valid memory."
+            propag="not affected ==> pointer still does not point to valid memory."
+            end="pointer is not initialized, but is released here." />
 
     <error  from="N[A]" by="free[A]"
-            desc="releasing not allocated memory."
+            desc="releasing unallocated memory."
             level="0"
             entry=""
             begin="pointer points to NULL."
             propag="not affected ==> pointer still points to NULL."
-            end="pointer points to NULL, but releasing it here." />
+            end="pointer points to NULL, but is released here." />
 
     <error  from="D[A]" by="free[A]"
             desc="releasing already released memory"
@@ -65,39 +65,39 @@
             end="the only reference to valid memory is lost here." />
 
     <error  from="U[A]" by="deref[A]"
-            desc="dereferencing not valid pointer"
+            desc="dereferencing invalid pointer"
             level="0"
-            entry="pointer is not valid at function entry."
-            begin="pointer is not valid here."
-            propag="not affected ==> pointer is still not valid."
-            end="dereferencing not valid pointer here." />
+            entry="pointer is invalid at function entry."
+            begin="pointer is invalid here."
+            propag="not affected ==> pointer is still invalid."
+            end="dereferencing invalid pointer here." />
 
     <error  from="I[A]" by="deref[A]"
-            desc="dereferencing not valid pointer"
+            desc="dereferencing invalid pointer"
             level="0"
-            entry="pointer does not points to valid memory at function entry."
-            begin="pointer does not points to valid memory."
-            propag="not affected ==> pointer still does not points to valid memory."
-            end="dereferencing not valid pointer here." />
+            entry="pointer does not point to valid memory at function entry."
+            begin="pointer does not point to valid memory."
+            propag="not affected ==> pointer still does not point to valid memory."
+            end="dereferencing invalid pointer here." />
 
     <error  from="N[A]" by="deref[A]"
-            desc="dereferencing not valid pointer"
+            desc="dereferencing invalid pointer"
             level="0"
-            entry="pointer does not points to valid memory at function entry."
-            begin="pointer does not points to valid memory."
-            propag="not affected ==> pointer still does not points to valid memory."
-            end="dereferencing not valid pointer here." />
+            entry="pointer does not point to valid memory at function entry."
+            begin="pointer does not point to valid memory."
+            propag="not affected ==> pointer still does not point to valid memory."
+            end="dereferencing invalid pointer here." />
 
     <error  from="D[A]" by="deref[A]"
-            desc="dereferencing not valid pointer"
+            desc="dereferencing invalid pointer"
             level="0"
-            entry="pointer does not points to valid memory at function entry."
-            begin="pointer does not points to valid memory."
-            propag="not affected ==> pointer still does not points to valid memory."
-            end="dereferencing not valid pointer here." />
+            entry="pointer does not point to valid memory at function entry."
+            begin="pointer does not point to valid memory."
+            propag="not affected ==> pointer still does not point to valid memory."
+            end="dereferencing invalid pointer here." />
 
     <error  from="N[A]" by="null[A]"
-            desc="unnecessary check (checking to NULL)."
+            desc="unnecessary check (checking for NULL)."
             level="0"
             entry="pointer is NULL at function entry."
             begin="pointer is NULL here."
@@ -105,7 +105,7 @@
             end="pointer always points to NULL here, but checking for it." />
 
     <error  from="V[A]" by="null[A]"
-            desc="unnecessary check (checking to NULL)."
+            desc="unnecessary check (checking for NULL)."
             level="0"
             entry="pointer is valid at function entry."
             begin="pointer is valid here."

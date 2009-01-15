@@ -42,7 +42,7 @@
             desc="unnecessary check - always unlocked"
             level="4"
             entry="The function called in unlocked state and never called in lock state."
-            begin="The lock in unlocked here and cannot be here in locked state."
+            begin="The lock in unlocked here and cannot be in locked state here."
             propag="not affected ==> the lock is still in unlocked and never in locked state."
             end="The lock is checked for locking state, but here the lock always is
                  in unlocked state and never in locked state ==> unnecessary check." />
@@ -51,9 +51,9 @@
             desc="unnecessary check - always locked"
             level="4"
             entry="The function called in locked state and never called in unlock state."
-            begin="The lock in locked here and cannot be here in unlocked state."
+            begin="The lock in locked here and cannot be in unlocked state here."
             propag="not affected ==> the lock is still locked and never in unlocked state."
-            end="The lock is checked for locking state, but here the lock always is
+            end="The lock is checked for locking state, but the lock here is always
                  in locked state and never in unlocked state ==> unnecessary check." />
 
     <error  from="L[*]" by=""
