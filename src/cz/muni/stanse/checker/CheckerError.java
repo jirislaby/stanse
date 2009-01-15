@@ -97,15 +97,16 @@ public final class CheckerError {
      */
     @Override
     public String toString() {
-        String result =
-                "CheckerError:\n" +
-                "    - shortDesc: " + getShortDescription() + '\n' +
-                "    - fullDesc: " + getFullDescription() + '\n' +
-                "    - errorLevel: " + getErrorLevel() + '\n';
-        for (ErrorTrace trace : getErrorTraces())
-            result += trace.toString().replaceAll("\n","\n    ");
+        StringBuilder result = new StringBuilder("CheckerError:\n").
+	    append("    - shortDesc: ").append(getShortDescription()).
+		    append('\n').
+	    append("    - fullDesc: ").append(getFullDescription()).
+		    append('\n').
+	    append("    - errorLevel: ").append(getErrorLevel()).append('\n');
+	for (ErrorTrace trace : getErrorTraces())
+            result.append(trace.toString().replaceAll("\n","\n    "));
 
-        return result;
+        return result.toString();
     }
 
     /**

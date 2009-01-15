@@ -1,6 +1,6 @@
 /**
  * @brief
- *  
+ *
  */
 package cz.muni.stanse.checker;
 
@@ -79,17 +79,18 @@ public final class ErrorTrace {
      */
     @Override
     public String toString() {
-        String result =
-            "- ErrorTrace:\n" +
-            "    - shortDesc: " + getShortDescription() + '\n'+
-            "    - fullDesc: " + getFullDescription() + '\n' +
-            "    - CFGNodes:\n";
+        StringBuilder result = new StringBuilder("- ErrorTrace:\n").
+	    append("    - shortDesc: ").
+		    append(getShortDescription()).append('\n').
+	    append("    - fullDesc: ").
+		    append(getFullDescription()).append('\n').
+	    append("    - CFGNodes:\n");
         for (Triple<CFGNode,String,CFG> node : getErrorTrace())
-            result += "        - <" + node.getFirst().toString() + "," +
-                                      node.getSecond() + "," +
-                                      node.getThird().toString() + ">\n";
+            result.append("        - <").append(node.getFirst().toString()).
+		    append(',').append(node.getSecond()).append(',').
+		    append(node.getThird().toString()).append(">\n");
 
-        return result;
+        return result.toString();
     }
 
     /**
