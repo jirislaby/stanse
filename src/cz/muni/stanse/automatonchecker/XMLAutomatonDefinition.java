@@ -1,6 +1,10 @@
 /**
- * @file .java
+ * @file XMLAutomatonDefinition.java
  * @brief 
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -85,7 +89,7 @@ final class XMLAutomatonDefinition {
     // private section
 
     private static Vector<XMLPattern>
-    buildXMLPatterns(final org.dom4j.Element XMLdefinition)
+    buildXMLPatterns(final Element XMLdefinition)
                                        throws XMLAutomatonSyntaxErrorException {
         final List patternNodes = XMLdefinition.selectNodes("//pattern");
         if (patternNodes.isEmpty())
@@ -95,12 +99,12 @@ final class XMLAutomatonDefinition {
         final Vector<XMLPattern> XMLpatterns =
             new Vector<XMLPattern>(patternNodes.size());
         for (final Iterator iter = patternNodes.iterator(); iter.hasNext(); )
-            XMLpatterns.add(new XMLPattern((org.dom4j.Element)iter.next()));
+            XMLpatterns.add(new XMLPattern((Element)iter.next()));
         return XMLpatterns;
     }
 
     private static final HashMap<String,Integer>
-    buildStatesDictionary(final org.dom4j.Element XMLdefinition)
+    buildStatesDictionary(final Element XMLdefinition)
                                        throws XMLAutomatonSyntaxErrorException {
         final HashMap<String,Integer> statesSymbolTable =
             new HashMap<String,Integer>();
@@ -123,7 +127,7 @@ final class XMLAutomatonDefinition {
     }
 
     private static Vector<XMLTransitionRule>
-    buildXMLTransitionRules(final org.dom4j.Element XMLdefinition,
+    buildXMLTransitionRules(final Element XMLdefinition,
                             final HashMap<String,Integer> statesSymbolTable)
                                        throws XMLAutomatonSyntaxErrorException {
         final List patternNodes = XMLdefinition.selectNodes("//transition");
@@ -135,13 +139,13 @@ final class XMLAutomatonDefinition {
             new Vector<XMLTransitionRule>(patternNodes.size());
         for (final Iterator iter = patternNodes.iterator(); iter.hasNext(); )
             XMLtransitionRules.add(new XMLTransitionRule(
-                                                (org.dom4j.Element)iter.next(),
+                                                (Element)iter.next(),
                                                 statesSymbolTable));
         return XMLtransitionRules;
     }
 
     private static Vector<XMLErrorRule>
-    buildXMLErrorRules(final org.dom4j.Element XMLdefinition,
+    buildXMLErrorRules(final Element XMLdefinition,
                        final HashMap<String,Integer> statesSymbolTable)
                                        throws XMLAutomatonSyntaxErrorException {
         final List patternNodes = XMLdefinition.selectNodes("//error");
@@ -152,7 +156,7 @@ final class XMLAutomatonDefinition {
         final Vector<XMLErrorRule> XMLerrorRules =
             new Vector<XMLErrorRule>(patternNodes.size());
         for (final Iterator iter = patternNodes.iterator(); iter.hasNext(); )
-            XMLerrorRules.add(new XMLErrorRule((org.dom4j.Element)iter.next(),
+            XMLerrorRules.add(new XMLErrorRule((Element)iter.next(),
                                                statesSymbolTable));
         return XMLerrorRules;
     }

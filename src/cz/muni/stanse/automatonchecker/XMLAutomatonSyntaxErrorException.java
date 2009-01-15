@@ -2,6 +2,10 @@
  * @file XMLAutomatonSyntaxErrorException.java
  * @brief Implements exception class which represents any syntax error in XML
  *        files, which contains automaton definitions.
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 

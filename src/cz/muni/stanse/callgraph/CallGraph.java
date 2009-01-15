@@ -1,8 +1,7 @@
 /*
  * CallGraph.java
  *
- * Created on 21. listopad 2006, 15:05
- *
+ * Licensed under GPLv2.
  */
 
 package cz.muni.stanse.callgraph;

@@ -1,7 +1,10 @@
 /**
  * @brief defines public class CheckerError, which is base class for all the
  *        exceptions which can be thrown in concrete checkers.
- * @author xtrtik2
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.checker;
 

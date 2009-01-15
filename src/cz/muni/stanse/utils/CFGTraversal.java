@@ -1,3 +1,7 @@
+/*
+ * Licensed under GPLv2.
+ */
+
 package cz.muni.stanse.utils;
 
 import java.util.HashSet;

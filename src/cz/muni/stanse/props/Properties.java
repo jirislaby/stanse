@@ -1,11 +1,11 @@
 /*
  * Properties.java
  *
- * Created on 14. 8. 2007, 15:40
- *
- * 
  * This is a set of static classes that take case of properties settings.
- * Typical use is Properties.getProperty("desiredKey", "defaultValue") or Properties.getProperty("desiredKey")
+ * Typical use is Properties.getProperty("desiredKey", "defaultValue") or
+ * Properties.getProperty("desiredKey")
+ *
+ * Licensed under GPLv2.
  */
 
 package cz.muni.stanse.props;

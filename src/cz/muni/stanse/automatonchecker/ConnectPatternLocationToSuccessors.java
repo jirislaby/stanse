@@ -3,6 +3,10 @@
  * @brief Implements final class ConnectPatternLocationToSuccessors which is
  *        responsible for creating connections between PatternLocation instances
  *        with respect to control-flow of source code.  
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 

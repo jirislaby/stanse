@@ -1,6 +1,7 @@
 /**
  * @brief
  *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.utils;
 

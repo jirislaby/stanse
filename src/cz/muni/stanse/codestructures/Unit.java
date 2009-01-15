@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2008 Jan Obdrzalek
+ *
+ * Distributed under GPLv2
+ */
+
 package cz.muni.stanse.codestructures;
 
 import java.io.File;
@@ -61,11 +67,11 @@ public abstract class Unit {
      * @throws RecognitionException In case of parsing problems not related to IO.
      */
     public Unit(File file) throws IOException, RecognitionException {
-    this(new FileInputStream(file), file.getName());
+	this(new FileInputStream(file), file.getName());
     }
     
     public String getName() {
-    return name;
+	return name;
     }
     
     public Document getXMLDocument() {

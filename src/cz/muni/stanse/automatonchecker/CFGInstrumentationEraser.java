@@ -3,6 +3,10 @@
  * @brief Implements final class CFGInstrumentationEraser which is responsible
  *        for returning CFG from its deep copy and branch-to-asserts-modified
  *        CFG back to original one.
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 

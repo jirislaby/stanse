@@ -1,10 +1,9 @@
 /*
  * LoggerConfigurator.java
  *
- * Created on 27. srpen 2007, 8:58
- *
  * Class configuring the log4j logger
  *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.props;
 
@@ -15,7 +14,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.util.Enumeration;
+
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.ConsoleAppender;

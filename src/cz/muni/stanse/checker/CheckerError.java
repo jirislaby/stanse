@@ -1,7 +1,10 @@
 /**
  *  @brief Defines public final class CheckerError. It represents the error
  *         found in source program (reprezented by set of CFGs).
- * 
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.checker;
 

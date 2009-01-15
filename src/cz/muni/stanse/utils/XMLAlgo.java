@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2008 Marek Trtik
+ * Copyright (c) 2008-2009 Jiri Slaby <jirislaby@gmail.com>
+ *
+ * Licensed under GPLv2.
+ */
 package cz.muni.stanse.utils;
 
 import java.io.IOException;

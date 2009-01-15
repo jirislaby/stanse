@@ -4,6 +4,10 @@
  *        copy of CFG (or whole set of CFGs) and the copied CFG has replaced all
  *        its branch nodes by assertion nodes (i.e. common CFGNodes with special
  *        XML element assigned to them).
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 

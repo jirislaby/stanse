@@ -2,6 +2,10 @@
  * @file AutomatonState.java 
  * @brief Here are defined automata states for all the automata defined in XML
  *        automata definition file of automatonchecker package.   
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 

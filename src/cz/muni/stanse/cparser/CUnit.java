@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2008 Jan Obdrzalek
+ *
+ * Distributed under GPLv2
+ */
+
 package cz.muni.stanse.cparser;
 
 import java.io.File;

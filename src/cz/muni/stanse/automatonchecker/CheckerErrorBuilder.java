@@ -3,6 +3,10 @@
  * @brief Implements final class CheckerErrorBuilder which is responsible to
  *        compute all checker errors which can be translated from automata
  *        states at PaternLocations. 
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 

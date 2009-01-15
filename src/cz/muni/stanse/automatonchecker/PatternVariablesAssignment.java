@@ -1,6 +1,10 @@
 /**
  * @file .java
  * @brief 
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -8,6 +12,8 @@ import cz.muni.stanse.utils.XMLAlgo;
 
 import java.util.HashMap;
 import java.util.Iterator;
+
+import org.dom4j.Element;
 
 /**
  * @brief
@@ -62,7 +68,7 @@ final class PatternVariablesAssignment {
      * @see
      */
     PatternVariablesAssignment() {
-        varsAssignments = new HashMap<String,org.dom4j.Element>(); 
+        varsAssignments = new HashMap<String,Element>();
     }
 
     /**
@@ -73,8 +79,8 @@ final class PatternVariablesAssignment {
      * @throws
      * @see
      */
-    org.dom4j.Element put(final String varName,
-                          final org.dom4j.Element XMLelement) {
+    Element put(final String varName,
+                          final Element XMLelement) {
         return getVarsAssignments().put(varName,XMLelement);
     }
 
@@ -102,9 +108,9 @@ final class PatternVariablesAssignment {
 
     // private section
 
-    private HashMap<String,org.dom4j.Element> getVarsAssignments() {
+    private HashMap<String,Element> getVarsAssignments() {
         return varsAssignments;
     }
 
-    private final HashMap<String,org.dom4j.Element> varsAssignments;
+    private final HashMap<String,Element> varsAssignments;
 }

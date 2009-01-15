@@ -1,5 +1,9 @@
 /*
  * Main class of the project.
+ *
+ * Copyright (c) 2009 Jan Obdrzalek
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse;
 

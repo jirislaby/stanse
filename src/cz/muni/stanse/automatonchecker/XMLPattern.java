@@ -1,6 +1,10 @@
 /**
- * @file .java
+ * @file XMLPattern.java
  * @brief 
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 
@@ -8,6 +12,8 @@ import cz.muni.stanse.utils.Pair;
 
 import java.util.Iterator;
 import java.util.HashSet;
+
+import org.dom4j.Element;
 
 /**
  * @brief
@@ -26,7 +32,7 @@ final class XMLPattern {
      * @throws
      * @see
      */
-    XMLPattern(final org.dom4j.Element XMLelement) {
+    XMLPattern(final Element XMLelement) {
         patternXMLelement = XMLelement;
         name = patternXMLelement.attribute("name").getValue();
         constructive = XMLelement.selectNodes(
@@ -66,7 +72,7 @@ final class XMLPattern {
      * @see
      */
     Pair<Boolean,PatternVariablesAssignment>
-    matchesXMLElement(final org.dom4j.Element XMLelement) {
+    matchesXMLElement(final Element XMLelement) {
         final PatternVariablesAssignment varsAssignment =
                 new PatternVariablesAssignment();
         return new Pair<Boolean,PatternVariablesAssignment>(
@@ -77,8 +83,8 @@ final class XMLPattern {
 
     // private section
 
-    private static boolean matchingElements(final org.dom4j.Element XMLpivot,
-                              final org.dom4j.Element XMLelement,
+    private static boolean matchingElements(final Element XMLpivot,
+                              final Element XMLelement,
                               final PatternVariablesAssignment varsAssignment) {
         if (XMLpivot.getName().equals("nested"))
         {
@@ -111,8 +117,7 @@ final class XMLPattern {
         final Iterator i = XMLpivot.elementIterator();
         final Iterator j = XMLelement.elementIterator();
         for ( ; i.hasNext() && j.hasNext(); )
-            if (!matchingElements((org.dom4j.Element)i.next(),
-                                  (org.dom4j.Element)j.next(),
+            if (!matchingElements((Element)i.next(), (Element)j.next(),
                                   varsAssignment))
                 return false;
         if (i.hasNext() || j.hasNext())
@@ -121,27 +126,25 @@ final class XMLPattern {
         return true;
     }
 
-    private static boolean onNested(final org.dom4j.Element XMLpivot,
-                              final org.dom4j.Element XMLelement,
+    private static boolean onNested(final Element XMLpivot,
+                              final Element XMLelement,
                               final PatternVariablesAssignment varsAssignment) {
-        if (matchingElements(
-                           (org.dom4j.Element)XMLpivot.elementIterator().next(),
+        if (matchingElements((Element)XMLpivot.elementIterator().next(),
                            XMLelement,varsAssignment))
             return true;
         
         for (final Iterator j = XMLelement.elementIterator() ; j.hasNext(); )
-            if (matchingElements(XMLpivot,(org.dom4j.Element)j.next(),
-                                 varsAssignment))
+            if (matchingElements(XMLpivot, (Element)j.next(), varsAssignment))
                 return true;
 
         return false;
     }
 
-    private org.dom4j.Element getPatternXMLelement() {
-        return (org.dom4j.Element)patternXMLelement.elementIterator().next();
+    private Element getPatternXMLelement() {
+        return (Element)patternXMLelement.elementIterator().next();
     }
     
-    private static String getAliasedName(final org.dom4j.Element element) {
+    private static String getAliasedName(final Element element) {
         final String elemName = element.getName();
 
         if (elemName.equals("prefixExpression") &&
@@ -157,7 +160,7 @@ final class XMLPattern {
         return elemName;
     }
             
-    private final org.dom4j.Element patternXMLelement;
+    private final Element patternXMLelement;
     private final String name;
     private final boolean constructive;
 }

@@ -4,6 +4,10 @@
  *        program verification specialized to locking problems, interrupts
  *        enabling/disabling problems, unnecessary check optimizations and
  *        points-to problems like null pointer dereference and memory leaks.
+ *
+ * Copyright (c) 2008-2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
  */
 package cz.muni.stanse.automatonchecker;
 
