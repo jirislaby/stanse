@@ -129,6 +129,11 @@ scope Symbols {
 	Set types; // only track types in order to get parser working
 }
 
+scope Typedef {
+	boolean isTypedef;
+}
+
+
 @header{
 	package cz.muni.stanse.cparser;
 	import java.util.Set;
@@ -180,15 +185,45 @@ scope Symbols; // entire file is a scope
         ;
 
 
-//
+
+// left factoring - inlined parts of declaration and functionDefinition  to gain speed
 externalDeclaration
-options {k=1;}
-//	:	( declarationSpecifiers declarator ('{' | storageClassSpecifier | typeSpecifier | typeQualifier | functionSpecifier| '__attribute' | '__attribute__') )=> functionDefinition	// (6.9.1)
-	:	( declarationSpecifiers declarator ('{' | storageClassSpecifier | typeSpecifier | typeQualifier | functionSpecifier) )=> functionDefinition	// (6.9.1)
-	|	declaration
+scope Typedef;
+@init { $Typedef::isTypedef = false; }
+	:	'typedef' declarationSpecifiers? {$Typedef::isTypedef = true;} initDeclaratorList? ';' -> ^('typedef' declarationSpecifiers? initDeclaratorList?) // special case
+	|	declarationSpecifiers 
+		(	';' -> ^(DECLARATION declarationSpecifiers)
+		|	declarator declarationOrFnDef[$declarationSpecifiers.tree, $declarator.tree]
+		)
 	|	';'!
 	|	asmDefinition	// GNU
         ;
+
+declarationOrFnDef[StanseTree ds, StanseTree d]
+	:	declarationSuffix[ds, d]
+	|	functionDefinitionSuffix[ds, d]
+	;
+
+declarationSuffix[StanseTree ds, StanseTree d]
+	:	simpleAsmExpr? ( '=' initializer )? ( ',' initDeclarator)* ';' 
+			-> ^(DECLARATION {$ds} ^(INIT_DECLARATOR {$d} initializer?) initDeclarator* )
+	;	
+	
+functionDefinitionSuffix[StanseTree ds, StanseTree d]
+	:	
+	(	compoundStatement		// ANSI style
+	|	declaration+ compoundStatement	// K&R style
+	)	-> ^(FUNCTION_DEFINITION  {$ds} {$d} declaration* compoundStatement)
+	;
+
+//externalDeclaration
+//options {k=1;}
+////	:	( declarationSpecifiers declarator ('{' | storageClassSpecifier | typeSpecifier | typeQualifier | functionSpecifier| '__attribute' | '__attribute__') )=> functionDefinition	// (6.9.1)
+//	:	( declarationSpecifiers declarator ('{' | storageClassSpecifier | typeSpecifier | typeQualifier | functionSpecifier) )=> functionDefinition	// (6.9.1)
+//	|	declaration
+//	|	';'!
+//	|	asmDefinition	// GNU
+//        ;
 
 asmDefinition	// GNU
 	:	simpleAsmExpr
@@ -223,9 +258,9 @@ scope Symbols; // // put parameters and locals into same scope for now
 // A.2.2 Declarations
 
 declaration		// (6.7)
-scope { boolean isTypedef; }
-@init { $declaration::isTypedef = false; }
-	:	'typedef' declarationSpecifiers? {$declaration::isTypedef=true;}  initDeclaratorList? ';' -> ^('typedef' declarationSpecifiers? initDeclaratorList?)
+scope Typedef;
+@init { $Typedef::isTypedef = false; }
+	:	'typedef' declarationSpecifiers? {$Typedef::isTypedef=true;}  initDeclaratorList? ';' -> ^('typedef' declarationSpecifiers? initDeclaratorList?)
 		  // special case, looking for typedef
 	|	declarationSpecifiers initDeclaratorList? ';' -> ^(DECLARATION declarationSpecifiers initDeclaratorList?)
 	;
@@ -368,12 +403,12 @@ declarator
 
 directDeclarator
 @init {boolean wasTypedef=false;}
-@after {if (wasTypedef) $declaration::isTypedef=true;}
+@after {if (wasTypedef) $Typedef::isTypedef=true;}
 	:	 ( IDENTIFIER
 			{
 //			System.err.println("T: ID="+$IDENTIFIER.text+", size="+$declaration.size());
 			// $declaration.size() is 0 if declaration is currently not being evaluated
-			if ($declaration.size()>0&&$declaration::isTypedef) {
+			if ($Typedef.size()>0&&$Typedef::isTypedef) {
 				$Symbols::types.add($IDENTIFIER.text);
 //				System.err.println("define type "+$IDENTIFIER.text);
 			}
@@ -382,15 +417,15 @@ directDeclarator
 	|	'(' declarator ')' -> declarator
 		)
 	// prevents getting function parameters into types
-	{if ($declaration.size()>0&&$declaration::isTypedef) {$declaration::isTypedef=false; wasTypedef=true;}}		
+	{if ($Typedef.size()>0&&$Typedef::isTypedef) {$Typedef::isTypedef=false; wasTypedef=true;}}		
 	( 	'[' { list_tq = null; } tq+=typeQualifier* ae=assignmentExpression? ']' -> ^(ARRAY_DECLARATOR $directDeclarator $tq* $ae?)
 	|	'[' { list_tq = null; } 'static' tq+=typeQualifier* ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq* $ae)
 	|	('[' typeQualifier+ 'static') => '[' { list_tq = null; } tq+=typeQualifier+ 'static' ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq+ $ae)
 	|	('[' typeQualifier* '*' ']') => '[' { list_tq = null; }  tq+=typeQualifier* '*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*' $tq*)
 		// LPAREN ID (COMMA | RPAREN) is identifierList. Lookahead k=3 should work, but does not :(
 		// adding a syntactic predicate
-	|	('(' (IDENTIFIER (',' | ')')| ')') ) => '(' identifierList? ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList?)
 	|	'(' parameterTypeList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator parameterTypeList)
+	|	('(' (IDENTIFIER (',' | ')')| ')') ) => '(' identifierList? ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList?)
 	)*
 	;
 
