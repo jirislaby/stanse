@@ -422,12 +422,18 @@ directDeclarator
 	|	'[' { list_tq = null; } 'static' tq+=typeQualifier* ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq* $ae)
 	|	('[' typeQualifier+ 'static') => '[' { list_tq = null; } tq+=typeQualifier+ 'static' ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq+ $ae)
 	|	('[' typeQualifier* '*' ']') => '[' { list_tq = null; }  tq+=typeQualifier* '*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*' $tq*)
-		// LPAREN ID (COMMA | RPAREN) is identifierList. Lookahead k=3 should work, but does not :(
-		// adding a syntactic predicate
-	|	'(' parameterTypeList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator parameterTypeList)
-	|	('(' (IDENTIFIER (',' | ')')| ')') ) => '(' identifierList? ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList?)
+//	|	'(' parameterTypeList ')'
+//	|	'(' identifierList? ')'
+	|	'(' 	// function declarator, partly left factored
+			// cannot do (input.LA(2)==',')||(input.LA(2)==')'), since values for ',' and ')' do not get expanded	
+		(	')' -> ^(FUNCTION_DECLARATOR $directDeclarator)	// K&R style, empty
+		|	{(input.LA(1)==IDENTIFIER) && ((input.LT(2).getText().equals(","))||(input.LT(2).getText().equals(")"))) && !isTypeName(input.LT(1).getText())}?  identifierList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList)
+		|	parameterTypeList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator parameterTypeList)
+		)
 	)*
 	;
+
+
 
 pointer
 	:	'*' typeQualifier* pointer? -> ^(POINTER typeQualifier* pointer?) // TODO AST
