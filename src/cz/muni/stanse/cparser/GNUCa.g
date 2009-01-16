@@ -193,7 +193,7 @@ scope Typedef;
 	:	'typedef' declarationSpecifiers? {$Typedef::isTypedef = true;} initDeclaratorList? ';' -> ^('typedef' declarationSpecifiers? initDeclaratorList?) // special case
 	|	declarationSpecifiers 
 		(	';' -> ^(DECLARATION declarationSpecifiers)
-		|	declarator declarationOrFnDef[$declarationSpecifiers.tree, $declarator.tree]
+		|	declarator declarationOrFnDef[$declarationSpecifiers.tree, $declarator.tree] -> declarationOrFnDef
 		)
 	|	';'!
 	|	asmDefinition	// GNU
