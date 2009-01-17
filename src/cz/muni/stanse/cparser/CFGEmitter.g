@@ -537,10 +537,39 @@ asmStatement returns [CFGPart g]
 
 expression returns [CFGPart g]
 @init {
-	$g = createCFG($expression.start.getElement());
+	CFGBranchNode n1;
+	CFGNode trueNode = null;
+	$g = null;
 }
-	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression)
-	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression) ^(E2 e2=expression?) ^(E3 e3=expression))
+@after {
+	if ($g == null)
+		$g = createCFG($expression.start.getElement());
+}
+	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) { $g = $e2.g; }
+	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression) {
+		/* fork */
+		n1 = new CFGBranchNode($e1.start.getElement());
+	} ^(E2 e2=expression?) {
+		if (e2 == null)
+			trueNode = new CFGNode($e1.start.getElement());
+	} ^(E3 e3=expression)) {
+		$g = new CFGPart();
+		/* join */
+		CFGNode n2 = new CFGJoinNode();
+		$g.setStartNode(n1);
+		$g.setEndNode(n2);
+		/* true */
+		if (trueNode == null) {
+			n1.addEdge($e2.g.getStartNode(), defaultLabel);
+			$e2.g.getEndNode().addEdge(n2);
+		} else {
+			n1.addEdge(trueNode, defaultLabel);
+			trueNode.addEdge(n2);
+		}
+		/* false */
+		n1.addEdge($e3.g.getStartNode(), falseLabel);
+		$e3.g.getEndNode().addEdge(n2);
+	}
 	| ^(CAST_EXPRESSION tn=typeName e1=expression)
 	| ^(ARRAY_ACCESS e1=expression e2=expression)
 	| ^(FUNCTION_CALL e1=expression e2=expression*)
@@ -557,11 +586,11 @@ expression returns [CFGPart g]
 	| ^(XU e1=expression)
 	| ^(PP e1=expression)
 	| ^(MM e1=expression)
-	| binaryExpression
-	| primaryExpression
+	| binaryExpression { $g=$binaryExpression.g; }
+	| primaryExpression { $g=$primaryExpression.g; }
 	;
 
-binaryExpression
+binaryExpression returns [CFGPart g]
 	: ^(op='||' e1=expression e2=expression)
 	| ^(op='&&' e1=expression e2=expression)
 	| ^(op='|' e1=expression e2=expression)
@@ -582,11 +611,11 @@ binaryExpression
 	| ^(op='%' e1=expression e2=expression)
 	;
 
-primaryExpression
+primaryExpression returns [CFGPart g]
 	: IDENTIFIER
 	| CONSTANT
 	| sTRING_LITERAL
-	| compoundStatement
+	| compoundStatement { $g=$compoundStatement.g; }
 	| ^(BUILTIN_OFFSETOF typeName offsetofMemberDesignator)
 	;
 
