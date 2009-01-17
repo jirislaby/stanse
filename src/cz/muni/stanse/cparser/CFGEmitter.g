@@ -129,7 +129,7 @@ directDeclarator
 	;
 
 directDeclarator1
-	: ^(ARRAY_DECLARATOR (IDENTIFIER|directDeclarator1) ('static'|'*')? typeQualifier* expression?)
+	: ^(ARRAY_DECLARATOR (IDENTIFIER|directDeclarator) ('static'|'*')? typeQualifier* expression?)
 	| ^(FUNCTION_DECLARATOR (IDENTIFIER|declarator) (parameterTypeList|identifier*))
 	;
 

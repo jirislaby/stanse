@@ -285,7 +285,7 @@ directDeclarator1 returns [List<Element> els]
 	List<Element> l = new LinkedList<Element>();
 	$els = new LinkedList<Element>();
 }
-	: ^(ARRAY_DECLARATOR (IDENTIFIER|dd=directDeclarator1) ('static' {tqs.add("static");}|asterisk='*')? (tq=typeQualifier {tqs.add(tq);})* expression?) {
+	: ^(ARRAY_DECLARATOR (IDENTIFIER|dd=directDeclarator) ('static' {tqs.add("static");}|asterisk='*')? (tq=typeQualifier {tqs.add(tq);})* expression?) {
 		if ($IDENTIFIER != null) {
 			String newName = renameVariable($IDENTIFIER.text);
 			if (!newName.equals($IDENTIFIER.text))
