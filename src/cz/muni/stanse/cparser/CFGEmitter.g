@@ -417,6 +417,7 @@ scope IterSwitch;
 	$IterSwitch::conts = new LinkedList<CFGBreakNode>();
 	CFGNode breakNode = null;
 	CFGNode contNode = null;
+	CFGNode lastStatement = null;
 	CFGNode n1, n2;
 	CFGPart statementCFG = null;
 	int statementType = 0;
@@ -428,7 +429,7 @@ scope IterSwitch;
 	for (CFGBreakNode n: $IterSwitch::conts)
 		n.addBreakEdge(contNode);
 	if (statementType == COMPOUND_STATEMENT)
-		$Function::lastStatement.addEdge(contNode);
+		lastStatement.addEdge(contNode);
 	else
 		statementCFG.getEndNode().addEdge(contNode);
 }
@@ -448,8 +449,11 @@ scope IterSwitch;
 		branch.addEdge(breakNode, falseLabel);
 		contNode = branch;
 		statementType = $statement.start.getType();
+		lastStatement = $Function::lastStatement;
 	}
-	| ^('do' statement expression) {
+	| ^('do' statement {
+		lastStatement = $Function::lastStatement;
+	} expression) {
 		statementCFG = $statement.g;
 		/* fork */
 		CFGBranchNode branch =
@@ -501,6 +505,7 @@ scope IterSwitch;
 		contNode.addEdge(n2);
 
 		statementType = $statement.start.getType();
+		lastStatement = $Function::lastStatement;
 	}
 	;
 
