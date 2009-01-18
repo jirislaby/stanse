@@ -9,8 +9,6 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.codestructures.CFG;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,7 +18,8 @@ final class PatternLocation {
 
     // package-private section
 
-    PatternLocation(final CFG cfg, final CFGNode referenceNode,
+    PatternLocation(final cz.muni.stanse.codestructures.CFG cfg,
+                    final cz.muni.stanse.codestructures.CFGNode referenceNode,
                     final Collection<TransitionRule> transitionRules,
                     final Collection<ErrorRule> errorRules) {
         this.cfg = cfg;
@@ -37,7 +36,7 @@ final class PatternLocation {
         return successorPatternLocations;
     }
 
-    CFGNode getCFGreferenceNode() {
+    cz.muni.stanse.codestructures.CFGNode getCFGreferenceNode() {
         return CFGreferenceNode;
     }
 
@@ -59,7 +58,7 @@ final class PatternLocation {
         return deliveredAutomataStates;
     }
 
-    CFG getCFG() {
+    cz.muni.stanse.codestructures.CFG getCFG() {
         return cfg;
     }
 
@@ -85,7 +84,7 @@ final class PatternLocation {
 
     // private section
 
-    private void transformAutomataStateToSuccessors(final AutomatonState state) {
+    private void transformAutomataStateToSuccessors(final AutomatonState state){
         final LinkedList<AutomatonState> transformedStates =
             transformAutomatonState(state);
         for (final PatternLocation location : getSuccessorPatternLocations())
@@ -120,8 +119,8 @@ final class PatternLocation {
         return transitionRules;
     }
 
-    private final CFG cfg;
-    private final CFGNode CFGreferenceNode;
+    private final cz.muni.stanse.codestructures.CFG cfg;
+    private final cz.muni.stanse.codestructures.CFGNode CFGreferenceNode;
     private final HashSet<AutomatonState> processedAutomataStates;
     private final LinkedList<AutomatonState> unprocessedAutomataStates;
     private final HashSet<AutomatonState> deliveredAutomataStates;

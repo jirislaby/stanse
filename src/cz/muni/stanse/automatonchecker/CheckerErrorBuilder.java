@@ -73,26 +73,16 @@ final class CheckerErrorBuilder {
                         (new ErrorTracesListCreator(rule,edgeLocationDictionary,
                                       location.getCFGreferenceNode(),
                                       location.getCFG()))).getErrorTracesList();
-                final String shortDesc = getMsgPrefix(location.getCFG()) +
-                                         rule.getErrorDescription() +
-                                         getMsgPostfix(traces.size());
-                // TODO: full description should contains more info then short
-                //       one ... :-)
-                final String fullDesc = shortDesc;
+                final String shortDesc = rule.getErrorDescription();
+                final String fullDesc = "in function '" +
+                                        location.getCFG().getFunctionName() +
+                                        "' " + shortDesc + " [traces: " +
+                                        traces.size() + "]";
                 errorsList.add(new CheckerError(shortDesc,fullDesc,
                                                 rule.getErrorLevel(),traces));
             }
 
         return errorsList;
-    }
-
-    private static String getMsgPrefix(
-            final cz.muni.stanse.codestructures.CFG cfg) {
-        return "In function: '" + cfg.getFunctionName() + "()' : ";
-    }
-
-    private static String getMsgPostfix(final int numTraces) {
-        return " [num traces: " + numTraces + "]";
     }
 
     private CheckerErrorBuilder() {

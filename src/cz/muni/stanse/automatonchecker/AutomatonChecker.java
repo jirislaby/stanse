@@ -37,7 +37,7 @@ import java.util.LinkedList;
  *
  * @see cz.muni.stanse.checker.Checker
  */
-public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
+final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     // public section
 
@@ -116,7 +116,7 @@ public final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * @return List of errors found in the source code.
      * @throws XMLAutomatonSyntaxErrorException Is thrown, when some semantic
      *              error is detected in XML automata definition.
-     * @see cz.muni.stanse.checker.Checker#check(java.util.Set)
+     * @see cz.muni.stanse.checker.Checker#check(java.util.List)
      */
     @Override
     public List<cz.muni.stanse.checker.CheckerError>

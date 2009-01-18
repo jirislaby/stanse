@@ -8,9 +8,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.utils.CFGvisitor;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.LinkedList;
@@ -18,7 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
 
-final class PatternLocationCreator extends CFGvisitor {
+final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
 
     // public section
 
@@ -39,7 +37,8 @@ final class PatternLocationCreator extends CFGvisitor {
                                           automatonID = getUniqueAutomatonID());
                     getAutomataIDsUsage().put(automatonID,
                                           XMLpatterns.get(i).isSonstructive());
-                } else
+                }
+                else
                     getAutomataIDsUsage().put(automatonID,
                                        getAutomataIDsUsage().get(automatonID) ||
                                        XMLpatterns.get(i).isSonstructive());
@@ -55,7 +54,8 @@ final class PatternLocationCreator extends CFGvisitor {
 
     // package-private section
 
-    PatternLocationCreator(final CFG cfg,
+    PatternLocationCreator(
+            final cz.muni.stanse.codestructures.CFG cfg,
             final XMLAutomatonDefinition XMLdefinition) {
         super();
         this.cfg = cfg;
@@ -133,7 +133,7 @@ final class PatternLocationCreator extends CFGvisitor {
         return new PatternLocation(getCFG(),node,transitionRules,errorRules);
     }
     
-    private CFG getCFG() {
+    private cz.muni.stanse.codestructures.CFG getCFG() {
         return cfg;
     }
 
@@ -158,7 +158,7 @@ final class PatternLocationCreator extends CFGvisitor {
         return patternAutomataCounter++;
     }
 
-    private final CFG cfg;
+    private final cz.muni.stanse.codestructures.CFG cfg;
     private final XMLAutomatonDefinition automatonDefinition;
     private final HashMap<PatternVariablesAssignment,Integer> automataIDs;
     private final HashMap<Integer,Boolean> automataIDsUsage;

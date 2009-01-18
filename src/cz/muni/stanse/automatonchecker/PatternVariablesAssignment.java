@@ -13,8 +13,6 @@ import cz.muni.stanse.utils.XMLAlgo;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.dom4j.Element;
-
 /**
  * @brief
  *
@@ -68,7 +66,7 @@ final class PatternVariablesAssignment {
      * @see
      */
     PatternVariablesAssignment() {
-        varsAssignments = new HashMap<String,Element>();
+        varsAssignments = new HashMap<String,org.dom4j.Element>(); 
     }
 
     /**
@@ -79,8 +77,8 @@ final class PatternVariablesAssignment {
      * @throws
      * @see
      */
-    Element put(final String varName,
-                          final Element XMLelement) {
+    org.dom4j.Element put(final String varName,
+                          final org.dom4j.Element XMLelement) {
         return getVarsAssignments().put(varName,XMLelement);
     }
 
@@ -108,9 +106,9 @@ final class PatternVariablesAssignment {
 
     // private section
 
-    private HashMap<String,Element> getVarsAssignments() {
+    private HashMap<String,org.dom4j.Element> getVarsAssignments() {
         return varsAssignments;
     }
 
-    private final HashMap<String,Element> varsAssignments;
+    private final HashMap<String,org.dom4j.Element> varsAssignments;
 }
