@@ -32,7 +32,7 @@ import cz.muni.stanse.cparser.CFGEmitter;
 public final class CUnit extends Unit {
 
     public CUnit(File file) throws IOException, RecognitionException {
-	this(new FileInputStream(file), file.getName());
+	this(new FileInputStream(file), file.toString());
     }
 	
     public CUnit(InputStream stream, String name) throws IOException,
