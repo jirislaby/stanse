@@ -14,12 +14,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
+
 final class PatternLocation {
 
     // package-private section
 
-    PatternLocation(final cz.muni.stanse.codestructures.CFG cfg,
-                    final cz.muni.stanse.codestructures.CFGNode referenceNode,
+    PatternLocation(final CFG cfg, final CFGNode referenceNode,
                     final Collection<TransitionRule> transitionRules,
                     final Collection<ErrorRule> errorRules) {
         this.cfg = cfg;
@@ -36,7 +38,7 @@ final class PatternLocation {
         return successorPatternLocations;
     }
 
-    cz.muni.stanse.codestructures.CFGNode getCFGreferenceNode() {
+    CFGNode getCFGreferenceNode() {
         return CFGreferenceNode;
     }
 
@@ -58,7 +60,7 @@ final class PatternLocation {
         return deliveredAutomataStates;
     }
 
-    cz.muni.stanse.codestructures.CFG getCFG() {
+    CFG getCFG() {
         return cfg;
     }
 
@@ -119,8 +121,8 @@ final class PatternLocation {
         return transitionRules;
     }
 
-    private final cz.muni.stanse.codestructures.CFG cfg;
-    private final cz.muni.stanse.codestructures.CFGNode CFGreferenceNode;
+    private final CFG cfg;
+    private final CFGNode CFGreferenceNode;
     private final HashSet<AutomatonState> processedAutomataStates;
     private final LinkedList<AutomatonState> unprocessedAutomataStates;
     private final HashSet<AutomatonState> deliveredAutomataStates;

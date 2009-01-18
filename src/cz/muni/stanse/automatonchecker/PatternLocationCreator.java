@@ -8,15 +8,17 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.utils.CFGvisitor;
 
 import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
 
-final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
+final class PatternLocationCreator extends CFGvisitor {
 
     // public section
 
@@ -37,8 +39,7 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
                                           automatonID = getUniqueAutomatonID());
                     getAutomataIDsUsage().put(automatonID,
                                           XMLpatterns.get(i).isSonstructive());
-                }
-                else
+                } else
                     getAutomataIDsUsage().put(automatonID,
                                        getAutomataIDsUsage().get(automatonID) ||
                                        XMLpatterns.get(i).isSonstructive());
@@ -54,8 +55,7 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
 
     // package-private section
 
-    PatternLocationCreator(
-            final cz.muni.stanse.codestructures.CFG cfg,
+    PatternLocationCreator(final CFG cfg,
             final XMLAutomatonDefinition XMLdefinition) {
         super();
         this.cfg = cfg;
@@ -133,7 +133,7 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
         return new PatternLocation(getCFG(),node,transitionRules,errorRules);
     }
     
-    private cz.muni.stanse.codestructures.CFG getCFG() {
+    private CFG getCFG() {
         return cfg;
     }
 
@@ -158,7 +158,7 @@ final class PatternLocationCreator extends cz.muni.stanse.utils.CFGvisitor {
         return patternAutomataCounter++;
     }
 
-    private final cz.muni.stanse.codestructures.CFG cfg;
+    private final CFG cfg;
     private final XMLAutomatonDefinition automatonDefinition;
     private final HashMap<PatternVariablesAssignment,Integer> automataIDs;
     private final HashMap<Integer,Boolean> automataIDsUsage;
