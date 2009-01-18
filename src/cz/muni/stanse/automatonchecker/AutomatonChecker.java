@@ -37,7 +37,7 @@ import java.util.LinkedList;
  *
  * @see cz.muni.stanse.checker.Checker
  */
-final public class AutomatonChecker extends cz.muni.stanse.checker.Checker {
+final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     // public section
 
