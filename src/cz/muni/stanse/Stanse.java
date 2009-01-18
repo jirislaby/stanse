@@ -75,6 +75,20 @@ public final class Stanse {
 	 */
 	 static List<Unit> units = new LinkedList<Unit>();
 	
+    private static LinkedList<File>
+    getCheckerDataFilesList(final String[] args) throws Exception {
+        final LinkedList<File> result = new LinkedList<File>();
+        
+        joptsimple.OptionParser parser = new joptsimple.OptionParser();
+        joptsimple.OptionSpec<java.io.File> automaton =
+                            parser.accepts("Xautomaton" , "Checking automaton.")
+                                  .withRequiredArg()
+                                  .describedAs("file")
+                                  .ofType(java.io.File.class);
+        final joptsimple.OptionSet options = parser.parse(args);
+        result.add(options.valueOf(automaton));
+        return result;
+    }
 	/**
 	 * @brief Reads command line and invokes the relevant methods. 
 	 * 
@@ -316,44 +330,57 @@ public final class Stanse {
 				System.exit(0);
 			}
 			// some checker was specified
+            Checker checker;
+            try {
+                checker = cz.muni.stanse.checker.CheckerFactory.create(
+                   options.valueOf(checkerClass),
+                   getCheckerDataFilesList(argsChecker.toArray(new String[0])));
+            }
+            catch (final Exception exception) {
+                System.err.println("Cannot create checker : '" +
+                                   options.valueOf(checkerClass) +
+                                   "'. See following exception trace: " +
+                                   exception);
+                return;
+            }
 			try {
 				// this works only for no arguments:
 				// Class c = Class.forName(options.valueOf(checkerClass));
 				// Checker checker = (Checker)c.newInstance();
 
 				// pass arguments
-				Class cl = Class.forName(options.valueOf(checkerClass));
-				Constructor c = cl.getConstructor(new Class[] { String[].class });
-				Checker checker = (Checker)c.newInstance((Object) argsChecker.toArray(new String[0]));
+				//Class cl = Class.forName(options.valueOf(checkerClass));
+				//Constructor c = cl.getConstructor(new Class[] { String[].class });
+				//Checker checker = (Checker)c.newInstance((Object) argsChecker.toArray(new String[0]));
 								
 				for (CheckerError e : checker.check(units)){
 					// TODO: better output
 					System.out.println(e.toString());
 				}
-			}
-			catch ( ClassNotFoundException ex ){
-				System.err.println( ex + " Interpreter class must be in class path.");
-			}
-			catch( InstantiationException ex ){
-				System.err.println( ex + " Interpreter class must be concrete.");
-			}
-			catch( IllegalAccessException ex ){
-				System.err.println( ex + " Interpreter class must have a no-arg constructor.");
+			//}
+			//catch ( ClassNotFoundException ex ){
+			//	System.err.println( ex + " Interpreter class must be in class path.");
+			//}
+			//catch( InstantiationException ex ){
+			//	System.err.println( ex + " Interpreter class must be concrete.");
+			//}
+			//catch( IllegalAccessException ex ){
+			//	System.err.println( ex + " Interpreter class must have a no-arg constructor.");
 			} catch (CheckerException e) {
 				// TODO fix this
 				e.printStackTrace();
 			} catch (SecurityException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (NoSuchMethodException e) {
+			//} catch (NoSuchMethodException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
+			//	e.printStackTrace();
+			//} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
+			//	e.printStackTrace();
+			//} catch (InvocationTargetException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 
 
