@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<automaton>
+    <description name="Interrupts checker"
+                 desc="Checks the interrupts enable/disable discipline" />
+
+    <pattern name="disableInterrupts">
+        <functionCall>
+            <id>cli</id>
+        </functionCall>
+    </pattern>
+
+    <pattern name="enableInterrupts">
+        <functionCall>
+            <id>sti</id>
+        </functionCall>
+    </pattern>
+
+    <pattern name="enableInterrupts">
+        <functionCall>
+            <id>restore_flags</id>
+            <ignore />
+        </functionCall>
+    </pattern>
+
+    <start state="Enabled" />
+    <transition from="Enabled[A]" by="disableInterrupts[A]" to="Disabled[A]" />
+    <transition from="Disabled[A]" by="enableInterrupts[A]" to="Enabled[A]" />
+
+    <error from="Enabled[A]" by="enableInterrupts[A]"
+           desc="Itenrrupts double enable error"
+           level="0"
+           entry="Function entered in enalbled state."
+           begin="Here the interrupts are enabled."
+           propag="not affected ==> interrupts are still enabled."
+           end="Interrupts have already been enabled, and enabling it twice here." />
+    <error from="Disabled[A]" by="disableInterrupts[A]"
+           desc="Itenrrupts double disable error"
+           level="0"
+           entry="Function entered in disalbled state."
+           begin="Here the interrupts are disabled."
+           propag="not affected ==> interrupts are still disabled."
+           end="Interrupts have already been disabled, and disabling it twice here." />
+    <error from="Disabled[*]" by=""
+           desc="Leaving function with interrupts disabled state."
+           level="0"
+           entry="The function called with interrupts disabled state."
+           begin="The interrupts are disabled  here."
+           propag="not affected ==> the interrupts are still disabled ."
+           end="Leaving function with interrupts disabled state." />
+</automaton>
+
