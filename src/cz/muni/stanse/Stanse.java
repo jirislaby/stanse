@@ -14,8 +14,7 @@ import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.cparser.CUnit;
 
-import cz.muni.stanse.gui.GuiMain;
-import cz.muni.stanse.gui.SourceAndXMLWindow;
+import cz.muni.stanse.gui.GuiMainWindow;
 
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
@@ -398,7 +397,7 @@ public final class Stanse {
 	public static void startGui() {
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				GuiMain gui = new GuiMain();
+				GuiMainWindow gui = GuiMainWindow.getInstance();
 				gui.setVisible(true);
 				if (!sources.isEmpty()) {
 					// read sources
