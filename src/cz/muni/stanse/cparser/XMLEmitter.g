@@ -285,16 +285,8 @@ directDeclarator1 returns [List<Element> els]
 	List<Element> l = new LinkedList<Element>();
 	$els = new LinkedList<Element>();
 }
-	: ^(ARRAY_DECLARATOR (IDENTIFIER|dd=directDeclarator) ('static' {tqs.add("static");}|asterisk='*')? (tq=typeQualifier {tqs.add(tq);})* expression?) {
-		if ($IDENTIFIER != null) {
-			String newName = renameVariable($IDENTIFIER.text);
-			if (!newName.equals($IDENTIFIER.text))
-				newListElement($els, "oldId").addText($IDENTIFIER.text);
-			newListElement($els, "id").addText(newName);
-			pushSymbol($IDENTIFIER.text, newName, 2);
-		} else
-			addAllElements(newListElement($els, "declarator",
-					$dd.start), $dd.els);
+	: ^(ARRAY_DECLARATOR (dd=directDeclarator) ('static' {tqs.add("static");}|asterisk='*')? (tq=typeQualifier {tqs.add(tq);})* expression?) {
+		$els = $dd.els;
 		Element e = newListElement($els, "arrayDecl");
 		for (String t: tqs)
 			e.addAttribute(t, "1");
