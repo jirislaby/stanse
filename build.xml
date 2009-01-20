@@ -70,7 +70,7 @@
             <src path="src"/>
 	    <exclude name="cz/muni/stanse/ownershipchecker/*"/>
             <classpath refid="project.classpath"/>
-            <compilerarg value="-Xlint:unchecked"/>
+            <compilerarg value="-Xlint"/>
         </javac>
 	<!-- Copy .properties to the build directory, so they get included in the Jar -->
         <copy todir="build" >
