@@ -550,7 +550,7 @@ expression returns [CFGPart g]
 	if ($g == null)
 		$g = createCFG($expression.start.getElement());
 }
-	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) { $g = $e2.g; }
+	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) { /*$g = $e2.g; do nothing so far XXX to be fixed */  }
 	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression) {
 		/* fork */
 		n1 = new CFGBranchNode($e1.start.getElement());
