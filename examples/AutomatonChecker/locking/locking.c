@@ -44,3 +44,50 @@ void test2()
     if (1)
         unlock(b);
 }
+
+void test3()
+{
+    foo();
+
+    if (trylock(&a))
+        unlock(&a);
+    else
+        unlock(&a);
+
+    foo();
+
+    if (!trylock(&b))
+        unlock(&b);
+    else
+        unlock(&b);
+
+    foo();
+
+    if (trylock(&c) == 0)
+        unlock(&c);
+    else
+        unlock(&c);
+
+    foo();
+
+    if (trylock(&d) != 0)
+        unlock(&d);
+    else
+        unlock(&d);
+
+    foo();
+
+    if (0 == trylock(&e))
+        unlock(&e);
+    else
+        unlock(&e);
+
+    foo();
+
+    if (0 != trylock(&f))
+        unlock(&f);
+    else
+        unlock(&f);
+
+    foo();
+}
