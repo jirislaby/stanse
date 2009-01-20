@@ -1,5 +1,6 @@
 package cz.muni.stanse.gui;
 
+@SuppressWarnings("serial")
 public final class GuiMainWindow extends javax.swing.JFrame {
 
     // public section

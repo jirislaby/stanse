@@ -13,6 +13,7 @@ package cz.muni.stanse.checker;
  *        in concrete checkers.
  * @see java.lang.Exception 
  */
+@SuppressWarnings("serial")
 public class CheckerException extends Exception {
 
     // public section 
@@ -52,17 +53,5 @@ public class CheckerException extends Exception {
     public CheckerException(final String errorMessage, final Throwable cause) {
         super(errorMessage,cause); 
     }
-
-    // private section
-
-    /**
-     * @brief Mandatory field necessitated by Serializable interface.
-     *
-     * This necessity was derived from Exception class.
-     * 
-     * @see java.io.Serializable 
-     */
-    private static final long serialVersionUID = new String("cz.muni.stanse." +
-                                         "checker.CheckerException").hashCode();
 }
 

@@ -1,5 +1,6 @@
 package cz.muni.stanse.gui;
 
+@SuppressWarnings("serial")
 final class GuiChooseCheckerDialog extends javax.swing.JDialog {
 
     // package-private section

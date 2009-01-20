@@ -1,5 +1,6 @@
 package cz.muni.stanse.gui;
 
+@SuppressWarnings("serial")
 final class GuiConfigurationDialog extends javax.swing.JDialog {
 
     // package-private section
@@ -9,14 +10,16 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
 
         initComponents();
 
-        sourceTypeConfigurationManager =
-            new GuiSourceTypeConfigurationManager(actualOpenedFileRadioButton,
-                                                  allOpenedFilesRadioButton,
-                                                  singleSourceFileRadioButton,
-                                                  makefileRadioButton);
-        specifySourceFilePathNameManager =
-            new GuiSpecifySourceFilePathNameManager(sourceCodeFileTextField,
-                                                    chooseFileOnDiscButton);
+        sourceConfigurationManager =
+            new GuiSourceConfigurationManager(actualOpenedFileRadioButton,
+                                              allOpenedFilesRadioButton,
+                                              singleSourceFileRadioButton,
+                                              makefileRadioButton,
+                                              allDirectoryFilesRadioButton,
+                                          allDirectoryHierarchyFilesRadioButton,
+                                              batchFileRadioButton,
+                                              sourceCodeFileTextField,
+                                              chooseFileOnDiscButton);
         checkersConfurationManager =
             new GuiCheckersConfurationManager(checkersTree,addCheckerButton,
                             removeCheckerButton,addDataButton,removeDataButton);
@@ -30,12 +33,8 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
         });
     }
 
-    GuiSourceTypeConfigurationManager getSourceTypeConfigurationManager() {
-        return sourceTypeConfigurationManager;
-    }
-
-    GuiSpecifySourceFilePathNameManager getSpecifySourceFilePathNameManager() {
-        return specifySourceFilePathNameManager;
+    GuiSourceConfigurationManager getSourceConfigurationManager() {
+        return sourceConfigurationManager;
     }
 
     GuiCheckersConfurationManager getCheckersConfurationManager() {
@@ -44,10 +43,7 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
 
     // private section
 
-    private final GuiSourceTypeConfigurationManager
-                                                 sourceTypeConfigurationManager;
-    private final GuiSpecifySourceFilePathNameManager
-                                               specifySourceFilePathNameManager;
+    private final GuiSourceConfigurationManager sourceConfigurationManager;
     private final GuiCheckersConfurationManager checkersConfurationManager;
 
     //
@@ -107,15 +103,12 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
 
         sourceTypeButtonGroup.add(allDirectoryFilesRadioButton);
         allDirectoryFilesRadioButton.setText("All source code files in directory");
-        allDirectoryFilesRadioButton.setEnabled(false);
 
         sourceTypeButtonGroup.add(allDirectoryHierarchyFilesRadioButton);
         allDirectoryHierarchyFilesRadioButton.setText("All source code files in directory and subdirectories");
-        allDirectoryHierarchyFilesRadioButton.setEnabled(false);
 
         sourceTypeButtonGroup.add(batchFileRadioButton);
         batchFileRadioButton.setText("All source code files in specified batch-file");
-        batchFileRadioButton.setEnabled(false);
 
         specifySourceFileStaticText.setText("Path-name to source file, Makefile, batch file, or directory:");
         specifySourceFileStaticText.setFocusable(false);

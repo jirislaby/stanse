@@ -21,7 +21,9 @@ final class CheckForBugs {
                 new LinkedList<CheckerError>();
         final LinkedList<PresentableError> presentableErrors =
                 new LinkedList<PresentableError>();
-        configuration.visit(
+        // TODO: here should be called method 'visit()' instead of method
+        //       'visitIntraprocedutral()'. But I must wait till
+        configuration.visitIntraprocedutral(
             new ConfigurationVisitor() {
                 @Override
                 public boolean visit(final List<Unit> units,

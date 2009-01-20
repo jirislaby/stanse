@@ -2,13 +2,12 @@ package cz.muni.stanse.gui;
 
 import cz.muni.stanse.utils.ClassLogger;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.io.File;
 
 import javax.swing.JTextArea;
 
-final class GuiOpenedSourceFilesManager extends
-                                             MutableSourceConfigurationAcessor {
+final class GuiOpenedSourceFilesManager {
 
     // package-private section
 
@@ -47,19 +46,17 @@ final class GuiOpenedSourceFilesManager extends
     }
 
 
-    @Override
-    File getActiveSource() {
+    String getActiveFile() {
         final int selectedIndex = getSourceCodeTabbedPane().getSelectedIndex();
         if (selectedIndex == -1)
             return null;
-        return getFileAt(selectedIndex);
+        return getFileAt(selectedIndex).toString();
     }
 
-    @Override
-    java.util.Set<File> getAllSources() {
-        final HashSet<File> result = new HashSet<File>();
+    java.util.List<String> getAllFiles() {
+        final LinkedList<String> result = new LinkedList<String>();
         for (int i = 0; i < getSourceCodeTabbedPane().getTabCount(); ++i)
-            result.add(getFileAt(i));
+            result.add(getFileAt(i).toString());
         return result;
     }
 
@@ -111,10 +108,10 @@ final class GuiOpenedSourceFilesManager extends
     }
 
     private int getTabIndex(final File file) {
-        final String filePathName = file.toString();
-        for (int i = 0; i < getSourceCodeTabbedPane().getTabCount(); ++i)
-            if (filePathName.equals(getFileStringAt(i)))
+        for (int i = 0; i < getSourceCodeTabbedPane().getTabCount(); ++i) {
+            if (file.equals(getFileAt(i)))
                 return i;
+        }
         return -1;
     }
 

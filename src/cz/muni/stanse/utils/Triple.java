@@ -87,6 +87,7 @@ public final class Triple<A,B,C> {
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(final Object obj) {
         return (obj == null || getClass() != obj.getClass()) ?
                 false : isEqualWith((Triple<A,B,C>)obj);

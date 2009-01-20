@@ -56,24 +56,6 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     }
 
     /**
-     * @brief Parses accepted arguments which corresponds to arguments specified
-     *        in the command-line of Stanse. The only purpose of this construc-
-     *        tor is to find and load XML file which defines automata, and then
-     *        calls constructor of this class, which accepts loaded XML automata
-     *        definition. 
-     *
-     * @param args Stanse's command line arguments related to this checker.
-     * @throws XMLAutomatonSyntaxErrorException This may occur when calling
-     *              other constructor, which really constructs instance. 
-     * @throws Exception This may occur when parsing command-line arguments
-     * @see cz.muni.stanse.automatonchecker#AutomatonChecker(org.dom4j.Document)
-     */
-    public AutomatonChecker(final String[] args)
-                            throws XMLAutomatonSyntaxErrorException, Exception {
-        this(getDocument(args));    		
-    }
-    
-    /**
      * @brief Uniquelly identifies the checker by the string identifier. 
      *
      * @return String which uniquelly identifies the checker.
@@ -149,23 +131,6 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     }
 
     // private section
-
-    private static org.dom4j.Document
-    getDocument(String[] args) throws Exception {
-        joptsimple.OptionParser parser = new joptsimple.OptionParser();
-        joptsimple.OptionSpec<java.io.File> automaton =
-                            parser.accepts("Xautomaton" , "Checking automaton.")
-                                  .withRequiredArg()
-                                  .describedAs("file")
-                                  .ofType(java.io.File.class);
-        final joptsimple.OptionSet options = parser.parse(args);
-//       if(options.has(automaton)) {
-        return ((new org.dom4j.io.SAXReader()).
-                        read(options.valueOf(automaton)));            
-//      }else {
-//          // TODO spadni!
-//      }
-    }
 
     private static HashSet<CFG> buildSetOfCFGs(final List<Unit> units) {
         final HashSet<CFG> CFGs = new HashSet<CFG>();

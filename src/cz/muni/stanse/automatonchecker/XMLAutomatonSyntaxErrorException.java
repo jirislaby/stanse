@@ -18,6 +18,7 @@ package cz.muni.stanse.automatonchecker;
  *
  * @see java.lang.Exception 
  */
+@SuppressWarnings("serial")
 public class XMLAutomatonSyntaxErrorException extends
                                        cz.muni.stanse.checker.CheckerException {
 
@@ -61,16 +62,4 @@ public class XMLAutomatonSyntaxErrorException extends
                                             final Throwable cause) {
         super(errorMessage,cause); 
     }
-
-    // private section
-
-    /**
-     * @brief Mandatory field necessitated by Serializable interface.
-     *
-     * This necessity was derived from Exception class.
-     * 
-     * @see java.io.Serializable 
-     */
-    private static final long serialVersionUID = new String("cz.muni.stanse." +
-                "automatonchecker.XMLAutomatonSyntaxErrorException").hashCode();
 }

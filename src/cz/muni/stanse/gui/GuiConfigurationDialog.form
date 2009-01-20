@@ -185,7 +185,6 @@
                   <ComponentRef name="sourceTypeButtonGroup"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="All source code files in directory"/>
-                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JRadioButton" name="allDirectoryHierarchyFilesRadioButton">
@@ -194,7 +193,6 @@
                   <ComponentRef name="sourceTypeButtonGroup"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="All source code files in directory and subdirectories"/>
-                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JRadioButton" name="batchFileRadioButton">
@@ -203,7 +201,6 @@
                   <ComponentRef name="sourceTypeButtonGroup"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="All source code files in specified batch-file"/>
-                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextPane" name="specifySourceFileStaticText">

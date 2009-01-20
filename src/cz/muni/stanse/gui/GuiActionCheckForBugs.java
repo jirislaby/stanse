@@ -6,6 +6,7 @@ import cz.muni.stanse.utils.ClassLogger;
 
 import java.util.LinkedList;
 
+@SuppressWarnings("serial")
 final class GuiActionCheckForBugs extends javax.swing.AbstractAction {
 
     // public section
@@ -32,7 +33,11 @@ final class GuiActionCheckForBugs extends javax.swing.AbstractAction {
         getErrorTracingManager().onSelectionChanged(null);
     }
 
-    // package-private section
+    GuiActionCheckForBugs() {
+        super();
+    }
+
+    // private section
 
     private GuiErrorsTreeManager getErrorsTreeManager() {
         return GuiMainWindow.getInstance().getErrorsTreeManager();
@@ -40,9 +45,5 @@ final class GuiActionCheckForBugs extends javax.swing.AbstractAction {
 
     private GuiErrorTracingManager getErrorTracingManager() {
         return GuiMainWindow.getInstance().getErrorTracingManager();
-    }
-
-    GuiActionCheckForBugs() {
-        super();
     }
 }

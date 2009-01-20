@@ -16,6 +16,18 @@ public class FileAlgo {
                      fileName.substring(idx+1) : fileName;
     }
 
+    public static java.util.Set<File> enumerateFiles(final File startDirectory,
+                                                final java.io.FileFilter filter,
+                                                final boolean recursive) {
+        final java.util.HashSet<File> result = new java.util.HashSet<File>();
+        for (File file : startDirectory.listFiles(filter))
+            if (file.isDirectory())
+                result.addAll(enumerateFiles(file,filter,recursive));
+            else
+                result.add(file);
+        return result;
+    }
+
     // private section
 
     private FileAlgo() {

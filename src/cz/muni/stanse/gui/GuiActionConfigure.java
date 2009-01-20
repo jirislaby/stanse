@@ -1,5 +1,6 @@
 package cz.muni.stanse.gui;
 
+@SuppressWarnings("serial")
 final class GuiActionConfigure extends javax.swing.AbstractAction {
 
     // public section
@@ -11,10 +12,7 @@ final class GuiActionConfigure extends javax.swing.AbstractAction {
         cfgDialog.setVisible(true);
 
         GuiMainWindow.getInstance().setConfiguration(new Configuration(
-            new SourceConfiguration(
-               cfgDialog.getSpecifySourceFilePathNameManager().getSourceFile(),
-               cfgDialog.getSourceTypeConfigurationManager().getSourceType(),
-               GuiMainWindow.getInstance().getOpenedSourceFilesManager()),
+            cfgDialog.getSourceConfigurationManager().getSourceConfiguration(),
             cfgDialog.getCheckersConfurationManager().getCheckersConfiguration()
         ));
     }

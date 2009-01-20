@@ -6,12 +6,12 @@ final class GuiSpecifySourceFilePathNameManager {
 
     GuiSpecifySourceFilePathNameManager(
                          final javax.swing.JTextField sourceCodeFileTextField,
-                         final javax.swing.JButton chooseFileOnDiscButton) {
+                         final javax.swing.JButton chooseFileOnDiscButton,
+                         final String initialFile) {
         this.sourceCodeFileTextField = sourceCodeFileTextField;
         this.chooseFileOnDiscButton = chooseFileOnDiscButton;
-        getSourceCodeFileTextField().setText(GuiMainWindow.getInstance().
-                                    getConfiguration().getSourceConfiguration().
-                                    getSourcePathName().toString());
+
+        getSourceCodeFileTextField().setText(initialFile);
 
         getChooseFileOnDiscButton().addActionListener(
         new java.awt.event.ActionListener() {
@@ -22,16 +22,16 @@ final class GuiSpecifySourceFilePathNameManager {
         });
     }
 
-    java.io.File getSourceFile() {
-        return new java.io.File(getSourceCodeFileTextField().getText());
+    String getSourceFile() {
+        return getSourceCodeFileTextField().getText();
     }
 
     // private section
 
     private void onChooseFileOnDisc() {
         final javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File(getSourceFile().
-                                                     getPath()));
+        chooser.setCurrentDirectory(new java.io.File(new java.io.File(
+                                                   getSourceFile()).getPath()));
         chooser.setFileSelectionMode(javax.swing.JFileChooser.
                                      FILES_AND_DIRECTORIES);
         chooser.addChoosableFileFilter(new GuiFileChooserFileFilter(

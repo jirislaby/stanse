@@ -30,14 +30,6 @@ public abstract class Checker {
     }
 
     /**
-     * @brief Initializes checker by supplied command-line arguments.
-     * 
-     * The options must all start with -X/--X. 
-     */
-    public Checker(String[] args){
-    }
-    
-    /**
      * @brief Forces all the children to define name of the checker.
      * 
      * The name should be unique.

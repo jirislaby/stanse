@@ -36,6 +36,25 @@ final class Configuration {
                 break;
     }
 
+    @Deprecated
+    void visitIntraprocedutral(final ConfigurationVisitor visitor) throws Exception {
+        final LinkedList<cz.muni.stanse.checker.Checker> checkers =
+                               new LinkedList<cz.muni.stanse.checker.Checker>();
+        for (CheckerConfiguration checkerCfg : getCheckerConfigurations())
+            checkers.add(checkerCfg.getChecker());
+        final SourceCodeFilesEnumerator sourceEnumerator =
+                                 getSourceConfiguration().getSourceEnumerator();
+        for (String filePathName : sourceEnumerator.getSourceCodeFiles()) {
+            final LinkedList<Unit> units = cz.muni.stanse.utils.Make.<Unit>
+                                    linkedList(new cz.muni.stanse.cparser.CUnit(
+                                               new java.io.File(filePathName)));
+            for (cz.muni.stanse.checker.Checker checker : checkers) {
+                if (!visitor.visit(units,checker,buildCfgToUnitMapping(units)))
+                    break;
+            }
+        }
+    }
+
     SourceConfiguration getSourceConfiguration() {
         return sourceConfiguration;
     }
@@ -56,9 +75,8 @@ final class Configuration {
     }
 
     private static SourceConfiguration createDefaultSourceConfiguration() {
-        return new SourceConfiguration(
-                     new File("../examples/AutomatonChecker/pointers/memory.c"),
-                     SourceConfiguration.SourceType.SingleSourceFile);
+        return new SourceConfiguration(new SingleFileEnumerator(
+                             "../examples/AutomatonChecker/locking/locking.c"));
     }
 
     private static LinkedList<CheckerConfiguration>

@@ -1,5 +1,6 @@
 package cz.muni.stanse.gui;
 
+@SuppressWarnings("serial")
 final class GuiActionOpenSourceCodeFile extends javax.swing.AbstractAction {
 
     // public section
