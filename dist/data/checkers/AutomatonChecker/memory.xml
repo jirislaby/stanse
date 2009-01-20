@@ -154,7 +154,7 @@
     <pattern name="free">
         <functionCall>
             <id>free</id>
-            <var name="A" constructive="false" />
+            <var name="A"/>
         </functionCall>
     </pattern>
 
@@ -184,6 +184,13 @@
         </nested>
     </pattern>
 
+    <!-- Matches condition of form:
+        if (A) {
+            assert(!(A == 0)); // ~ parttern 'notnull'
+        } else {
+            assert(A == 0); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <binaryExpressionEquality>
@@ -203,6 +210,13 @@
         </assert>
     </pattern>
 
+    <!-- Matches condition of form:
+        if (!A) {
+            assert(!A == 0); // ~ parttern 'notnull'
+        } else {
+            assert(!(!A == 0)); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <prefixExpressionLogicalNot>
@@ -226,6 +240,13 @@
         </assert>
     </pattern>
 
+    <!-- Matches condition of form:
+        if (A == 0) {
+            assert((A == 0) == 0); // ~ parttern 'notnull'
+        } else {
+            assert(!((A == 0) == 0)); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <prefixExpressionLogicalNot>
@@ -251,6 +272,13 @@
         </assert>
     </pattern>
 
+    <!-- Matches condition of form:
+        if (A == (T*)0) {
+            assert((A == (T*)0) == 0); // ~ parttern 'notnull'
+        } else {
+            assert(!((A == (T*)0) == 0)); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <prefixExpressionLogicalNot>
@@ -282,6 +310,13 @@
         </assert>
     </pattern>
 
+    <!-- Matches condition of form:
+        if (A != 0) {
+            assert((A != 0) == 0); // ~ parttern 'notnull'
+        } else {
+            assert(!((A != 0) == 0)); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <binaryExpressionEquality>
@@ -307,6 +342,13 @@
         </assert>
     </pattern>
 
+    <!-- Matches condition of form:
+        if (A != (T*)0) {
+            assert(!((A != (T*)0) == 0)); // ~ parttern 'notnull'
+        } else {
+            assert((A != (T*)0) == 0); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <binaryExpressionEquality>
@@ -338,6 +380,13 @@
         </assert>
     </pattern>
 
+    <!-- Matches condition of form:
+        if (0 == A) {
+            assert(!((0 == A) == 0)); // ~ parttern 'notnull'
+        } else {
+            assert((0 == A) == 0); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <prefixExpressionLogicalNot>
@@ -363,6 +412,13 @@
         </assert>
     </pattern>
 
+    <!-- Matches condition of form:
+        if ((T*)0 == A) {
+            assert(((T*)0 == A) == 0); // ~ parttern 'notnull'
+        } else {
+            assert(!(((T*)0 == A) == 0)); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <prefixExpressionLogicalNot>
@@ -394,6 +450,13 @@
         </assert>
     </pattern>
 
+    <!-- Matches condition of form:
+        if ((0 != A) {
+            assert(!((0 != A) == 0)); // ~ parttern 'notnull'
+        } else {
+            assert((0 != A) == 0); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <binaryExpressionEquality>
@@ -419,6 +482,13 @@
         </assert>
     </pattern>
 
+    <!-- Matches condition of form:
+        if ((T*)0 != A) {
+            assert(!(((T*)0 != A) == 0)); // ~ parttern 'notnull'
+        } else {
+            assert(((T*)0 != A) == 0); // ~ parttern 'null'
+        }
+    -->
     <pattern name="null">
         <assert>
             <binaryExpressionEquality>
@@ -451,4 +521,3 @@
     </pattern>
 
 </automaton>
-
