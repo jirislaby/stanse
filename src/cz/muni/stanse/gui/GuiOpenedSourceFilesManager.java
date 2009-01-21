@@ -60,6 +60,16 @@ final class GuiOpenedSourceFilesManager {
         return result;
     }
 
+    void closeActiveFile() {
+        final int currentTabIdx = getSourceCodeTabbedPane().getSelectedIndex();
+        if (currentTabIdx != -1)
+            getSourceCodeTabbedPane().remove(currentTabIdx);
+    }
+
+    void closeAllFiles() {
+        getSourceCodeTabbedPane().removeAll();
+    }
+
     // private section
 
     private void createTabWithSourceCodeFile(final File sourceFile) {

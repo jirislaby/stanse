@@ -14,11 +14,40 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new GuiActionOpenSourceCodeFile()" type="code"/>
                 </Property>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Ctrl+O"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Open source file"/>
                 <Property name="toolTipText" type="java.lang.String" value="Specify the source code file to be checked for bugs"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator1">
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="stanseMainMenuItemCloseActiveTab">
+              <Properties>
+                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="new GuiActionCloseActiveTab()" type="code"/>
+                </Property>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Ctrl+W"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Close active tab"/>
+                <Property name="toolTipText" type="java.lang.String" value="Closes curently visible tab with source code file."/>
+              </Properties>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="stanseMainMenuItemCloseAllTabs">
+              <Properties>
+                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="new GuiActionCloseAllTabs()" type="code"/>
+                </Property>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Shift+Ctrl+W"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Close all tabs"/>
+                <Property name="toolTipText" type="java.lang.String" value="Closes all tabs with source code files."/>
+              </Properties>
+            </MenuItem>
+            <MenuItem class="javax.swing.JSeparator" name="jSeparator5">
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="stanseMainMenuItemAST">
               <Properties>
@@ -38,6 +67,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="stanseMainMenuItemExit">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Alt+F4"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Exit"/>
                 <Property name="toolTipText" type="java.lang.String" value="End the application"/>
               </Properties>
@@ -54,6 +86,9 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new GuiActionCheckForBugs()" type="code"/>
                 </Property>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="F9"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Check for bugs"/>
                 <Property name="toolTipText" type="java.lang.String" value="Perform checking of bugs (with respect to current checking configuration)."/>
               </Properties>
@@ -63,6 +98,9 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new GuiActionConfigure()" type="code"/>
                 </Property>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="F4"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Configure"/>
                 <Property name="toolTipText" type="java.lang.String" value="Configure checking procedure. Specify which checkers should be performer on which source code files."/>
               </Properties>
@@ -71,21 +109,33 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="stanseMainMenuItemFirstNode">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Alt+HOME"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Go to first trace location"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="stanseMainMenuItemNextNode">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Alt+PAGE_DOWN"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Goto next trace location"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="stanseMainMenuItemPreviousNode">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Alt+PAGE_UP"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Goto previous trace location"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="stanseMainMenuItemLastNode">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Alt+END"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Goto last trace location"/>
               </Properties>
             </MenuItem>

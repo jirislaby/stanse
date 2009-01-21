@@ -110,6 +110,9 @@ public final class GuiMainWindow extends javax.swing.JFrame {
         stanseMainMenuFile = new javax.swing.JMenu();
         stanseMainMenuItemFile = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
+        stanseMainMenuItemCloseActiveTab = new javax.swing.JMenuItem();
+        stanseMainMenuItemCloseAllTabs = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JSeparator();
         stanseMainMenuItemAST = new javax.swing.JMenuItem();
         statnseMainMenuItemCFG = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
@@ -222,10 +225,24 @@ public final class GuiMainWindow extends javax.swing.JFrame {
         stanseMainMenuFile.setText("File");
 
         stanseMainMenuItemFile.setAction(new GuiActionOpenSourceCodeFile());
+        stanseMainMenuItemFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         stanseMainMenuItemFile.setText("Open source file");
         stanseMainMenuItemFile.setToolTipText("Specify the source code file to be checked for bugs");
         stanseMainMenuFile.add(stanseMainMenuItemFile);
         stanseMainMenuFile.add(jSeparator1);
+
+        stanseMainMenuItemCloseActiveTab.setAction(new GuiActionCloseActiveTab());
+        stanseMainMenuItemCloseActiveTab.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
+        stanseMainMenuItemCloseActiveTab.setText("Close active tab");
+        stanseMainMenuItemCloseActiveTab.setToolTipText("Closes curently visible tab with source code file.");
+        stanseMainMenuFile.add(stanseMainMenuItemCloseActiveTab);
+
+        stanseMainMenuItemCloseAllTabs.setAction(new GuiActionCloseAllTabs());
+        stanseMainMenuItemCloseAllTabs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        stanseMainMenuItemCloseAllTabs.setText("Close all tabs");
+        stanseMainMenuItemCloseAllTabs.setToolTipText("Closes all tabs with source code files.");
+        stanseMainMenuFile.add(stanseMainMenuItemCloseAllTabs);
+        stanseMainMenuFile.add(jSeparator5);
 
         stanseMainMenuItemAST.setText("Show Abstract Syntax Trees");
         stanseMainMenuItemAST.setToolTipText("Show Abstract Syntax Trees of all the functions in opened and active source code file.");
@@ -238,6 +255,7 @@ public final class GuiMainWindow extends javax.swing.JFrame {
         stanseMainMenuFile.add(statnseMainMenuItemCFG);
         stanseMainMenuFile.add(jSeparator2);
 
+        stanseMainMenuItemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
         stanseMainMenuItemExit.setText("Exit");
         stanseMainMenuItemExit.setToolTipText("End the application");
         stanseMainMenuFile.add(stanseMainMenuItemExit);
@@ -247,25 +265,31 @@ public final class GuiMainWindow extends javax.swing.JFrame {
         stanseMainMenuChecking.setText("Checking");
 
         stanseMainMenuItemCheck.setAction(new GuiActionCheckForBugs());
+        stanseMainMenuItemCheck.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F9, 0));
         stanseMainMenuItemCheck.setText("Check for bugs");
         stanseMainMenuItemCheck.setToolTipText("Perform checking of bugs (with respect to current checking configuration).");
         stanseMainMenuChecking.add(stanseMainMenuItemCheck);
 
         stanseMainMenuItemConfigure.setAction(new GuiActionConfigure());
+        stanseMainMenuItemConfigure.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, 0));
         stanseMainMenuItemConfigure.setText("Configure");
         stanseMainMenuItemConfigure.setToolTipText("Configure checking procedure. Specify which checkers should be performer on which source code files.");
         stanseMainMenuChecking.add(stanseMainMenuItemConfigure);
         stanseMainMenuChecking.add(jSeparator3);
 
+        stanseMainMenuItemFirstNode.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_HOME, java.awt.event.InputEvent.ALT_MASK));
         stanseMainMenuItemFirstNode.setText("Go to first trace location");
         stanseMainMenuChecking.add(stanseMainMenuItemFirstNode);
 
+        stanseMainMenuItemNextNode.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_PAGE_DOWN, java.awt.event.InputEvent.ALT_MASK));
         stanseMainMenuItemNextNode.setText("Goto next trace location");
         stanseMainMenuChecking.add(stanseMainMenuItemNextNode);
 
+        stanseMainMenuItemPreviousNode.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_PAGE_UP, java.awt.event.InputEvent.ALT_MASK));
         stanseMainMenuItemPreviousNode.setText("Goto previous trace location");
         stanseMainMenuChecking.add(stanseMainMenuItemPreviousNode);
 
+        stanseMainMenuItemLastNode.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_END, java.awt.event.InputEvent.ALT_MASK));
         stanseMainMenuItemLastNode.setText("Goto last trace location");
         stanseMainMenuChecking.add(stanseMainMenuItemLastNode);
         stanseMainMenuChecking.add(jSeparator4);
@@ -306,6 +330,7 @@ public final class GuiMainWindow extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSeparator jSeparator5;
     private javax.swing.JScrollPane locationInfoScrollPane;
     private javax.swing.JTextArea ouputConsoleTextArea;
     private javax.swing.JTabbedPane sourceCodeTabbedPane;
@@ -316,6 +341,8 @@ public final class GuiMainWindow extends javax.swing.JFrame {
     private javax.swing.JMenu stanseMainMenuFile;
     private javax.swing.JMenuItem stanseMainMenuItemAST;
     private javax.swing.JMenuItem stanseMainMenuItemCheck;
+    private javax.swing.JMenuItem stanseMainMenuItemCloseActiveTab;
+    private javax.swing.JMenuItem stanseMainMenuItemCloseAllTabs;
     private javax.swing.JMenuItem stanseMainMenuItemConfigure;
     private javax.swing.JMenuItem stanseMainMenuItemExit;
     private javax.swing.JMenuItem stanseMainMenuItemFile;
