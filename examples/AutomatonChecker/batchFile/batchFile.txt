@@ -1,0 +1,10 @@
+../examples/AutomatonChecker/checkDirectory/inner/memory.c
+
+../examples/AutomatonChecker/checkDirectory/locking.c
+      
+                 
+../examples/AutomatonChecker/checkDirectory/inner/esssolo1.c
+
+../examples/AutomatonChecker/checkDirectory/raid5.c
+
+
