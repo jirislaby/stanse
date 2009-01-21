@@ -28,31 +28,42 @@ final class Configuration {
         this.checkerConfigurations = checkerConfiguration;
     }
 
-    void visit(final ConfigurationVisitor visitor) throws Exception {
-        final List<Unit> units = getSourceConfiguration().getUnits();
+    void visit(final ConfigurationVisitor visitor,
+           final ConfigurationProgressHandler progressHandler) throws Exception{
+        final List<Unit> units = getSourceConfiguration().
+                                                      getUnits(progressHandler);
+        progressHandler.onCheckingBegin();
         final HashMap<CFG,Unit> cfgToUnitMapping = buildCfgToUnitMapping(units);
         for (CheckerConfiguration checkerCfg : getCheckerConfigurations())
             if (!visitor.visit(units,checkerCfg.getChecker(),cfgToUnitMapping))
                 break;
+        progressHandler.onCheckingEnd();
     }
 
     @Deprecated
-    void visitIntraprocedutral(final ConfigurationVisitor visitor) throws Exception {
+    void visitIntraprocedutral(final ConfigurationVisitor visitor,
+            final ConfigurationProgressHandler progressHandler)throws Exception{
         final LinkedList<cz.muni.stanse.checker.Checker> checkers =
                                new LinkedList<cz.muni.stanse.checker.Checker>();
         for (CheckerConfiguration checkerCfg : getCheckerConfigurations())
             checkers.add(checkerCfg.getChecker());
         final SourceCodeFilesEnumerator sourceEnumerator =
                                  getSourceConfiguration().getSourceEnumerator();
+        progressHandler.onParsingBegin();
+        progressHandler.onCheckingBegin();
         for (String filePathName : sourceEnumerator.getSourceCodeFiles()) {
+            progressHandler.onFileBegin(filePathName);
             final LinkedList<Unit> units = cz.muni.stanse.utils.Make.<Unit>
                                     linkedList(new cz.muni.stanse.cparser.CUnit(
                                                new java.io.File(filePathName)));
+            progressHandler.onFileEnd();
             for (cz.muni.stanse.checker.Checker checker : checkers) {
                 if (!visitor.visit(units,checker,buildCfgToUnitMapping(units)))
                     break;
             }
         }
+        progressHandler.onCheckingEnd();
+        progressHandler.onParsingEnd();
     }
 
     SourceConfiguration getSourceConfiguration() {

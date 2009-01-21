@@ -16,7 +16,8 @@ final class GuiActionCheckForBugs extends javax.swing.AbstractAction {
         Pair<LinkedList<CheckerError>,LinkedList<PresentableError> > errors;
         try {
             errors = CheckForBugs.run(GuiMainWindow.getInstance().
-                                      getConfiguration());
+                                      getConfiguration(),
+                                      new GuiCheckingProgressHandler());
         }
         catch(final Exception exception) {
             ClassLogger.error(this,"Checking for bugs has failed (see " +

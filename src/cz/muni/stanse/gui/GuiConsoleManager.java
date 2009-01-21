@@ -15,7 +15,7 @@ final class GuiConsoleManager {
     }
 
     void appendText(final String text) {
-        getConsoleTextArea().append(text + '\n');
+        getConsoleTextArea().append(text);
     }
 
     // private section
