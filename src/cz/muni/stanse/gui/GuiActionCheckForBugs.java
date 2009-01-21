@@ -13,25 +13,7 @@ final class GuiActionCheckForBugs extends javax.swing.AbstractAction {
 
     @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
-        Pair<LinkedList<CheckerError>,LinkedList<PresentableError> > errors;
-        try {
-            errors = CheckForBugs.run(GuiMainWindow.getInstance().
-                                      getConfiguration(),
-                                      new GuiCheckingProgressHandler());
-        }
-        catch(final Exception exception) {
-            ClassLogger.error(this,"Checking for bugs has failed (see " +
-                                   "following exception trace for details):");
-            ClassLogger.error(this,exception);
-            ClassLogger.error(this,exception.getStackTrace());
-            return;
-        }
-
-        getErrorsTreeManager().clear();
-        getErrorsTreeManager().addAll(errors.getSecond());
-        getErrorsTreeManager().present();
-
-        getErrorTracingManager().onSelectionChanged(null);
+        new java.lang.Thread(new Executor()).start();
     }
 
     GuiActionCheckForBugs() {
@@ -40,11 +22,53 @@ final class GuiActionCheckForBugs extends javax.swing.AbstractAction {
 
     // private section
 
+    private final class Executor implements Runnable {
+        @Override
+        public void run() {
+            Pair<LinkedList<CheckerError>,LinkedList<PresentableError> > errors;
+            try {
+                errors = CheckForBugs.run(GuiMainWindow.getInstance().
+                                          getConfiguration(),
+                                          new GuiCheckingProgressHandler());
+            }
+            catch(final Exception exception) {
+                ClassLogger.error(this,"Checking for bugs has failed (see " +
+                                       "following exception trace for " +
+                                       "details):");
+                ClassLogger.error(this,exception);
+                ClassLogger.error(this,exception.getStackTrace());
+                getConsoleManager().appendText(
+                    "Checking for bugs has failed (see following exception" +
+                    "trace for details):\n");
+                getConsoleManager().appendText(
+                    exception.toString() + '\n');
+                getConsoleManager().appendText(
+                    exception.getStackTrace().toString() + '\n');
+                getErrorsTreeManager().clear();
+                getErrorsTreeManager().present();
+
+                getErrorTracingManager().onSelectionChanged(null);
+                return;
+            }
+            getConsoleManager().appendText("Delivering errors to GUI...");
+            getErrorsTreeManager().clear();
+            getErrorsTreeManager().addAll(errors.getSecond());
+            getErrorsTreeManager().present();
+
+            getErrorTracingManager().onSelectionChanged(null);
+            getConsoleManager().appendText("Done.\n");
+        }
+    }
+
     private GuiErrorsTreeManager getErrorsTreeManager() {
         return GuiMainWindow.getInstance().getErrorsTreeManager();
     }
 
     private GuiErrorTracingManager getErrorTracingManager() {
         return GuiMainWindow.getInstance().getErrorTracingManager();
+    }
+
+    private GuiConsoleManager getConsoleManager() {
+        return GuiMainWindow.getInstance().getConsoleManager();
     }
 }

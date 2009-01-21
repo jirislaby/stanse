@@ -83,6 +83,7 @@ final class GuiChooseCheckerManager {
             return;
         }
         getCheckerInfoTextArea().setText(checkerInfo);
+        getCheckerInfoTextArea().setCaretPosition(0);
     }
 
     private int getLastSelection() {

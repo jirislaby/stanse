@@ -79,15 +79,17 @@ final class Configuration {
     private static HashMap<CFG,Unit>
     buildCfgToUnitMapping(final List<Unit> units) throws Exception {
         final HashMap<CFG,Unit> result = new HashMap<CFG,Unit>();
-        for (final Unit unit : units)
+        for (final Unit unit : units)   
             for (final CFG cfg : unit.getCFGs())
                 result.put(cfg,unit);
         return result;
     }
 
     private static SourceConfiguration createDefaultSourceConfiguration() {
-        return new SourceConfiguration(new SingleFileEnumerator(
-                             "../examples/AutomatonChecker/locking/locking.c"));
+        return new SourceConfiguration(
+                //new SingleFileEnumerator("../examples/AutomatonChecker/locking/locking.c")
+                new SourceFilesListEnumerator("../examples/AutomatonChecker/batchFile/batchFile.txt")
+                             );
     }
 
     private static LinkedList<CheckerConfiguration>

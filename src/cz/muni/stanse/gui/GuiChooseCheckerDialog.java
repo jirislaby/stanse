@@ -47,6 +47,7 @@ final class GuiChooseCheckerDialog extends javax.swing.JDialog {
         checkerInfoTextArea.setEditable(false);
         checkerInfoTextArea.setLineWrap(true);
         checkerInfoTextArea.setRows(5);
+        checkerInfoTextArea.setWrapStyleWord(true);
         checkerInfoTextArea.setFocusable(false);
         checkerInfoScrollPane.setViewportView(checkerInfoTextArea);
 

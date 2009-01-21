@@ -162,9 +162,13 @@ public final class GuiMainWindow extends javax.swing.JFrame {
         gotoLastNodeButton.setToolTipText("Go to last error-trace location in source code (there we are in error state in code)");
         gotoLastNodeButton.setFocusable(false);
 
+        locationInfoScrollPane.setAutoscrolls(true);
+
         ouputConsoleTextArea.setColumns(20);
         ouputConsoleTextArea.setEditable(false);
+        ouputConsoleTextArea.setLineWrap(true);
         ouputConsoleTextArea.setRows(5);
+        ouputConsoleTextArea.setWrapStyleWord(true);
         ouputConsoleTextArea.setFocusable(false);
         locationInfoScrollPane.setViewportView(ouputConsoleTextArea);
 

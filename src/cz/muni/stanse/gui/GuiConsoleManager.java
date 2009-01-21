@@ -16,6 +16,7 @@ final class GuiConsoleManager {
 
     void appendText(final String text) {
         getConsoleTextArea().append(text);
+        getConsoleTextArea().setCaretPosition(getConsoleTextArea().getDocument().getLength());
     }
 
     // private section
