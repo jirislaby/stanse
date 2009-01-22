@@ -86,10 +86,8 @@ final class Configuration {
     }
 
     private static SourceConfiguration createDefaultSourceConfiguration() {
-        return new SourceConfiguration(
-                //new SingleFileEnumerator("../examples/AutomatonChecker/locking/locking.c")
-                new SourceFilesListEnumerator("../examples/AutomatonChecker/batchFile/batchFile.txt")
-                             );
+        return new SourceConfiguration(new SourceFilesListEnumerator(
+                       "../examples/AutomatonChecker/batchFile/batchFile.txt"));
     }
 
     private static LinkedList<CheckerConfiguration>
