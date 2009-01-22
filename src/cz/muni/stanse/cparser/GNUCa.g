@@ -3,7 +3,7 @@
 GNUC grammar for ANTLR v3
 
 AUTHOR:	Jan Obdrzalek, 2007-2009
-	Jiri Slaby (minor modifications), 2008
+	Jiri Slaby (modifications), 2008-2009
 	Typedef handling taken from C.g distributed with ANTLR v3,  (c) Terence Parr
 
 TODO:
@@ -62,7 +62,6 @@ COMMENTS:
 
 grammar GNUCa;
 options {
-//	backtrack=true;
 	backtrack=false;
 	memoize=true;
 	k=2;
@@ -184,8 +183,6 @@ scope Symbols; // entire file is a scope
         :	externalDeclaration* -> ^(TRANSLATION_UNIT externalDeclaration*)				// Empty source files = GNU
         ;
 
-
-
 // left factoring - inlined parts of declaration and functionDefinition  to gain speed
 externalDeclaration
 scope Typedef;
@@ -197,7 +194,7 @@ scope Typedef;
 		)
 	|	';'!
 	|	asmDefinition	// GNU
-        ;
+    ;
 
 declarationOrFnDef[StanseTree ds, StanseTree d]
 	:	declarationSuffix[ds, d]
@@ -216,14 +213,6 @@ functionDefinitionSuffix[StanseTree ds, StanseTree d]
 	)	-> ^(FUNCTION_DEFINITION  {$ds} {$d} declaration* compoundStatement)
 	;
 
-//externalDeclaration
-//options {k=1;}
-////	:	( declarationSpecifiers declarator ('{' | storageClassSpecifier | typeSpecifier | typeQualifier | functionSpecifier| '__attribute' | '__attribute__') )=> functionDefinition	// (6.9.1)
-//	:	( declarationSpecifiers declarator ('{' | storageClassSpecifier | typeSpecifier | typeQualifier | functionSpecifier) )=> functionDefinition	// (6.9.1)
-//	|	declaration
-//	|	';'!
-//	|	asmDefinition	// GNU
-//        ;
 
 asmDefinition	// GNU
 	:	simpleAsmExpr
@@ -238,7 +227,7 @@ asmStringLiteral // GNU
 	;
 
 functionDefinition						// (6.9.1)
-scope Symbols; // // put parameters and locals into same scope for now
+scope Symbols; // put parameters and locals into same scope for now
 @init { $Symbols::types = new HashSet(); }
 	:	declarationSpecifiers declarator
 		(	compoundStatement		// ANSI style
@@ -270,7 +259,6 @@ declarationSpecifiers	// (6.7)
 		| typeSpecifier
 		| typeQualifier
 		| sc+=functionSpecifier
-//		| attributes)+ -> ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER typeSpecifier*) ^(XTYPE_QUALIFIER typeQualifier*) ^(XSTORAGE_CLASS $sc*))
 		)+ -> ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER typeSpecifier*) ^(XTYPE_QUALIFIER typeQualifier*) ^(XSTORAGE_CLASS $sc*))
 	;
 
@@ -279,7 +267,6 @@ initDeclaratorList
 	;
 
 initDeclarator		// (6.7)
-//	:	declarator simpleAsmExpr? attributes? ( '=' initializer )?  -> ^(INIT_DECLARATOR declarator initializer?)
 	:	declarator simpleAsmExpr? ( '=' initializer )?  -> ^(INIT_DECLARATOR declarator initializer?)
 	;
 
@@ -321,8 +308,6 @@ structOrUnionSpecifier // (6.7.2.1)
 options{k=3;}
 scope Symbols; // structs are scopes
 @init { $Symbols::types = new HashSet(); }
-//	:	structOrUnion attributes? IDENTIFIER? '{' structDeclaration* '}' attributes? -> ^(structOrUnion ^(XID IDENTIFIER?) structDeclaration* )
-//	|	structOrUnion attributes? IDENTIFIER -> ^(structOrUnion ^(XID IDENTIFIER))
 	:	structOrUnion IDENTIFIER? '{' structDeclaration* '}' -> ^(structOrUnion ^(XID IDENTIFIER?) structDeclaration* )
 	|	structOrUnion IDENTIFIER -> ^(structOrUnion ^(XID IDENTIFIER))
 	;
@@ -342,34 +327,30 @@ structDeclaration	// (6.7.2.1)
 specifierQualifier // TODO AST
 	:	typeSpecifier -> ^(XTYPE_SPECIFIER typeSpecifier)
 	|	typeQualifier -> ^(XTYPE_QUALIFIER typeQualifier)
-//	|	attributes -> // NULL
 	;
 
 structDeclaratorList
-//	:	structDeclarator ( ',' attributes? structDeclarator )* -> structDeclarator+
 	:	structDeclarator ( ',' structDeclarator )* -> structDeclarator+
 	;
 
 structDeclarator
-//	:	declarator ( ':' constantExpression )? attributes? -> ^(STRUCT_DECLARATOR declarator constantExpression?)
-//	|	':' constantExpression attributes? -> ^(STRUCT_DECLARATOR constantExpression)
 	:	declarator ( ':' constantExpression )? -> ^(STRUCT_DECLARATOR declarator constantExpression?)
 	|	':' constantExpression -> ^(STRUCT_DECLARATOR constantExpression)
 	;
 
 enumSpecifier // TODO improve the grammar
-//	:	'enum' attributes?
 	:	'enum' 
 	(
 		'{' enumeratorList ( ',' )? '}' -> ^('enum' enumeratorList)
 	|	IDENTIFIER '{' enumeratorList ( ',' )? '}' -> ^('enum' ^(XID IDENTIFIER) enumeratorList)
 	|	IDENTIFIER -> ^('enum' ^(XID IDENTIFIER))
 	)
+    ;
 // orig:
 //	:	'enum' '{' enumeratorList ( ',' )? '}' -> ^('enum' enumeratorList)
 //	|	'enum' IDENTIFIER '{' enumeratorList ( ',' )? '}' -> ^('enum' ^(XID IDENTIFIER) enumeratorList)
 //	|	'enum' IDENTIFIER -> ^('enum' ^(XID IDENTIFIER))
-	;
+//	;
 
 enumeratorList
 	:	enumerator ( ',' enumerator )* -> enumerator+
@@ -413,27 +394,34 @@ directDeclarator
 //				System.err.println("define type "+$IDENTIFIER.text);
 			}
 			} -> IDENTIFIER
-//	|	'(' attributes? declarator ')' -> declarator
 	|	'(' declarator ')' -> declarator
 		)
 	// prevents getting function parameters into types
-	{if ($Typedef.size()>0&&$Typedef::isTypedef) {$Typedef::isTypedef=false; wasTypedef=true;}}		
-	( 	'[' { list_tq = null; } tq+=typeQualifier* ae=assignmentExpression? ']' -> ^(ARRAY_DECLARATOR $directDeclarator $tq* $ae?)
-	|	'[' { list_tq = null; } 'static' tq+=typeQualifier* ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq* $ae)
-	|	('[' typeQualifier+ 'static') => '[' { list_tq = null; } tq+=typeQualifier+ 'static' ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq+ $ae)
-	|	('[' typeQualifier* '*' ']') => '[' { list_tq = null; }  tq+=typeQualifier* '*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*' $tq*)
-//	|	'(' parameterTypeList ')'
-//	|	'(' identifierList? ')'
-	|	'(' 	// function declarator, partly left factored
-			// cannot do (input.LA(2)==',')||(input.LA(2)==')'), since values for ',' and ')' do not get expanded	
+	{   if ($Typedef.size()>0&&$Typedef::isTypedef) {
+          $Typedef::isTypedef=false; 
+          wasTypedef=true;
+        }
+    }		
+	// left factoring array declarator
+    // left factoring function declarator
+	(	'[' 
+		( 	'static' tq=typeQualifier*  ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq* $ae)
+		|	'*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*')
+		|	tq=typeQualifier+
+			(	'*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*' $tq+)
+			|	'static' ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq+ $ae)
+			|	ae=assignmentExpression? ']' -> ^(ARRAY_DECLARATOR $directDeclarator $tq+ $ae?)
+			)
+		|	ae=assignmentExpression? ']' -> ^(ARRAY_DECLARATOR $directDeclarator $ae?)
+		)		
+	|	'(' // cannot do (input.LA(2)==',')||(input.LA(2)==')'), since values for ',' and ')' do not get expanded	
 		(	')' -> ^(FUNCTION_DECLARATOR $directDeclarator)	// K&R style, empty
 		|	{(input.LA(1)==IDENTIFIER) && ((input.LT(2).getText().equals(","))||(input.LT(2).getText().equals(")"))) && !isTypeName(input.LT(1).getText())}?  identifierList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList)
 		|	parameterTypeList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator parameterTypeList)
 		)
 	)*
 	;
-
-
+	
 
 pointer
 	:	'*' typeQualifier* pointer? -> ^(POINTER typeQualifier* pointer?) // TODO AST
@@ -450,8 +438,6 @@ parameterList
 parameterDeclaration
 	// syntactic predicate: declarator must end-up with an IDENTIFIER, abstract with pointer or '['
 	//   TODO check for correctness
-// the complicated rewrite of attributes? is necessary to remove ambiguities. If abstractDeclarator is empty, it should not have any attributes.
-//	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator attributes? | (abstractDeclarator attributes?)? ) -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
 	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator | abstractDeclarator ? ) -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
 	;
 // orig:
@@ -473,7 +459,6 @@ abstractDeclarator
 	;
 
 directAbstractDeclarator
-//	:	'(' attributes? abstractDeclarator ')'
 	:	'('! abstractDeclarator ')'! arrayOrFunctionDeclarator*
 	|	arrayOrFunctionDeclarator+
 	;
@@ -686,7 +671,6 @@ statement
 	;
 
 labeledStatement
-//	:	IDENTIFIER ':' attributes? statement -> ^(LABEL IDENTIFIER attributes? statement)
 	:	IDENTIFIER ':' statement -> ^(LABEL IDENTIFIER statement)
 	|	'case' constantExpression ('...' constantExpression)? ':' statement -> ^('case' constantExpression statement) // TODO '...' AST
 	|	'default'^ ':'! statement
@@ -702,8 +686,7 @@ scope Symbols; // blocks are scopes
 
 blockItem
 	:	declaration
-// TODO GNUC : dela velky bordel, je v zasade stejna jak declaration
-//
+// TODO GNUC
 //	|	nestedFunctionDefinition 
 	|	statement
 	;
