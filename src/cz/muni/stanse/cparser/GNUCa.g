@@ -144,6 +144,8 @@ scope Typedef {
 }
 
 @members{
+	private List<String> externalTypedefs = null;
+
 	boolean isTypeName(String name) {
 		for (int i = Symbols_stack.size()-1; i>=0; i--) {
 			Symbols_scope scope = (Symbols_scope)Symbols_stack.get(i);
@@ -171,6 +173,10 @@ scope Typedef {
 	public String getTokenErrorDisplay(Token t) {
 		return t.toString();
 	}
+
+	public void setTypedefs(List<String> typedefs) {
+		externalTypedefs = typedefs;
+	}
 }
 
 /** The grammar starts here */
@@ -179,7 +185,11 @@ scope Typedef {
 
 translationUnit							// (6.9)
 scope Symbols; // entire file is a scope
-@init { $Symbols::types = new HashSet(); }
+@init {
+	$Symbols::types = new HashSet();
+	if (externalTypedefs != null)
+		$Symbols::types.addAll(externalTypedefs);
+}
         :	externalDeclaration* -> ^(TRANSLATION_UNIT externalDeclaration*)				// Empty source files = GNU
         ;
 
