@@ -139,7 +139,9 @@ public final class CUnit extends Unit {
 	    System.err.println("Can't exec cpp");
 	    e.printStackTrace();
 	}
+	File preprocFile = new File(file);
+	preprocFile.deleteOnExit();
 	return new Triple<InputStream, String, List<String>>(
-			new FileInputStream(new File(file)), file, typedefs);
+			new FileInputStream(preprocFile), file, typedefs);
     }
 }

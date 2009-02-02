@@ -58,6 +58,6 @@ close(CPP);
 
 system("cparser-c $includes") && die "can't exec cparser-c";
 
-#unlink $includes;
+unlink $includes;
 
 exit 0;
