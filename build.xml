@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="build" name="stanse">
+<project basedir="." default="build" name="stanse" xmlns:cpptasks="antlib:net.sf.antcontrib.cpptasks">
     <property name="dist" value="dist"/>
     <property name="parser.location" value="src/cz/muni/stanse/cparser"/>
     <property name="antlr.location" value="tools/antlr-3.1.1.jar"/>
@@ -40,6 +40,13 @@
 		<include name="CFGEmitter.java"/>
 		<include name="CFGEmitter.tokens"/>
 	    </fileset>
+	    <fileset dir="src/cparser-c/">
+		<include name="GNUCaLexer.c"/>
+		<include name="GNUCaLexer.h"/>
+		<include name="GNUCaParser.c"/>
+		<include name="GNUCaParser.h"/>
+		<include name="GNUCa.tokens"/>
+	    </fileset>
 	</delete>
     </target>
     <target name="clean" depends="parser-clean, javadoc-clean">
@@ -63,8 +70,34 @@
 			target="${parser.location}/CFGEmitter.g">
 		<classpath path="${antlr.location}"/>
 		</antlr:antlr3>
+		<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr"
+			target="src/cparser-c/GNUCa.g">
+		<classpath path="${antlr.location}"/>
+		</antlr:antlr3>
     </target>
-    <target name="build" depends="init,parser">
+    <target name="cparser-c">
+        <mkdir dir="build/cparser-c/"/>
+        <cpptasks:cc optimize="full" objdir="build/cparser-c/">
+	    <includepath path="/home/xslaby/test/lib/include/"/>
+	    <fileset dir="src/cparser-c/">
+		<include name="GNUCaLexer.c"/>
+		<include name="GNUCaParser.c"/>
+		<include name="main.c"/>
+	    </fileset>
+        </cpptasks:cc>
+        <cpptasks:cc outtype="executable" outfile="build/cparser-c/cparser-c">
+	    <fileset dir="build/cparser-c/">
+		<include name="GNUCaLexer.o"/>
+		<include name="GNUCaParser.o"/>
+		<include name="main.o"/>
+	    </fileset>
+	    <!-- this has to be the last one -->
+	    <fileset dir="src/cparser-c/lib/">
+		<include name="libantlr3c.a"/>
+	    </fileset>
+        </cpptasks:cc>
+    </target>
+    <target name="build" depends="init,cparser-c,parser">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" destdir="build">
             <src path="src"/>
