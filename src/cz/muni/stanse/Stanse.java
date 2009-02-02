@@ -11,6 +11,7 @@ import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.cparser.CUnit;
 
@@ -303,6 +304,8 @@ public final class Stanse {
 							}
 						}
 					}
+				} catch (ParserException e) {
+					logger.log(Level.FATAL, null, e);
 				} catch (NullPointerException e) {
 					logger.log(Level.FATAL, null, e);
 				} catch (RecognitionException e) {

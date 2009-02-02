@@ -70,15 +70,16 @@
 			target="${parser.location}/CFGEmitter.g">
 		<classpath path="${antlr.location}"/>
 		</antlr:antlr3>
-		<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr"
-			target="src/cparser-c/GNUCa.g">
-		<classpath path="${antlr.location}"/>
-		</antlr:antlr3>
     </target>
     <target name="cparser-c">
         <mkdir dir="build/cparser-c/"/>
+	<exec executable="./getarch.sh" outputproperty="arch"/>
+	<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr"
+		target="src/cparser-c/GNUCa.g">
+	    <classpath path="${antlr.location}"/>
+	</antlr:antlr3>
         <cpptasks:cc optimize="full" objdir="build/cparser-c/">
-	    <includepath path="/home/xslaby/test/lib/include/"/>
+	    <includepath path="src/cparser-c/lib/include/"/>
 	    <fileset dir="src/cparser-c/">
 		<include name="GNUCaLexer.c"/>
 		<include name="GNUCaParser.c"/>
@@ -93,7 +94,7 @@
 	    </fileset>
 	    <!-- this has to be the last one -->
 	    <fileset dir="src/cparser-c/lib/">
-		<include name="libantlr3c.a"/>
+		<include name="libantlr3c-${arch}.a"/>
 	    </fileset>
         </cpptasks:cc>
     </target>
