@@ -2,6 +2,12 @@ package cz.muni.stanse.gui;
 
 import cz.muni.stanse.utils.ClassLogger;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+
 final class SourceFilesListEnumerator
                                    extends ReferencedSourceCodeFilesEnumerator {
     SourceFilesListEnumerator(final String file) {
@@ -9,20 +15,21 @@ final class SourceFilesListEnumerator
     }
 
     @Override
-    java.util.List<String> getSourceCodeFiles() throws Exception {
-        final java.util.LinkedList<String> result =
-                                             new java.util.LinkedList<String>();
-        try {
-            final java.io.BufferedReader reader =
-                        new java.io.BufferedReader(new java.io.FileReader(
-                                                           getReferenceFile()));
-            String readedLine;
-            while ((readedLine = reader.readLine()) != null)
-                if (readedLine.toUpperCase().lastIndexOf(".C") != -1)
-                    result.add(readedLine);
+    List<String> getSourceCodeFiles() throws Exception {
+	final List<String> result = new LinkedList<String>();
+	try {
+	    final BufferedReader reader = new BufferedReader(
+		    new FileReader(getReferenceFile()));
+	    while (true) {
+		String readLine = reader.readLine();
+		if (readLine == null)
+		    break;
+		readLine = readLine.trim();
+		if (readLine.length() > 0)
+		    result.add(readLine);
+	    }
             reader.close();
-        }
-        catch (final java.io.IOException exception) {
+        } catch (final IOException exception) {
             ClassLogger.error(this,"Cannot read files in batch file '" +
                                     getReferenceFile() + "'. See exception " +
                                    "trace for details:");
