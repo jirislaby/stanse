@@ -55,7 +55,7 @@ final class Configuration {
             progressHandler.onFileBegin(filePathName);
             final LinkedList<Unit> units = cz.muni.stanse.utils.Make.<Unit>
                                     linkedList(new cz.muni.stanse.cparser.CUnit(
-                                               new java.io.File(filePathName)));
+                                               filePathName));
             progressHandler.onFileEnd();
             for (cz.muni.stanse.checker.Checker checker : checkers) {
                 if (!visitor.visit(units,checker,buildCfgToUnitMapping(units)))

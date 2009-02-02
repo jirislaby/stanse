@@ -1,0 +1,63 @@
+#!/usr/bin/perl
+# Copyright (c) 2009 Jiri Slaby <jirislaby@gmail.com>
+#
+# Distributed under GPLv2
+#
+# This script accepts parameters in the following format:
+# {source},{output},{working directory},{cpp flags}
+#
+# preprocessed file can be found at output.preproc
+# types from typedefs might be found on standard output
+
+use strict;
+use warnings;
+
+die "wrong commandline" if @ARGV != 1;
+
+my $arg = shift @ARGV;
+chomp $arg;
+$arg =~ /^{(.*)},{(.*)},{(.*)},{(.*)}$/;
+
+die "commandline mangled" unless defined $4;
+
+my $source = $1;
+my $output = $2;
+chdir $3 if length $3 > 0;
+my $flags = $4;
+
+my $includes = $output . ".includes";
+my $nonincludes = $output . ".preproc";
+
+my $cpp = "gcc -E -w -D__attribute__\\(x\\)= -D__attribute\\(x\\)= " .
+	"-D__builtin_va_list=int -D__builtin_offsetof\\(x,y\\)=1 " .
+	"-D__builtin_types_compatible_p\\(x,y\\)=0 $flags";
+open(CPP, "$cpp $source|") || die "can't exec '$cpp $source'";
+open(INCS, ">$includes") || die "can't open $includes for writing";
+open(NONINCS, ">$nonincludes") || die "can't open $nonincludes for writing";
+
+my $out = 1;
+
+while (<CPP>) {
+    if (/^\s*#/) {
+	if (/#\s+[0-9]+\s+"(.*)"\s+([0-9\s]+)$/) {
+	    my $file = $1;
+	    my $fl = $2;
+	    $out = $fl =~ /\b2\b/ && $file =~ /$source/;
+	}
+	next;
+    }
+    if ($out) {
+	print NONINCS;
+    }
+    print INCS;
+}
+
+close(NONINCS);
+close(INCS);
+close(CPP);
+
+system("cparser-c $includes") && die "can't exec cparser-c";
+
+#unlink $includes;
+
+exit 0;

@@ -49,7 +49,7 @@ public abstract class Unit {
     
     /**
      * Calls the appropriate parser(s) to fill in the data members.
-     * 
+     *
      * @param stream Stream to read the compilation unit from.
      * @param name Name of the unit. Needs to be supplied explicitly, because
      * 		it is not derivable from a stream.
@@ -57,7 +57,10 @@ public abstract class Unit {
      * @throws RecognitionException In case of parsing problems not related to IO.
      */
     // TODO Should have an own exception class, instead of ANTLR's RecognitionException.
-    public Unit(InputStream stream, String name) throws IOException, RecognitionException {}
+    public Unit(InputStream stream, String name) throws IOException,
+				RecognitionException {
+	this(new File(name));
+    }
 
     /**
      * Calls the appropriate parser(s) to fill in the data members.
@@ -67,7 +70,7 @@ public abstract class Unit {
      * @throws RecognitionException In case of parsing problems not related to IO.
      */
     public Unit(File file) throws IOException, RecognitionException {
-	this(new FileInputStream(file), file.getName());
+	this.name = file.getAbsolutePath();
     }
     
     public String getName() {

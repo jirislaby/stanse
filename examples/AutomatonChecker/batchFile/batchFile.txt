@@ -1,4 +1,4 @@
-../examples/AutomatonChecker/checkDirectory/inner/memory.c
+{../examples/AutomatonChecker/checkDirectory/inner/memory.c},{../examples/AutomatonChecker/checkDirectory/inner/memory.o},{},{}
 
 ../examples/AutomatonChecker/checkDirectory/locking.c
       
