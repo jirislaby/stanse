@@ -1,0 +1,56 @@
+STANSE Readme
+=============
+
+Building
+--------
+
+Prerequisities: ant with cpptasks and antlr3 targets
+By running
+$ ant jar
+one gets dist/stanse.jar
+
+Running
+-------
+Prior to running the appliction, MAKE SURE cparser-c, stcc and stpreproc from
+build/cparser-c/cparser-c and dist/ directory respectively are in your PATH
+environment variable. I.e. all
+$ cparser-c
+$ stcc
+$ stpreproc
+don't complain about command not found.
+
+There are several methods how to invoke Stanse:
+
+1) First of all, one may run stanse by typing
+   $ java -jar <path_to_jar>/stanse.jar -gui
+   Selecting a file and running tests will result in checker to go through the
+   file and report potentional errors.
+
+2) Also jobfiles are supported. By putting filenames into a textfile, each on
+   its own line and selecting this feature in the gui mentioned in point 1) will
+   check all these files.
+
+   -- Advanced use of jobfiles --
+   It lays in a following structure (one per line) of jobfiles:
+   {filename},{output},{working directory},{compiler flags}
+   filename -- the file to check
+   output -- a file to output to (.includes and .preproc is appended)
+   working directory -- where to run the preprocessor from
+   compiler flags -- preprocessor flags (e.g. derived from gcc line)
+
+   Example of checking foo.c with specified flags from /tmp:
+   {foo.c},{foo.o},{/tmp},{-I/my_project/include -lm}
+   Preprocessor line will look like:
+   cd /tmp; cc -E -I/my_project/include -lm -o foo.o.preproc foo.c
+
+3) If your Makefile supports overriding of CC variable (as those generated
+   by autoconf/automake do), you can easily obtain a jobfile from point 2)
+   by setting CC to stcc. JOB_FILE environment has to be set with a resulting
+   jobfile name.
+
+Example of this usage follows:
+  $ JOB_FILE=/tmp/my_jobfile make CC=stcc
+  After the build finishes in this example, /tmp/my_jobfile contains a list of
+  4-tuples which Stanse can understand and use for preprocess as described in 
+  the previous point. This generated jobfile is intended to be used in the
+  same manner.
