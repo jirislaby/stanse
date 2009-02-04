@@ -149,7 +149,7 @@ final class GuiSourceConfigurationManager {
                         getSpecifySourceFilePathNameManager().getSourceFile(),
                         "C",true);
             case FilesListFile:
-                return new SourceFilesListEnumerator
+                return new BatchFileEnumerator
                     (getSpecifySourceFilePathNameManager().getSourceFile());
             default: assert(false); return null;
         }
@@ -169,7 +169,7 @@ final class GuiSourceConfigurationManager {
             return (!((DirectorySourceEnumerator)enumerator).
                       getSearchSubdirectories()) ? SourceType.DirectoryFiles :
                           SourceType.DirectoryHierarchyFiles;
-        if (enumerator instanceof SourceFilesListEnumerator)
+        if (enumerator instanceof BatchFileEnumerator)
             return SourceType.FilesListFile;
         assert(false);
         return null;

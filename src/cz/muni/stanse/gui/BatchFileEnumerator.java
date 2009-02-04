@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-final class SourceFilesListEnumerator
+final class BatchFileEnumerator
                                    extends ReferencedSourceCodeFilesEnumerator {
-    SourceFilesListEnumerator(final String file) {
+    BatchFileEnumerator(final String file) {
         super(file);
     }
 

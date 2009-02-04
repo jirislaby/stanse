@@ -176,7 +176,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Makefile project"/>
                 <Property name="actionCommand" type="java.lang.String" value="makefile"/>
-                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JRadioButton" name="allDirectoryFilesRadioButton">

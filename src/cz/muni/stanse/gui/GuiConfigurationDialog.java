@@ -99,7 +99,6 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
         sourceTypeButtonGroup.add(makefileRadioButton);
         makefileRadioButton.setText("Makefile project");
         makefileRadioButton.setActionCommand("makefile");
-        makefileRadioButton.setEnabled(false);
 
         sourceTypeButtonGroup.add(allDirectoryFilesRadioButton);
         allDirectoryFilesRadioButton.setText("All source code files in directory");

@@ -86,8 +86,8 @@ final class Configuration {
     }
 
     private static SourceConfiguration createDefaultSourceConfiguration() {
-        return new SourceConfiguration(new SourceFilesListEnumerator(
-                       "../examples/AutomatonChecker/batchFile/batchFile.txt"));
+        return new SourceConfiguration(new MakefileSourceEnumerator(
+                       "../examples/AutomatonChecker/makefile/Makefile"));
     }
 
     private static LinkedList<CheckerConfiguration>
