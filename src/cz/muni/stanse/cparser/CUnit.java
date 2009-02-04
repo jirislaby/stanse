@@ -115,7 +115,7 @@ public final class CUnit extends Unit {
 	Runtime r = Runtime.getRuntime();
 	try {
 	    String[] cmdarray = new String[2];
-	    cmdarray[0] = cz.muni.stanse.Stanse.getRootDirectory() + "/stpreproc";
+	    cmdarray[0] = "stpreproc";
 	    cmdarray[1] = jobEntry;
 	    Process p = r.exec(cmdarray);
 
