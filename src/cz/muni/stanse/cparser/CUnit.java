@@ -99,16 +99,22 @@ public final class CUnit extends Unit {
 	    file = jobEntry;
 	    jobEntry = "{" + file + "},{" + file + "},{},{}";
 	} else {
+	    String workDir, output;
+	    File f;
 	    int dirIdx;
-	    String workDir;
 
 	    outputIdx += 3;
 	    dirIdx = jobEntry.indexOf("},{", outputIdx) + 3;
-	    workDir = jobEntry.substring(dirIdx,
-		    jobEntry.indexOf("},{", dirIdx));
-	    if (workDir.length() != 0)
-		workDir += System.getProperty("file.separator");
-	    file = workDir + jobEntry.substring(outputIdx, dirIdx - 3);
+	    output = jobEntry.substring(outputIdx, dirIdx - 3);
+
+	    f = new File(output);
+	    if (!f.isAbsolute()) {
+		workDir = jobEntry.substring(dirIdx,
+			jobEntry.indexOf("},{", dirIdx));
+		f = new File(workDir, output);
+		System.err.print("WD=" + workDir + " ");
+	    }
+	    file = f.getAbsolutePath();
 	}
 	file += ".preproc";
 
