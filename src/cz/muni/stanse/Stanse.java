@@ -469,4 +469,25 @@ public final class Stanse {
 		}
 
 
-	}
+    public static String getRootDirectory() {
+        return rootDirectory;
+    }
+
+    // private section
+
+    private Stanse() {
+    }
+
+    private static String rootDirectory;
+
+    static {
+        try {
+            rootDirectory = new java.io.File(cz.muni.stanse.utils.ClassLocation.
+                                      get("cz.muni.stanse.Stanse")).getParent();
+        }
+        catch (final Exception e) {
+            System.out.println(e.getStackTrace());
+            rootDirectory = new java.io.File(".").getAbsolutePath();
+        }
+    }
+}

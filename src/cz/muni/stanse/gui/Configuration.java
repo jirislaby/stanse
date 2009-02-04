@@ -87,7 +87,8 @@ final class Configuration {
 
     private static SourceConfiguration createDefaultSourceConfiguration() {
         return new SourceConfiguration(new MakefileSourceEnumerator(
-                       "../examples/AutomatonChecker/makefile/Makefile"));
+                       cz.muni.stanse.Stanse.getRootDirectory() +
+                       "/../examples/AutomatonChecker/makefile/Makefile"));
     }
 
     private static LinkedList<CheckerConfiguration>
@@ -96,13 +97,16 @@ final class Configuration {
                                          new LinkedList<CheckerConfiguration>();
         cfg.add(new CheckerConfiguration(
                   "cz.muni.stanse.automatonchecker.AutomatonChecker",
-                  new File("./data/checkers/AutomatonChecker/memory.xml")));
+                  new File(cz.muni.stanse.Stanse.getRootDirectory() +
+                           "/data/checkers/AutomatonChecker/memory.xml")));
         cfg.add(new CheckerConfiguration(
                   "cz.muni.stanse.automatonchecker.AutomatonChecker",
-                  new File("./data/checkers/AutomatonChecker/interrupts.xml")));
+                  new File(cz.muni.stanse.Stanse.getRootDirectory() +
+                           "/data/checkers/AutomatonChecker/interrupts.xml")));
         cfg.add(new CheckerConfiguration(
                   "cz.muni.stanse.automatonchecker.AutomatonChecker",
-                  new File("./data/checkers/AutomatonChecker/locking.xml")));
+                  new File(cz.muni.stanse.Stanse.getRootDirectory() + 
+                           "/data/checkers/AutomatonChecker/locking.xml")));
         return cfg;
     }
 
