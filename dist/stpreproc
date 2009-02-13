@@ -35,21 +35,24 @@ open(CPP, "$cpp $source|") || die "can't exec '$cpp $source'";
 open(INCS, ">$includes") || die "can't open $includes for writing";
 open(NONINCS, ">$nonincludes") || die "can't open $nonincludes for writing";
 
-my $out = 1;
+my $out = 0;
+my $itself = 1;
 
 while (<CPP>) {
     if (/^\s*#/) {
-	if (/#\s+[0-9]+\s+"(.*)"\s+([0-9\s]+)$/) {
+	if (/^\s*#\s+[0-9]+\s+"(.*)"\s+([0-9\s]+)$/) {
 	    my $file = $1;
 	    my $fl = $2;
-	    $out = $fl =~ /\b2\b/ && $file =~ /$source/;
+	    $itself = $fl =~ /\b2\b/ && $file =~ /$source/;
 	}
 	next;
     }
+    $out = 1 if ($itself && !/^\s*$/);
     if ($out) {
 	print NONINCS;
+    } else {
+	print INCS;
     }
-    print INCS;
 }
 
 close(NONINCS);
