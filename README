@@ -11,10 +11,10 @@ one gets dist/stanse.jar
 
 Running
 -------
-Prior to running the appliction, MAKE SURE cparser-c, stcc and stpreproc from
-build/cparser-c/cparser-c and dist/ directory respectively are in your PATH
+Prior to running the appliction, MAKE SURE stcparser-c, stcc and stpreproc from
+build/cparser-c/stcparser-c and dist/ directory respectively are in your PATH
 environment variable. I.e. all
-$ cparser-c
+$ stcparser-c
 $ stcc
 $ stpreproc
 don't complain about command not found.

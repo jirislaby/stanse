@@ -86,7 +86,7 @@
 		<include name="main.c"/>
 	    </fileset>
         </cpptasks:cc>
-        <cpptasks:cc outtype="executable" outfile="build/cparser-c/cparser-c">
+        <cpptasks:cc outtype="executable" outfile="build/cparser-c/stcparser-c">
 	    <fileset dir="build/cparser-c/">
 		<include name="GNUCaLexer.o"/>
 		<include name="GNUCaParser.o"/>

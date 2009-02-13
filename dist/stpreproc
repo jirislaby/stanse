@@ -59,7 +59,7 @@ close(NONINCS);
 close(INCS);
 close(CPP);
 
-system("cparser-c $includes") && die "can't exec cparser-c";
+system("stcparser-c $includes") && die "can't exec cparser-c";
 
 unlink $includes;
 
