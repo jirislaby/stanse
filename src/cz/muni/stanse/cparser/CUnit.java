@@ -112,7 +112,6 @@ public final class CUnit extends Unit {
 		workDir = jobEntry.substring(dirIdx,
 			jobEntry.indexOf("},{", dirIdx));
 		f = new File(workDir, output);
-		System.err.print("WD=" + workDir + " ");
 	    }
 	    file = f.getAbsolutePath();
 	}
