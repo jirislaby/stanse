@@ -5,19 +5,13 @@
     <property name="antlr.location" value="tools/antlr-3.1.1.jar"/>
     <property name="antlr-runtime.location" value="${dist}/lib/antlr-3.1.1-runtime.jar"/>
     <path id="project.classpath">
-        <pathelement location="build"/>
-        <pathelement location="${antlr-runtime.location}"/>
-        <pathelement location="${dist}/lib/AbsoluteLayout.jar"/>
-        <pathelement location="${dist}/lib/dom4j-1.6.1.jar"/>
-        <pathelement location="${dist}/lib/jaxen-1.1.1.jar"/>
-        <pathelement location="${dist}/lib/swing-layout-1.0.jar"/>
-        <pathelement location="${dist}/lib/syntax.jar"/>
+	<pathelement location="build"/>
+	<pathelement location="${antlr-runtime.location}"/>
+	<pathelement location="${dist}/lib/dom4j-1.6.1.jar"/>
 	<pathelement location="${dist}/lib/jgrapht-jdk1.5.jar"/>
-	<pathelement location="${dist}/lib/saxon8-dom4j.jar"/>
-	<pathelement location="${dist}/lib/saxon8-xpath.jar"/>
-	<pathelement location="${dist}/lib/saxon8.jar"/>
+	<pathelement location="${dist}/lib/jopt-simple-3.0.jar"/>
 	<pathelement location="${dist}/lib/log4j-1.2.14.jar"/>
-	<pathelement location="${dist}/lib/jopt-simple-3.0-beta1.jar"/>
+	<pathelement location="${dist}/lib/swing-layout-1.0.jar"/>
     </path>
     <target name="run" depends="jar">
         <java jar="${dist}/${ant.project.name}.jar" fork="true" >
@@ -122,7 +116,7 @@
 	        <attribute name="Built-By" value="${user.name}"/>
 	        <attribute name="Main-Class" value="cz.muni.stanse.Stanse"/>
 		<attribute name="Implementation-Version" value="Revision: ${svnrevision}, Built on: ${TODAY}" />
-	        <attribute name="Class-Path" value="lib/swing-layout-1.0.jar lib/AbsoluteLayout.jar lib/antlr-3.1.1-runtime.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/swing-layout-1.0.jar lib/syntax.jar lib/jgrapht-jdk1.5.jar lib/log4j-1.2.14.jar lib/jopt-simple-3.0-beta1.jar lib/saxon8.jar lib/saxon8-dom4j.jar lib/saxon8-xpath.jar"/>
+	        <attribute name="Class-Path" value="lib/antlr-3.1.1-runtime.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/jgrapht-jdk1.5.jar lib/jopt-simple-3.0.jar lib/log4j-1.2.14.jar lib/swing-layout-1.0.jar" />
 	    </manifest>
     	<jar destfile="${dist}/stanse.jar" basedir="build" manifest="manifest.mf"/>
 	</target>
