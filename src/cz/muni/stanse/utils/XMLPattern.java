@@ -6,21 +6,18 @@
  *
  * Licensed under GPLv2.
  */
-package cz.muni.stanse.automatonchecker;
-
-import cz.muni.stanse.utils.Pair;
+package cz.muni.stanse.utils;
 
 import java.util.Iterator;
-import java.util.HashSet;
 
 /**
  * @brief
  *
  * @see
  */
-final class XMLPattern {
+public final class XMLPattern {
 
-    // package-private section
+    // public section
 
     /**
      * @brief
@@ -30,7 +27,7 @@ final class XMLPattern {
      * @throws
      * @see
      */
-    XMLPattern(final org.dom4j.Element XMLelement) {
+    public XMLPattern(final org.dom4j.Element XMLelement) {
         patternXMLelement = XMLelement;
         name = patternXMLelement.attribute("name").getValue();
         constructive = XMLelement.selectNodes(
@@ -45,7 +42,7 @@ final class XMLPattern {
      * @throws
      * @see
      */
-    String getName() {
+    public String getName() {
         return name;
     }
 
@@ -57,7 +54,7 @@ final class XMLPattern {
      * @throws
      * @see
      */
-    boolean isSonstructive() {
+    public boolean isSonstructive() {
         return constructive;
     }
 
@@ -69,11 +66,11 @@ final class XMLPattern {
      * @throws
      * @see
      */
-    Pair<Boolean,PatternVariablesAssignment>
+    public Pair<Boolean,XMLPatternVariablesAssignment>
     matchesXMLElement(final org.dom4j.Element XMLelement) {
-        final PatternVariablesAssignment varsAssignment =
-                new PatternVariablesAssignment();
-        return new Pair<Boolean,PatternVariablesAssignment>(
+        final XMLPatternVariablesAssignment varsAssignment =
+                new XMLPatternVariablesAssignment();
+        return new Pair<Boolean,XMLPatternVariablesAssignment>(
                           matchingElements(getPatternXMLelement(),XMLelement,
                                            varsAssignment),
                           varsAssignment);
@@ -83,7 +80,7 @@ final class XMLPattern {
 
     private static boolean matchingElements(final org.dom4j.Element XMLpivot,
                               final org.dom4j.Element XMLelement,
-                              final PatternVariablesAssignment varsAssignment) {
+                              final XMLPatternVariablesAssignment varsAssignment) {
         if (XMLpivot.getName().equals("nested"))
         {
             final String elementAliasedName = getAliasedName(XMLelement);
@@ -127,7 +124,7 @@ final class XMLPattern {
 
     private static boolean onNested(final org.dom4j.Element XMLpivot,
                               final org.dom4j.Element XMLelement,
-                              final PatternVariablesAssignment varsAssignment) {
+                              final XMLPatternVariablesAssignment varsAssignment) {
         if (matchingElements(
                            (org.dom4j.Element)XMLpivot.elementIterator().next(),
                            XMLelement,varsAssignment))

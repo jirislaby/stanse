@@ -12,6 +12,8 @@ import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.CFGvisitor;
+import cz.muni.stanse.utils.XMLPattern;
+import cz.muni.stanse.utils.XMLPatternVariablesAssignment;
 
 import java.util.LinkedList;
 import java.util.HashMap;
@@ -29,7 +31,7 @@ final class PatternLocationCreator extends CFGvisitor {
         final Vector<XMLPattern> XMLpatterns =
             getXMLAutomatonDefinition().getXMLpatterns();
         for (int i = 0; i < XMLpatterns.size(); ++i) {
-            final Pair<Boolean,PatternVariablesAssignment>
+            final Pair<Boolean,XMLPatternVariablesAssignment>
                 matchResult = XMLpatterns.get(i).matchesXMLElement(element);
             if (matchResult.getFirst()) {
                 Integer automatonID = getAutomataIDs().get(
@@ -60,7 +62,7 @@ final class PatternLocationCreator extends CFGvisitor {
         super();
         this.cfg = cfg;
         automatonDefinition = XMLdefinition;
-        automataIDs = new HashMap<PatternVariablesAssignment,Integer>();
+        automataIDs = new HashMap<XMLPatternVariablesAssignment,Integer>();
         automataIDsUsage = new HashMap<Integer,Boolean>();
         nodeAutomataIDs = new HashMap<CFGNode,HashSet<Pair<Integer,Integer>>>();
         patternAutomataCounter = 0;
@@ -141,7 +143,7 @@ final class PatternLocationCreator extends CFGvisitor {
         return automatonDefinition;
     }
 
-    private HashMap<PatternVariablesAssignment,Integer> getAutomataIDs() {
+    private HashMap<XMLPatternVariablesAssignment,Integer> getAutomataIDs() {
         return automataIDs;
     }
 
@@ -160,7 +162,7 @@ final class PatternLocationCreator extends CFGvisitor {
 
     private final CFG cfg;
     private final XMLAutomatonDefinition automatonDefinition;
-    private final HashMap<PatternVariablesAssignment,Integer> automataIDs;
+    private final HashMap<XMLPatternVariablesAssignment,Integer> automataIDs;
     private final HashMap<Integer,Boolean> automataIDsUsage;
     private final HashMap<CFGNode,HashSet<Pair<Integer,Integer>>>
                                                                 nodeAutomataIDs;

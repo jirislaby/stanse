@@ -6,9 +6,7 @@
  *
  * Licensed under GPLv2.
  */
-package cz.muni.stanse.automatonchecker;
-
-import cz.muni.stanse.utils.XMLAlgo;
+package cz.muni.stanse.utils;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,7 +16,7 @@ import java.util.Iterator;
  *
  * @see
  */
-final class PatternVariablesAssignment {
+public final class XMLPatternVariablesAssignment {
 
     // public section
     
@@ -52,10 +50,8 @@ final class PatternVariablesAssignment {
     public boolean equals(final Object obj) {
         if (obj == null || getClass() != obj.getClass())
             return false;
-        return isEqualWith((PatternVariablesAssignment)obj);
+        return isEqualWith((XMLPatternVariablesAssignment)obj);
     }
-
-    // package-private section
 
     /**
      * @brief
@@ -65,7 +61,7 @@ final class PatternVariablesAssignment {
      * @throws
      * @see
      */
-    PatternVariablesAssignment() {
+    public XMLPatternVariablesAssignment() {
         varsAssignments = new HashMap<String,org.dom4j.Element>(); 
     }
 
@@ -77,7 +73,7 @@ final class PatternVariablesAssignment {
      * @throws
      * @see
      */
-    org.dom4j.Element put(final String varName,
+    public org.dom4j.Element put(final String varName,
                           final org.dom4j.Element XMLelement) {
         return getVarsAssignments().put(varName,XMLelement);
     }
@@ -90,7 +86,7 @@ final class PatternVariablesAssignment {
      * @throws
      * @see
      */
-    boolean isEqualWith(final PatternVariablesAssignment other) {
+    public boolean isEqualWith(final XMLPatternVariablesAssignment other) {
         if (!getVarsAssignments().keySet().equals(
                 getVarsAssignments().keySet()))
             return false;
