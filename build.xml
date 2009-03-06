@@ -8,7 +8,7 @@
 	<pathelement location="build"/>
 	<pathelement location="${antlr-runtime.location}"/>
 	<pathelement location="${dist}/lib/dom4j-1.6.1.jar"/>
-	<pathelement location="${dist}/lib/jgrapht-jdk1.5.jar"/>
+	<pathelement location="${dist}/lib/jgrapht-jdk1.6.jar"/>
 	<pathelement location="${dist}/lib/jopt-simple-3.0.jar"/>
 	<pathelement location="${dist}/lib/log4j-1.2.14.jar"/>
 	<pathelement location="${dist}/lib/swing-layout-1.0.jar"/>
@@ -116,7 +116,7 @@
 	        <attribute name="Built-By" value="${user.name}"/>
 	        <attribute name="Main-Class" value="cz.muni.stanse.Stanse"/>
 		<attribute name="Implementation-Version" value="Revision: ${svnrevision}, Built on: ${TODAY}" />
-	        <attribute name="Class-Path" value="lib/antlr-3.1.1-runtime.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/jgrapht-jdk1.5.jar lib/jopt-simple-3.0.jar lib/log4j-1.2.14.jar lib/swing-layout-1.0.jar" />
+	        <attribute name="Class-Path" value="lib/antlr-3.1.1-runtime.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/jgrapht-jdk1.6.jar lib/jopt-simple-3.0.jar lib/log4j-1.2.14.jar lib/swing-layout-1.0.jar" />
 	    </manifest>
     	<jar destfile="${dist}/stanse.jar" basedir="build" manifest="manifest.mf"/>
 	</target>
