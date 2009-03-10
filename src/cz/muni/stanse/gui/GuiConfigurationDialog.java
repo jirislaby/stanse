@@ -19,7 +19,8 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
                                           allDirectoryHierarchyFilesRadioButton,
                                               batchFileRadioButton,
                                               sourceCodeFileTextField,
-                                              chooseFileOnDiscButton);
+                                              chooseFileOnDiscButton,
+                                              makefileArgumentsTextField);
         checkersConfurationManager =
             new GuiCheckersConfurationManager(checkersTree,addCheckerButton,
                             removeCheckerButton,addDataButton,removeDataButton);
@@ -66,6 +67,8 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
         specifySourceFileStaticText = new javax.swing.JTextPane();
         sourceCodeFileTextField = new javax.swing.JTextField();
         chooseFileOnDiscButton = new javax.swing.JButton();
+        makefileArgumentsTextField = new javax.swing.JTextField();
+        specifyMakefileArgumentsStaticText = new javax.swing.JTextPane();
         checkersPanel = new javax.swing.JPanel();
         checkersTreeScrollPane = new javax.swing.JScrollPane();
         checkersTree = new javax.swing.JTree();
@@ -116,6 +119,11 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
 
         chooseFileOnDiscButton.setText("Choose");
 
+        makefileArgumentsTextField.setToolTipText("You can specify arguments for 'make' utility here. [Used only when 'Makefile project' selected.]");
+
+        specifyMakefileArgumentsStaticText.setText("Makefile arguments:");
+        specifyMakefileArgumentsStaticText.setFocusable(false);
+
         javax.swing.GroupLayout sourceCodePanelLayout = new javax.swing.GroupLayout(sourceCodePanel);
         sourceCodePanel.setLayout(sourceCodePanelLayout);
         sourceCodePanelLayout.setHorizontalGroup(
@@ -141,7 +149,12 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
                             .addComponent(specifySourceFileStaticText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(sourceCodePanelLayout.createSequentialGroup()
                                 .addGap(40, 40, 40)
-                                .addComponent(sourceCodeFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(sourceCodePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, sourceCodePanelLayout.createSequentialGroup()
+                                        .addComponent(specifyMakefileArgumentsStaticText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(makefileArgumentsTextField))
+                                    .addComponent(sourceCodeFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(chooseFileOnDiscButton, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)))))
                 .addContainerGap())
@@ -171,7 +184,11 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
                 .addGroup(sourceCodePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(sourceCodeFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(chooseFileOnDiscButton))
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(sourceCodePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(specifyMakefileArgumentsStaticText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(makefileArgumentsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(17, 17, 17))
         );
 
         configurationTabbedPane.addTab("Sources", sourceCodePanel);
@@ -215,7 +232,7 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
                     .addComponent(removeCheckerButton)
                     .addComponent(removeDataButton)
                     .addComponent(addDataButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(52, Short.MAX_VALUE))
         );
 
         configurationTabbedPane.addTab("Checkers", checkersPanel);
@@ -226,19 +243,19 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(configurationTabbedPane)
+            .addComponent(configurationTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(464, Short.MAX_VALUE)
-                .addComponent(closeButton)
-                .addContainerGap())
+                .addContainerGap()
+                .addComponent(closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(configurationTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(configurationTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(20, 20, 20))
         );
 
         configurationTabbedPane.getAccessibleContext().setAccessibleName("Source code");
@@ -259,6 +276,7 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
     private javax.swing.JButton chooseFileOnDiscButton;
     private javax.swing.JButton closeButton;
     private javax.swing.JTabbedPane configurationTabbedPane;
+    private javax.swing.JTextField makefileArgumentsTextField;
     private javax.swing.JRadioButton makefileRadioButton;
     private javax.swing.JButton removeCheckerButton;
     private javax.swing.JButton removeDataButton;
@@ -267,6 +285,7 @@ final class GuiConfigurationDialog extends javax.swing.JDialog {
     private javax.swing.JTextField sourceCodeFileTextField;
     private javax.swing.JPanel sourceCodePanel;
     private javax.swing.ButtonGroup sourceTypeButtonGroup;
+    private javax.swing.JTextPane specifyMakefileArgumentsStaticText;
     private javax.swing.JTextPane specifySourceFileStaticText;
     // End of variables declaration//GEN-END:variables
     //

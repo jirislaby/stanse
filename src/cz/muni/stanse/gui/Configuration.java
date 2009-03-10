@@ -88,7 +88,7 @@ final class Configuration {
     private static SourceConfiguration createDefaultSourceConfiguration() {
         return new SourceConfiguration(new MakefileSourceEnumerator(
                        cz.muni.stanse.Stanse.getRootDirectory() +
-                       "/../examples/AutomatonChecker/makefile/Makefile"));
+                       "/../examples/AutomatonChecker/makefile/Makefile",""));
     }
 
     private static LinkedList<CheckerConfiguration>

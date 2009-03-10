@@ -14,7 +14,8 @@ final class GuiSourceConfigurationManager {
                                           allDirectoryHierarchyFilesRadioButton,
                     final javax.swing.JRadioButton batchFileRadioButton,
                     final javax.swing.JTextField sourceCodeFileTextField,
-                    final javax.swing.JButton chooseFileOnDiscButton) {
+                    final javax.swing.JButton chooseFileOnDiscButton,
+                    final javax.swing.JTextField makefileArgumentsTextField) {
         final SourceCodeFilesEnumerator oldEnumerator =
                                  GuiMainWindow.getInstance().getConfiguration().
                                  getSourceConfiguration().getSourceEnumerator();
@@ -29,8 +30,9 @@ final class GuiSourceConfigurationManager {
         this.batchFileRadioButton = batchFileRadioButton;
         this.specifySourceFilePathNameManager =
             new GuiSpecifySourceFilePathNameManager(sourceCodeFileTextField,
-                                     chooseFileOnDiscButton,
-                                     getEnumeratorReferenceFile(oldEnumerator));
+                              chooseFileOnDiscButton,makefileArgumentsTextField,
+                              getEnumeratorReferenceFile(oldEnumerator),
+                              getEnumeratorArguments(oldEnumerator));
 
         addActionListeners();
         buttonForSourceType().setSelected(true);
@@ -139,7 +141,8 @@ final class GuiSourceConfigurationManager {
                         getSpecifySourceFilePathNameManager().getSourceFile());
             case MakefileProject:
                 return new MakefileSourceEnumerator(
-                        getSpecifySourceFilePathNameManager().getSourceFile());
+                        getSpecifySourceFilePathNameManager().getSourceFile(),
+                        getSpecifySourceFilePathNameManager().getArguments());
             case DirectoryFiles:
                 return new DirectorySourceEnumerator(
                         getSpecifySourceFilePathNameManager().getSourceFile(),
@@ -189,6 +192,13 @@ final class GuiSourceConfigurationManager {
                 return file;
         }
         return ".";
+    }
+
+    private String getEnumeratorArguments(
+                                   final SourceCodeFilesEnumerator enumerator) {
+        if (enumerator instanceof  MakefileSourceEnumerator)
+            return ((MakefileSourceEnumerator)enumerator).getArguments();
+        return "";
     }
 
     private SourceType getSourceType() {

@@ -5,13 +5,17 @@ final class GuiSpecifySourceFilePathNameManager {
     // package-private section
 
     GuiSpecifySourceFilePathNameManager(
-                         final javax.swing.JTextField sourceCodeFileTextField,
-                         final javax.swing.JButton chooseFileOnDiscButton,
-                         final String initialFile) {
+                        final javax.swing.JTextField sourceCodeFileTextField,
+                        final javax.swing.JButton chooseFileOnDiscButton,
+                        final javax.swing.JTextField makefileArgumentsTextField,
+                        final String initialFile,
+                        final String initialArguments) {
         this.sourceCodeFileTextField = sourceCodeFileTextField;
         this.chooseFileOnDiscButton = chooseFileOnDiscButton;
+        this.makefileArgumentsTextField = makefileArgumentsTextField;
 
         getSourceCodeFileTextField().setText(initialFile);
+        getMakefileArgumentsTextField().setText(initialArguments);
 
         getChooseFileOnDiscButton().addActionListener(
         new java.awt.event.ActionListener() {
@@ -24,6 +28,10 @@ final class GuiSpecifySourceFilePathNameManager {
 
     String getSourceFile() {
         return getSourceCodeFileTextField().getText();
+    }
+
+    String getArguments() {
+        return getMakefileArgumentsTextField().getText();
     }
 
     // private section
@@ -51,6 +59,11 @@ final class GuiSpecifySourceFilePathNameManager {
         return chooseFileOnDiscButton;
     }
 
+    private javax.swing.JTextField getMakefileArgumentsTextField() {
+        return makefileArgumentsTextField;
+    }
+
     private final javax.swing.JTextField sourceCodeFileTextField;
     private final javax.swing.JButton chooseFileOnDiscButton;
+    private final javax.swing.JTextField makefileArgumentsTextField;
 }
