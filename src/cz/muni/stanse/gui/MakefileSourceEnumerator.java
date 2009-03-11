@@ -31,8 +31,8 @@ final class MakefileSourceEnumerator extends
                                           final String arguments)
                                                               throws Exception {
         final String batchFile = "/tmp/tmp_stanse_batch_file_for_makefile.txt";
-        final ProcessBuilder builder = new ProcessBuilder("make","CC=stcc "
-                                                                   + arguments);
+        final ProcessBuilder builder = new ProcessBuilder("make","CC=stcc",
+                                                          arguments);
         final java.util.Map<String,String> environment = builder.environment();
         environment.put("JOB_FILE",batchFile);
         environment.put("PATH", environment.get("PATH") + ":" +
