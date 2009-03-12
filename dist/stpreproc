@@ -30,7 +30,8 @@ my $nonincludes = $output . ".preproc";
 
 my $cpp = "gcc -E -w -D__attribute__\\(x\\)= -D__attribute\\(x\\)= " .
 	"-D__builtin_va_list=int -D__builtin_offsetof\\(x,y\\)=1 " .
-	"-D__builtin_types_compatible_p\\(x,y\\)=0 $flags";
+	"-D__builtin_types_compatible_p\\(x,y\\)=0 " .
+	"-D__builtin_va_arg\\(ap,t\\)=\\(t\\)0 $flags";
 open(CPP, "$cpp $source|") || die "can't exec '$cpp $source'";
 open(INCS, ">$includes") || die "can't open $includes for writing";
 open(NONINCS, ">$nonincludes") || die "can't open $nonincludes for writing";
