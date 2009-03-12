@@ -31,8 +31,8 @@ final class MakefileSourceEnumerator extends
                                           final String arguments)
                                                               throws Exception {
         final String batchFile = "/tmp/tmp_stanse_batch_file_for_makefile.txt";
-        final ProcessBuilder builder = new ProcessBuilder("make","CC=stcc",
-                                                          arguments);
+        final ProcessBuilder builder = new ProcessBuilder(createMakeCmdLine(
+                                                                    arguments));
         final java.util.Map<String,String> environment = builder.environment();
         environment.put("JOB_FILE",batchFile);
         environment.put("PATH", environment.get("PATH") + ":" +
@@ -41,6 +41,15 @@ final class MakefileSourceEnumerator extends
                .start()
                .waitFor();
         return batchFile;
+    }
+
+    private static java.util.LinkedList<String> createMakeCmdLine(
+                                                            final String args) {
+        final java.util.LinkedList<String> result =
+                 cz.muni.stanse.utils.Make.<String>linkedList("make","CC=stcc");
+        if (!args.isEmpty())
+            result.addAll(java.util.Arrays.asList(args.split("[ \t]")));
+        return result;
     }
 
     private final String arguments;
