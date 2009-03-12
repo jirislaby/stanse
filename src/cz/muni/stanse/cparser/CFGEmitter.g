@@ -97,12 +97,16 @@ scope Function;
 				$Function::labels.get(gotoPair.getFirst());
 			gotoPair.getSecond().addBreakEdge(labelNode);
 		}
-		for (CFGPart cfg: $Function::unreachables)
-			if (cfg.getStartNode().getPredecessors().size() == 0) {
+		for (CFGPart cfg: $Function::unreachables) {
+			CFGNode start = cfg.getStartNode();
+			if (start.getPredecessors().size() == 0 &&
+					!start.getElement().getName().
+						equals("breakStatement")) {
 				System.err.println("Unreachable:");
 				System.err.println(cfg.toStringGraph());
 				System.err.println("\n============");
 			}
+		}
 
 //		System.err.println($g.toStringGraph());
 //		System.err.println($g.toDot());
