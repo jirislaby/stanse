@@ -91,6 +91,15 @@
 		<include name="libantlr3c-${arch}.a"/>
 	    </fileset>
         </cpptasks:cc>
+ <!--       <copy todir="${dist}" >
+            <fileset dir="build/cparser-c">
+                <include name="stcparser-c"/>
+            </fileset>
+        </copy>-->
+    	<exec executable="cp">
+    		<arg value="build/cparser-c/stcparser-c"/>
+    		<arg value="${dist}"/>
+   		</exec>
     </target>
     <target name="build" depends="init,cparser-c,parser">
         <echo message="${ant.project.name}: ${ant.file}"/>
