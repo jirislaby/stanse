@@ -73,7 +73,7 @@
 	    <classpath path="${antlr.location}"/>
 	</antlr:antlr3>
         <cpptasks:cc optimize="full" objdir="build/cparser-c/">
-	    <includepath path="src/cparser-c/lib/include/"/>
+	    <includepath path="src/cparser-c/lib/include-${arch}/"/>
 	    <fileset dir="src/cparser-c/">
 		<include name="GNUCaLexer.c"/>
 		<include name="GNUCaParser.c"/>
