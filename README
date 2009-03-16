@@ -12,19 +12,19 @@ one gets dist/stanse.jar
 Running
 -------
 Prior to running the appliction, MAKE SURE stcparser-c, stcc and stpreproc from
-build/cparser-c/stcparser-c and dist/ directory respectively are in your PATH
-environment variable. I.e. all
+dist/ directory are in one of paths set in your PATH environment variable. I.e.
+all
 $ stcparser-c
 $ stcc
 $ stpreproc
-don't complain about command not found.
+don't complain about command not found, permission denied or any other problem.
 
 There are several methods how to invoke Stanse:
 
 1) First of all, one may run stanse by typing
    $ java -jar <path_to_jar>/stanse.jar -gui
    Selecting a file and running tests will result in checker to go through the
-   file and report potentional errors.
+   file and report potential errors.
 
 2) Also jobfiles are supported. By putting filenames into a textfile, each on
    its own line and selecting this feature in the gui mentioned in point 1) will
@@ -33,7 +33,7 @@ There are several methods how to invoke Stanse:
    -- Advanced use of jobfiles --
    It lays in a following structure (one per line) of jobfiles:
    {filename},{output},{working directory},{compiler flags}
-   filename -- the file to check
+   filename -- a file to check
    output -- a file to output to (.includes and .preproc is appended)
    working directory -- where to run the preprocessor from
    compiler flags -- preprocessor flags (e.g. derived from gcc line)
