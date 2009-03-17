@@ -1,5 +1,8 @@
 package cz.muni.stanse.gui;
 
+import cz.muni.stanse.PresentableError;
+import cz.muni.stanse.PresentableErrorTraceLocation;
+import cz.muni.stanse.PresentableErrorTrace;
 import java.util.Collection;
 
 import javax.swing.tree.DefaultMutableTreeNode;

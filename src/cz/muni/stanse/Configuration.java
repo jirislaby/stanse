@@ -1,4 +1,4 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
@@ -8,27 +8,27 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.io.File;
 
-final class Configuration {
+public final class Configuration {
 
-    // package-private section
+    // public section
 
-    Configuration() {
+    public Configuration() {
         sourceConfiguration = createDefaultSourceConfiguration();
         checkerConfigurations = createDefaultCheckerConfiguration();
     }
 
-    Configuration(final SourceConfiguration sourceConfiguration) {
+    public Configuration(final SourceConfiguration sourceConfiguration) {
         this.sourceConfiguration = sourceConfiguration;
         checkerConfigurations = createDefaultCheckerConfiguration();
     }
 
-    Configuration(final SourceConfiguration sourceConfiguration,
+    public Configuration(final SourceConfiguration sourceConfiguration,
                   final LinkedList<CheckerConfiguration> checkerConfiguration) {
         this.sourceConfiguration = sourceConfiguration;
         this.checkerConfigurations = checkerConfiguration;
     }
 
-    void visit(final ConfigurationVisitor visitor,
+    public void visit(final ConfigurationVisitor visitor,
            final ConfigurationProgressHandler progressHandler) throws Exception{
         final List<Unit> units = getSourceConfiguration().
                                                       getUnits(progressHandler);
@@ -41,7 +41,7 @@ final class Configuration {
     }
 
     @Deprecated
-    void visitIntraprocedutral(final ConfigurationVisitor visitor,
+    public void visitIntraprocedutral(final ConfigurationVisitor visitor,
             final ConfigurationProgressHandler progressHandler)throws Exception{
         final LinkedList<cz.muni.stanse.checker.Checker> checkers =
                                new LinkedList<cz.muni.stanse.checker.Checker>();
@@ -66,11 +66,11 @@ final class Configuration {
         progressHandler.onParsingEnd();
     }
 
-    SourceConfiguration getSourceConfiguration() {
+    public SourceConfiguration getSourceConfiguration() {
         return sourceConfiguration;
     }
 
-    LinkedList<CheckerConfiguration> getCheckerConfigurations() {
+    public LinkedList<CheckerConfiguration> getCheckerConfigurations() {
         return checkerConfigurations;
     }
 

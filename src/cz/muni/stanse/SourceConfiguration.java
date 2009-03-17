@@ -1,4 +1,4 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.cparser.CUnit;
@@ -7,15 +7,14 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-final class SourceConfiguration {
+public final class SourceConfiguration {
 
-    // package-private section
+    // public section
 
-    SourceConfiguration(final SourceCodeFilesEnumerator sourceEnumerator) {
-        this.sourceEnumerator = sourceEnumerator;
-    }
+    public SourceConfiguration(final SourceCodeFilesEnumerator sourceEnumerator)
+    { this.sourceEnumerator = sourceEnumerator; }
 
-    List<Unit> getUnits(final ConfigurationProgressHandler
+    public List<Unit> getUnits(final ConfigurationProgressHandler
                                              progressHandler) throws Exception {
         progressHandler.onParsingBegin();
         final List<Unit> result = new LinkedList<Unit>();
@@ -28,7 +27,7 @@ final class SourceConfiguration {
         return Collections.unmodifiableList(result);
     }
 
-    SourceCodeFilesEnumerator getSourceEnumerator() {
+    public SourceCodeFilesEnumerator getSourceEnumerator() {
         return sourceEnumerator;
     }
 

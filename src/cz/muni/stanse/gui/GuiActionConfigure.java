@@ -1,5 +1,7 @@
 package cz.muni.stanse.gui;
 
+import cz.muni.stanse.Configuration;
+
 @SuppressWarnings("serial")
 final class GuiActionConfigure extends javax.swing.AbstractAction {
 

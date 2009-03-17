@@ -1,16 +1,17 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
-final class MakefileSourceEnumerator extends
+public final class MakefileSourceEnumerator extends
                                            ReferencedSourceCodeFilesEnumerator {
-    // package-private section
+    // public section
 
-    MakefileSourceEnumerator(final String makeFile, final String arguments) {
+    public MakefileSourceEnumerator(final String makeFile,
+                                    final String arguments) {
         super(makeFile);
         this.arguments = arguments;
     }
 
     @Override
-    java.util.List<String> getSourceCodeFiles() throws Exception {
+    public java.util.List<String> getSourceCodeFiles() throws Exception {
         java.util.List<String> result;
         synchronized(getClass()) {
             final String batchFile = createBatchFile(getReferenceFile(),
@@ -21,7 +22,7 @@ final class MakefileSourceEnumerator extends
         return result;
     }
 
-    String getArguments() {
+    public String getArguments() {
         return arguments;
     }
 

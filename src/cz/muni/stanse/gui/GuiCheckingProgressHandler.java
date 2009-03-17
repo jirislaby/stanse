@@ -1,57 +1,59 @@
 package cz.muni.stanse.gui;
 
+import cz.muni.stanse.ConfigurationProgressHandler;
+
 final class GuiCheckingProgressHandler extends ConfigurationProgressHandler {
 
     // package-private section
 
     @Override
-    void onProcessBegin() {
+    public void onProcessBegin() {
         getConsole().clear();
         getConsole().appendText("Checking procedure started.\n");
     }
 
     @Override
-    void onParsingBegin() {
+    public void onParsingBegin() {
         getConsole().appendText("   Parsing source file(s)...\n");
     }
 
     @Override
-    void onFileBegin(final String filePathName) {
+    public void onFileBegin(final String filePathName) {
         getConsole().appendText("      " + filePathName + "...");
     }
 
     @Override
-    void onFileEnd() {
+    public void onFileEnd() {
         getConsole().appendText("Done.\n");
     }
 
     @Override
-    void onParsingEnd() {
+    public void onParsingEnd() {
         getConsole().appendText("   Done.\n");
     }
 
     @Override
-    void onCheckingBegin() {
+    public void onCheckingBegin() {
         getConsole().appendText("   Checking parsed file(s)....\n");
     }
 
     @Override
-    void onCheckerBegin(final String checkerName) {
+    public void onCheckerBegin(final String checkerName) {
         getConsole().appendText("      " + checkerName + " in progress...");
     }
 
     @Override
-    void onCheckerEnd(final int numErrorsFound) {
+    public void onCheckerEnd(final int numErrorsFound) {
         getConsole().appendText("Done. Erros found: " + numErrorsFound + "\n");
     }
 
     @Override
-    void onCheckingEnd() {
+    public void onCheckingEnd() {
         getConsole().appendText("   Done.\n");
     }
 
     @Override
-    void onProcessEnd(final int numErrorsFound) {
+    public void onProcessEnd(final int numErrorsFound) {
         getConsole().appendText("Checking procedure finished. Errors found: " +
                                 numErrorsFound + "\n");
     }

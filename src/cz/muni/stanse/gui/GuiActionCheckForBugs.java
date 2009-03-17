@@ -1,5 +1,7 @@
 package cz.muni.stanse.gui;
 
+import cz.muni.stanse.PresentableError;
+import cz.muni.stanse.CheckForBugs;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.ClassLogger;

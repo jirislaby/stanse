@@ -1,5 +1,13 @@
 package cz.muni.stanse.gui;
 
+import cz.muni.stanse.ReferencedSourceCodeFilesEnumerator;
+import cz.muni.stanse.SourceConfiguration;
+import cz.muni.stanse.BatchFileEnumerator;
+import cz.muni.stanse.MakefileSourceEnumerator;
+import cz.muni.stanse.DirectorySourceEnumerator;
+import cz.muni.stanse.SourceCodeFilesEnumerator;
+import cz.muni.stanse.SingleFileEnumerator;
+
 final class GuiSourceConfigurationManager {
 
     // package-private section

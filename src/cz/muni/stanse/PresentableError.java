@@ -1,4 +1,4 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;
@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Collections;
 
-final class PresentableError {
+public final class PresentableError {
 
     // public section
 
@@ -38,9 +38,7 @@ final class PresentableError {
                getFullDesc();
     }
 
-    // package-private section
-
-    PresentableError(final CheckerError checkerError,
+    public PresentableError(final CheckerError checkerError,
                      final HashMap<CFG,Unit> cfgToUnitMapping) {
         shortDesc = checkerError.getShortDescription();
         fullDesc = checkerError.getFullDescription();
@@ -48,23 +46,23 @@ final class PresentableError {
                                     cfgToUnitMapping);
     }
 
-    String getShortDesc() {
+    public String getShortDesc() {
         return shortDesc;
     }
 
-    String getFullDesc() {
+    public String getFullDesc() {
         return fullDesc;
     }
 
-    List<PresentableErrorTrace> getTraces() {
+    public List<PresentableErrorTrace> getTraces() {
         return Collections.unmodifiableList(traces);
     }
 
-    PresentableErrorTraceLocation getCauseLocation() {
+    public PresentableErrorTraceLocation getCauseLocation() {
         return getTraces().iterator().next().getCauseLocation();
     }
 
-    PresentableErrorTraceLocation getErrorLocation() {
+    public PresentableErrorTraceLocation getErrorLocation() {
         return getTraces().iterator().next().getErrorLocation();
     }
 

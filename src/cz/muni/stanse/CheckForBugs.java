@@ -1,4 +1,4 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
@@ -11,16 +11,16 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.HashMap;
 
-final class CheckForBugs {
+public final class CheckForBugs {
 
     // package-private section
 
-    static Pair<LinkedList<CheckerError>,LinkedList<PresentableError> >
+    public static Pair<LinkedList<CheckerError>,LinkedList<PresentableError> >
     run(final Configuration configuration) throws Exception {
         return run(configuration,new ConfigurationProgressHandler());
     }
 
-    static Pair<LinkedList<CheckerError>,LinkedList<PresentableError> >
+    public static Pair<LinkedList<CheckerError>,LinkedList<PresentableError> >
     run(final Configuration configuration,
         final ConfigurationProgressHandler progressHandler) throws Exception {
         final LinkedList<CheckerError> checkerErrors =

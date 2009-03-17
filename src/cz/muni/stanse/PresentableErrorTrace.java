@@ -1,4 +1,4 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
 import cz.muni.stanse.checker.ErrorTrace;
 
@@ -13,7 +13,7 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Collections;
 
-final class PresentableErrorTrace {
+public final class PresentableErrorTrace {
 
     // public section
 
@@ -35,26 +35,24 @@ final class PresentableErrorTrace {
         return "trace [locations: " + getLocations().size() + "]";
     }
 
-    // package-private section
-
-    PresentableErrorTrace(final ErrorTrace errorTrace,
+    public PresentableErrorTrace(final ErrorTrace errorTrace,
                           final HashMap<CFG,Unit> cfgToUnitMapping) {
         locations = compileErrorTraceLocations(errorTrace,cfgToUnitMapping);
     }
 
-    List<PresentableErrorTraceLocation> getLocations() {
+    public List<PresentableErrorTraceLocation> getLocations() {
         return Collections.unmodifiableList(locations);
     }
 
-    PresentableErrorTraceLocation getCauseLocation() {
+    public PresentableErrorTraceLocation getCauseLocation() {
         return getLocations().get(0);
     }
 
-    PresentableErrorTraceLocation getErrorLocation() {
+    public PresentableErrorTraceLocation getErrorLocation() {
         return getLocations().get(getLocations().size() - 1);
     }
 
-    boolean isEqualWith(final PresentableErrorTrace other) {
+    public boolean isEqualWith(final PresentableErrorTrace other) {
         return getLocations().equals(other.getLocations());
     }
 

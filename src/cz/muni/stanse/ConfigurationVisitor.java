@@ -1,4 +1,4 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
@@ -7,7 +7,7 @@ import cz.muni.stanse.checker.Checker;
 import java.util.List;
 import java.util.HashMap;
 
-interface ConfigurationVisitor {
+public interface ConfigurationVisitor {
 
     // public section
 

@@ -1,13 +1,13 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
 import cz.muni.stanse.utils.FileAlgo;
 
-final class DirectorySourceEnumerator extends
+public final class DirectorySourceEnumerator extends
                                            ReferencedSourceCodeFilesEnumerator {
 
-    // package-private section
+    // public section
 
-    DirectorySourceEnumerator(final String startDirectory,
+    public DirectorySourceEnumerator(final String startDirectory,
                               final String extension,
                               final boolean searchSubdirectories) {
         super(startDirectory);
@@ -16,12 +16,12 @@ final class DirectorySourceEnumerator extends
         this.searchSubdirectories = searchSubdirectories;
     }
 
-    boolean getSearchSubdirectories() {
+    public boolean getSearchSubdirectories() {
         return searchSubdirectories;
     }
 
     @Override
-    java.util.List<String> getSourceCodeFiles() throws Exception {
+    public java.util.List<String> getSourceCodeFiles() throws Exception {
         return toStringList(
                    FileAlgo.enumerateFiles(new java.io.File(getReferenceFile()),
                         new java.io.FileFilter() {

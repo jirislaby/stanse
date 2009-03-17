@@ -1,5 +1,7 @@
 package cz.muni.stanse.gui;
 
+import cz.muni.stanse.PresentableErrorTraceLocation;
+import cz.muni.stanse.PresentableErrorTrace;
 import java.util.List;
 
 final class GuiErrorTracingManager {

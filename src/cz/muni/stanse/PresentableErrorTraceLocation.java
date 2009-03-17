@@ -1,4 +1,4 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
@@ -8,7 +8,7 @@ import cz.muni.stanse.utils.Triple;
 
 import java.util.HashMap;
 
-final class PresentableErrorTraceLocation {
+public final class PresentableErrorTraceLocation {
 
     @Override
     public boolean equals(Object obj) {
@@ -31,9 +31,7 @@ final class PresentableErrorTraceLocation {
                getLineNumber() + "]";
     }
 
-    // package-private section
-
-    PresentableErrorTraceLocation(
+    public PresentableErrorTraceLocation(
             final Triple<CFGNode,String,CFG> location,
             final HashMap<CFG,Unit> cfgToUnitMapping) {
         unitName = cfgToUnitMapping.get(location.getThird()).getName();
@@ -50,19 +48,19 @@ final class PresentableErrorTraceLocation {
         description = location.getSecond();
     }
 
-    String getUnitName() {
+    public String getUnitName() {
         return unitName;
     }
 
-    int getLineNumber() {
+    public int getLineNumber() {
         return lineNumber;
     }
 
-    String getDescription() {
+    public String getDescription() {
         return description;
     }
 
-    boolean isEqualWith(final PresentableErrorTraceLocation other) {
+    public boolean isEqualWith(final PresentableErrorTraceLocation other) {
         return getUnitName().equals(other.getUnitName()) &&
                getLineNumber() == other.getLineNumber() &&
                getDescription().equals(other.getDescription());

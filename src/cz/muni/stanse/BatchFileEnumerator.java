@@ -1,4 +1,4 @@
-package cz.muni.stanse.gui;
+package cz.muni.stanse;
 
 import cz.muni.stanse.utils.ClassLogger;
 
@@ -8,26 +8,29 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-final class BatchFileEnumerator
+public final class BatchFileEnumerator
                                    extends ReferencedSourceCodeFilesEnumerator {
-    BatchFileEnumerator(final String file) {
+
+    // public section
+
+    public BatchFileEnumerator(final String file) {
         super(file);
     }
 
     @Override
-    List<String> getSourceCodeFiles() throws Exception {
-	final List<String> result = new LinkedList<String>();
-	try {
-	    final BufferedReader reader = new BufferedReader(
-		    new FileReader(getReferenceFile()));
-	    while (true) {
-		String readLine = reader.readLine();
-		if (readLine == null)
-		    break;
-		readLine = readLine.trim();
-		if (readLine.length() > 0)
-		    result.add(readLine);
-	    }
+    public List<String> getSourceCodeFiles() throws Exception {
+        final List<String> result = new LinkedList<String>();
+        try {
+            final BufferedReader reader = new BufferedReader(
+                new FileReader(getReferenceFile()));
+            while (true) {
+                String readLine = reader.readLine();
+                if (readLine == null)
+                    break;
+                readLine = readLine.trim();
+                if (readLine.length() > 0)
+                    result.add(readLine);
+            }
             reader.close();
         } catch (final IOException exception) {
             ClassLogger.error(this,"Cannot read files in batch file '" +
