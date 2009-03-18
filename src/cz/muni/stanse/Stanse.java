@@ -7,29 +7,17 @@
  */
 package cz.muni.stanse;
 
-import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
-import cz.muni.stanse.checker.CheckerException;
-import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.codestructures.Unit;
-import cz.muni.stanse.cparser.CUnit;
+import cz.muni.stanse.utils.Pair;
 
 import cz.muni.stanse.gui.GuiMainWindow;
 
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
-import cz.muni.stanse.utils.XMLAlgo;
 
-import java.io.BufferedWriter;
-import java.io.BufferedReader;
-import java.io.FileWriter;
-import java.io.FileReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 import static java.util.Arrays.*;
 import java.util.LinkedList;
@@ -69,28 +57,14 @@ public final class Stanse {
 	/**
 	 * List of sourcefiles.
 	 */
-	private static List<File> sources = new LinkedList<File>();	
+	private static List<String> sources = new LinkedList<String>();	
 	
 	/**
 	 * List of compilation units.
 	 */
 	 static List<Unit> units = new LinkedList<Unit>();
 	
-    private static LinkedList<File>
-    getCheckerDataFilesList(final String[] args) throws Exception {
-        final LinkedList<File> result = new LinkedList<File>();
-        
-        joptsimple.OptionParser parser = new joptsimple.OptionParser();
-        joptsimple.OptionSpec<java.io.File> automaton =
-                            parser.accepts("Xautomaton" , "Checking automaton.")
-                                  .withRequiredArg()
-                                  .describedAs("file")
-                                  .ofType(java.io.File.class);
-        final joptsimple.OptionSet options = parser.parse(args);
-        result.add(options.valueOf(automaton));
-        return result;
-    }
-	/**
+ 	/**
 	 * @brief Reads command line and invokes the relevant methods. 
 	 * 
 	 * Calls parser for compilation units specified on the command line.
@@ -109,11 +83,38 @@ public final class Stanse {
 		"Shows this help message and exits." );	
 		OptionSpec<Void> gui = parser.acceptsAll( asList( "g", "gui" ), "Starts GUI" );
 		OptionSpec<Void> version = parser.accepts( "version", "Prints the program version and exits" );
-		OptionSpec<String> checkerClass = parser.acceptsAll( asList( "c", "checker"), 
-		"Checker to be run. Can occur more than once.")
+		// *** Checker and their configurations
+		OptionSpec<String> checkerName = parser.acceptsAll( asList( "c", "checker"),
+			"Checker to be run.")
 		.withRequiredArg()
-		.describedAs("className")
+		.describedAs("name")
 		.ofType(String.class);
+		OptionSpec<String> checkerData = parser.acceptsAll( asList( "cd", "checker-data"),
+				"Checker configuration file. Can occur more than once.") // TODO multiple checkers
+		.withRequiredArg()
+		.describedAs("file")
+		.ofType(String.class);
+		// *** Different ways of specifying input files.
+		OptionSpec<String> makefile = parser.accepts("makefile", "Makefile specifying input files.")
+		.withRequiredArg()
+		.describedAs("file")
+		.ofType(String.class);
+		OptionSpec<String> makeParams = parser.accepts("make-params", "Parameters passed to the make tool.")
+		.withRequiredArg()
+		.describedAs("parameters")
+		.ofType(String.class);  
+		OptionSpec<String> jobfile = parser.accepts("jobfile", "Jobfile specifying input files.")
+		.withRequiredArg()
+		.describedAs("file")
+		.ofType(String.class);  
+		OptionSpec<String> dir = parser.accepts("dir", "Directory to be (non-recursively) searched for input files.")
+		.withRequiredArg()
+		.describedAs("directory")
+		.ofType(String.class);  
+		OptionSpec<String> rdir = parser.accepts("rdir", "Directory to be recursively searched for input files.")
+		.withRequiredArg()
+		.describedAs("directory")
+		.ofType(String.class);  
 		// TODO: change to gcc style?
 //		OptionSpec<Integer> warnLevel = parser.acceptsAll( asList("w", "warn-level"),
 //		"Sets the reported warning level")
@@ -129,36 +130,17 @@ public final class Stanse {
 		.withRequiredArg()
 		.describedAs("file")
 		.ofType(File.class);
-		OptionSpec<Void> dumpCFG = parser.accepts("dump-cfg", "Dump control flow graphs in Dot format");
-		OptionSpec<Void> dumpXML = parser.accepts("dump-xml", "Dump XML representation of AST");
+		// OptionSpec<Void> dumpCFG = parser.accepts("dump-cfg", "Dump control flow graphs in Dot format");
+		// OptionSpec<Void> dumpXML = parser.accepts("dump-xml", "Dump XML representation of AST");
 		// OptionSpec<Void> dumpCallGraph = parser.accepts("dump-callgraph", "Dump callgraph in Dot format");
 		OptionSpec<File> outputDir = parser.accepts("output-dir", "Sets the output directory for generated files")
 		.withRequiredArg()
 		.describedAs("file")
 		.ofType(File.class);
-		// TODO: how to print "command-line usage", including the sources?
-		OptionSpec<File> inputFile = parser.accepts("input-file",
-		"File containing names of the source files to be processed.")
-		.withRequiredArg()
-		.describedAs("file")
-		.ofType(File.class);		
-
-		// split arguments for the checker and for the tool
-		// TODO requires --xxx=yyy notation for checker arguments!
-		List<String> argsStanse = new LinkedList<String>();
-		List<String> argsChecker = new LinkedList<String>();
-
-		for (String option : args) {
-			if (option.startsWith("-X") || option.startsWith("--X")) {
-				argsChecker.add(option);
-			} else {
-				argsStanse.add(option);
-			}
-		}
-		
+		// TODO: how to print "command-line usage", including the sources?		
 		
 		try {
-			final OptionSet options = parser.parse(argsStanse.toArray(new String[0]));
+			final OptionSet options = parser.parse(args);
 
 			// HELP - called explicitly or no options given
 			// -> exit
@@ -186,11 +168,11 @@ public final class Stanse {
 
 			// OUTPUT DIRECTORY
 			if (options.has(outputDir)) {
-				File dir = options.valueOf(outputDir);
-				if(!dir.exists()) {
+				File d = options.valueOf(outputDir);
+				if(!d.exists()) {
 					// TODO throw exception
 				}
-				outputDirectory = dir; 
+				outputDirectory = d; 
 			}
 
 			// WARN LEVELS
@@ -220,185 +202,203 @@ public final class Stanse {
 				}
 			} 
 
-			// INPUT FILES
-			// 1: read file names from input file
-			if (options.has(inputFile)) {
-				try {
-					BufferedReader in = new BufferedReader(new FileReader(options.valueOf(inputFile)));
-					String s;
-					while ((s = in.readLine()) != null) {
-						sources.add(new File(s));
-					}
-					in.close();
-				} catch (IOException e) {
-				}
-			}
-			// 2: read file names from the command line
+			// INPUT FILES SPECIFICATION
+			SourceCodeFilesEnumerator e;
+			// 1: read file names from the command line
 			for (Object s : options.nonOptionArguments()) {
-				sources.add(new File((String) s));
+				sources.add((String) s);
 			}
-			// 3: check, whether the source files really exist
-			for (File f : sources ) {
+			    // check, whether the source files really exist
+			for (String s : sources ) {
+				File f = new File(s);
 				if (!f.exists()) {
-					// TODO "File " + f + " does not exist! Exiting."
+					System.err.println("File " + f + " does not exist! Exiting.");
+					return;
 				}				
 			}
-			// TODO: single hyphen is a non-option argument, and as such should be present only if no file names are present
+			e = new FileListEnumerator(sources);
+			// X: check that only one of the possible inputs is applicable
+			{	int i=0;
+				if (!sources.isEmpty()) i++;
+				if (options.has(makefile)) i++;
+				if (options.has(jobfile)) i++;
+				if (options.has(dir)) i++;
+				if (options.has(rdir)) i++;
+				if (i>1) {
+					// TODO "Only one way of specifying source files can be used".
+				}
+			}
+			// 2: Makefile & make paremeters
+			if (options.has(makefile)) {
+				File f = new File(options.valueOf(makefile));
+				if (! f.exists() ) {
+					System.err.println("Makefile " + f + " does not exist! Exiting.");
+					return;
+				}
+				String s;
+				if (options.has(makeParams)) { 
+					s = options.valueOf(makeParams);
+				} else s="";
+				e = new MakefileSourceEnumerator(options.valueOf(makefile), s);
+			}
+			// 3: Jobfile
+			if (options.has(jobfile)) {
+				File f = new File(options.valueOf(jobfile));
+				if (! f.exists() ) {
+					System.err.println("Jobfile " + f + " does not exist! Exiting.");
+					return;
+				}
+				e = new BatchFileEnumerator(options.valueOf(jobfile));
+			}
+			// 4: Directory
+			if (options.has(dir)) {
+				File d = new File(options.valueOf(dir));
+				if (!(d.exists() && d.isDirectory() )) {
+					System.err.println("Directory " + d + " does not exist! Exiting.");
+					return;
+				} 				
+				e = new DirectorySourceEnumerator(options.valueOf(dir), ".c", false);
+			}
+			// 5: Recursive directory
+			if (options.has(rdir)) {
+				File d = new File(options.valueOf(rdir));
+				if (!(d.exists() && d.isDirectory() )) {
+					System.err.println("Directory " + d + " does not exist! Exiting.");
+					return;
+				} 				
+				e = new DirectorySourceEnumerator(options.valueOf(rdir), ".c", true);
+			}			
+			// 6: TODO single hyphen - read from standard input 
+			// "-" is a non-option argument, and as such should be present only if no file names are present
+			// LAST:
+			SourceConfiguration sourceConfig=new SourceConfiguration(e);
 
+			// CHECKERS
+			final Configuration config;
+			// TODO - multiple checkers, each with its own parameters
+			// TODO - multiple data files per checker
+			// TODO - short names instead of classes
+			if(options.has(checkerName)){ // a checker was specified
+				final LinkedList<CheckerConfiguration> checkerConfig = new LinkedList<CheckerConfiguration>();
+				CheckerConfiguration cc;
+				// read checker Data
+				if (options.has(checkerData)) {
+					cc = new CheckerConfiguration(options.valueOf(checkerName), new File(options.valueOf(checkerData)));
+				} else {
+					cc = new CheckerConfiguration(options.valueOf(checkerName), new LinkedList<File>());
+				}
+				checkerConfig.add(cc);
+				config = new Configuration(sourceConfig, checkerConfig);
+			} else { // use default configuration
+				// TODO - output handling
+				System.err.println("No checkers specified, AutomatonChecker used as default.");
+				config = new Configuration(sourceConfig); 
+			}
 			
-			// GUI
-			// GUI parses its files, so must be called here
-			// Also dumping is not compatible with GUI.
-			if (options.has(gui)) {
-				startGui();
+			//  *** RUN
+			if (options.has(gui)) { 	// GUI
+				java.awt.EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						GuiMainWindow gui = GuiMainWindow.getInstance();
+						if (sources.isEmpty()) { 
+							gui.setConfiguration(config);
+						} else {
+							// open sources specified on the command line and set config
+							gui.openSourceFiles(sources, config);
+						}				
+						gui.setVisible(true);
+					}
+				});
 				return;
-			}
-			
-			// TODO: GUI has to know about checkers somehow! (properties file?)
-			// GUI has to be able to start any checker! (allow clasSpec in gui)
-			// in GUI give a checkbox/radiobutton chooser between checkers
-			
-			// PARSING, CONVERSION to XML and CFG
-			Unit unit;
-			Document unitAST;
-			List<CFG> unitCFG;
-			File xmlFile;
-			File cfgFile;
-			String fileName;
-			for (File unitFile : sources)			
-			{		
+			} else { 					// CLI
+				Pair<LinkedList<CheckerError>, LinkedList<PresentableError> > errors;
 				try {
-					fileName = unitFile.getName();
-					// we know we are dealing with C
-					// TODO make this universal
-					unit = new CUnit(unitFile);
-					units.add(unit);
-					
-					// DUMP-XML
-					if (options.has(dumpXML)) {
-						unitAST = unit.getXMLDocument();
-						xmlFile = new File(outputDirectory, fileName + ".xml");
-						try {
-							// BufferedWriter out = new BufferedWriter(new
-							// FileWriter(xmlFile));
-							XMLAlgo.outputXML(unitAST,	new PrintStream(xmlFile));
-							// out.close();
-						} catch (IOException e) {
-							// TODO
-							e.printStackTrace();
-						}
+					errors= CheckForBugs.run(config);
+					// TODO progressHandler for console
+					for (PresentableError error: errors.getSecond()) {
+						System.out.println(error.toString());
 					}
-					// DUMP-CFG
-					if (options.has(dumpCFG)) {
-						unitCFG = unit.getCFGs();
-						for (CFG cfg : unitCFG) {
-							cfgFile = new File(outputDirectory, fileName + "."
-									+ cfg.getFunctionName() + ".dot");
-							try {
-								BufferedWriter out = new BufferedWriter(
-										new FileWriter(cfgFile));
-								out.write(cfg.toDot());
-								out.close();
-							} catch (IOException e) {
-								// TODO
-							}
-						}
-					}
-				} catch (ParserException e) {
-					logger.log(Level.FATAL, null, e);
-				} catch (NullPointerException e) {
-					logger.log(Level.FATAL, null, e);
-				} catch (RecognitionException e) {
-					logger.log(Level.FATAL, null, e);
-				} catch (IOException e) {
-					logger.log(Level.FATAL, null, e);
+				} catch (Exception ex) {
+					System.err.println("Fatal error when executing the checker.");
+					System.err.println(ex.toString());
+					logger.log(Level.FATAL, null, ex);
 				}
-
 			}
 
-			// TODO: create callgraph
-			// DUMP-CALL GRAPH
-
-
-			// CHECKERS (only if --gui was not specified)
-			// here we should parse checker related arguments. For now we allow only a single checker
-			// by convention, checker related arguments start with "X"
-			// we will pass the options set
-
-			// If no checker was specified, exit.
-			// TODO - check for multiple checkers
-			if(!options.has(checkerClass)){
-				// TODO
-				System.err.println("No checkers specified, exiting.");
-				System.exit(0);
-			}
-			// some checker was specified
-            Checker checker;
-            try {
-                checker = cz.muni.stanse.checker.CheckerFactory.create(
-                   options.valueOf(checkerClass),
-                   getCheckerDataFilesList(argsChecker.toArray(new String[0])));
-            }
-            catch (final Exception exception) {
-                System.err.println("Cannot create checker : '" +
-                                   options.valueOf(checkerClass) +
-                                   "'. See following exception trace: " +
-                                   exception);
-                return;
-            }
-			try {
-				// this works only for no arguments:
-				// Class c = Class.forName(options.valueOf(checkerClass));
-				// Checker checker = (Checker)c.newInstance();
-
-				// pass arguments
-				//Class cl = Class.forName(options.valueOf(checkerClass));
-				//Constructor c = cl.getConstructor(new Class[] { String[].class });
-				//Checker checker = (Checker)c.newInstance((Object) argsChecker.toArray(new String[0]));
-								
-				for (CheckerError e : checker.check(units)){
-					// TODO: better output
-					System.out.println(e.toString());
-				}
-			//}
-			//catch ( ClassNotFoundException ex ){
-			//	System.err.println( ex + " Interpreter class must be in class path.");
-			//}
-			//catch( InstantiationException ex ){
-			//	System.err.println( ex + " Interpreter class must be concrete.");
-			//}
-			//catch( IllegalAccessException ex ){
-			//	System.err.println( ex + " Interpreter class must have a no-arg constructor.");
-			} catch (CheckerException e) {
-				// TODO fix this
-				e.printStackTrace();
-			} catch (SecurityException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			//} catch (NoSuchMethodException e) {
-				// TODO Auto-generated catch block
-			//	e.printStackTrace();
-			//} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-			//	e.printStackTrace();
-			//} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-			}
-
-
-
-			// UNKNOWN ARGUMENT
+	        // UNKNOWN ARGUMENT
 		} catch (OptionException ex) {
-			try {
-				System.out.println("Invalid option.");
-				parser.printHelpOn(System.out);
-			} catch (IOException ex1) {
-				logger.log(Level.FATAL, null, ex1);
-			}
-		}
-		}
+	             try {
+	                     System.out.println("Invalid option.");
+	                     parser.printHelpOn(System.out);
+	             } catch (IOException ex1) {
+	                     logger.log(Level.FATAL, null, ex1);
+	             }
+	     }
+	     }
 
+			
+			// TODO: dumpXML, dumpAST
+			// PARSING, CONVERSION to XML and CFG
+//			Unit unit;
+//			Document unitAST;
+//			List<CFG> unitCFG;
+//			File xmlFile;
+//			File cfgFile;
+//			String fileName;
+//			for (File unitFile : sources)			
+//			{		
+//				try {
+//					fileName = unitFile.getName();
+//					// we know we are dealing with C
+//					// TODO make this universal
+//					unit = new CUnit(unitFile);
+//					units.add(unit);
+//					
+//					// DUMP-XML
+//					if (options.has(dumpXML)) {
+//						unitAST = unit.getXMLDocument();
+//						xmlFile = new File(outputDirectory, fileName + ".xml");
+//						try {
+//							// BufferedWriter out = new BufferedWriter(new
+//							// FileWriter(xmlFile));
+//							XMLAlgo.outputXML(unitAST,	new PrintStream(xmlFile));
+//							// out.close();
+//						} catch (IOException e) {
+//							// TODO
+//							e.printStackTrace();
+//						}
+//					}
+//					// DUMP-CFG
+//					if (options.has(dumpCFG)) {
+//						unitCFG = unit.getCFGs();
+//						for (CFG cfg : unitCFG) {
+//							cfgFile = new File(outputDirectory, fileName + "."
+//									+ cfg.getFunctionName() + ".dot");
+//							try {
+//								BufferedWriter out = new BufferedWriter(
+//										new FileWriter(cfgFile));
+//								out.write(cfg.toDot());
+//								out.close();
+//							} catch (IOException e) {
+//								// TODO
+//							}
+//						}
+//					}
+//				} catch (ParserException e) {
+//					logger.log(Level.FATAL, null, e);
+//				} catch (NullPointerException e) {
+//					logger.log(Level.FATAL, null, e);
+//				} catch (RecognitionException e) {
+//					logger.log(Level.FATAL, null, e);
+//				} catch (IOException e) {
+//					logger.log(Level.FATAL, null, e);
+//				}
+
+
+			// TODO:  DUMP-CALL GRAPH
+
+			
+			
 
 		//		// Sets up the logging facility (reads the logging options from log4j.properties file.
 		//		// This needs to be done only once
@@ -416,42 +416,6 @@ public final class Stanse {
 		//		}
 		//
 		//	}
-
-	
-	/**
-	 * @brief Starts GUI, reading in the files specified on the command line.
-	 * 
-	 *  No checker definitions are read, and no checks are executed.
-	 *  Waiting for the GUI rewrite.
-	 */
-	public static void startGui() {
-		java.awt.EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				GuiMainWindow gui = GuiMainWindow.getInstance();
-				gui.setVisible(true);
-				if (!sources.isEmpty()) {
-					// read sources
-					// TODO replace with parsing done in Unit(source)!
-					for (File source : sources) {
-						gui.openSourceFile(source);
-					}
-
-					// Too automatonChecker centered
-					// GUI badly needs to be rewritten
-//					Set<File> files = new HashSet<File>();
-//					for (String checkerDefinition : checkerDefinitions) {
-//						files.add(new File(checkerDefinition));
-//					}
-//
-//					if (!files.isEmpty()) {
-//						((SourceAndXMLWindow) gui.getJTabbedPane1()
-//								.getSelectedComponent())
-//								.runStaticChecker(files);
-//					}
-				}
-			}
-		});
-	}
 
 
 		/**

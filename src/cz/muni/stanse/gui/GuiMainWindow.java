@@ -1,6 +1,11 @@
 package cz.muni.stanse.gui;
 
 import cz.muni.stanse.Configuration;
+import cz.muni.stanse.CheckerConfiguration;
+import cz.muni.stanse.SourceConfiguration;
+
+import java.util.LinkedList;
+import java.util.List;
 
 @SuppressWarnings("serial")
 public final class GuiMainWindow extends javax.swing.JFrame {
@@ -12,17 +17,29 @@ public final class GuiMainWindow extends javax.swing.JFrame {
                                      (mainWindow = new GuiMainWindow());
     }
 
-    public void openSourceFile(final java.io.File file) {
-        getOpenedSourceFilesManager().showSourceFile(file);
+    
+    /**
+     * Opens all specified files in GUI, and then sets AllOpenedSourceFiles enumerator.
+     * 
+     * @param sources
+     * @param checkerConf
+     */
+    public void openSourceFiles(final List<String> sources, Configuration config) {
+    	for (String source : sources ) {
+    		getOpenedSourceFilesManager().showSourceFile(new java.io.File(source));
+    	}
+    	// replace sources enumerator by GuiAllOpenedFilesEnumerator
+    	LinkedList<CheckerConfiguration> checkerConf = config.getCheckerConfigurations();
+    	SourceConfiguration sourceConf = new SourceConfiguration(new GuiAllOpenedFilesEnumerator());
+    	setConfiguration(new Configuration(sourceConf, checkerConf));
     }
-
+    
     // package-private section
-
     Configuration getConfiguration() {
         return configuration;
     }
 
-    void setConfiguration(final Configuration configuration) {
+    public void setConfiguration(final Configuration configuration) {
         this.configuration = configuration;
     }
 
