@@ -1,10 +1,10 @@
 package cz.muni.stanse.gui;
 
-final class GuiSpecifySourceFilePathNameManager {
+final class SpecifySourceFilePathNameManager {
 
     // package-private section
 
-    GuiSpecifySourceFilePathNameManager(
+    SpecifySourceFilePathNameManager(
                         final javax.swing.JTextField sourceCodeFileTextField,
                         final javax.swing.JButton chooseFileOnDiscButton,
                         final javax.swing.JTextField makefileArgumentsTextField,
@@ -42,7 +42,7 @@ final class GuiSpecifySourceFilePathNameManager {
                                                    getSourceFile()).getPath()));
         chooser.setFileSelectionMode(javax.swing.JFileChooser.
                                      FILES_AND_DIRECTORIES);
-        chooser.addChoosableFileFilter(new GuiFileChooserFileFilter(
+        chooser.addChoosableFileFilter(new FileChooserFileFilter(
                 "C file, TXT batch file, Makefile, Source directory",
                 cz.muni.stanse.utils.Make.linkedList("C","TXT","Makefile")));
         if (chooser.showDialog(getChooseFileOnDiscButton(),"Choose") ==

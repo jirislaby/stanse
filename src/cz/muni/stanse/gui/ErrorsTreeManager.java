@@ -7,11 +7,11 @@ import java.util.Collection;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-final class GuiErrorsTreeManager {
+final class ErrorsTreeManager {
 
     // package-private section
 
-    GuiErrorsTreeManager(final javax.swing.JTree errorsTree) {
+    ErrorsTreeManager(final javax.swing.JTree errorsTree) {
         this.errorsTree = errorsTree;
         getErrorsTree().getSelectionModel().setSelectionMode(
                 javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -25,11 +25,11 @@ final class GuiErrorsTreeManager {
     }
 
     void clear() {
-        GuiJTreeAlgo.clear(getErrorsTree());
+        JTreeAlgo.clear(getErrorsTree());
     }
 
     void present() {
-        GuiJTreeAlgo.present(getErrorsTree());
+        JTreeAlgo.present(getErrorsTree());
     }
 
     void addAll(final Collection<PresentableError> collection) {
@@ -41,7 +41,7 @@ final class GuiErrorsTreeManager {
 
     private void add(final PresentableError error) {
         final DefaultMutableTreeNode errorNode =
-                GuiJTreeAlgo.add(getErrorsTree(),error);
+                JTreeAlgo.add(getErrorsTree(),error);
         for (final PresentableErrorTrace trace : error.getTraces())
             add(errorNode,trace);
     }
@@ -49,7 +49,7 @@ final class GuiErrorsTreeManager {
     private void add(final DefaultMutableTreeNode parent,
                                       final PresentableErrorTrace trace) {
         final DefaultMutableTreeNode traceNode =
-                GuiJTreeAlgo.add(getErrorsTree(),parent,trace);
+                JTreeAlgo.add(getErrorsTree(),parent,trace);
         for (final PresentableErrorTraceLocation location :
                    trace.getLocations())
             add(traceNode,location);
@@ -57,15 +57,15 @@ final class GuiErrorsTreeManager {
 
     private void add(final DefaultMutableTreeNode parent,
                      final PresentableErrorTraceLocation location) {
-        GuiJTreeAlgo.add(getErrorsTree(),parent,location);
+        JTreeAlgo.add(getErrorsTree(),parent,location);
     }
 
     private Object getSelectedData() {
-        return GuiJTreeAlgo.getData(GuiJTreeAlgo.getSelection(getErrorsTree()));
+        return JTreeAlgo.getData(JTreeAlgo.getSelection(getErrorsTree()));
     }
 
     private void onSelectionChenged() {
-        if (!GuiJTreeAlgo.isSomethingSelected(getErrorsTree()))
+        if (!JTreeAlgo.isSomethingSelected(getErrorsTree()))
             return;
         if (onSelectionChangedForErrorTracingManager(getSelectedData()))
             return;
@@ -75,14 +75,14 @@ final class GuiErrorsTreeManager {
                           new java.io.File(location.getUnitName()));
         getOpenedSourceFilesManager().selectLineInShowedSourceFile(
                           location.getLineNumber());
-        GuiMainWindow.getInstance().getConsoleManager().clear();
-        GuiMainWindow.getInstance().getConsoleManager().appendText(
+        MainWindow.getInstance().getConsoleManager().clear();
+        MainWindow.getInstance().getConsoleManager().appendText(
                                                      location.getDescription());
     }
 
     private boolean onSelectionChangedForErrorTracingManager(
                                                   final Object selectedObject) {
-        GuiMainWindow.getInstance().getErrorTracingManager().
+        MainWindow.getInstance().getErrorTracingManager().
             onSelectionChanged((selectedObject instanceof PresentableErrorTrace)
                                 ? (PresentableErrorTrace)selectedObject : null);
         return selectedObject instanceof PresentableErrorTrace;
@@ -97,8 +97,8 @@ final class GuiErrorsTreeManager {
         return ((PresentableError)selectedObject).getErrorLocation();
     }
 
-    private GuiOpenedSourceFilesManager getOpenedSourceFilesManager() {
-        return GuiMainWindow.getInstance().getOpenedSourceFilesManager();
+    private OpenedSourceFilesManager getOpenedSourceFilesManager() {
+        return MainWindow.getInstance().getOpenedSourceFilesManager();
     }
 
     private javax.swing.JTree getErrorsTree() {

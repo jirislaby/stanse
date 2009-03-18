@@ -29,9 +29,9 @@ final class ActionCheckForBugs extends javax.swing.AbstractAction {
         public void run() {
             Pair<LinkedList<CheckerError>,LinkedList<PresentableError> > errors;
             try {
-                errors = CheckForBugs.run(GuiMainWindow.getInstance().
+                errors = CheckForBugs.run(MainWindow.getInstance().
                                           getConfiguration(),
-                                          new GuiCheckingProgressHandler());
+                                          new CheckingProgressHandler());
             }
             catch(final Exception exception) {
                 ClassLogger.error(this,"Checking for bugs has failed (see " +
@@ -62,15 +62,15 @@ final class ActionCheckForBugs extends javax.swing.AbstractAction {
         }
     }
 
-    private GuiErrorsTreeManager getErrorsTreeManager() {
-        return GuiMainWindow.getInstance().getErrorsTreeManager();
+    private ErrorsTreeManager getErrorsTreeManager() {
+        return MainWindow.getInstance().getErrorsTreeManager();
     }
 
-    private GuiErrorTracingManager getErrorTracingManager() {
-        return GuiMainWindow.getInstance().getErrorTracingManager();
+    private ErrorTracingManager getErrorTracingManager() {
+        return MainWindow.getInstance().getErrorTracingManager();
     }
 
-    private GuiConsoleManager getConsoleManager() {
-        return GuiMainWindow.getInstance().getConsoleManager();
+    private ConsoleManager getConsoleManager() {
+        return MainWindow.getInstance().getConsoleManager();
     }
 }

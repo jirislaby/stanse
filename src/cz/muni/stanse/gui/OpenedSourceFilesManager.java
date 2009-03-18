@@ -7,11 +7,11 @@ import java.io.File;
 
 import javax.swing.JTextArea;
 
-final class GuiOpenedSourceFilesManager {
+final class OpenedSourceFilesManager {
 
     // package-private section
 
-    GuiOpenedSourceFilesManager(
+    OpenedSourceFilesManager(
                            final javax.swing.JTabbedPane sourceCodeTabbedPane) {
         this.sourceCodeTabbedPane = sourceCodeTabbedPane;
     }

@@ -8,11 +8,11 @@ import cz.muni.stanse.DirectorySourceEnumerator;
 import cz.muni.stanse.SourceCodeFilesEnumerator;
 import cz.muni.stanse.SingleFileEnumerator;
 
-final class GuiSourceConfigurationManager {
+final class SourceConfigurationManager {
 
     // package-private section
 
-    GuiSourceConfigurationManager(
+    SourceConfigurationManager(
                     final javax.swing.JRadioButton actualOpenedFileRadioButton,
                     final javax.swing.JRadioButton allOpenedFilesRadioButton,
                     final javax.swing.JRadioButton singleSourceFileRadioButton,
@@ -25,7 +25,7 @@ final class GuiSourceConfigurationManager {
                     final javax.swing.JButton chooseFileOnDiscButton,
                     final javax.swing.JTextField makefileArgumentsTextField) {
         final SourceCodeFilesEnumerator oldEnumerator =
-                                 GuiMainWindow.getInstance().getConfiguration().
+                                 MainWindow.getInstance().getConfiguration().
                                  getSourceConfiguration().getSourceEnumerator();
         this.sourceType = sourceTypeFromEnumerator(oldEnumerator);
         this.actualOpenedFileRadioButton = actualOpenedFileRadioButton;
@@ -37,7 +37,7 @@ final class GuiSourceConfigurationManager {
                                           allDirectoryHierarchyFilesRadioButton;
         this.batchFileRadioButton = batchFileRadioButton;
         this.specifySourceFilePathNameManager =
-            new GuiSpecifySourceFilePathNameManager(sourceCodeFileTextField,
+            new SpecifySourceFilePathNameManager(sourceCodeFileTextField,
                               chooseFileOnDiscButton,makefileArgumentsTextField,
                               getEnumeratorReferenceFile(oldEnumerator),
                               getEnumeratorArguments(oldEnumerator));
@@ -141,9 +141,9 @@ final class GuiSourceConfigurationManager {
     private SourceCodeFilesEnumerator enumeratorFromSourceType() {
         switch (getSourceType()) {
             case ActualOpenedFile:
-                return new GuiActiveOpenedFileEnumerator();
+                return new ActiveOpenedFileEnumerator();
             case AllOpenedFiles:
-                return new GuiAllOpenedFilesEnumerator();
+                return new AllOpenedFilesEnumerator();
             case SingleSourceFile:
                 return new SingleFileEnumerator(
                         getSpecifySourceFilePathNameManager().getSourceFile());
@@ -168,9 +168,9 @@ final class GuiSourceConfigurationManager {
 
     private static SourceType sourceTypeFromEnumerator(
                                    final SourceCodeFilesEnumerator enumerator) {
-        if (enumerator instanceof GuiActiveOpenedFileEnumerator)
+        if (enumerator instanceof ActiveOpenedFileEnumerator)
             return SourceType.ActualOpenedFile;
-        if (enumerator instanceof GuiAllOpenedFilesEnumerator)
+        if (enumerator instanceof AllOpenedFilesEnumerator)
             return SourceType.AllOpenedFiles;
         if (enumerator instanceof SingleFileEnumerator)
             return SourceType.SingleSourceFile;
@@ -191,9 +191,9 @@ final class GuiSourceConfigurationManager {
         if (enumerator instanceof  ReferencedSourceCodeFilesEnumerator)
             return ((ReferencedSourceCodeFilesEnumerator)enumerator).
                                                              getReferenceFile();
-        if (enumerator instanceof GuiActiveOpenedFileEnumerator ||
-            enumerator instanceof GuiAllOpenedFilesEnumerator) {
-            final String file = GuiMainWindow.getInstance().
+        if (enumerator instanceof ActiveOpenedFileEnumerator ||
+            enumerator instanceof AllOpenedFilesEnumerator) {
+            final String file = MainWindow.getInstance().
                                                 getOpenedSourceFilesManager().
                                                                 getActiveFile();
             if (file != null)
@@ -245,7 +245,7 @@ final class GuiSourceConfigurationManager {
         return batchFileRadioButton;
     }
 
-    GuiSpecifySourceFilePathNameManager getSpecifySourceFilePathNameManager() {
+    SpecifySourceFilePathNameManager getSpecifySourceFilePathNameManager() {
         return specifySourceFilePathNameManager;
     }
 
@@ -258,6 +258,6 @@ final class GuiSourceConfigurationManager {
     private final javax.swing.JRadioButton
                                           allDirectoryHierarchyFilesRadioButton;
     private final javax.swing.JRadioButton batchFileRadioButton;
-    private final GuiSpecifySourceFilePathNameManager
+    private final SpecifySourceFilePathNameManager
                                                specifySourceFilePathNameManager;
 }

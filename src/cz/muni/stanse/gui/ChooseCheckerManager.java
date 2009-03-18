@@ -4,11 +4,11 @@ import cz.muni.stanse.utils.ClassLogger;
 
 import java.util.Set;
 
-final class GuiChooseCheckerManager {
+final class ChooseCheckerManager {
 
     // package-private section
 
-    GuiChooseCheckerManager(final GuiChooseCheckerDialog dialog,
+    ChooseCheckerManager(final ChooseCheckerDialog dialog,
                             final javax.swing.JList checkerNamesList,
                             final javax.swing.JTextArea checkerInfoTextArea,
                             final javax.swing.JButton chooseCheckerButton,

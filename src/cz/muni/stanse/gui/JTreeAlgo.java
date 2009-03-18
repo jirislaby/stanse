@@ -4,7 +4,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-final class GuiJTreeAlgo {
+final class JTreeAlgo {
 
     static void clear(final JTree tree) {
         getRoot(tree).removeAllChildren();
@@ -57,6 +57,6 @@ final class GuiJTreeAlgo {
         return (DefaultTreeModel)tree.getModel();
     }
 
-    private GuiJTreeAlgo() {
+    private JTreeAlgo() {
     }
 }

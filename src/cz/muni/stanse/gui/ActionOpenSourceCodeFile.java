@@ -1,7 +1,7 @@
 package cz.muni.stanse.gui;
 
 @SuppressWarnings("serial")
-final class GuiActionOpenSourceCodeFile extends javax.swing.AbstractAction {
+final class ActionOpenSourceCodeFile extends javax.swing.AbstractAction {
 
     // public section
 
@@ -10,11 +10,11 @@ final class GuiActionOpenSourceCodeFile extends javax.swing.AbstractAction {
         final javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
         chooser.setCurrentDirectory(new java.io.File(getInitialPath()));
         chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
-        chooser.addChoosableFileFilter(new GuiFileChooserFileFilter(
+        chooser.addChoosableFileFilter(new FileChooserFileFilter(
                    "C source files",cz.muni.stanse.utils.Make.linkedList("C")));
-        if (chooser.showDialog(GuiMainWindow.getInstance(),"Add") ==
+        if (chooser.showDialog(MainWindow.getInstance(),"Add") ==
                     javax.swing.JFileChooser.APPROVE_OPTION) {
-            GuiMainWindow.getInstance().getOpenedSourceFilesManager().
+            MainWindow.getInstance().getOpenedSourceFilesManager().
                                       showSourceFile(chooser.getSelectedFile());
             setInitialPath(chooser.getSelectedFile().toString());
         }
@@ -22,7 +22,7 @@ final class GuiActionOpenSourceCodeFile extends javax.swing.AbstractAction {
 
     // package-private section
 
-    GuiActionOpenSourceCodeFile() {
+    ActionOpenSourceCodeFile() {
         super();
         initialPath = ".";
     }

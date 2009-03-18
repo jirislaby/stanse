@@ -2,7 +2,7 @@ package cz.muni.stanse;
 
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.gui.GuiAllOpenedFilesEnumerator;
+import cz.muni.stanse.gui.AllOpenedFilesEnumerator;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -87,7 +87,7 @@ public final class Configuration {
     }
 
     private static SourceConfiguration createDefaultSourceConfiguration() {
-        return new SourceConfiguration(new GuiAllOpenedFilesEnumerator());
+        return new SourceConfiguration(new AllOpenedFilesEnumerator());
     }
 
     private static LinkedList<CheckerConfiguration>

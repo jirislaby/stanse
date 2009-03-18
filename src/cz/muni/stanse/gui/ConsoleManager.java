@@ -2,11 +2,11 @@ package cz.muni.stanse.gui;
 
 import javax.swing.JTextArea;
 
-final class GuiConsoleManager {
+final class ConsoleManager {
 
     // package-private section
 
-    GuiConsoleManager(final javax.swing.JTextArea consoleTextArea) {
+    ConsoleManager(final javax.swing.JTextArea consoleTextArea) {
         this.consoleTextArea = consoleTextArea;
     }
 

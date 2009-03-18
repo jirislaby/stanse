@@ -11,7 +11,7 @@ import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.utils.Pair;
 
-import cz.muni.stanse.gui.GuiMainWindow;
+import cz.muni.stanse.gui.MainWindow;
 
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
@@ -299,7 +299,7 @@ public final class Stanse {
 			if (options.has(gui)) { 	// GUI
 				java.awt.EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						GuiMainWindow gui = GuiMainWindow.getInstance();
+						MainWindow gui = MainWindow.getInstance();
 						if (sources.isEmpty()) { 
 							gui.setConfiguration(config);
 						} else {

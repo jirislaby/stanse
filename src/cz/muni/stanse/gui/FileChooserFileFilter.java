@@ -2,7 +2,7 @@ package cz.muni.stanse.gui;
 
 import java.util.LinkedList;
 
-final class GuiFileChooserFileFilter extends javax.swing.filechooser.FileFilter{
+final class FileChooserFileFilter extends javax.swing.filechooser.FileFilter{
 
     // public section
 
@@ -20,13 +20,13 @@ final class GuiFileChooserFileFilter extends javax.swing.filechooser.FileFilter{
 
     // package-private section
 
-    GuiFileChooserFileFilter(final String description,
+    FileChooserFileFilter(final String description,
                              final LinkedList<String> extensions) {
         this.extensions = createUppercaseExtensiosList(extensions);
         this.description = description;
     }
 
-    GuiFileChooserFileFilter(final String description,
+    FileChooserFileFilter(final String description,
                              final LinkedList<String> extensions,
                              final Object foo) {
         this.extensions = createUppercaseExtensiosList(extensions);

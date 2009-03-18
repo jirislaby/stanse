@@ -3,17 +3,17 @@ package cz.muni.stanse.gui;
 import cz.muni.stanse.Configuration;
 
 @SuppressWarnings("serial")
-final class GuiActionConfigure extends javax.swing.AbstractAction {
+final class ActionConfigure extends javax.swing.AbstractAction {
 
     // public section
 
     @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
-        final GuiConfigurationDialog cfgDialog = new GuiConfigurationDialog();
+        final ConfigurationDialog cfgDialog = new ConfigurationDialog();
         cfgDialog.pack();
         cfgDialog.setVisible(true);
 
-        GuiMainWindow.getInstance().setConfiguration(new Configuration(
+        MainWindow.getInstance().setConfiguration(new Configuration(
             cfgDialog.getSourceConfigurationManager().getSourceConfiguration(),
             cfgDialog.getCheckersConfurationManager().getCheckersConfiguration()
         ));
@@ -21,7 +21,7 @@ final class GuiActionConfigure extends javax.swing.AbstractAction {
 
     // package-private section
 
-    GuiActionConfigure() {
+    ActionConfigure() {
         super();
     }
 }

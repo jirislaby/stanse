@@ -4,11 +4,11 @@ import cz.muni.stanse.PresentableErrorTraceLocation;
 import cz.muni.stanse.PresentableErrorTrace;
 import java.util.List;
 
-final class GuiErrorTracingManager {
+final class ErrorTracingManager {
 
     // package-private section
 
-    GuiErrorTracingManager(final javax.swing.JButton gotoFirstButton,
+    ErrorTracingManager(final javax.swing.JButton gotoFirstButton,
                            final javax.swing.JButton gotoNextButton,
                            final javax.swing.JButton gotoPrevButton,
                            final javax.swing.JButton gotoLastButton,
@@ -86,8 +86,8 @@ final class GuiErrorTracingManager {
                                       new java.io.File(location.getUnitName()));
         getOpenedSourceFilesManager().selectLineInShowedSourceFile(
                                       location.getLineNumber());
-        GuiMainWindow.getInstance().getConsoleManager().clear();
-        GuiMainWindow.getInstance().getConsoleManager().appendText(
+        MainWindow.getInstance().getConsoleManager().clear();
+        MainWindow.getInstance().getConsoleManager().appendText(
                                                      location.getDescription());
     }
 
@@ -133,8 +133,8 @@ final class GuiErrorTracingManager {
         return getErrorTrace().getLocations();
     }
 
-    private GuiOpenedSourceFilesManager getOpenedSourceFilesManager() {
-        return GuiMainWindow.getInstance().getOpenedSourceFilesManager();
+    private OpenedSourceFilesManager getOpenedSourceFilesManager() {
+        return MainWindow.getInstance().getOpenedSourceFilesManager();
     }
 
     private PresentableErrorTrace getErrorTrace() {

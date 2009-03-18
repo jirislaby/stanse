@@ -2,7 +2,7 @@ package cz.muni.stanse.gui;
 
 import cz.muni.stanse.ConfigurationProgressHandler;
 
-final class GuiCheckingProgressHandler extends ConfigurationProgressHandler {
+final class CheckingProgressHandler extends ConfigurationProgressHandler {
 
     // package-private section
 
@@ -60,7 +60,7 @@ final class GuiCheckingProgressHandler extends ConfigurationProgressHandler {
 
     // private section
 
-    private static GuiConsoleManager getConsole() {
-        return GuiMainWindow.getInstance().getConsoleManager();
+    private static ConsoleManager getConsole() {
+        return MainWindow.getInstance().getConsoleManager();
     }
 }

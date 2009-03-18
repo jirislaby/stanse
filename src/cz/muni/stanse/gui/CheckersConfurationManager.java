@@ -8,11 +8,11 @@ import java.util.Enumeration;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-final class GuiCheckersConfurationManager {
+final class CheckersConfurationManager {
 
     // package-private section
 
-    GuiCheckersConfurationManager(final javax.swing.JTree checkersTree,
+    CheckersConfurationManager(final javax.swing.JTree checkersTree,
                                   final javax.swing.JButton addCheckerButton,
                                   final javax.swing.JButton removeCheckerButton,
                                   final javax.swing.JButton addDataButton,
@@ -23,9 +23,9 @@ final class GuiCheckersConfurationManager {
         this.addDataButton = addDataButton;
         this.removeDataButton = removeDataButton;
 
-        fillTreeByCheckersConfiguration(GuiMainWindow.getInstance().
+        fillTreeByCheckersConfiguration(MainWindow.getInstance().
                                  getConfiguration().getCheckerConfigurations());
-        GuiJTreeAlgo.present(getCheckersTree());
+        JTreeAlgo.present(getCheckersTree());
 
         getAddCheckerButton().addActionListener(
         new java.awt.event.ActionListener() {
@@ -60,7 +60,7 @@ final class GuiCheckersConfurationManager {
     LinkedList<CheckerConfiguration> getCheckersConfiguration() {
         final LinkedList<CheckerConfiguration> result =
                  new LinkedList<CheckerConfiguration>();
-        for (Enumeration treeNodesEnumetration = GuiJTreeAlgo.getRoot(
+        for (Enumeration treeNodesEnumetration = JTreeAlgo.getRoot(
                                                   getCheckersTree()).children();
                 treeNodesEnumetration.hasMoreElements(); )
             result.add(createCheckerConfiguration((DefaultMutableTreeNode)
@@ -73,11 +73,11 @@ final class GuiCheckersConfurationManager {
     private void fillTreeByCheckersConfiguration(
                  final LinkedList<CheckerConfiguration> checkersConfiguration) {
         for (CheckerConfiguration configuration : checkersConfiguration) {
-            final DefaultMutableTreeNode checkerTreeNode = GuiJTreeAlgo.add(
+            final DefaultMutableTreeNode checkerTreeNode = JTreeAlgo.add(
                          getCheckersTree(),configuration.getCheckerClassName());
             checkerTreeNode.setAllowsChildren(true);
             for (java.io.File arg : configuration.getCheckerArgumentsList())
-                GuiJTreeAlgo.add(getCheckersTree(),checkerTreeNode,
+                JTreeAlgo.add(getCheckersTree(),checkerTreeNode,
                                  arg.toString()).setAllowsChildren(false);
         }
     }
@@ -88,31 +88,31 @@ final class GuiCheckersConfurationManager {
                  new LinkedList<java.io.File>();
         for (Enumeration treeNodesEnumetration = checkerTreeNode.children();
                 treeNodesEnumetration.hasMoreElements(); )
-            arguments.add(new java.io.File((String)GuiJTreeAlgo.getData(
+            arguments.add(new java.io.File((String)JTreeAlgo.getData(
                 (DefaultMutableTreeNode)treeNodesEnumetration.nextElement())));
-        return new CheckerConfiguration((String)GuiJTreeAlgo.
+        return new CheckerConfiguration((String)JTreeAlgo.
                                             getData(checkerTreeNode),arguments);
     }
 
     private void onAddChecker() {
-        final GuiChooseCheckerDialog chooseCheckerDialog =
-                                                   new GuiChooseCheckerDialog();
+        final ChooseCheckerDialog chooseCheckerDialog =
+                                                   new ChooseCheckerDialog();
         chooseCheckerDialog.pack();
         chooseCheckerDialog.setVisible(true);
 
         final String checkerName = chooseCheckerDialog.getChooseCheckerManager()
                                                               .getCheckerName();
         if (checkerName != null) {
-            GuiJTreeAlgo.add(getCheckersTree(),checkerName)
+            JTreeAlgo.add(getCheckersTree(),checkerName)
                         .setAllowsChildren(true);
-            GuiJTreeAlgo.present(getCheckersTree());
+            JTreeAlgo.present(getCheckersTree());
         }
     }
 
     private void onRemoveChecker() {
         final DefaultMutableTreeNode node = getSelectedCheckerTreeNode();
         if (node != null)
-            GuiJTreeAlgo.remove(getCheckersTree(),node);
+            JTreeAlgo.remove(getCheckersTree(),node);
     }
 
     private void onAddData() {
@@ -121,38 +121,38 @@ final class GuiCheckersConfurationManager {
             return;
         String data;
         try {
-            data = chooseDataFileOnDisc((String)GuiJTreeAlgo.getData(node));
+            data = chooseDataFileOnDisc((String)JTreeAlgo.getData(node));
         }
         catch(final Exception exception) {
             ClassLogger.error(this,exception);
             return;
         }
         if (data != null)
-            GuiJTreeAlgo.add(getCheckersTree(),node,data)
+            JTreeAlgo.add(getCheckersTree(),node,data)
                         .setAllowsChildren(false);
     }
 
     private void onRemoveData() {
         final DefaultMutableTreeNode node = getSelectedDataTreeNode();
         if (node != null)
-            GuiJTreeAlgo.remove(getCheckersTree(),node);
+            JTreeAlgo.remove(getCheckersTree(),node);
     }
 
     private DefaultMutableTreeNode getSelectedCheckerTreeNode() {
-        if (!GuiJTreeAlgo.isSomethingSelected(getCheckersTree()))
+        if (!JTreeAlgo.isSomethingSelected(getCheckersTree()))
             return null;
         DefaultMutableTreeNode selectedNode =
-                                   GuiJTreeAlgo.getSelection(getCheckersTree());
+                                   JTreeAlgo.getSelection(getCheckersTree());
         for ( ; !selectedNode.getAllowsChildren(); )
             selectedNode = (DefaultMutableTreeNode)selectedNode.getParent();
         return selectedNode;
     }
 
     private DefaultMutableTreeNode getSelectedDataTreeNode() {
-        if (!GuiJTreeAlgo.isSomethingSelected(getCheckersTree()))
+        if (!JTreeAlgo.isSomethingSelected(getCheckersTree()))
             return null;
         DefaultMutableTreeNode selectedNode =
-                                   GuiJTreeAlgo.getSelection(getCheckersTree());
+                                   JTreeAlgo.getSelection(getCheckersTree());
         return (selectedNode.getAllowsChildren()) ? null : selectedNode;
     }
 
@@ -161,7 +161,7 @@ final class GuiCheckersConfurationManager {
         final javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
-        chooser.addChoosableFileFilter(new GuiFileChooserFileFilter(
+        chooser.addChoosableFileFilter(new FileChooserFileFilter(
                 cz.muni.stanse.utils.FileAlgo.getExtension(checkerName) +
                     " data file types",
                 cz.muni.stanse.checker.CheckerFactory.getDataFilesExtensions(
