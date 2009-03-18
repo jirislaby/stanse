@@ -123,10 +123,10 @@ public final class CUnit extends Unit {
 	try {
 		// this is necessary
 		// the environment is modified only AFTER the command is executed!
-		String command = Stanse.getRootDirectory()+ File.separator + "stpreproc"; 
+		String command = Stanse.getRootDirectory()+ File.separator + "bin" + File.separator + "stpreproc"; 
 		final ProcessBuilder builder = new ProcessBuilder(command, jobEntry);
 		java.util.Map<String, String> env = builder.environment();
-		env.put("PATH", env.get("PATH") + File.pathSeparator + Stanse.getRootDirectory());
+		env.put("PATH", env.get("PATH") + File.pathSeparator + Stanse.getRootDirectory() + File.separator + "bin");
 		Process p = builder.start();
 
 	    BufferedReader reader = new BufferedReader(

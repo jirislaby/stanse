@@ -46,8 +46,11 @@
     <target name="clean" depends="parser-clean, javadoc-clean">
         <delete dir="build"/>
         <delete>
-            <fileset dir="dist">
+            <fileset dir="${dist}">
                 <include name="stanse.jar"/>
+            </fileset>
+            <fileset dir="${dist}/bin">
+                <include name="stcparser-c"/>
             </fileset>
         </delete>
     </target>
@@ -98,7 +101,7 @@
         </copy>-->
     	<exec executable="cp">
     		<arg value="build/cparser-c/stcparser-c"/>
-    		<arg value="${dist}"/>
+    		<arg value="${dist}/bin"/>
    		</exec>
     </target>
     <target name="build" depends="init,cparser-c,parser">

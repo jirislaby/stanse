@@ -38,7 +38,7 @@ public final class MakefileSourceEnumerator extends
                                                                     arguments));
         final java.util.Map<String,String> environment = builder.environment();
         environment.put("JOB_FILE",batchFile);
-        environment.put("PATH", environment.get("PATH") + File.pathSeparator +Stanse.getRootDirectory());
+        environment.put("PATH", environment.get("PATH") + File.pathSeparator +Stanse.getRootDirectory() + File.separator + "bin");
         builder.directory(new java.io.File(makeFile).getParentFile())
                .start()
                .waitFor();
