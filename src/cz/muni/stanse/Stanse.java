@@ -276,18 +276,17 @@ public final class Stanse {
 			// CHECKERS
 			final Configuration config;
 			// TODO - multiple checkers, each with its own parameters
-			// TODO - multiple data files per checker
 			// TODO - short names instead of classes
 			if(options.has(checkerName)){ // a checker was specified
 				final LinkedList<CheckerConfiguration> checkerConfig = new LinkedList<CheckerConfiguration>();
-				CheckerConfiguration cc;
-				// read checker Data
+				LinkedList<File> CheckerDataFiles = new LinkedList<File>(); // empty by default
+				// read checker data, multiple permitted
 				if (options.has(checkerData)) {
-					cc = new CheckerConfiguration(options.valueOf(checkerName), new File(options.valueOf(checkerData)));
-				} else {
-					cc = new CheckerConfiguration(options.valueOf(checkerName), new LinkedList<File>());
+					for (String s : options.valuesOf(checkerData)) {
+						CheckerDataFiles.add(new File(s));
+					}
 				}
-				checkerConfig.add(cc);
+				checkerConfig.add(new CheckerConfiguration(options.valueOf(checkerName), CheckerDataFiles));
 				config = new Configuration(sourceConfig, checkerConfig);
 			} else { // use default configuration
 				// TODO - output handling
