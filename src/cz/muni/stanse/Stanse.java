@@ -446,8 +446,12 @@ public final class Stanse {
 
     static {
         try {
-            rootDirectory = new java.io.File(cz.muni.stanse.utils.ClassLocation.
-                                      get("cz.muni.stanse.Stanse")).getParent();
+            rootDirectory = System.getenv("STANSE_HOME");
+            if (rootDirectory == null) {
+            	System.err.println("STANSE_HOME not specified. Using the location of stanse.jar.");            	
+            	rootDirectory = new java.io.File(cz.muni.stanse.utils.ClassLocation.
+                        get("cz.muni.stanse.Stanse")).getParent();
+            }
         }
         catch (final Exception e) {
             System.out.println(e.getStackTrace());

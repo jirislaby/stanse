@@ -2,6 +2,7 @@ package cz.muni.stanse;
 
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.gui.GuiAllOpenedFilesEnumerator;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -86,9 +87,7 @@ public final class Configuration {
     }
 
     private static SourceConfiguration createDefaultSourceConfiguration() {
-        return new SourceConfiguration(new MakefileSourceEnumerator(
-                       cz.muni.stanse.Stanse.getRootDirectory() +
-                       "/../examples/AutomatonChecker/makefile/Makefile",""));
+        return new SourceConfiguration(new GuiAllOpenedFilesEnumerator());
     }
 
     private static LinkedList<CheckerConfiguration>

@@ -25,6 +25,7 @@ import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.cparser.CFGEmitter;
 import cz.muni.stanse.utils.Triple;
+import cz.muni.stanse.Stanse;
 
 /**
  * Holds all the code-related data for C compilation units (files).
@@ -117,12 +118,16 @@ public final class CUnit extends Unit {
 	}
 	file += ".preproc";
 
-	Runtime r = Runtime.getRuntime();
+
+	
 	try {
-	    String[] cmdarray = new String[2];
-	    cmdarray[0] = "stpreproc";
-	    cmdarray[1] = jobEntry;
-	    Process p = r.exec(cmdarray);
+		// this is necessary
+		// the environment is modified only AFTER the command is executed!
+		String command = Stanse.getRootDirectory()+ File.separator + "stpreproc"; 
+		final ProcessBuilder builder = new ProcessBuilder(command, jobEntry);
+		java.util.Map<String, String> env = builder.environment();
+		env.put("PATH", env.get("PATH") + File.pathSeparator + Stanse.getRootDirectory());
+		Process p = builder.start();
 
 	    BufferedReader reader = new BufferedReader(
 			new InputStreamReader(p.getInputStream()));
