@@ -313,8 +313,7 @@ public final class Stanse {
 			} else { 					// CLI
 				Pair<LinkedList<CheckerError>, LinkedList<PresentableError> > errors;
 				try {
-					errors= CheckForBugs.run(config);
-					// TODO progressHandler for console
+					errors= CheckForBugs.run(config, new ConsoleProgressHandler());
 					for (PresentableError error: errors.getSecond()) {
 						System.out.println(error.toString());
 					}
