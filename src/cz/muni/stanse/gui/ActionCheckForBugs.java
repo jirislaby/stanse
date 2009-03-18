@@ -9,7 +9,7 @@ import cz.muni.stanse.utils.ClassLogger;
 import java.util.LinkedList;
 
 @SuppressWarnings("serial")
-final class GuiActionCheckForBugs extends javax.swing.AbstractAction {
+final class ActionCheckForBugs extends javax.swing.AbstractAction {
 
     // public section
 
@@ -18,7 +18,7 @@ final class GuiActionCheckForBugs extends javax.swing.AbstractAction {
         new java.lang.Thread(new Executor()).start();
     }
 
-    GuiActionCheckForBugs() {
+    ActionCheckForBugs() {
         super();
     }
 

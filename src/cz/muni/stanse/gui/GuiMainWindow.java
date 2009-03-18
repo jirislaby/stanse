@@ -198,7 +198,7 @@ public final class GuiMainWindow extends javax.swing.JFrame {
         configureButton.setToolTipText("Configure checking procedure. Specify which checkers should be performer on which source code files.");
         configureButton.setFocusable(false);
 
-        checkButton.setAction(new GuiActionCheckForBugs());
+        checkButton.setAction(new ActionCheckForBugs());
         checkButton.setText("!");
         checkButton.setToolTipText("Check for bugs");
         checkButton.setFocusable(false);
@@ -249,13 +249,13 @@ public final class GuiMainWindow extends javax.swing.JFrame {
         stanseMainMenuFile.add(stanseMainMenuItemFile);
         stanseMainMenuFile.add(jSeparator1);
 
-        stanseMainMenuItemCloseActiveTab.setAction(new GuiActionCloseActiveTab());
+        stanseMainMenuItemCloseActiveTab.setAction(new ActionCloseActiveTab());
         stanseMainMenuItemCloseActiveTab.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
         stanseMainMenuItemCloseActiveTab.setText("Close active tab");
         stanseMainMenuItemCloseActiveTab.setToolTipText("Closes curently visible tab with source code file.");
         stanseMainMenuFile.add(stanseMainMenuItemCloseActiveTab);
 
-        stanseMainMenuItemCloseAllTabs.setAction(new GuiActionCloseAllTabs());
+        stanseMainMenuItemCloseAllTabs.setAction(new ActionCloseAllTabs());
         stanseMainMenuItemCloseAllTabs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         stanseMainMenuItemCloseAllTabs.setText("Close all tabs");
         stanseMainMenuItemCloseAllTabs.setToolTipText("Closes all tabs with source code files.");
@@ -282,7 +282,7 @@ public final class GuiMainWindow extends javax.swing.JFrame {
 
         stanseMainMenuChecking.setText("Checking");
 
-        stanseMainMenuItemCheck.setAction(new GuiActionCheckForBugs());
+        stanseMainMenuItemCheck.setAction(new ActionCheckForBugs());
         stanseMainMenuItemCheck.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F9, 0));
         stanseMainMenuItemCheck.setText("Check for bugs");
         stanseMainMenuItemCheck.setToolTipText("Perform checking of bugs (with respect to current checking configuration).");
