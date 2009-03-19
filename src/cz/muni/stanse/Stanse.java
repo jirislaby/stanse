@@ -78,12 +78,18 @@ public final class Stanse {
 	 */
 	 // TODO Should return an exitcode.
 	 public static void main(String[] args) {
+		 System.out.println("Stanse version \"0.9\"");
+		 System.out.println("Copyright (c) 2009 Masaryk University, Brno\n");
+
+		 setRootDirectory();
+		 
+		 // parse input options
 		OptionParser parser = new OptionParser();
 		OptionSpec<Void> help = parser.acceptsAll( asList( "h", "?", "help" ), 
 		"Shows this help message and exits." );	
 		OptionSpec<Void> gui = parser.acceptsAll( asList( "g", "gui" ), "Starts GUI" );
 		OptionSpec<Void> version = parser.accepts( "version", "Prints the program version and exits" );
-		// *** Checker and their configurations
+		// *** Checkers and their configurations
 		OptionSpec<String> checkers = parser.acceptsAll( asList( "c", "checker"),
 		"Checker name and (possibly) configuration. Can be used multiple times.")
 		.withRequiredArg()
@@ -161,7 +167,7 @@ public final class Stanse {
 
 			// VERSION
 			// -> exit
-			if(options.has(version)) {
+			if(options.has(version)) {				
 				System.out.println(Stanse.class.getPackage().getImplementationVersion());
 				System.exit(0);
 			}
@@ -451,7 +457,7 @@ public final class Stanse {
 
     private static String rootDirectory;
 
-    static {
+    public static void setRootDirectory() {
         try {
             rootDirectory = System.getenv("STANSE_HOME");
             if (rootDirectory == null) {
