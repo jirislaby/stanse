@@ -154,6 +154,12 @@
 	<exec executable="./getlastrevision.sh" outputproperty="svnrevision"/>
     </target>
 
-    
+    <target name="archive">
+    	<tar destfile="stanse.tgz" compression="gzip">
+    		<tarfileset dir="${dist}" prefix="stanse-0.9" username="stanse" group="stanse">
+    			<exclude name="**/.svn"/>
+	    	</tarfileset>	
+    	</tar>
+    </target>
 
 </project>

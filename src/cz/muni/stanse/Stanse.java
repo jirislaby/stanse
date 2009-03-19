@@ -78,9 +78,9 @@ public final class Stanse {
 	 */
 	 // TODO Should return an exitcode.
 	 public static void main(String[] args) {
-		 System.out.println("Stanse version \"0.9\"");
+		 System.out.println("Stanse version \"0.9alpha\"");
 		 System.out.println("Copyright (c) 2009 Masaryk University, Brno\n");
-
+		 System.out.println("WARNING: This is an alpha-release. The false-positive rate is not indicative of the false-positive rate for the full release.\n");
 		 setRootDirectory();
 		 
 		 // parse input options
