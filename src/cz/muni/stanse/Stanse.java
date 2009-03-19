@@ -52,7 +52,7 @@ public final class Stanse {
 	 * Output directory for all the "dump" files. By default it is the current
 	 * directory.
 	 */
-	private static File outputDirectory = new File(".");
+//	private static File outputDirectory = new File(".");
 
 	/**
 	 * List of sourcefiles.
@@ -84,16 +84,21 @@ public final class Stanse {
 		OptionSpec<Void> gui = parser.acceptsAll( asList( "g", "gui" ), "Starts GUI" );
 		OptionSpec<Void> version = parser.accepts( "version", "Prints the program version and exits" );
 		// *** Checker and their configurations
-		OptionSpec<String> checkerName = parser.acceptsAll( asList( "c", "checker"),
-			"Checker to be run.")
+		OptionSpec<String> checkers = parser.acceptsAll( asList( "c", "checker"),
+		"Checker name and (possibly) configuration. Can be used multiple times.")
 		.withRequiredArg()
-		.describedAs("name")
-		.ofType(String.class);
-		OptionSpec<String> checkerData = parser.acceptsAll( asList( "cd", "checker-data"),
-				"Checker configuration file. Can occur more than once.") // TODO multiple checkers
-		.withRequiredArg()
-		.describedAs("file")
-		.ofType(String.class);
+		.describedAs("name[[:configuration_file1]:configuration_file2 ...]")
+		.ofType(String.class);		
+//		OptionSpec<String> checkerName = parser.acceptsAll( asList( "c", "checker"),
+//			"Checker to be run.")
+//		.withRequiredArg()
+//		.describedAs("name")
+//		.ofType(String.class);
+//		OptionSpec<String> checkerData = parser.acceptsAll( asList( "cd", "checker-data"),
+//				"Checker configuration file. Can occur more than once.") // TODO multiple checkers
+//		.withRequiredArg()
+//		.describedAs("file")
+//		.ofType(String.class);
 		// *** Different ways of specifying input files.
 		OptionSpec<String> makefile = parser.accepts("makefile", "Makefile specifying input files.")
 		.withRequiredArg()
@@ -133,10 +138,10 @@ public final class Stanse {
 		// OptionSpec<Void> dumpCFG = parser.accepts("dump-cfg", "Dump control flow graphs in Dot format");
 		// OptionSpec<Void> dumpXML = parser.accepts("dump-xml", "Dump XML representation of AST");
 		// OptionSpec<Void> dumpCallGraph = parser.accepts("dump-callgraph", "Dump callgraph in Dot format");
-		OptionSpec<File> outputDir = parser.accepts("output-dir", "Sets the output directory for generated files")
-		.withRequiredArg()
-		.describedAs("file")
-		.ofType(File.class);
+//		OptionSpec<File> outputDir = parser.accepts("output-dir", "Sets the output directory for generated files")
+//		.withRequiredArg()
+//		.describedAs("file")
+//		.ofType(File.class);
 		// TODO: how to print "command-line usage", including the sources?		
 		
 		try {
@@ -167,13 +172,13 @@ public final class Stanse {
 			}
 
 			// OUTPUT DIRECTORY
-			if (options.has(outputDir)) {
-				File d = options.valueOf(outputDir);
-				if(!d.exists()) {
-					// TODO throw exception
-				}
-				outputDirectory = d; 
-			}
+//			if (options.has(outputDir)) {
+//				File d = options.valueOf(outputDir);
+//				if(!d.exists()) {
+//					// TODO throw exception
+//				}
+//				outputDirectory = d; 
+//			}
 
 			// WARN LEVELS
 			// now by severity of bug
@@ -275,18 +280,22 @@ public final class Stanse {
 
 			// CHECKERS
 			final Configuration config;
-			// TODO - multiple checkers, each with its own parameters
-			// TODO - short names instead of classes
-			if(options.has(checkerName)){ // a checker was specified
-				final LinkedList<CheckerConfiguration> checkerConfig = new LinkedList<CheckerConfiguration>();
-				LinkedList<File> CheckerDataFiles = new LinkedList<File>(); // empty by default
-				// read checker data, multiple permitted
-				if (options.has(checkerData)) {
-					for (String s : options.valuesOf(checkerData)) {
-						CheckerDataFiles.add(new File(s));
+			if(options.has(checkers)){ // at least one checker was specified
+				// TODO - short names instead of classes
+				String checkerName;
+				LinkedList<File> CheckerDataFiles;
+				LinkedList<CheckerConfiguration> checkerConfig = new LinkedList<CheckerConfiguration>();
+				for (String s : options.valuesOf(checkers)) {
+					CheckerDataFiles = new LinkedList<File>(); // empty by default
+					String[] cc = s.split(":");
+					// checker name
+					checkerName=cc[0];
+					// checker data, multiple permitted
+					for (int i=1; i<cc.length; i++) {
+						CheckerDataFiles.add(new File(cc[i]));
 					}
+					checkerConfig.add(new CheckerConfiguration(checkerName, CheckerDataFiles));
 				}
-				checkerConfig.add(new CheckerConfiguration(options.valueOf(checkerName), CheckerDataFiles));
 				config = new Configuration(sourceConfig, checkerConfig);
 			} else { // use default configuration
 				// TODO - output handling
