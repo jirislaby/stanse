@@ -12,7 +12,7 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
 
     @Override
     public String getCheckerName() {
-        return AutomatonChecker.class.getName();
+        return "AutomatonChecker";//AutomatonChecker.class.getName();
     }
 
     @Override
@@ -46,9 +46,9 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
     public Checker create(final LinkedList<File> args)
                                         throws XMLAutomatonSyntaxErrorException,
                                                Exception {
-        if (args.size() != 1)
-            throw new Exception("Bad number of data arguments.");
-        return new AutomatonChecker((new org.dom4j.io.SAXReader()).read(
-                                                              args.getFirst()));
+        if (args.size() < 1)
+            throw new Exception("Bad number of data arguments. Accepts one or" +
+                                "more XML definition files.");
+        return new AutomatonChecker(args);
     }
 }

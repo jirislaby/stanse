@@ -38,7 +38,8 @@ public final class MakefileSourceEnumerator extends
                                                                     arguments));
         final java.util.Map<String,String> environment = builder.environment();
         environment.put("JOB_FILE",batchFile);
-        environment.put("PATH", environment.get("PATH") + File.pathSeparator +Stanse.getRootDirectory() + File.separator + "bin");
+        environment.put("PATH", environment.get("PATH") + File.pathSeparator +
+                            Stanse.getRootDirectory() + File.separator + "bin");
         builder.directory(new java.io.File(makeFile).getParentFile())
                .start()
                .waitFor();
@@ -48,7 +49,7 @@ public final class MakefileSourceEnumerator extends
     private static java.util.LinkedList<String> createMakeCmdLine(
                                                             final String args) {
         final java.util.LinkedList<String> result =
-                 cz.muni.stanse.utils.Make.<String>linkedList("make" ,"CC=stcc");
+                cz.muni.stanse.utils.Make.<String>linkedList("make" ,"CC=stcc");
         if (!args.isEmpty())
             result.addAll(java.util.Arrays.asList(args.split("[ \t]")));
         return result;

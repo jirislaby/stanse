@@ -13,7 +13,6 @@ final class ConfigurationDialog extends javax.swing.JDialog {
         sourceConfigurationManager =
             new SourceConfigurationManager(actualOpenedFileRadioButton,
                                               allOpenedFilesRadioButton,
-                                              singleSourceFileRadioButton,
                                               makefileRadioButton,
                                               allDirectoryFilesRadioButton,
                                           allDirectoryHierarchyFilesRadioButton,
@@ -59,7 +58,6 @@ final class ConfigurationDialog extends javax.swing.JDialog {
         selectTypeStaticText = new javax.swing.JTextPane();
         actualOpenedFileRadioButton = new javax.swing.JRadioButton();
         allOpenedFilesRadioButton = new javax.swing.JRadioButton();
-        singleSourceFileRadioButton = new javax.swing.JRadioButton();
         makefileRadioButton = new javax.swing.JRadioButton();
         allDirectoryFilesRadioButton = new javax.swing.JRadioButton();
         allDirectoryHierarchyFilesRadioButton = new javax.swing.JRadioButton();
@@ -94,10 +92,6 @@ final class ConfigurationDialog extends javax.swing.JDialog {
         sourceTypeButtonGroup.add(allOpenedFilesRadioButton);
         allOpenedFilesRadioButton.setText("All opened source files");
         allOpenedFilesRadioButton.setActionCommand("all");
-
-        sourceTypeButtonGroup.add(singleSourceFileRadioButton);
-        singleSourceFileRadioButton.setText("Single specific source file");
-        singleSourceFileRadioButton.setActionCommand("single");
 
         sourceTypeButtonGroup.add(makefileRadioButton);
         makefileRadioButton.setText("Makefile project");
@@ -136,16 +130,19 @@ final class ConfigurationDialog extends javax.swing.JDialog {
                     .addGroup(sourceCodePanelLayout.createSequentialGroup()
                         .addGap(50, 50, 50)
                         .addGroup(sourceCodePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(makefileRadioButton)
-                            .addComponent(singleSourceFileRadioButton)
                             .addComponent(allOpenedFilesRadioButton)
-                            .addComponent(actualOpenedFileRadioButton)
-                            .addComponent(allDirectoryFilesRadioButton)
-                            .addComponent(allDirectoryHierarchyFilesRadioButton)
-                            .addComponent(batchFileRadioButton)))
-                    .addGroup(sourceCodePanelLayout.createSequentialGroup()
+                            .addComponent(actualOpenedFileRadioButton))
+                        .addGap(160, 160, 160))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, sourceCodePanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(sourceCodePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(sourceCodePanelLayout.createSequentialGroup()
+                                .addGap(38, 38, 38)
+                                .addGroup(sourceCodePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(makefileRadioButton)
+                                    .addComponent(allDirectoryFilesRadioButton)
+                                    .addComponent(allDirectoryHierarchyFilesRadioButton)
+                                    .addComponent(batchFileRadioButton)))
                             .addComponent(specifySourceFileStaticText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(sourceCodePanelLayout.createSequentialGroup()
                                 .addGap(40, 40, 40)
@@ -169,8 +166,6 @@ final class ConfigurationDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(allOpenedFilesRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(singleSourceFileRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(makefileRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(allDirectoryFilesRadioButton)
@@ -188,7 +183,7 @@ final class ConfigurationDialog extends javax.swing.JDialog {
                 .addGroup(sourceCodePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(specifyMakefileArgumentsStaticText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(makefileArgumentsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(17, 17, 17))
+                .addGap(42, 42, 42))
         );
 
         configurationTabbedPane.addTab("Sources", sourceCodePanel);
@@ -232,7 +227,7 @@ final class ConfigurationDialog extends javax.swing.JDialog {
                     .addComponent(removeCheckerButton)
                     .addComponent(removeDataButton)
                     .addComponent(addDataButton))
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
 
         configurationTabbedPane.addTab("Checkers", checkersPanel);
@@ -243,19 +238,19 @@ final class ConfigurationDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(configurationTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(430, Short.MAX_VALUE)
                 .addComponent(closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12))
+                .addContainerGap())
+            .addComponent(configurationTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(configurationTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(configurationTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeButton)
-                .addGap(20, 20, 20))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         configurationTabbedPane.getAccessibleContext().setAccessibleName("Source code");
@@ -281,7 +276,6 @@ final class ConfigurationDialog extends javax.swing.JDialog {
     private javax.swing.JButton removeCheckerButton;
     private javax.swing.JButton removeDataButton;
     private javax.swing.JTextPane selectTypeStaticText;
-    private javax.swing.JRadioButton singleSourceFileRadioButton;
     private javax.swing.JTextField sourceCodeFileTextField;
     private javax.swing.JPanel sourceCodePanel;
     private javax.swing.ButtonGroup sourceTypeButtonGroup;

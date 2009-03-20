@@ -1,5 +1,5 @@
 /**
- * @file AutomatonChecker.java 
+ * @file AutomatonChecker.java
  * @brief Defines public final class AutomatonChecker which provides static
  *        program verification specialized to locking problems, interrupts
  *        enabling/disabling problems, unnecessary check optimizations and
@@ -12,7 +12,13 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.Unit;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
+import cz.muni.stanse.utils.Pair;
 
+import java.util.Set;
+import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -31,42 +37,32 @@ import java.util.LinkedList;
  *
  * @see cz.muni.stanse.checker.Checker
  */
-final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
+final class AutomatonCheckerImpl {
 
-    // public section
+    // package-private section
 
     /**
      * @brief Parses accepted XML automata definition and initializes internal
-     *        structures related to automata definition. 
+     *        structures related to automata definition.
      *
      * @param XMLdefinition XML representation of AST
-     * @throws XMLAutomatonSyntaxErrorException 
+     * @throws XMLAutomatonSyntaxErrorException
      */
-    public AutomatonChecker(final LinkedList<java.io.File> xmlFiles) {
-        super();
-        this.xmlFiles = xmlFiles;
+    AutomatonCheckerImpl(final org.dom4j.Document XMLdefinition)
+                                       throws XMLAutomatonSyntaxErrorException {
+        XMLAutomatonDefinition = new XMLAutomatonDefinition(
+                                                XMLdefinition.getRootElement());
     }
 
     /**
-     * @brief Uniquelly identifies the checker by the string identifier. 
-     *
-     * @return String which uniquelly identifies the checker.
-     * @see cz.muni.stanse.checker.Checker#getName()
-     */
-    @Override
-    public String getName() {
-        return "Automaton checker " + getXmlFiles().toString();
-    }
-
-    /**
-     * @brief Does the source code checking itself. 
+     * @brief Does the source code checking itself.
      *
      * Method searches through source code to find matching patterns defined
      * in XML automata definition file. Each such matched location in the source
      * code is assigned an instance of PatternLocation class. Initial location
      * in the program is always introduced and is initialized with initial
      * states of all autoamta to be run on the source code.
-     * 
+     *
      * The computation itself is simple distribution of automata states between
      * instances of PatternLocation class (locations are linked together with
      * respect to control-flow of source code). Automata states are transformed
@@ -74,14 +70,14 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * then distributed to linked locations. This procedure is finished, when
      * no location was delivered automaton state, which was not processed in
      * that location.
-     * 
+     *
      * Error detection is the final phase of the procedure. All PatternLocations
      * are crossed and checked for error states. Eeach PatternLocation has
      * assigned set of error transition rules which are applied to all processed
      * states in the location. If some error transition rule can be applied to
      * processed states, then it means the source code contains error. Each
      * error rule contains description of an error it checks for. Those error
-     * transition rules are defined in XML automaton definition file. 
+     * transition rules are defined in XML automaton definition file.
      *
      * @param units List of translations units (described in internal structures
      *              like CFGs and ASTs)
@@ -90,35 +86,47 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      *              error is detected in XML automata definition.
      * @see cz.muni.stanse.checker.Checker#check(java.util.List)
      */
-    @Override
-    public List<cz.muni.stanse.checker.CheckerError>
+    List<cz.muni.stanse.checker.CheckerError>
     check(final List<Unit> units) throws XMLAutomatonSyntaxErrorException {
-        final LinkedList<cz.muni.stanse.checker.CheckerError> result =
-                          new LinkedList<cz.muni.stanse.checker.CheckerError>();
-        for (java.io.File file : getXmlFiles()) {
-            final org.dom4j.Document XMLdefinition = readXMLdefinition(file);
-            if (XMLdefinition != null)
-                result.addAll(new AutomatonCheckerImpl(XMLdefinition).
-                                        check(units));
+        final Pair< HashMap<CFG,CFG>,HashMap<CFGNode,CFGNode> > CFGbackMapping =
+            CFGInstrumentationBuilder.run(buildSetOfCFGs(units));
+        final Set<CFG> CFGs = CFGbackMapping.getFirst().keySet();
+
+        final HashMap<CFGNode,PatternLocation> nodeLocationDictionary =
+            PatternLocationBuilder.buildPatternLocations(CFGs,
+                                                   getXMLAutomatonDefinition());
+
+        final LinkedList<PatternLocation> progressQueue =
+                new LinkedList<PatternLocation>();
+        for (final CFG cfg : CFGs)
+            progressQueue.add(nodeLocationDictionary.get(cfg.getStartNode()));
+
+        while (!progressQueue.isEmpty()) {
+            final PatternLocation currentLocation = progressQueue.remove();
+            if (!currentLocation.hasUnprocessedAutomataStates())
+                continue;
+            final boolean successorsWereAffected =
+                currentLocation.processUnprocessedAutomataStates();
+            if (successorsWereAffected)
+                progressQueue.addAll(
+                        currentLocation.getSuccessorPatternLocations());
         }
-        return result;
+        return CFGInstrumentationEraser.run(CFGbackMapping,
+                    CheckerErrorBuilder.buildErrorList(nodeLocationDictionary));
     }
 
     // private section
 
-    private final LinkedList<java.io.File> getXmlFiles() {
-        return xmlFiles;
+    private static HashSet<CFG> buildSetOfCFGs(final List<Unit> units) {
+        final HashSet<CFG> CFGs = new HashSet<CFG>();
+        for (final Unit unit : units)
+            CFGs.addAll(unit.getCFGs());
+        return CFGs;
     }
 
-    private static final org.dom4j.Document
-    readXMLdefinition(final java.io.File file) {
-            try {
-                return (new org.dom4j.io.SAXReader()).read(file);
-            }
-            catch (final Exception e) {
-                return null;
-            }
+    private XMLAutomatonDefinition getXMLAutomatonDefinition() {
+        return XMLAutomatonDefinition;
     }
 
-    private final LinkedList<java.io.File> xmlFiles;
+    private final XMLAutomatonDefinition XMLAutomatonDefinition;
 }

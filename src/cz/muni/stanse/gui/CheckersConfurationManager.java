@@ -31,30 +31,32 @@ final class CheckersConfurationManager {
         new java.awt.event.ActionListener() {
             @Override public void actionPerformed(
                                            final java.awt.event.ActionEvent e) {
-                onAddChecker();
+                onAddChecker(); expandTree();
             }
         });
         getRemoveCheckerButton().addActionListener(
         new java.awt.event.ActionListener() {
             @Override public void actionPerformed(
                                            final java.awt.event.ActionEvent e) {
-                onRemoveChecker();
+                onRemoveChecker(); expandTree();
             }
         });
         getAddDataButton().addActionListener(
         new java.awt.event.ActionListener() {
             @Override public void actionPerformed(
                                            final java.awt.event.ActionEvent e) {
-                onAddData();
+                onAddData(); expandTree();
             }
         });
         getRemoveDataButton().addActionListener(
         new java.awt.event.ActionListener() {
             @Override public void actionPerformed(
                                            final java.awt.event.ActionEvent e) {
-                onRemoveData();
+                onRemoveData(); expandTree();
             }
         });
+
+        expandTree();
     }
 
     LinkedList<CheckerConfiguration> getCheckersConfiguration() {
@@ -170,6 +172,11 @@ final class CheckersConfurationManager {
         return (chooser.showDialog(getAddDataButton(),"Add") !=
                     javax.swing.JFileChooser.APPROVE_OPTION) ? null :
                                            chooser.getSelectedFile().toString();
+    }
+
+    private void expandTree() {
+        for (int i = 0; i < getCheckersTree().getRowCount(); i++)
+             getCheckersTree().expandRow(i);
     }
 
     private javax.swing.JTree getCheckersTree() {

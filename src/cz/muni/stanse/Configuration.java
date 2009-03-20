@@ -92,21 +92,16 @@ public final class Configuration {
 
     private static LinkedList<CheckerConfiguration>
     createDefaultCheckerConfiguration() {
-        final LinkedList<CheckerConfiguration> cfg =
-                                         new LinkedList<CheckerConfiguration>();
-        cfg.add(new CheckerConfiguration(
-                  "cz.muni.stanse.automatonchecker.AutomatonChecker",
-                  new File(cz.muni.stanse.Stanse.getRootDirectory() +
-                           "/data/checkers/AutomatonChecker/memory.xml")));
-        cfg.add(new CheckerConfiguration(
-                  "cz.muni.stanse.automatonchecker.AutomatonChecker",
-                  new File(cz.muni.stanse.Stanse.getRootDirectory() +
-                           "/data/checkers/AutomatonChecker/interrupts.xml")));
-        cfg.add(new CheckerConfiguration(
-                  "cz.muni.stanse.automatonchecker.AutomatonChecker",
-                  new File(cz.muni.stanse.Stanse.getRootDirectory() + 
-                           "/data/checkers/AutomatonChecker/locking.xml")));
-        return cfg;
+        return cz.muni.stanse.utils.Make.<CheckerConfiguration>linkedList(
+            new CheckerConfiguration("AutomatonChecker",
+                cz.muni.stanse.utils.Make.<java.io.File>linkedList(
+                        new File(cz.muni.stanse.Stanse.getRootDirectory() +
+                              "/data/checkers/AutomatonChecker/memory.xml"),
+                        new File(cz.muni.stanse.Stanse.getRootDirectory() +
+                              "/data/checkers/AutomatonChecker/interrupts.xml"),
+                        new File(cz.muni.stanse.Stanse.getRootDirectory() +
+                              "/data/checkers/AutomatonChecker/locking.xml")
+           )));
     }
 
     private final SourceConfiguration sourceConfiguration;

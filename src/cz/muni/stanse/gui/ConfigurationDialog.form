@@ -30,21 +30,21 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="configurationTabbedPane" alignment="0" pref="519" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace pref="430" max="32767" attributes="0"/>
               <Component id="closeButton" min="-2" pref="77" max="-2" attributes="0"/>
-              <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
+          <Component id="configurationTabbedPane" alignment="0" pref="519" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <Component id="configurationTabbedPane" pref="375" max="32767" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="configurationTabbedPane" min="-2" pref="349" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="closeButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -78,18 +78,23 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="50" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="makefileRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="singleSourceFileRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="allOpenedFilesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="actualOpenedFileRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="allDirectoryFilesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="allDirectoryHierarchyFilesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="batchFileRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
+                              <EmptySpace min="-2" pref="160" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="makefileRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="allDirectoryFilesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="allDirectoryHierarchyFilesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="batchFileRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
                                   <Component id="specifySourceFileStaticText" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
@@ -121,8 +126,6 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="allOpenedFilesRadioButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="singleSourceFileRadioButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="makefileRadioButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="allDirectoryFilesRadioButton" min="-2" max="-2" attributes="0"/>
@@ -142,7 +145,7 @@
                           <Component id="specifyMakefileArgumentsStaticText" min="-2" max="-2" attributes="0"/>
                           <Component id="makefileArgumentsTextField" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -170,15 +173,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="All opened source files"/>
                 <Property name="actionCommand" type="java.lang.String" value="all"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JRadioButton" name="singleSourceFileRadioButton">
-              <Properties>
-                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                  <ComponentRef name="sourceTypeButtonGroup"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="Single specific source file"/>
-                <Property name="actionCommand" type="java.lang.String" value="single"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JRadioButton" name="makefileRadioButton">
@@ -280,7 +274,7 @@
                           <Component id="removeDataButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="addDataButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="52" max="32767" attributes="0"/>
+                      <EmptySpace pref="26" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
