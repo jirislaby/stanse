@@ -73,6 +73,14 @@ final class CheckerErrorBuilder {
                         (new ErrorTracesListCreator(rule,edgeLocationDictionary,
                                       location.getCFGreferenceNode(),
                                       location.getCFG()))).getErrorTracesList();
+                // Next condition eliminates cyclic dependances of two
+                // error locations (diferent). These locations have same error
+                // rule and theirs methods checkForError() returns true (so they
+                // are both error locations). But their cyclic dependancy
+                // disables to find starting nodes of theirs error traces ->
+                // both error traces returned will be empty.
+                if (traces.isEmpty())
+                    continue;
                 final String shortDesc = rule.getErrorDescription();
                 final String fullDesc = "in function '" +
                                         location.getCFG().getFunctionName() +
