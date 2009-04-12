@@ -50,7 +50,7 @@ public class CallGraph {
     public CallGraph(List<Element> functionDefinitions, boolean isMultigraph) {
         this.isMultiGraph = isMultigraph;
         for(int i=0; i<functionDefinitions.size(); i++) {
-            String functionName = ((Element)functionDefinitions.get(i).selectSingleNode("declarator/id")).getText();
+            String functionName = ((Element)functionDefinitions.get(i).selectSingleNode("declarator/descendant-or-self::id")).getText();
             Set<Element> children = new HashSet<Element>();
             Collection list = functionDefinitions.get(i).selectNodes(".//functionCall");
             children.addAll(list);
