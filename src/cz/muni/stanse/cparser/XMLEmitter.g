@@ -730,7 +730,7 @@ expression returns [Element e]
 		for (Element el: exs)
 			$e.add(el);
 	}
-	| ^(COMPOUND_LITERAL tn=typeName initializerList) {
+	| ^(COMPOUND_LITERAL tn=typeName initializerList?) {
 		Element me = newElement("initializer");
 		$e=newElementBin("compoundLiteral", $tn.e, me);
 		addAllElements(me, $initializerList.els);

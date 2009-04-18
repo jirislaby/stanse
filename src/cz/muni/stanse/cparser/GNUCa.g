@@ -590,7 +590,7 @@ unaryOperator
 	;
 
 castExpression
-	:	('(' typeName ')') => '('typeName ')' ( castExpression  -> ^(CAST_EXPRESSION typeName castExpression)| '{' initializerList ','? '}' -> ^(COMPOUND_LITERAL typeName initializerList))
+	:	('(' typeName ')') => '('typeName ')' ( castExpression  -> ^(CAST_EXPRESSION typeName castExpression)| '{' '}' -> ^(COMPOUND_LITERAL typeName) | '{' initializerList ','? '}' -> ^(COMPOUND_LITERAL typeName initializerList))
 	|	unaryExpression
 	;
 

@@ -582,7 +582,7 @@ expression returns [CFGPart g]
 	| ^(CAST_EXPRESSION tn=typeName e1=expression)
 	| ^(ARRAY_ACCESS e1=expression e2=expression)
 	| ^(FUNCTION_CALL e1=expression e2=expression*)
-	| ^(COMPOUND_LITERAL tn=typeName initializerList)
+	| ^(COMPOUND_LITERAL tn=typeName initializerList?)
 	| ^(',' e1=expression e2=expression)
 	| ^('++' e1=expression)
 	| ^('--' e1=expression)
