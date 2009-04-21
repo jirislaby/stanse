@@ -9,15 +9,21 @@ package cz.muni.stanse;
 
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.codestructures.Unit;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.utils.XMLAlgo;
 
 import cz.muni.stanse.gui.MainWindow;
 
 import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import static java.util.Arrays.*;
 import java.util.LinkedList;
@@ -52,7 +58,7 @@ public final class Stanse {
 	 * Output directory for all the "dump" files. By default it is the current
 	 * directory.
 	 */
-//	private static File outputDirectory = new File(".");
+	private static File outputDirectory = new File("");
 
 	/**
 	 * List of sourcefiles.
@@ -141,17 +147,18 @@ public final class Stanse {
 		.withRequiredArg()
 		.describedAs("file")
 		.ofType(File.class);
-		// OptionSpec<Void> dumpCFG = parser.accepts("dump-cfg", "Dump control flow graphs in Dot format");
-		// OptionSpec<Void> dumpXML = parser.accepts("dump-xml", "Dump XML representation of AST");
+		OptionSpec<Void> dumpCFG = parser.accepts("dump-cfg", "Dump control flow graphs in Dot format");
+		OptionSpec<Void> dumpXML = parser.accepts("dump-xml", "Dump XML representation of AST");
 		// OptionSpec<Void> dumpCallGraph = parser.accepts("dump-callgraph", "Dump callgraph in Dot format");
-//		OptionSpec<File> outputDir = parser.accepts("output-dir", "Sets the output directory for generated files")
-//		.withRequiredArg()
-//		.describedAs("file")
-//		.ofType(File.class);
+		OptionSpec<File> outputDir = parser.accepts("output-dir", "Sets the output directory for generated files")
+		.withRequiredArg()
+		.describedAs("file")
+		.ofType(File.class);
 		// TODO: how to print "command-line usage", including the sources?		
-		
+
+        Configuration config = null;
+        final OptionSet options = parser.parse(args);
 		try {
-			final OptionSet options = parser.parse(args);
 
 			// HELP - called explicitly or no options given
 			// -> exit
@@ -178,13 +185,13 @@ public final class Stanse {
 			}
 
 			// OUTPUT DIRECTORY
-//			if (options.has(outputDir)) {
-//				File d = options.valueOf(outputDir);
-//				if(!d.exists()) {
-//					// TODO throw exception
-//				}
-//				outputDirectory = d; 
-//			}
+			if (options.has(outputDir)) {
+				File d = options.valueOf(outputDir);
+				if(!d.exists()) {
+					// TODO throw exception
+				}
+				outputDirectory = d; 
+			}
 
 			// WARN LEVELS
 			// now by severity of bug
@@ -285,7 +292,6 @@ public final class Stanse {
 			SourceConfiguration sourceConfig=new SourceConfiguration(e);
 
 			// CHECKERS
-			final Configuration config;
 			if(options.has(checkers)){ // at least one checker was specified
 				// TODO - short names instead of classes
 				String checkerName;
@@ -311,14 +317,15 @@ public final class Stanse {
 			
 			//  *** RUN
 			if (options.has(gui)) { 	// GUI
+                final Configuration configFinal = config;
 				java.awt.EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						MainWindow gui = MainWindow.getInstance();
 						if (sources.isEmpty()) { 
-							gui.setConfiguration(config);
+							gui.setConfiguration(configFinal);
 						} else {
 							// open sources specified on the command line and set config
-							gui.openSourceFiles(sources, config);
+							gui.openSourceFiles(sources, configFinal);
 						}				
 						gui.setVisible(true);
 					}
@@ -347,56 +354,69 @@ public final class Stanse {
 	                     logger.log(Level.FATAL, null, ex1);
 	             }
 	     }
-	     }
+	     
 
 			
 			// TODO: dumpXML, dumpAST
 			// PARSING, CONVERSION to XML and CFG
-//			Unit unit;
-//			Document unitAST;
-//			List<CFG> unitCFG;
-//			File xmlFile;
-//			File cfgFile;
-//			String fileName;
-//			for (File unitFile : sources)			
-//			{		
-//				try {
-//					fileName = unitFile.getName();
-//					// we know we are dealing with C
-//					// TODO make this universal
-//					unit = new CUnit(unitFile);
-//					units.add(unit);
-//					
-//					// DUMP-XML
-//					if (options.has(dumpXML)) {
-//						unitAST = unit.getXMLDocument();
-//						xmlFile = new File(outputDirectory, fileName + ".xml");
-//						try {
-//							// BufferedWriter out = new BufferedWriter(new
-//							// FileWriter(xmlFile));
-//							XMLAlgo.outputXML(unitAST,	new PrintStream(xmlFile));
-//							// out.close();
-//						} catch (IOException e) {
-//							// TODO
-//							e.printStackTrace();
-//						}
-//					}
-//					// DUMP-CFG
-//					if (options.has(dumpCFG)) {
-//						unitCFG = unit.getCFGs();
-//						for (CFG cfg : unitCFG) {
-//							cfgFile = new File(outputDirectory, fileName + "."
-//									+ cfg.getFunctionName() + ".dot");
-//							try {
-//								BufferedWriter out = new BufferedWriter(
-//										new FileWriter(cfgFile));
-//								out.write(cfg.toDot());
-//								out.close();
-//							} catch (IOException e) {
-//								// TODO
-//							}
-//						}
-//					}
+            
+			//Unit unit;
+			Document unitAST;
+			List<CFG> unitCFG;
+			File xmlFile;
+			File cfgFile;
+			String fileName;
+
+            List<Unit> unitsList = new LinkedList<Unit>();
+            try {
+                if (config == null)
+                    throw new Exception("Configuration not set.");
+                unitsList = config.getSourceConfiguration()
+                               .getProcessedUnits(new ConsoleProgressHandler());
+            }
+            catch (final Exception e) {
+                System.err.println("Dump error: ");
+            }
+
+            for (Unit unit : unitsList)
+			{		
+				try {
+					fileName = unit.getName();
+					// we know we are dealing with C
+					// TODO make this universal
+					//unit = new CUnit(unitFile);
+					//units.add(unit);
+					
+					// DUMP-XML
+					if (options.has(dumpXML)) {
+						unitAST = unit.getXMLDocument();
+						xmlFile = new File(outputDirectory, fileName + ".xml");
+						try {
+							 //BufferedWriter out = new BufferedWriter(new
+							 //FileWriter(xmlFile));
+							XMLAlgo.outputXML(unitAST,	new PrintStream(xmlFile));
+							 //out.close();
+						} catch (IOException e) {
+							// TODO
+							e.printStackTrace();
+						}
+					}
+					// DUMP-CFG
+					if (options.has(dumpCFG)) {
+						unitCFG = unit.getCFGs();
+						for (CFG cfg : unitCFG) {
+							cfgFile = new File(outputDirectory, fileName + "."
+									+ cfg.getFunctionName() + ".dot");
+							try {
+								BufferedWriter out = new BufferedWriter(
+										new FileWriter(cfgFile));
+								out.write(cfg.toDot());
+								out.close();
+							} catch (IOException e) {
+								// TODO
+							}
+						}
+					}
 //				} catch (ParserException e) {
 //					logger.log(Level.FATAL, null, e);
 //				} catch (NullPointerException e) {
@@ -404,8 +424,9 @@ public final class Stanse {
 //				} catch (RecognitionException e) {
 //					logger.log(Level.FATAL, null, e);
 //				} catch (IOException e) {
-//					logger.log(Level.FATAL, null, e);
-//				}
+				} catch (Exception e) {
+					logger.log(Level.FATAL, null, e);
+				}
 
 
 			// TODO:  DUMP-CALL GRAPH
@@ -428,8 +449,9 @@ public final class Stanse {
 		//                Logger.getLogger(StaticChecker.class).setLevel(Level.INFO);*/
 		//		}
 		//
-		//	}
-
+			}
+            
+     }
 
 		/**
 		 * This should be the setting, all the other classes should use. Log4j uses

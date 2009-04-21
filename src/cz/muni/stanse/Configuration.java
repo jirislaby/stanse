@@ -50,6 +50,7 @@ public final class Configuration {
             checkers.add(checkerCfg.getChecker());
         final SourceCodeFilesEnumerator sourceEnumerator =
                                  getSourceConfiguration().getSourceEnumerator();
+        final LinkedList<Unit> processedUnits = new LinkedList<Unit>();
         progressHandler.onParsingBegin();
         progressHandler.onCheckingBegin();
         for (String filePathName : sourceEnumerator.getSourceCodeFiles()) {
@@ -62,9 +63,11 @@ public final class Configuration {
                 if (!visitor.visit(units,checker,buildCfgToUnitMapping(units)))
                     break;
             }
+            processedUnits.addAll(units);
         }
         progressHandler.onCheckingEnd();
         progressHandler.onParsingEnd();
+        getSourceConfiguration().setProcessedUnits(processedUnits);
     }
 
     public SourceConfiguration getSourceConfiguration() {

@@ -31,7 +31,20 @@ public final class SourceConfiguration {
         return sourceEnumerator;
     }
 
+    @Deprecated
+    public void setProcessedUnits(final List<Unit> units) {
+        processedUnitList = Collections.unmodifiableList(units);
+    }
+
+    @Deprecated
+    public List<Unit> getProcessedUnits(final ConfigurationProgressHandler
+                                             progressHandler) throws Exception {
+        return processedUnitList = (processedUnitList != null) ?
+                                  processedUnitList : getUnits(progressHandler);
+    }
+
     // private section
 
+    private List<Unit> processedUnitList = null;
     private final SourceCodeFilesEnumerator sourceEnumerator;
 }
