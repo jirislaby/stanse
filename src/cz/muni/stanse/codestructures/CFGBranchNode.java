@@ -31,6 +31,15 @@ public class CFGBranchNode extends CFGNode {
     }
 
     /**
+     * Creates an instance of the CFGBranchNode with assigned element
+     *
+     * @param e element to assign to this node
+     */
+    public CFGBranchNode(int number, Element e) {
+	super(number, e);
+    }
+
+    /**
      * Get label of a branch edge indexed from 0
      *
      * @param edge edge index

@@ -17,7 +17,6 @@ import org.dom4j.Element;
  * package)
  */
 public class CFGNode {
-    private static int numberCounter;
     private int number;
     private Element element;
     private List<CFGNode> preds = new ArrayList<CFGNode>();
@@ -27,7 +26,7 @@ public class CFGNode {
      * Creates a new instance of CFGNode
      */
     public CFGNode() {
-	number = numberCounter++;
+	number = CFGNodeNumber.getNext();
     }
 
     /**
@@ -35,7 +34,17 @@ public class CFGNode {
      * @param e element to assign to this node
      */
     public CFGNode(Element e) {
-	number = numberCounter++;
+	number = CFGNodeNumber.getNext();
+	element = e;
+    }
+
+    /**
+     * Creates a new instance of CFGNode
+     * @param number node number
+     * @param e element to assign to this node
+     */
+    public CFGNode(int number, Element e) {
+	this.number = number;
 	element = e;
     }
 
