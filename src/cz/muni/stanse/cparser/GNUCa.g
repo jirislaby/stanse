@@ -534,7 +534,7 @@ attrib		// taken from GnuCParser.g (Monty Zukowski)
 
 primaryExpression
 	:	IDENTIFIER
-	|	CONSTANT
+	|	constant
 	|	sTRING_LITERAL
 	|	'('! compoundStatement ')'!
 	|	'('! expression ')'!
@@ -836,13 +836,21 @@ UniversalCharacterName
 	|	'\\' 'U' HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit
 	;
 
-CONSTANT
+constant
+	:	ICONSTANT
+	|	RCONSTANT
+	;
+
+ICONSTANT
 	:	DecimalConstant IntegerSuffix?
 	|	OctalConstant IntegerSuffix?
 	|	HexadecimalConstant IntegerSuffix?
-	|	DecimalFloatingConstant
-	|	HexadecimalFloatingConstant
 	|	CharacterLiteral
+	;
+
+RCONSTANT
+	:	DecimalFloatingConstant
+	|	HexadecimalFloatingConstant
 	;
 
 fragment

@@ -788,7 +788,7 @@ binaryExpression returns [Element e]
 
 primaryExpression returns [Element e]
 	: IDENTIFIER		{ $e = newElement("id"); $e.addText(findVariable($IDENTIFIER.text)); }
-	| CONSTANT		{ $e = newElement("intConst"); $e.addText($CONSTANT.text); }
+	| constant		{ $e = $constant.e; }
 	| sTRING_LITERAL	{ $e = newElement("stringConst", $sTRING_LITERAL.start); $e.addText($sTRING_LITERAL.text); }
 	| compoundStatement	{ $e = $compoundStatement.e; }
 	| ^(BUILTIN_OFFSETOF typeName offsetofMemberDesignator) {
@@ -808,6 +808,14 @@ sTRING_LITERAL returns [String text]
 			sb.append(str.substring(1, str.length() - 1));
 		$text = sb.toString();
 	}
+	;
+
+constant returns [Element e]
+@after {
+	$e.addText($constant.text);
+}
+	:	ICONSTANT { $e = newElement("intConst"); }
+	|	RCONSTANT { $e = newElement("realConst"); }
 	;
 
 offsetofMemberDesignator returns [Element e]

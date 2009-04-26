@@ -618,7 +618,7 @@ binaryExpression returns [CFGPart g]
 
 primaryExpression returns [CFGPart g]
 	: IDENTIFIER
-	| CONSTANT
+	| constant
 	| sTRING_LITERAL
 	| compoundStatement { $g=$compoundStatement.g; }
 	| ^(BUILTIN_OFFSETOF typeName offsetofMemberDesignator)
@@ -626,6 +626,11 @@ primaryExpression returns [CFGPart g]
 
 sTRING_LITERAL
 	: ^(STR_LITERAL STRING_LITERAL+)
+	;
+
+constant
+	:	ICONSTANT
+	|	RCONSTANT
 	;
 
 offsetofMemberDesignator
