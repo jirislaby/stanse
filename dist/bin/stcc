@@ -61,7 +61,7 @@ if ($forbid_check) {
 
 if ($do_check) {
     print "$flags\n" if $verbose;
-    open(CPP, "$realcc -E -w $flags|");
+    open(CPP, "$realcc -E -w $flags|") or die "can't exec preprocessor";
     my $source = <CPP>;
     close(CPP);
     chomp $source;
@@ -69,7 +69,7 @@ if ($do_check) {
     $flags =~ s/$source//;
     my $pwd = `pwd`;
     chomp $pwd;
-    open(JF, ">>$jobfile");
+    open(JF, ">>$jobfile") or die "can't open jobfile for writing";
     print JF "{$source},{$output},{$pwd},{$flags}\n";
     close(JF);
 }
