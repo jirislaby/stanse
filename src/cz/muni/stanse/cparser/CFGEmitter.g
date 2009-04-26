@@ -55,6 +55,38 @@ import cz.muni.stanse.utils.Pair;
 		cfg.setEndNode(n);
 		return cfg;
 	}
+
+	private CFGNode ifThenElse(Element cond, CFGNode _then, CFGNode _else) {
+		return ifThenElse(false, 0, cond, _then, _else);
+	}
+	private CFGNode ifThenElse(int nodeNumber, Element cond, CFGNode _then,
+			CFGNode _else) {
+		return ifThenElse(true, nodeNumber, cond, _then, _else);
+	}
+	private CFGNode ifThenElse(boolean nnValid, int nn,
+			Element cond, CFGNode _then, CFGNode _else) {
+		if (cond == null || cond.getName().equals("intConst")) {
+			Element c = cond;
+			if (c == null) /* 'for' empty test */
+				c = emptyStatement;
+			CFGNode node = nnValid ? new CFGNode(nn, c) :
+				new CFGNode(c);
+			node.addEdge(cond == null ||
+					Integer.decode(cond.getText()) != 0 ?
+				_then : _else);
+			return node;
+		} else {
+			/* fork */
+			CFGBranchNode branch = nnValid ?
+				new CFGBranchNode(nn, cond) :
+				new CFGBranchNode(cond);
+			/* true */
+			branch.addEdge(_then, defaultLabel);
+			/* false */
+			branch.addEdge(_else, falseLabel);
+			return branch;
+		}
+	}
 }
 
 translationUnit returns [List<CFG> g]
@@ -354,35 +386,31 @@ selectionStatement returns [CFGPart g]
 
 selectionStatementIf returns [CFGPart g]
 @init {
-	CFGBranchNode n1;
 	CFGNode s1Last;
+	int nodeNumber;
 }
 	: ^('if' expression {
-		/* fork */
-		n1 = new CFGBranchNode($expression.start.getElement());
+		nodeNumber = CFGNodeNumber.getNext();
 	} s1=statement {
 		s1Last = $Function::lastStatement;
 	} s2=statement?) {
 		$g = new CFGPart();
-		/* join */
-		CFGNode n2 = new CFGJoinNode();
+		CFGNode n1, n2 = new CFGJoinNode();
+		n1 = ifThenElse(nodeNumber, $expression.start.getElement(),
+				$s1.g.getStartNode(),
+				s2 == null ? n2 : $s2.g.getStartNode());
 		$g.setStartNode(n1);
 		$g.setEndNode(n2);
-		/* true */
-		n1.addEdge($s1.g.getStartNode(), defaultLabel);
 		if ($s1.start.getType() == COMPOUND_STATEMENT)
 			s1Last.addEdge(n2);
 		else
 			$s1.g.getEndNode().addEdge(n2);
-		/* false */
 		if (s2 != null) {
-			n1.addEdge($s2.g.getStartNode(), falseLabel);
 			if ($s2.start.getType() == COMPOUND_STATEMENT)
 				$Function::lastStatement.addEdge(n2);
 			else
 				$s2.g.getEndNode().addEdge(n2);
-		} else
-			n1.addEdge(n2, falseLabel);
+		}
 	}
 	;
 
@@ -425,6 +453,7 @@ scope IterSwitch;
 	CFGNode n1, n2;
 	CFGPart statementCFG = null;
 	int statementType = 0;
+	int nodeNumber;
 }
 @after {
 	/* backpatch */
@@ -438,20 +467,15 @@ scope IterSwitch;
 		statementCFG.getEndNode().addEdge(contNode);
 }
 	: ^('while' expression { /* to preserve sequential numbers */
-		/* fork */
-		CFGBranchNode branch =
-			new CFGBranchNode($expression.start.getElement());
+		nodeNumber = CFGNodeNumber.getNext();
 	} statement) {
 		statementCFG = $statement.g;
-		/* join */
 		breakNode = new CFGJoinNode();
-		$g.setStartNode(branch);
+		contNode = ifThenElse(nodeNumber,
+				$expression.start.getElement(),
+				statementCFG.getStartNode(), breakNode);
+		$g.setStartNode(contNode);
 		$g.setEndNode(breakNode);
-		/* true */
-		branch.addEdge(statementCFG.getStartNode(), defaultLabel);
-		/* false */
-		branch.addEdge(breakNode, falseLabel);
-		contNode = branch;
 		statementType = $statement.start.getType();
 		lastStatement = $Function::lastStatement;
 	}
@@ -459,53 +483,30 @@ scope IterSwitch;
 		lastStatement = $Function::lastStatement;
 	} expression) {
 		statementCFG = $statement.g;
-		/* fork */
-		CFGBranchNode branch =
-			new CFGBranchNode($expression.start.getElement());
-		/* join */
 		breakNode = new CFGJoinNode();
-
 		$g.setStartNode(statementCFG.getStartNode());
 		$g.setEndNode(breakNode);
-		/* true */
-		branch.addEdge($statement.g.getStartNode(), defaultLabel);
-		/* false */
-		branch.addEdge(breakNode, falseLabel);
-		contNode = branch;
+		contNode = ifThenElse($expression.start.getElement(),
+				statementCFG.getStartNode(), breakNode);
 		statementType = $statement.start.getType();
 	}
 	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) {
-		if ($e1.g == null) /* no initial */
-			n1 = new CFGNode(emptyStatement);
-		else
-			n1 = new CFGNode($e1.start.getElement());
-		$g.setStartNode(n1);
+		n1 = new CFGNode($e1.g == null ? emptyStatement :
+				$e1.start.getElement());
 		breakNode = new CFGJoinNode();
+		$g.setStartNode(n1);
 		$g.setEndNode(breakNode);
-		if ($e2.g == null) { /* no test */
-			n2 = new CFGNode(emptyStatement);
-		} else {
-			CFGBranchNode branch =
-				new CFGBranchNode($e2.start.getElement());
-			n2 = branch;
-		}
-		n1.addEdge(n2);
+		nodeNumber = CFGNodeNumber.getNext();
 	} ^(E3 e3=expression?) statement) {
 		statementCFG = $statement.g;
-		if ($e2.g == null)
-			n2.addEdge($statement.g.getStartNode());
-		else {
-			CFGBranchNode branch = (CFGBranchNode)n2;
-			/* true */
-			branch.addEdge(statementCFG.getStartNode(),
-					defaultLabel);
-			/* false */
-			branch.addEdge(breakNode, falseLabel);
-		}
-		if ($e3.g == null) /* no post */
-			contNode = new CFGNode(emptyStatement);
-		else
-			contNode = new CFGNode($e3.start.getElement());
+		n2 = ifThenElse(nodeNumber,
+				$e2.g == null ? null : $e2.start.getElement(),
+				statementCFG.getStartNode(),
+				breakNode);
+		n1.addEdge(n2);
+
+		contNode = new CFGNode($e3.g == null ? emptyStatement :
+				$e3.start.getElement();
 		contNode.addEdge(n2);
 
 		statementType = $statement.start.getType();
@@ -546,8 +547,8 @@ asmStatement returns [CFGPart g]
 
 expression returns [CFGPart g]
 @init {
-	CFGBranchNode n1;
 	CFGNode trueNode = null;
+	int nodeNumber;
 	$g = null;
 }
 @after {
@@ -556,27 +557,22 @@ expression returns [CFGPart g]
 }
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) { /*$g = $e2.g; do nothing so far XXX to be fixed */  }
 	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression) {
-		/* fork */
-		n1 = new CFGBranchNode($e1.start.getElement());
+		nodeNumber = CFGNodeNumber.getNext();
 	} ^(E2 e2=expression?) {
 		if (e2 == null)
 			trueNode = new CFGNode($e1.start.getElement());
 	} ^(E3 e3=expression)) {
 		$g = new CFGPart();
-		/* join */
+		CFGNode n1 = ifThenElse(nodeNumber, $e1.start.getElement(),
+				trueNode == null ? $e2.g.getStartNode() : trueNode,
+				$e3.g.getStartNode());
 		CFGNode n2 = new CFGJoinNode();
 		$g.setStartNode(n1);
 		$g.setEndNode(n2);
-		/* true */
-		if (trueNode == null) {
-			n1.addEdge($e2.g.getStartNode(), defaultLabel);
+		if (trueNode == null)
 			$e2.g.getEndNode().addEdge(n2);
-		} else {
-			n1.addEdge(trueNode, defaultLabel);
+		 else
 			trueNode.addEdge(n2);
-		}
-		/* false */
-		n1.addEdge($e3.g.getStartNode(), falseLabel);
 		$e3.g.getEndNode().addEdge(n2);
 	}
 	| ^(CAST_EXPRESSION tn=typeName e1=expression)
