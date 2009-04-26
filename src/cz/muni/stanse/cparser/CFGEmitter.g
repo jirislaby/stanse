@@ -506,7 +506,7 @@ scope IterSwitch;
 		n1.addEdge(n2);
 
 		contNode = new CFGNode($e3.g == null ? emptyStatement :
-				$e3.start.getElement();
+				$e3.start.getElement());
 		contNode.addEdge(n2);
 
 		statementType = $statement.start.getType();
