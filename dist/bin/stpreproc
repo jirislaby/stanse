@@ -12,6 +12,14 @@
 use strict;
 use warnings;
 
+my @kuntouchables = (
+	"mutex_lock", "mutex_lock_interuptible", "mutex_lock_killable",
+	"mutex_lock_nested", "mutex_lock_interruptible_nested",
+	"mutex_lock_killable_nested", "mutex_unlock",
+	"spin_lock", "spin_unlock",
+	"local_irq_save", "local_irq_restore"
+);
+
 die "wrong commandline" if @ARGV != 1;
 
 my $arg = shift @ARGV;
@@ -25,14 +33,28 @@ my $output = $2;
 chdir $3 if length $3 > 0;
 my $flags = $4;
 
+my $armored = $output . ".armored";
 my $includes = $output . ".includes";
 my $nonincludes = $output . ".preproc";
+
+open(SRC, "$source") || die "can't open '$source'";
+open(ASRC, ">$armored") || die "can't open '$armored' for writing";
+{
+	local $/;
+	my $file = <SRC>;
+	for (@kuntouchables) {
+		$file =~ s/\b$_\b/__st_${_}_st__/g;
+	}
+	print ASRC $file;
+}
+close(ASRC);
+close(SRC);
 
 my $cpp = "gcc -E -w -D__attribute__\\(x\\)= -D__attribute\\(x\\)= " .
 	"-D__builtin_va_list=int -D__builtin_offsetof\\(x,y\\)=1 " .
 	"-D__builtin_types_compatible_p\\(x,y\\)=0 " .
 	"-D__builtin_va_arg\\(ap,t\\)=\\(t\\)0 $flags";
-open(CPP, "$cpp $source|") || die "can't exec '$cpp $source'";
+open(CPP, "$cpp $armored|") || die "can't exec '$cpp $armored'";
 open(INCS, ">$includes") || die "can't open $includes for writing";
 open(NONINCS, ">$nonincludes") || die "can't open $nonincludes for writing";
 
@@ -63,5 +85,6 @@ close(CPP);
 system("stcparser-c $includes") && die "can't exec cparser-c";
 
 unlink $includes;
+unlink $armored;
 
 exit 0;
