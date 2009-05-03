@@ -15,7 +15,7 @@ DISABLED ATTRIBUTE-RELATED EXTENSIONS:
 	5.31 Specifying Attributes of Variables
 	5.32 Specifying Attributes of Types
 	- removed to get rid of backtracking
- 	- too ambiguous grammar, not very well documented
+	- too ambiguous grammar, not very well documented
 	- easily removed by the following macro: #define __attrobute__(x)
 	- attributes in typeQualifierList not implemented
 
@@ -198,13 +198,13 @@ externalDeclaration
 scope Typedef;
 @init { $Typedef::isTypedef = false; }
 	:	'typedef' declarationSpecifiers? {$Typedef::isTypedef = true;} initDeclaratorList? ';' -> ^('typedef' declarationSpecifiers? initDeclaratorList?) // special case
-	|	declarationSpecifiers 
+	|	declarationSpecifiers
 		(	';' -> ^(DECLARATION declarationSpecifiers)
 		|	declarator declarationOrFnDef[$declarationSpecifiers.tree, $declarator.tree] -> declarationOrFnDef
 		)
 	|	';'!
 	|	asmDefinition	// GNU
-    ;
+	;
 
 declarationOrFnDef[StanseTree ds, StanseTree d]
 	:	declarationSuffix[ds, d]
@@ -212,17 +212,16 @@ declarationOrFnDef[StanseTree ds, StanseTree d]
 	;
 
 declarationSuffix[StanseTree ds, StanseTree d]
-	:	simpleAsmExpr? ( '=' initializer )? ( ',' initDeclarator)* ';' 
+	:	simpleAsmExpr? ( '=' initializer )? ( ',' initDeclarator)* ';'
 			-> ^(DECLARATION {$ds} ^(INIT_DECLARATOR {$d} initializer?) initDeclarator* )
-	;	
-	
+	;
+
 functionDefinitionSuffix[StanseTree ds, StanseTree d]
-	:	
+	:
 	(	compoundStatement		// ANSI style
 	|	declaration+ compoundStatement	// K&R style
 	)	-> ^(FUNCTION_DEFINITION  {$ds} {$d} declaration* compoundStatement)
 	;
-
 
 asmDefinition	// GNU
 	:	simpleAsmExpr
@@ -297,13 +296,11 @@ typeSpecifier		// (6.7.2)
         |       'long'			-> ^(BASETYPE 'long')
         |       'float'			-> ^(BASETYPE 'float')
         |       'double'		-> ^(BASETYPE 'double')
-//        |       'signed'		-> ^(BASETYPE 'signed')
         |       s='signed'		-> ^(BASETYPE SIGNED[$s])
         |       s='__signed'		-> ^(BASETYPE SIGNED[$s])
         |       s='__signed__'		-> ^(BASETYPE SIGNED[$s])
         |       'unsigned'		-> ^(BASETYPE 'unsigned')
         |	'_Bool'			-> ^(BASETYPE '_Bool')
-//        |	'_Complex'		-> ^(BASETYPE '_Complex')
         |	c='_Complex'		-> ^(BASETYPE COMPLEX[$c])
         |	c='__complex'		-> ^(BASETYPE COMPLEX[$c])
         |	c='__complex__'		-> ^(BASETYPE COMPLEX[$c])
@@ -349,13 +346,13 @@ structDeclarator
 	;
 
 enumSpecifier // TODO improve the grammar
-	:	'enum' 
+	:	'enum'
 	(
 		'{' enumeratorList ( ',' )? '}' -> ^('enum' enumeratorList)
 	|	IDENTIFIER '{' enumeratorList ( ',' )? '}' -> ^('enum' ^(XID IDENTIFIER) enumeratorList)
 	|	IDENTIFIER -> ^('enum' ^(XID IDENTIFIER))
 	)
-    ;
+	;
 // orig:
 //	:	'enum' '{' enumeratorList ( ',' )? '}' -> ^('enum' enumeratorList)
 //	|	'enum' IDENTIFIER '{' enumeratorList ( ',' )? '}' -> ^('enum' ^(XID IDENTIFIER) enumeratorList)
@@ -397,25 +394,23 @@ directDeclarator
 @after {if (wasTypedef) $Typedef::isTypedef=true;}
 	:	 ( IDENTIFIER
 			{
-//			System.err.println("T: ID="+$IDENTIFIER.text+", size="+$declaration.size());
 			// $declaration.size() is 0 if declaration is currently not being evaluated
 			if ($Typedef.size()>0&&$Typedef::isTypedef) {
 				$Symbols::types.add($IDENTIFIER.text);
-//				System.err.println("define type "+$IDENTIFIER.text);
 			}
 			} -> IDENTIFIER
 	|	'(' declarator ')' -> declarator
 		)
 	// prevents getting function parameters into types
-	{   if ($Typedef.size()>0&&$Typedef::isTypedef) {
-          $Typedef::isTypedef=false; 
-          wasTypedef=true;
-        }
-    }		
+	{	if ($Typedef.size()>0&&$Typedef::isTypedef) {
+			$Typedef::isTypedef=false;
+			wasTypedef=true;
+		}
+	}
 	// left factoring array declarator
-    // left factoring function declarator
-	(	'[' 
-		( 	'static' tq=typeQualifier*  ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq* $ae)
+	// left factoring function declarator
+	(	'['
+		(	'static' tq=typeQualifier*  ae=assignmentExpression ']' -> ^(ARRAY_DECLARATOR $directDeclarator 'static' $tq* $ae)
 		|	'*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*')
 		|	tq=typeQualifier+
 			(	'*' ']' -> ^(ARRAY_DECLARATOR $directDeclarator '*' $tq+)
@@ -423,15 +418,14 @@ directDeclarator
 			|	ae=assignmentExpression? ']' -> ^(ARRAY_DECLARATOR $directDeclarator $tq+ $ae?)
 			)
 		|	ae=assignmentExpression? ']' -> ^(ARRAY_DECLARATOR $directDeclarator $ae?)
-		)		
-	|	'(' // cannot do (input.LA(2)==',')||(input.LA(2)==')'), since values for ',' and ')' do not get expanded	
+		)
+	|	'(' // cannot do (input.LA(2)==',')||(input.LA(2)==')'), since values for ',' and ')' do not get expanded
 		(	')' -> ^(FUNCTION_DECLARATOR $directDeclarator)	// K&R style, empty
 		|	{(input.LA(1)==IDENTIFIER) && ((input.LT(2).getText().equals(","))||(input.LT(2).getText().equals(")"))) && !isTypeName(input.LT(1).getText())}?  identifierList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator identifierList)
 		|	parameterTypeList ')' -> ^(FUNCTION_DECLARATOR $directDeclarator parameterTypeList)
 		)
 	)*
 	;
-	
 
 pointer
 	:	'*' typeQualifier* pointer? -> ^(POINTER typeQualifier* pointer?) // TODO AST
@@ -448,6 +442,7 @@ parameterList
 parameterDeclaration
 	// syntactic predicate: declarator must end-up with an IDENTIFIER, abstract with pointer or '['
 	//   TODO check for correctness
+// the complicated rewrite of attributes? is necessary to remove ambiguities. If abstractDeclarator is empty, it should not have any attributes.
 	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator | abstractDeclarator ? ) -> ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator? )
 	;
 // orig:
@@ -674,7 +669,7 @@ statement
 	:	labeledStatement
 	|	compoundStatement
 	|	expressionStatement
-	| 	selectionStatement
+	|	selectionStatement
 	|	iterationStatement
 	|	jumpStatement
 	|	asmStatement		// GNU
@@ -689,7 +684,6 @@ labeledStatement
 compoundStatement
 scope Symbols; // blocks are scopes
 @init { $Symbols::types = new HashSet(); }
-//	:	'{' (x+=declaration | x+=nestedFunctionDefinition | x+=statement)* '}' -> ^(COMPOUND_STATEMENT $x*)
 	:	'{' blockItem* '}' -> ^(COMPOUND_STATEMENT blockItem*)
 	|	'{' labelDeclaration+ blockItem* '}' -> ^(COMPOUND_STATEMENT blockItem*)	// GNU // TODO labels AST
 	;
@@ -697,7 +691,7 @@ scope Symbols; // blocks are scopes
 blockItem
 	:	declaration
 // TODO GNUC
-//	|	nestedFunctionDefinition 
+//	|	nestedFunctionDefinition
 	|	statement
 	;
 

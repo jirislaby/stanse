@@ -2,9 +2,9 @@
 
 GNUC grammar for ANTLR v3
 
-AUTHOR:	Jan Obdrzalek, 2007-2008
-	Jiri Slaby (minor modifications), 2008
-	Typedef handling taken from C.g distributed with ANTLR v3,  (c) Terence Parr and Jim Idle
+AUTHOR:	Jan Obdrzalek, 2007-2009
+	Jiri Slaby (modifications), 2008-2009
+	Typedef handling taken from C.g distributed with ANTLR v3,  (c) Terence Parr
 
 TODO:
 	- 5.4 Nested Functions - (almost) the same as declarations
@@ -62,7 +62,6 @@ COMMENTS:
 
 grammar GNUCa;
 options {
-//	backtrack=true;
 	backtrack=false;
 	memoize=true;
 	k=2;
@@ -205,7 +204,7 @@ scope Typedef;
 		)
 	|	';'
 	|	asmDefinition	// GNU
-        ;
+	;
 
 declarationOrFnDef
 	:	declarationSuffix
@@ -344,7 +343,6 @@ structDeclarator
 	;
 
 enumSpecifier // TODO improve the grammar
-//	:	'enum' attributes?
 	:	'enum'
 	(
 		'{' enumeratorList ( ',' )? '}'
@@ -402,7 +400,7 @@ directDeclarator
 			wasTypedef = 1;
 		}
 	}
-	// left factoring array
+	// left factoring array declarator
 	(	'['
 		(	'static' tq=typeQualifier*  ae=assignmentExpression ']'
 		|	'*' ']'
@@ -455,7 +453,6 @@ abstractDeclarator
 	;
 
 directAbstractDeclarator
-//	:	'(' attributes? abstractDeclarator ')'
 	:	'(' abstractDeclarator ')' arrayOrFunctionDeclarator*
 	|	arrayOrFunctionDeclarator+
 	;
@@ -521,7 +518,7 @@ attrib		// taken from GnuCParser.g (Monty Zukowski)
 
 primaryExpression
 	:	IDENTIFIER
-	|	CONSTANT
+	|	constant
 	|	sTRING_LITERAL
 	|	'(' compoundStatement ')'
 	|	'(' expression ')'
@@ -628,6 +625,7 @@ conditionalExpression
 
 assignmentExpression
 // ORIG
+//	:	unaryExpression assignmentOperator assignmentExpression
 //	|	conditionalExpression
 // THIS IS A GCC-STYLE HACK TO GET IT REASONABLY WORKING DOES NOT CATCH EVERYTHING, BUT SHOULD BE OK
 	:	conditionalExpression (assignmentOperator assignmentExpression | )
@@ -681,8 +679,7 @@ scope Symbols; // blocks are scopes
 
 blockItem
 	:	declaration
-// TODO GNUC : dela velky bordel, je v zasade stejna jak declaration
-//
+// TODO GNUC
 //	|	nestedFunctionDefinition
 	|	statement
 	;
@@ -822,13 +819,21 @@ UniversalCharacterName
 	|	'\\' 'U' HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit
 	;
 
-CONSTANT
+constant
+	:	ICONSTANT
+	|	RCONSTANT
+	;
+
+ICONSTANT
 	:	DecimalConstant IntegerSuffix?
 	|	OctalConstant IntegerSuffix?
 	|	HexadecimalConstant IntegerSuffix?
-	|	DecimalFloatingConstant
-	|	HexadecimalFloatingConstant
 	|	CharacterLiteral
+	;
+
+RCONSTANT
+	:	DecimalFloatingConstant
+	|	HexadecimalFloatingConstant
 	;
 
 fragment
