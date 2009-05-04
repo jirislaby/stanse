@@ -66,7 +66,7 @@ while (<CPP>) {
 	if (/^\s*#\s+[0-9]+\s+"(.*)"\s+([0-9\s]+)$/) {
 	    my $file = $1;
 	    my $fl = $2;
-	    $itself = $fl =~ /\b2\b/ && $file =~ /$source/;
+	    $itself = $fl =~ /\b2\b/ && $file =~ /$armored/;
 	}
 	next;
     }
