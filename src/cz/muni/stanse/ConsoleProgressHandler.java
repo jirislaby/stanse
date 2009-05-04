@@ -43,7 +43,7 @@ final class ConsoleProgressHandler extends ConfigurationProgressHandler {
 
     @Override
     public void onCheckerEnd(final int numErrorsFound) {
-        System.out.println("Done. Erros found: " + numErrorsFound + "\n");
+        System.out.println("Done. Errors found: " + numErrorsFound + "\n");
     }
 
     @Override

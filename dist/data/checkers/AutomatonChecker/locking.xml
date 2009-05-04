@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <automaton>
-    <description name="lock/unlock/islocked automanton checker"
-                 desc="Handles locking problem (lock/unlock matching)
+    <description name="lock/unlock/islocked automaton checker"
+                 desc="Handles locking problem (lock/unlock matching),
                        checks for redundant islocked() calls, detects
                        cross-locking problem (lock(a)..lock(b)..unlock(a))
                        and detects leaving function in locked state." />
