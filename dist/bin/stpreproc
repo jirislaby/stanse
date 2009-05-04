@@ -33,7 +33,7 @@ my $output = $2;
 chdir $3 if length $3 > 0;
 my $flags = $4;
 
-my $armored = $output . ".armored";
+my $armored = $output . ".armored.c";
 my $includes = $output . ".includes";
 my $nonincludes = $output . ".preproc";
 
