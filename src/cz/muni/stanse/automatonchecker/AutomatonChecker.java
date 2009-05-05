@@ -18,6 +18,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -111,8 +112,8 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     // private section
 
-    private final LinkedList<File> getXmlFiles() {
-        return xmlFiles;
+    private final List<File> getXmlFiles() {
+        return Collections.unmodifiableList(xmlFiles);
     }
 
     private static final Document readXMLdefinition(final File file) {
