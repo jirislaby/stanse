@@ -13,6 +13,11 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.Unit;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+
+import java.io.File;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -42,7 +47,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * @param XMLdefinition XML representation of AST
      * @throws XMLAutomatonSyntaxErrorException 
      */
-    public AutomatonChecker(final LinkedList<java.io.File> xmlFiles) {
+    public AutomatonChecker(final LinkedList<File> xmlFiles) {
         super();
         this.xmlFiles = xmlFiles;
     }
@@ -95,8 +100,8 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     check(final List<Unit> units) throws XMLAutomatonSyntaxErrorException {
         final LinkedList<cz.muni.stanse.checker.CheckerError> result =
                           new LinkedList<cz.muni.stanse.checker.CheckerError>();
-        for (java.io.File file : getXmlFiles()) {
-            final org.dom4j.Document XMLdefinition = readXMLdefinition(file);
+        for (File file : getXmlFiles()) {
+            final Document XMLdefinition = readXMLdefinition(file);
             if (XMLdefinition != null)
                 result.addAll(new AutomatonCheckerImpl(XMLdefinition).
                                         check(units));
@@ -106,19 +111,19 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     // private section
 
-    private final LinkedList<java.io.File> getXmlFiles() {
+    private final LinkedList<File> getXmlFiles() {
         return xmlFiles;
     }
 
-    private static final org.dom4j.Document
-    readXMLdefinition(final java.io.File file) {
+    private static final Document readXMLdefinition(final File file) {
             try {
-                return (new org.dom4j.io.SAXReader()).read(file);
-            }
-            catch (final Exception e) {
+                return (new SAXReader()).read(file);
+            } catch (final DocumentException e) {
+		System.err.println("Cannot open '" + file.getAbsolutePath() +
+			"': " + e.getLocalizedMessage());
                 return null;
             }
     }
 
-    private final LinkedList<java.io.File> xmlFiles;
+    private final LinkedList<File> xmlFiles;
 }
