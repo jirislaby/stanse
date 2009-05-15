@@ -811,11 +811,8 @@ sTRING_LITERAL returns [String text]
 	;
 
 constant returns [Element e]
-@after {
-	$e.addText($constant.text);
-}
-	:	ICONSTANT { $e = newElement("intConst"); }
-	|	RCONSTANT { $e = newElement("realConst"); }
+	:	ICONSTANT { $e = newElement("intConst"); $e.addText($ICONSTANT.text); }
+	|	RCONSTANT { $e = newElement("realConst"); $e.addText($RCONSTANT.text); }
 	;
 
 offsetofMemberDesignator returns [Element e]
