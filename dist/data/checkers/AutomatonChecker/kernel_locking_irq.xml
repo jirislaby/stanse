@@ -72,6 +72,14 @@
     </pattern>
 
     <pattern name="lock">
+        <functionCall>
+            <id>__st_mutex_lock_nested_st__</id>
+            <var name="A" />
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
         <assert>
             <binaryExpressionEquality>
                 <prefixExpressionLogicalNot>
@@ -116,6 +124,67 @@
         </functionCall>
     </pattern>
 
+    <!-- true branch of 'if (spin_trylock())' -->
+    <pattern name="lock">
+        <assert>
+            <binaryExpressionEquality>
+                <prefixExpressionLogicalNot>
+                    <functionCall>
+                        <id>__st_spin_trylock_st__</id>
+                        <var name="A" />
+                    </functionCall>
+                </prefixExpressionLogicalNot>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_spin_lock_irq_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <!-- true branch of 'if (spin_trylock_irq())' -->
+    <pattern name="lock">
+        <assert>
+            <binaryExpressionEquality>
+                <prefixExpressionLogicalNot>
+                    <functionCall>
+                        <id>__st_spin_trylock_irq_st__</id>
+                        <var name="A" />
+                    </functionCall>
+                </prefixExpressionLogicalNot>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_spin_lock_irqsave_st__</id>
+            <var name="A" />
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <!-- true branch of 'if (spin_trylock_irqsave())' -->
+    <pattern name="lock">
+        <assert>
+            <binaryExpressionEquality>
+                <prefixExpressionLogicalNot>
+                    <functionCall>
+                        <id>__st_spin_trylock_irqsave_st__</id>
+                        <var name="A" />
+			<ignore/>
+                    </functionCall>
+                </prefixExpressionLogicalNot>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
+
     <pattern name="lock">
 	<functionCall>
 	    <id>__st_local_irq_save_st__</id>
@@ -138,6 +207,21 @@
     <pattern name="unlock">
         <functionCall>
             <id>__st_mutex_unlock_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_spin_unlock_irqrestore_st__</id>
+            <var name="A" />
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_spin_unlock_irq_st__</id>
             <var name="A" />
         </functionCall>
     </pattern>
