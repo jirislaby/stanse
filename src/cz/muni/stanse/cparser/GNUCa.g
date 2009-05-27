@@ -489,7 +489,12 @@ initializer
 	;
 
 initializerList
-	:	designation? initializer (',' (designation? initializer))* -> (designation? initializer)+
+	:	designationInitializer (',' designationInitializer)* -> designationInitializer+
+	;
+
+// this was folded into initializerList, but it sucks, parsing lasts longer and makes crippled AST
+designationInitializer:
+	designation? initializer
 	;
 
 designation
