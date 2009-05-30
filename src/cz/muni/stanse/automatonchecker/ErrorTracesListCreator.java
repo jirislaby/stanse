@@ -23,6 +23,9 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
 
     @Override
     public boolean visit(final List<CFGNode> path) {
+        if (getErrorTracesList().size() >= 20)
+            return false;
+
         final CFGNode node = path.iterator().next();
 
         if (getStartNode().equals(node))
