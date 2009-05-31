@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<automaton>
+    <description name="atomic automaton checker"
+                 desc="Handles sleeping while atomic." />
+
+    <start state="N" />
+    <transition from="N[A]" by="atomize[A]" to="A[A]" />
+    <transition from="A[A]" by="deatomize[A]" to="N[A]" />
+
+    <transition from="A[A]" by="atomize[A]" to="AA[A]" />
+    <transition from="AA[A]" by="deatomize[A]" to="A[A]" />
+
+    <transition from="AA[A]" by="atomize[A]" to="AAA[A]" />
+    <transition from="AAA[A]" by="deatomize[A]" to="AA[A]" />
+
+    <transition from="AAA[A]" by="atomize[A]" to="AAAA[A]" />
+    <transition from="AAAA[A]" by="deatomize[A]" to="AAA[A]" />
+
+    <transition from="AAAA[A]" by="atomize[A]" to="AAAAA[A]" />
+    <transition from="AAAAA[A]" by="deatomize[A]" to="AAAA[A]" />
+
+    <error  from="A[A]" by="nonatomic[A]"
+            desc="non-atomic operation in atomic"
+            level="0"
+            entry="The function called in a non-atomic state."
+            begin="The atomic section starts here."
+            propag="Not affected ==> still in atomic."
+            end="Here is an attempt to perform non-atomic in atomic." />
+
+    <error  from="AA[A]" by="nonatomic[A]"
+            desc="non-atomic operation in atomic"
+            level="0"
+            entry="The function called in a non-atomic state."
+            begin="The atomic section starts here."
+            propag="Not affected ==> still in atomic."
+            end="Here is an attempt to perform non-atomic in atomic." />
+
+    <error  from="AAA[A]" by="nonatomic[A]"
+            desc="non-atomic operation in atomic"
+            level="0"
+            entry="The function called in a non-atomic state."
+            begin="The atomic section starts here."
+            propag="Not affected ==> still in atomic."
+            end="Here is an attempt to perform non-atomic in atomic." />
+
+    <error  from="AAAA[A]" by="nonatomic[A]"
+            desc="non-atomic operation in atomic"
+            level="0"
+            entry="The function called in a non-atomic state."
+            begin="The atomic section starts here."
+            propag="Not affected ==> still in atomic."
+            end="Here is an attempt to perform non-atomic in atomic." />
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>kmalloc</id>
+	    <ignore/>
+	    <id>__st_GFP_KERNEL_st__</id>
+        </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>msleep</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>msleep_interruptible</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>ssleep</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="atomize">
+        <functionCall>
+            <id>__st_spin_lock_st__</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="deatomize">
+        <functionCall>
+            <id>__st_spin_unlock_st__</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="atomize">
+        <functionCall>
+            <id>__st_local_irq_save_st__</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="deatomize">
+        <functionCall>
+            <id>__st_local_irq_restore_st__</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="atomize">
+        <functionCall>
+            <id>__st_local_irq_disable_st__</id>
+        </functionCall>
+    </pattern>
+
+    <pattern name="deatomize">
+        <functionCall>
+            <id>__st_local_irq_enable_st__</id>
+        </functionCall>
+    </pattern>
+
+</automaton>
