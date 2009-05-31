@@ -124,6 +124,14 @@
         </functionCall>
     </pattern>
 
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_spin_lock_nested_st__</id>
+            <var name="A" />
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
     <!-- true branch of 'if (spin_trylock())' -->
     <pattern name="lock">
         <assert>
@@ -146,6 +154,14 @@
         </functionCall>
     </pattern>
 
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_spin_lock_irq_nested_st__</id>
+            <var name="A" />
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
     <!-- true branch of 'if (spin_trylock_irq())' -->
     <pattern name="lock">
         <assert>
@@ -165,6 +181,15 @@
         <functionCall>
             <id>__st_spin_lock_irqsave_st__</id>
             <var name="A" />
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_spin_lock_irqsave_nested_st__</id>
+            <var name="A" />
+	    <ignore/>
 	    <ignore/>
         </functionCall>
     </pattern>
