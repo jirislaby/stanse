@@ -20,6 +20,10 @@ import org.dom4j.Element;
 public class StanseTree extends CommonTree {
     private Element e;
 
+    public StanseTree() {
+	super();
+    }
+
     public StanseTree(Token t) {
 	super(t);
     }
