@@ -339,8 +339,9 @@ public final class Stanse {
 						System.out.println(error.toString());
 					}
 				} catch (Exception ex) {
-					System.err.println("Fatal error when executing the checker.");
-					System.err.println(ex.toString());
+					System.err.println("Fatal error when " +
+						"executing the checker:");
+					ex.printStackTrace();
 					logger.log(Level.FATAL, null, ex);
 				}
 			}
