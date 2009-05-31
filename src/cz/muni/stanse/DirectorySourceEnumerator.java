@@ -1,6 +1,14 @@
 package cz.muni.stanse;
 
 import cz.muni.stanse.utils.FileAlgo;
+import cz.muni.stanse.utils.Make;
+
+import java.io.File;
+import java.io.FileFilter;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public final class DirectorySourceEnumerator extends
                                            ReferencedSourceCodeFilesEnumerator {
@@ -11,8 +19,7 @@ public final class DirectorySourceEnumerator extends
                               final String extension,
                               final boolean searchSubdirectories) {
         super(startDirectory);
-        this.extensions = cz.muni.stanse.utils.Make.
-                                            linkedList(extension.toUpperCase());
+        this.extensions = Make.linkedList(extension.toUpperCase());
         this.searchSubdirectories = searchSubdirectories;
     }
 
@@ -21,34 +28,32 @@ public final class DirectorySourceEnumerator extends
     }
 
     @Override
-    public java.util.List<String> getSourceCodeFiles() throws Exception {
+    public List<String> getSourceCodeFiles() throws SourceCodeFilesException {
         return toStringList(
-                   FileAlgo.enumerateFiles(new java.io.File(getReferenceFile()),
-                        new java.io.FileFilter() {
-                        @Override public boolean accept(java.io.File file) {
+                   FileAlgo.enumerateFiles(new File(getReferenceFile()),
+                        new FileFilter() {
+                        @Override public boolean accept(File file) {
                             return (file.isDirectory()) ?
                                         getSearchSubdirectories() :
                                         getExtensions().contains(
                                             FileAlgo.getExtension(
                                                 file.toString().toUpperCase()));
-                        }},getSearchSubdirectories()));
+                        }}, getSearchSubdirectories()));
     }
 
     // private section
 
-    private static java.util.List<String>
-    toStringList(final java.util.Set<java.io.File> fileSet) {
-        final java.util.LinkedList<String> result =
-                                             new java.util.LinkedList<String>();
-        for (java.io.File file : fileSet)
+    private static List<String> toStringList(final Set<File> fileSet) {
+        final List<String> result = new LinkedList<String>();
+        for (File file : fileSet)
             result.add(file.toString());
         return result;
     }
 
-    private java.util.LinkedList<String> getExtensions() {
+    private List<String> getExtensions() {
         return extensions;
     }
 
-    private final java.util.LinkedList<String> extensions;
+    private final List<String> extensions;
     private final boolean searchSubdirectories;
 }

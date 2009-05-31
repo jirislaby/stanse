@@ -20,6 +20,8 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
+import org.antlr.runtime.tree.RewriteCardinalityException;
+;
 
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
@@ -39,8 +41,7 @@ import cz.muni.stanse.Stanse;
  */
 public final class CUnit extends Unit {
 
-    public CUnit(File file) throws IOException, RecognitionException,
-		ParserException {
+    public CUnit(File file) throws IOException, ParserException {
 	this(new FileInputStream(file), file.getAbsolutePath());
     }
 
@@ -49,20 +50,20 @@ public final class CUnit extends Unit {
      *
      * @param jobEntry string in format TODO
      */
-    public CUnit(String jobEntry) throws IOException, RecognitionException,
-			ParserException {
+    public CUnit(String jobEntry) throws IOException, ParserException {
 	this(preprocess(jobEntry));
     }
 
     public CUnit(InputStream stream, String name) throws IOException,
-				RecognitionException, ParserException {
+				ParserException {
 	this(new Triple<InputStream, String, List<String>>(stream, name, null));
     }
 
     private CUnit(Triple<InputStream, String, List<String>> triple)
-				throws IOException, RecognitionException,
-				ParserException {
+				throws IOException, ParserException {
 	super(triple.getFirst(), triple.getSecond());
+
+	GNUCaParser.translationUnit_return parserRet;
 	
 	StanseTreeAdaptor adaptor = new StanseTreeAdaptor();
 
@@ -73,19 +74,34 @@ public final class CUnit extends Unit {
 	GNUCaParser parser = new GNUCaParser(tokens);
 	parser.setTreeAdaptor(adaptor);
 	parser.setTypedefs(triple.getThird());
-	GNUCaParser.translationUnit_return parserRet = parser.translationUnit();
+	try {
+	    parserRet = parser.translationUnit();
+	} catch (RecognitionException e) {
+	    throw new ParserException("parser", e);
+	} catch (RewriteCardinalityException e) {
+	    throw new ParserException("parser", e);
+	}
 	StanseTree parserTree = (StanseTree)parserRet.getTree();
 
-	CommonTreeNodeStream nodes = new CommonTreeNodeStream(adaptor, parserTree);
+	CommonTreeNodeStream nodes = new CommonTreeNodeStream(adaptor,
+	    parserTree);
 	nodes.setTokenStream(tokens);
 
 	XMLEmitter xmlEmitter = new XMLEmitter(nodes);
-	xmlDocument = xmlEmitter.translationUnit();
+	try {
+	    xmlDocument = xmlEmitter.translationUnit();
+	} catch (RecognitionException e) {
+	    throw new ParserException("XMLEmitter", e);
+	}
 
 	nodes.reset();
 
 	CFGEmitter cfgEmitter = new CFGEmitter(nodes);
-	CFGs = cfgEmitter.translationUnit();
+	try {
+	    CFGs = cfgEmitter.translationUnit();
+	} catch (RecognitionException e) {
+	    throw new ParserException("CFGEmitter", e);
+	}
     }
 
     private static Triple<InputStream, String, List<String>> preprocess(

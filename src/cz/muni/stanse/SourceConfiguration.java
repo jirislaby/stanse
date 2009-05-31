@@ -1,7 +1,11 @@
 package cz.muni.stanse;
 
+import cz.muni.stanse.SourceCodeFilesException;
+import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.cparser.CUnit;
+
+import java.io.IOException;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -11,16 +15,34 @@ public final class SourceConfiguration {
 
     // public section
 
-    public SourceConfiguration(final SourceCodeFilesEnumerator sourceEnumerator)
-    { this.sourceEnumerator = sourceEnumerator; }
+    public SourceConfiguration(final SourceCodeFilesEnumerator
+			sourceEnumerator) {
+	this.sourceEnumerator = sourceEnumerator;
+    }
 
     public List<Unit> getUnits(final ConfigurationProgressHandler
-                                             progressHandler) throws Exception {
+			progressHandler) {
         progressHandler.onParsingBegin();
         final List<Unit> result = new LinkedList<Unit>();
-        for (String pathName : getSourceEnumerator().getSourceCodeFiles()) {
+	List <String> files;
+	try {
+	    files = getSourceEnumerator().getSourceCodeFiles();
+	} catch (SourceCodeFilesException e) {
+	    System.err.println("Failed to get source files:");
+	    e.printStackTrace();
+	    return Collections.unmodifiableList(result);
+	}
+        for (String pathName: files) {
             progressHandler.onFileBegin(pathName);
-            result.add(new CUnit(pathName));
+	    try {
+		result.add(new CUnit(pathName));
+	    } catch (ParserException e) {
+		System.err.println("Failed to parse '" + pathName + "':");
+		e.printStackTrace();
+	    } catch (IOException e) {
+		System.err.println("Failed to parse '" + pathName + "':");
+		e.printStackTrace();
+	    }
             progressHandler.onFileEnd();
         }
         progressHandler.onParsingEnd();
@@ -38,7 +60,7 @@ public final class SourceConfiguration {
 
     @Deprecated
     public List<Unit> getProcessedUnits(final ConfigurationProgressHandler
-                                             progressHandler) throws Exception {
+                                             progressHandler) {
         return processedUnitList = (processedUnitList != null) ?
                                   processedUnitList : getUnits(progressHandler);
     }

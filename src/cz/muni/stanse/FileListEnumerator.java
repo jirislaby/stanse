@@ -1,7 +1,5 @@
-/**
- * 
- */
 package cz.muni.stanse;
+
 import java.util.List;
 
 /**
@@ -9,18 +7,15 @@ import java.util.List;
  *
  */
 public class FileListEnumerator extends SourceCodeFilesEnumerator {
-	private final List <String> fileNames;
+	private final List<String> fileNames;
 	
-	/**
-	 * 
-	 */
-	public FileListEnumerator(final List<String> sources ) {
+	public FileListEnumerator(final List<String> sources) {
 		super();
-		this.fileNames=sources;
+		this.fileNames = sources;
 	}
 
     @Override
-    public java.util.List<String> getSourceCodeFiles() throws Exception {
+    public List<String> getSourceCodeFiles() throws SourceCodeFilesException {
         return fileNames;
     }
 }

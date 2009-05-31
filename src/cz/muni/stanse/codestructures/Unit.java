@@ -14,8 +14,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 
-import org.antlr.runtime.RecognitionException;
-
 import org.dom4j.Document;
 
 import cz.muni.stanse.codestructures.CFG;
@@ -54,11 +52,10 @@ public abstract class Unit {
      * @param name Name of the unit. Needs to be supplied explicitly, because
      * 		it is not derivable from a stream.
      * @throws IOException If there any problems with IO.
-     * @throws RecognitionException In case of parsing problems not related to IO.
+     * @throws ParserException In case of parsing problems not related to IO.
      */
-    // TODO Should have an own exception class, instead of ANTLR's RecognitionException.
     public Unit(InputStream stream, String name) throws IOException,
-				RecognitionException {
+			ParserException {
 	this(new File(name));
     }
 
@@ -67,9 +64,9 @@ public abstract class Unit {
      * 
      * @param file Name of the file containing the compilation unit.
      * @throws IOException If there any problems with IO.
-     * @throws RecognitionException In case of parsing problems not related to IO.
+     * @throws ParserException In case of parsing problems not related to IO.
      */
-    public Unit(File file) throws IOException, RecognitionException {
+    public Unit(File file) throws IOException, ParserException {
 	this.name = file.getAbsolutePath();
     }
     

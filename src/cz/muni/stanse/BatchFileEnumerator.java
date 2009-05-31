@@ -2,6 +2,8 @@ package cz.muni.stanse;
 
 import cz.muni.stanse.utils.ClassLogger;
 
+import cz.muni.stanse.SourceCodeFilesException;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,7 +20,7 @@ public final class BatchFileEnumerator
     }
 
     @Override
-    public List<String> getSourceCodeFiles() throws Exception {
+    public List<String> getSourceCodeFiles() throws SourceCodeFilesException {
         final List<String> result = new LinkedList<String>();
         try {
             final BufferedReader reader = new BufferedReader(
