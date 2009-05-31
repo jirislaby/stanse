@@ -11,6 +11,7 @@
 
 use strict;
 use warnings;
+use File::Basename qw(dirname);
 
 my @kuntouchables = (
 	"mutex_lock", "mutex_trylock", "mutex_lock_interruptible",
@@ -44,6 +45,7 @@ my $flags = $4;
 my $armored = $output . ".armored.c";
 my $includes = $output . ".includes";
 my $nonincludes = $output . ".preproc";
+my $sourcedir = dirname $source;
 
 open(SRC, "$source") || die "can't open '$source'";
 open(ASRC, ">$armored") || die "can't open '$armored' for writing";
@@ -58,7 +60,8 @@ open(ASRC, ">$armored") || die "can't open '$armored' for writing";
 close(ASRC);
 close(SRC);
 
-my $cpp = "gcc -E -w -D__attribute__\\(x\\)= -D__attribute\\(x\\)= " .
+my $cpp = "gcc -E -w -I$sourcedir " .
+	"-D__attribute__\\(x\\)= -D__attribute\\(x\\)= " .
 	"-D__builtin_va_list=int -D__builtin_offsetof\\(x,y\\)=1 " .
 	"-D__builtin_types_compatible_p\\(x,y\\)=0 " .
 	"-D__builtin_va_arg\\(ap,t\\)=\\(t\\)0 $flags";
