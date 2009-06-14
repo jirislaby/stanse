@@ -13,7 +13,7 @@
 	<pathelement location="${dist}/lib/log4j-1.2.14.jar"/>
 	<pathelement location="${dist}/lib/swing-layout-1.0.jar"/>
     </path>
-    <target name="run" depends="jar">
+    <target name="run">
         <java jar="${dist}/${ant.project.name}.jar" fork="true" >
             <arg line="${stanse.args}"/>
         </java>
