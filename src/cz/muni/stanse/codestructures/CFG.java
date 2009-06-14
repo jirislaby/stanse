@@ -87,6 +87,13 @@ public class CFG extends CFGPart {
 	return functionName;
     }
 
+    public Element getElement() {
+        return functionDefinition.getName().equals("functionDefinition") ?
+                    functionDefinition :
+                    (Element)functionDefinition.
+                                      selectSingleNode(".//functionDefinition");
+    }
+
     @Override
     public boolean equals(Object obj) {
 	if (obj == null) {
