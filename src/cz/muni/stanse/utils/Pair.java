@@ -73,7 +73,10 @@ public final class Pair<A,B> {
      * @see
      */
     public boolean isEqualWith(final Pair<A,B> other) {
-        return first.equals(other.first) && second.equals(other.second);
+        return ((first == null && other.first == null) ||
+                    first.equals(other.first)) &&
+               ((second == null && other.second == null) ||
+                    second.equals(other.second));
     }
 
     /**
@@ -113,6 +116,10 @@ public final class Pair<A,B> {
 	    sb.append(second.toString());
 	sb.append('}');
 	return sb.toString();
+    }
+
+    public static <A,B> Pair<A,B> make(final A a, final B b) {
+        return new Pair<A,B>(a,b);
     }
 
     // private section
