@@ -10,13 +10,9 @@ package cz.muni.stanse;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.XMLAlgo;
-
 import cz.muni.stanse.gui.MainWindow;
-
-import cz.muni.stanse.props.LoggerConfigurator;
 import cz.muni.stanse.props.Properties;
 
 import java.io.BufferedWriter;
@@ -35,14 +31,8 @@ import joptsimple.OptionSet;
 import joptsimple.OptionException;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.HTMLLayout;
 import org.apache.log4j.Level;
-import org.apache.log4j.Priority;
-import org.apache.log4j.spi.LoggingEvent;
-
 import org.dom4j.Document;
-import org.antlr.runtime.RecognitionException;
 
 /**
  * Class containing the main() method. Not supposed to be instantiated.
@@ -93,8 +83,14 @@ public final class Stanse {
 		OptionParser parser = new OptionParser();
 		OptionSpec<Void> help = parser.acceptsAll( asList( "h", "?", "help" ), 
 		"Shows this help message and exits." );	
-		OptionSpec<Void> gui = parser.acceptsAll( asList( "g", "gui" ), "Starts GUI" );
-		OptionSpec<Void> version = parser.accepts( "version", "Prints the program version and exits" );
+
+        final OptionSpec<String> gui =
+            parser.acceptsAll(asList("g","gui"),"Starts GUI" )
+                  .withOptionalArg()
+                  .describedAs("name")
+                  .ofType(String.class);
+
+        OptionSpec<Void> version = parser.accepts( "version", "Prints the program version and exits" );
 		// *** Checkers and their configurations
 		OptionSpec<String> checkers = parser.acceptsAll( asList( "c", "checker"),
 		"Checker name and (possibly) configuration. Can be used multiple times.")
@@ -152,9 +148,27 @@ public final class Stanse {
 		// OptionSpec<Void> dumpCallGraph = parser.accepts("dump-callgraph", "Dump callgraph in Dot format");
 		OptionSpec<File> outputDir = parser.accepts("output-dir", "Sets the output directory for generated files")
 		.withRequiredArg()
-		.describedAs("file")
+		.describedAs("directory")
 		.ofType(File.class);
-		// TODO: how to print "command-line usage", including the sources?		
+
+		final OptionSpec<String> singleSourceFile =
+            parser.accepts("single-file",
+                           "Single source file to be checked for bugs.")
+                  .withRequiredArg()
+                  .describedAs("file")
+                  .ofType(String.class);
+
+        // TODO: following option 'useIntraproceduralAnalysis' switches between
+        //       (iter/intra)procedural analyses. But it does it globaly per all
+        //       the checkers. This should be rewriten to enable swiching these
+        //       options per checker.
+        final OptionSpec<Void> useIntraproceduralAnalysis =
+            parser.accepts("intraprocedural",
+                           "Use simpler intraprocedural analysis instead of " +
+                           "much more complex interprocedural analysis. " +
+                           "Affects all the checkers.");
+
+        // TODO: how to print "command-line usage", including the sources?
 
         Configuration config = null;
         final OptionSet options = parser.parse(args);
@@ -188,7 +202,11 @@ public final class Stanse {
 			if (options.has(outputDir)) {
 				File d = options.valueOf(outputDir);
 				if(!d.exists()) {
-					// TODO throw exception
+                    System.out.print("Output directory: '" + d.toString() +
+                                       "' does not exist.\n\tCreating it...");
+                    d.mkdir();
+                    System.out.println(d.exists() ? "Done." :
+                                            "Failed! Output won't be written.");
 				}
 				outputDirectory = d; 
 			}
@@ -242,6 +260,7 @@ public final class Stanse {
 				if (options.has(jobfile)) i++;
 				if (options.has(dir)) i++;
 				if (options.has(rdir)) i++;
+                if (options.has(singleSourceFile)) i++;
 				if (i>1) {
 					// TODO "Only one way of specifying source files can be used".
 				}
@@ -275,7 +294,7 @@ public final class Stanse {
 					System.err.println("Directory " + d + " does not exist! Exiting.");
 					return;
 				} 				
-				e = new DirectorySourceEnumerator(options.valueOf(dir), ".c", false);
+				e = new DirectorySourceEnumerator(options.valueOf(dir), "c", false);
 			}
 			// 5: Recursive directory
 			if (options.has(rdir)) {
@@ -284,12 +303,27 @@ public final class Stanse {
 					System.err.println("Directory " + d + " does not exist! Exiting.");
 					return;
 				} 				
-				e = new DirectorySourceEnumerator(options.valueOf(rdir), ".c", true);
-			}			
-			// 6: TODO single hyphen - read from standard input 
+				e = new DirectorySourceEnumerator(options.valueOf(rdir), "c", true);
+			}
+
+            // 6: Single source file
+            if (options.has(singleSourceFile)) {
+                final File file = new File(options.valueOf(singleSourceFile));
+                if (!file.exists()) {
+                    System.err.println(
+                        "Processing option : '" + singleSourceFile.toString() +
+                        "' failed. Reason is:\nFile " + file +
+                        " does not exist!\nExiting.");
+                    return;
+                }
+                e = new SingleFileEnumerator(file.toString());
+            }
+
+			// 7: TODO single hyphen - read from standard input
 			// "-" is a non-option argument, and as such should be present only if no file names are present
 			// LAST:
-			SourceConfiguration sourceConfig=new SourceConfiguration(e);
+
+            SourceConfiguration sourceConfig=new SourceConfiguration(e);
 
 			// CHECKERS
 			if(options.has(checkers)){ // at least one checker was specified
@@ -306,7 +340,9 @@ public final class Stanse {
 					for (int i=1; i<cc.length; i++) {
 						CheckerDataFiles.add(new File(cc[i]));
 					}
-					checkerConfig.add(new CheckerConfiguration(checkerName, CheckerDataFiles));
+					checkerConfig.add(
+                        new CheckerConfiguration(checkerName,CheckerDataFiles,
+                                     !options.has(useIntraproceduralAnalysis)));
 				}
 				config = new Configuration(sourceConfig, checkerConfig);
 			} else { // use default configuration
@@ -320,6 +356,8 @@ public final class Stanse {
                 final Configuration configFinal = config;
 				java.awt.EventQueue.invokeLater(new Runnable() {
 					public void run() {
+                        if (options.valueOf(gui) != null)
+                            MainWindow.setLookAndFeel(options.valueOf(gui));
 						MainWindow gui = MainWindow.getInstance();
 						if (sources.isEmpty()) { 
 							gui.setConfiguration(configFinal);
@@ -330,7 +368,7 @@ public final class Stanse {
 						gui.setVisible(true);
 					}
 				});
-				return;
+				//return;
 			} else { 					// CLI
 				Pair<LinkedList<CheckerError>, LinkedList<PresentableError> > errors;
 				try {
@@ -348,12 +386,16 @@ public final class Stanse {
 
 	        // UNKNOWN ARGUMENT
 		} catch (OptionException ex) {
+            System.out.println("Command-line arguments parsing has failed:\n" +
+                               ex.getMessage() + '\n' + ex.getStackTrace() +
+                               "\n\nSee Stanse command-line help:\n");
 	             try {
-	                     System.out.println("Invalid option.");
+	                     //System.out.println("Invalid option.");
 	                     parser.printHelpOn(System.out);
 	             } catch (IOException ex1) {
 	                     logger.log(Level.FATAL, null, ex1);
 	             }
+             return;
 	     }
 	     
 
@@ -391,7 +433,10 @@ public final class Stanse {
 					// DUMP-XML
 					if (options.has(dumpXML)) {
 						unitAST = unit.getXMLDocument();
-						xmlFile = new File(outputDirectory, fileName + ".xml");
+                        final String name =
+                                outputDirectory.toString().isEmpty() ?
+                                    fileName : (new File(fileName)).getName();
+						xmlFile = new File(outputDirectory,name + ".xml");
 						try {
 							 //BufferedWriter out = new BufferedWriter(new
 							 //FileWriter(xmlFile));
@@ -406,8 +451,11 @@ public final class Stanse {
 					if (options.has(dumpCFG)) {
 						unitCFG = unit.getCFGs();
 						for (CFG cfg : unitCFG) {
-							cfgFile = new File(outputDirectory, fileName + "."
-									+ cfg.getFunctionName() + ".dot");
+                            final String name =
+                                    outputDirectory.toString().isEmpty() ?
+                                        fileName : (new File(fileName)).getName();
+							cfgFile = new File(outputDirectory, name + "." +
+                                                cfg.getFunctionName() + ".dot");
 							try {
 								BufferedWriter out = new BufferedWriter(
 										new FileWriter(cfgFile));
