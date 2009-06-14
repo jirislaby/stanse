@@ -8,6 +8,8 @@
  */
 package cz.muni.stanse.utils;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -98,6 +100,10 @@ public final class XMLPatternVariablesAssignment {
                 return false;
         }
         return true;
+    }
+
+    public Map<String,org.dom4j.Element> getVarsMap() {
+        return Collections.unmodifiableMap(getVarsAssignments());
     }
 
     // private section
