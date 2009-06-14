@@ -24,8 +24,6 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="checkerNamesScrollPane" alignment="0" pref="492" max="32767" attributes="0"/>
-          <Component id="checkerInfoScrollPane" alignment="0" pref="492" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace pref="361" max="32767" attributes="0"/>
               <Component id="chooseCheckerButton" min="-2" max="-2" attributes="0"/>
@@ -33,14 +31,22 @@
               <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
+          <Component id="checkerNamesScrollPane" alignment="0" pref="492" max="32767" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="interproceduralCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Component id="checkerInfoScrollPane" alignment="0" pref="492" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="checkerNamesScrollPane" min="-2" pref="148" max="-2" attributes="0"/>
+              <Component id="checkerNamesScrollPane" min="-2" pref="111" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="checkerInfoScrollPane" min="-2" pref="132" max="-2" attributes="0"/>
+              <Component id="interproceduralCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="checkerInfoScrollPane" min="-2" pref="143" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="chooseCheckerButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -96,6 +102,13 @@
     <Component class="javax.swing.JButton" name="cancelButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Cancel"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="interproceduralCheckBox">
+      <Properties>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" value="Interprocedural Analysis"/>
+        <Property name="toolTipText" type="java.lang.String" value="When checked, then interprocedural variant of selected checker will be used. Otherwise the analysis will be intraprocedural."/>
       </Properties>
     </Component>
   </SubComponents>

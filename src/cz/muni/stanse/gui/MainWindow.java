@@ -17,6 +17,10 @@ public final class MainWindow extends javax.swing.JFrame {
                                      (mainWindow = new MainWindow());
     }
 
+    public static void setLookAndFeel(final String type) {
+        lookAndFeelType = type.toUpperCase();
+    }
+
     
     /**
      * Opens all specified files in GUI, and then sets AllOpenedSourceFiles enumerator.
@@ -35,6 +39,7 @@ public final class MainWindow extends javax.swing.JFrame {
     }
     
     // package-private section
+
     Configuration getConfiguration() {
         return configuration;
     }
@@ -64,9 +69,11 @@ public final class MainWindow extends javax.swing.JFrame {
     private MainWindow() {
         super();
 
-        setGuiLookAndFeel();
+        setLookAndFeel();
 
         initComponents();
+
+        setIconImage(new javax.swing.ImageIcon(getIconPathName()).getImage());
 
         configuration = new Configuration();
         errorsTreeManager = new ErrorsTreeManager(errorsTree);
@@ -88,13 +95,21 @@ public final class MainWindow extends javax.swing.JFrame {
         });
     }
 
-    private static void setGuiLookAndFeel() {
+    private static void setLookAndFeel() {
         javax.swing.UIManager.put("swing.boldMetal", Boolean.FALSE);
-//        try {
-//            javax.swing.UIManager.setLookAndFeel(
-//                         javax.swing.UIManager.getSystemLookAndFeelClassName());
-//        } catch (final Exception exception) {
-//        }
+//        if (lookAndFeelType.toUpperCase().equals("DEFAULT") ||
+//            lookAndFeelType.equals("METAL"))
+//            return;
+        if (lookAndFeelType.toUpperCase().equals("SYSTEM"))
+            try {
+                javax.swing.UIManager.setLookAndFeel(
+                         javax.swing.UIManager.getSystemLookAndFeelClassName());
+            } catch (final Exception exception) {
+            }
+    }
+
+    private static String getIconPathName() {
+        return cz.muni.stanse.Stanse.getRootDirectory() + "/stanse_icon.png";
     }
 
     private Configuration configuration;
@@ -103,6 +118,7 @@ public final class MainWindow extends javax.swing.JFrame {
     private final ErrorTracingManager errorTracingManager;
     private final ConsoleManager consoleManager;
 
+    private static String lookAndFeelType = "DEFAULT";
     private static MainWindow mainWindow = null;
 
     //

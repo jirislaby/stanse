@@ -9,16 +9,20 @@ final class ChooseCheckerManager {
     // package-private section
 
     ChooseCheckerManager(final ChooseCheckerDialog dialog,
-                            final javax.swing.JList checkerNamesList,
-                            final javax.swing.JTextArea checkerInfoTextArea,
-                            final javax.swing.JButton chooseCheckerButton,
-                            final javax.swing.JButton cancelButton) {
+                         final javax.swing.JList checkerNamesList,
+                         final javax.swing.JTextArea checkerInfoTextArea,
+                         final javax.swing.JButton chooseCheckerButton,
+                         final javax.swing.JButton cancelButton,
+                         final javax.swing.JCheckBox interproceduralCheckBox) {
         this.checkerName = null;
         this.lastSelection = -1;
+        this.interprocedural = interproceduralCheckBox.isSelected();
+
         this.checkerNamesList = checkerNamesList;
         this.checkerInfoTextArea = checkerInfoTextArea;
         this.chooseCheckerButton = chooseCheckerButton;
         this.cancelButton = cancelButton;
+        this.interproceduralCheckBox = interproceduralCheckBox;
 
         fillCheckerNamesList(cz.muni.stanse.checker.CheckerFactory.
                              getRegisteredCheckers());
@@ -46,10 +50,21 @@ final class ChooseCheckerManager {
                 dialog.dispose();
             }
         });
+        getInterproceduralCheckBox().addActionListener(
+        new java.awt.event.ActionListener() {
+            @Override public void actionPerformed(
+                                           final java.awt.event.ActionEvent e) {
+                interprocedural = !interprocedural;
+            }
+        });
     }
 
     String getCheckerName() {
         return checkerName;
+    }
+
+    boolean isInterprocedural() {
+        return interprocedural;
     }
 
     // private section
@@ -110,10 +125,16 @@ final class ChooseCheckerManager {
         return cancelButton;
     }
 
+    private javax.swing.JCheckBox getInterproceduralCheckBox() {
+        return interproceduralCheckBox;
+    }
+
     private String checkerName;
     private int lastSelection;
+    private boolean interprocedural;
     private final javax.swing.JList checkerNamesList;
     private final javax.swing.JTextArea checkerInfoTextArea;
     private final javax.swing.JButton chooseCheckerButton;
     private final javax.swing.JButton cancelButton;
+    private final javax.swing.JCheckBox interproceduralCheckBox;
 }

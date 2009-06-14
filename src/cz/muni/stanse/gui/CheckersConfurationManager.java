@@ -76,7 +76,7 @@ final class CheckersConfurationManager {
                  final LinkedList<CheckerConfiguration> checkersConfiguration) {
         for (CheckerConfiguration configuration : checkersConfiguration) {
             final DefaultMutableTreeNode checkerTreeNode = JTreeAlgo.add(
-                         getCheckersTree(),configuration.getCheckerClassName());
+                         getCheckersTree(),buildCheckerTreeID(configuration));
             checkerTreeNode.setAllowsChildren(true);
             for (java.io.File arg : configuration.getCheckerArgumentsList())
                 JTreeAlgo.add(getCheckersTree(),checkerTreeNode,
@@ -92,8 +92,10 @@ final class CheckersConfurationManager {
                 treeNodesEnumetration.hasMoreElements(); )
             arguments.add(new java.io.File((String)JTreeAlgo.getData(
                 (DefaultMutableTreeNode)treeNodesEnumetration.nextElement())));
-        return new CheckerConfiguration((String)JTreeAlgo.
-                                            getData(checkerTreeNode),arguments);
+        final String treeID = (String)JTreeAlgo.getData(checkerTreeNode);
+        return new CheckerConfiguration(parseCheckerNameFromTreeID(treeID),
+                                        arguments,
+                                        parseInterproceduralFromTreeID(treeID));
     }
 
     private void onAddChecker() {
@@ -105,8 +107,11 @@ final class CheckersConfurationManager {
         final String checkerName = chooseCheckerDialog.getChooseCheckerManager()
                                                               .getCheckerName();
         if (checkerName != null) {
-            JTreeAlgo.add(getCheckersTree(),checkerName)
-                        .setAllowsChildren(true);
+            final boolean interpocedural = chooseCheckerDialog.
+                    getChooseCheckerManager().isInterprocedural();
+            JTreeAlgo.add(getCheckersTree(),buildCheckerTreeID(checkerName,
+                                                               interpocedural))
+                     .setAllowsChildren(true);
             JTreeAlgo.present(getCheckersTree());
         }
     }
@@ -158,8 +163,8 @@ final class CheckersConfurationManager {
         return (selectedNode.getAllowsChildren()) ? null : selectedNode;
     }
 
-    private String chooseDataFileOnDisc(final String checkerName)
-                                                              throws Exception {
+    private String chooseDataFileOnDisc(String checkerName) throws Exception {
+        checkerName = parseCheckerNameFromTreeID(checkerName);
         final javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
@@ -177,6 +182,28 @@ final class CheckersConfurationManager {
     private void expandTree() {
         for (int i = 0; i < getCheckersTree().getRowCount(); i++)
              getCheckersTree().expandRow(i);
+    }
+
+    private static String
+    buildCheckerTreeID(final CheckerConfiguration configuration) {
+        return buildCheckerTreeID(configuration.getCheckerClassName(),
+                                  configuration.isInterprocedural());
+    }
+
+    private static String
+    buildCheckerTreeID(final String checkerName, final boolean interprocedural){
+        return checkerName + ((interprocedural) ? "" : " --intraprocedural");
+    }
+
+    private static String
+    parseCheckerNameFromTreeID(final String treeID) {
+        final int spaceIdx = treeID.indexOf(' ');
+        return (spaceIdx == -1) ? treeID : treeID.substring(0,spaceIdx);
+    }
+
+    private static boolean
+    parseInterproceduralFromTreeID(final String treeID) {
+        return !treeID.contains("--intraprocedural");
     }
 
     private javax.swing.JTree getCheckersTree() {
