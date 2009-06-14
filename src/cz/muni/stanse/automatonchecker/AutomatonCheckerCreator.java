@@ -43,12 +43,28 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
     }
 
     @Override
-    public Checker create(final LinkedList<File> args)
+    public Checker createIntraprocedural(final LinkedList<File> args)
+                                        throws XMLAutomatonSyntaxErrorException,
+                                               Exception {
+        checkArgumentList(args);
+        return new AutomatonChecker(args,false);
+    }
+
+    @Override
+    public Checker createInterprocedural(final LinkedList<File> args)
+                                        throws XMLAutomatonSyntaxErrorException,
+                                               Exception {
+        checkArgumentList(args);
+        return new AutomatonChecker(args,true);
+    }
+
+    // private section
+
+    private static void checkArgumentList(final LinkedList<File> args)
                                         throws XMLAutomatonSyntaxErrorException,
                                                Exception {
         if (args.size() < 1)
             throw new Exception("Bad number of data arguments. Accepts one or" +
                                 "more XML definition files.");
-        return new AutomatonChecker(args);
     }
 }

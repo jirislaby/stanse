@@ -14,17 +14,22 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 
 final class PatternLocation {
 
     // package-private section
 
-    PatternLocation(final CFG cfg, final CFGNode referenceNode,
+    PatternLocation(final CFGNode referenceNode,
                     final Collection<TransitionRule> transitionRules,
                     final Collection<ErrorRule> errorRules) {
-        this.cfg = cfg;
+        this(referenceNode,transitionRules,errorRules,null);
+    }
+
+    PatternLocation(final CFGNode referenceNode,
+                    final Collection<TransitionRule> transitionRules,
+                    final Collection<ErrorRule> errorRules,
+                    final AutomatonStateTransferManager transferor) {
         CFGreferenceNode = referenceNode;
         processedAutomataStates = new HashSet<AutomatonState>();
         unprocessedAutomataStates = new LinkedList<AutomatonState>();
@@ -32,6 +37,10 @@ final class PatternLocation {
         successorPatternLocations = new LinkedList<PatternLocation>();
         this.transitionRules = new LinkedList<TransitionRule>(transitionRules);
         this.errorRules = new LinkedList<ErrorRule>(errorRules);
+
+        this.transferor = transferor;
+        isStartLocation = false;
+        locationForCallNotPassedStates = null;
     }
 
     LinkedList<PatternLocation> getSuccessorPatternLocations() {
@@ -60,16 +69,39 @@ final class PatternLocation {
         return deliveredAutomataStates;
     }
 
-    CFG getCFG() {
-        return cfg;
+    LinkedList<TransitionRule> getTransitionRules() {
+        return transitionRules;
     }
 
     LinkedList<ErrorRule> getErrorRules() {
         return errorRules;
     }
 
+    boolean isIsStartLocation() {
+        return isStartLocation;
+    }
+
+    void setIsStartLocation(final boolean state) {
+        isStartLocation = state;
+    }
+
+    AutomatonStateTransferManager getTransferor() {
+        return transferor;
+    }
+
+    void setTransferor(final AutomatonStateTransferManager transferor) {
+        this.transferor = transferor;
+    }
+
+    PatternLocation getLocationForCallNotPassedStates() {
+        return locationForCallNotPassedStates;
+    }
+
+    void setLocationForCallNotPassedStates(final PatternLocation location) {
+        locationForCallNotPassedStates = location;
+    }
+
     boolean processUnprocessedAutomataStates() {
-        assert(getSuccessorPatternLocations().size() < 2);
         assert(!getUnprocessedAutomataStates().isEmpty());
         boolean successorsWereAffected = false;
         do {
@@ -90,7 +122,8 @@ final class PatternLocation {
         final LinkedList<AutomatonState> transformedStates =
             transformAutomatonState(state);
         for (final PatternLocation location : getSuccessorPatternLocations())
-            location.getUnprocessedAutomataStates().addAll(transformedStates);
+            for (final AutomatonState transformedState : transformedStates)
+                propagateStateToLocation(transformedState,location);
         getDeliveredAutomataStates().addAll(transformedStates);
     }
 
@@ -113,15 +146,23 @@ final class PatternLocation {
         return transformedStates;
     }
 
+    private void propagateStateToLocation(final AutomatonState state,
+                                          final PatternLocation location) {
+        assert(getTransferor() != null);
+        final AutomatonState propagatedState =
+            getTransferor().transfer(getCFGreferenceNode(),state,
+                                     location.getCFGreferenceNode());
+        if (propagatedState != null)
+            location.getUnprocessedAutomataStates().add(propagatedState);
+        else if (getLocationForCallNotPassedStates() != null)
+            getLocationForCallNotPassedStates().getUnprocessedAutomataStates()
+                                               .add(state);
+    }
+
     private LinkedList<AutomatonState> getUnprocessedAutomataStates() {
         return unprocessedAutomataStates;
     }
 
-    private LinkedList<TransitionRule> getTransitionRules() {
-        return transitionRules;
-    }
-
-    private final CFG cfg;
     private final CFGNode CFGreferenceNode;
     private final HashSet<AutomatonState> processedAutomataStates;
     private final LinkedList<AutomatonState> unprocessedAutomataStates;
@@ -129,4 +170,8 @@ final class PatternLocation {
     private final LinkedList<PatternLocation> successorPatternLocations;
     private final LinkedList<TransitionRule> transitionRules;
     private final LinkedList<ErrorRule> errorRules;
+
+    private AutomatonStateTransferManager transferor;
+    private boolean isStartLocation;
+    private PatternLocation locationForCallNotPassedStates;
 }

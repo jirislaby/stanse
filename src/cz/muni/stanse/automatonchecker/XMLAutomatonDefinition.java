@@ -28,27 +28,14 @@ final class XMLAutomatonDefinition {
         automatonDesc = desc.attribute("desc").getValue();
 
         Element start = (Element)XMLdefinition.selectSingleNode("start");
-        final String startSymbolName = start.attribute("state").getValue();
-
-        final HashMap<String,Integer> statesSymbolTable =
-            buildStatesDictionary(XMLdefinition);
-
-        if (!statesSymbolTable.containsKey(startSymbolName))
-            throw new XMLAutomatonSyntaxErrorException(
-                        "XML document '" + XMLdefinition.getName() +
-                        "' error: Automaton start symbol '" + startSymbolName +
-                        "' is not member of set of all symbols: " +
-                        statesSymbolTable.keySet());
-        
-        startSymbol = statesSymbolTable.get(startSymbolName);
+        startSymbol = start.attribute("state").getValue();
 
         XMLpatterns = buildXMLPatterns(XMLdefinition);
-        XMLtransitionRules = buildXMLTransitionRules(XMLdefinition,
-                                                     statesSymbolTable);
-        XMLerrorRules = buildXMLErrorRules(XMLdefinition,statesSymbolTable);
+        XMLtransitionRules = buildXMLTransitionRules(XMLdefinition);
+        XMLerrorRules = buildXMLErrorRules(XMLdefinition);
 
-        patternTransitionRulesDictionary =
-            buildPatternTransitionRulesDictionary(XMLpatterns,XMLtransitionRules);
+        patternTransitionRulesDictionary=buildPatternTransitionRulesDictionary(
+                                                XMLpatterns,XMLtransitionRules);
         patternErrorRulesDictionary =
             buildPatternErrorRulesDictionary(XMLpatterns,XMLerrorRules);
     }
@@ -61,7 +48,7 @@ final class XMLAutomatonDefinition {
         return automatonDesc;
     }
 
-    int getStartSymbol() {
+    String getStartSymbol() {
         return startSymbol;
     }
 
@@ -70,13 +57,13 @@ final class XMLAutomatonDefinition {
     }
 
     LinkedList<XMLTransitionRule> getXMLtransitionRulesForPattern(
-                                                       final int patternIndex) {
-    	return patternTransitionRulesDictionary.get(patternIndex);
+                                                     final XMLPattern pattern) {
+    	return patternTransitionRulesDictionary.get(pattern);
     }
 
     LinkedList<XMLErrorRule> getXMLerrorRulesForPattern(
-                                                       final int patternIndex) {
-        return patternErrorRulesDictionary.get(patternIndex);
+                                                     final XMLPattern pattern) {
+        return patternErrorRulesDictionary.get(pattern);
     }
 
     LinkedList<XMLErrorRule> getExitErrorRules() {
@@ -104,32 +91,8 @@ final class XMLAutomatonDefinition {
         return XMLpatterns;
     }
 
-    private static final HashMap<String,Integer>
-    buildStatesDictionary(final org.dom4j.Element XMLdefinition)
-                                       throws XMLAutomatonSyntaxErrorException {
-        final HashMap<String,Integer> statesSymbolTable =
-            new HashMap<String,Integer>();
-
-        int stateCounter = 0;
-        final List stateAttributes = XMLdefinition.selectNodes(
-                                       "//transition/@from | //transition/@to");
-        for (final Iterator iter = stateAttributes.iterator(); iter.hasNext(); ) {
-            final String stateString =
-                                  ((org.dom4j.Attribute)iter.next()).getValue();
-            if (stateString.length() > 0) {
-                final String stateSymbol = XMLRuleStringParser.
-                               parseOneSymbolRuleString(stateString).getFirst();
-                if (!statesSymbolTable.containsKey(stateSymbol))
-                    statesSymbolTable.put(stateSymbol,++stateCounter);
-            }
-        }
-
-        return statesSymbolTable;
-    }
-
     private static Vector<XMLTransitionRule>
-    buildXMLTransitionRules(final org.dom4j.Element XMLdefinition,
-                            final HashMap<String,Integer> statesSymbolTable)
+    buildXMLTransitionRules(final org.dom4j.Element XMLdefinition)
                                        throws XMLAutomatonSyntaxErrorException {
         final List patternNodes = XMLdefinition.selectNodes("//transition");
         if (patternNodes.isEmpty())
@@ -140,14 +103,12 @@ final class XMLAutomatonDefinition {
             new Vector<XMLTransitionRule>(patternNodes.size());
         for (final Iterator iter = patternNodes.iterator(); iter.hasNext(); )
             XMLtransitionRules.add(new XMLTransitionRule(
-                                                (org.dom4j.Element)iter.next(),
-                                                statesSymbolTable));
+                                               (org.dom4j.Element)iter.next()));
         return XMLtransitionRules;
     }
 
     private static Vector<XMLErrorRule>
-    buildXMLErrorRules(final org.dom4j.Element XMLdefinition,
-                       final HashMap<String,Integer> statesSymbolTable)
+    buildXMLErrorRules(final org.dom4j.Element XMLdefinition)
                                        throws XMLAutomatonSyntaxErrorException {
         final List patternNodes = XMLdefinition.selectNodes("//error");
         if (patternNodes.isEmpty())
@@ -157,51 +118,50 @@ final class XMLAutomatonDefinition {
         final Vector<XMLErrorRule> XMLerrorRules =
             new Vector<XMLErrorRule>(patternNodes.size());
         for (final Iterator iter = patternNodes.iterator(); iter.hasNext(); )
-            XMLerrorRules.add(new XMLErrorRule((org.dom4j.Element)iter.next(),
-                                               statesSymbolTable));
+            XMLerrorRules.add(new XMLErrorRule((org.dom4j.Element)iter.next()));
         return XMLerrorRules;
     }
 
-    private static HashMap< Integer,LinkedList<XMLTransitionRule> >
+    private static HashMap< XMLPattern,LinkedList<XMLTransitionRule> >
     buildPatternTransitionRulesDictionary(final Vector<XMLPattern> XMLpatterns,
                            final Vector<XMLTransitionRule> XMLtransitionRules) {
-        final HashMap< Integer,LinkedList<XMLTransitionRule> > dictionary =
-            new HashMap< Integer,LinkedList<XMLTransitionRule> >();
+        final HashMap< XMLPattern,LinkedList<XMLTransitionRule> > dictionary =
+            new HashMap< XMLPattern,LinkedList<XMLTransitionRule> >();
         for (int i = 0; i < XMLpatterns.size(); ++i) {
             final LinkedList<XMLTransitionRule> patternTransitions =
                 new LinkedList<XMLTransitionRule>();
             for (final XMLTransitionRule rule : XMLtransitionRules)
                 if (rule.getPatternName().equals(XMLpatterns.get(i).getName()))
                     patternTransitions.add(rule);
-            dictionary.put(i,patternTransitions);
+            dictionary.put(XMLpatterns.get(i),patternTransitions);
         }
         return dictionary;
     }
 
-    private static HashMap< Integer,LinkedList<XMLErrorRule> >
+    private static HashMap<XMLPattern,LinkedList<XMLErrorRule> >
     buildPatternErrorRulesDictionary(final Vector<XMLPattern> XMLpatterns,
                                      final Vector<XMLErrorRule> XMLerrorRules) {
-        final HashMap< Integer,LinkedList<XMLErrorRule> > dictionary =
-            new HashMap< Integer,LinkedList<XMLErrorRule> >();
+        final HashMap<XMLPattern,LinkedList<XMLErrorRule> > dictionary =
+            new HashMap<XMLPattern,LinkedList<XMLErrorRule> >();
         for (int i = 0; i < XMLpatterns.size(); ++i) {
             final LinkedList<XMLErrorRule> patternErrors =
                 new LinkedList<XMLErrorRule>();
             for (final XMLErrorRule rule : XMLerrorRules)
                 if (rule.getPatternName().equals(XMLpatterns.get(i).getName()))
                     patternErrors.add(rule);
-            dictionary.put(i,patternErrors);
+            dictionary.put(XMLpatterns.get(i),patternErrors);
         }
         return dictionary;
     }
 
     private final String automatonName;
     private final String automatonDesc;
-    private final int startSymbol;
+    private final String startSymbol;
     private final Vector<XMLPattern> XMLpatterns;
     private final Vector<XMLTransitionRule> XMLtransitionRules;
     private final Vector<XMLErrorRule> XMLerrorRules;
-    private final HashMap< Integer,LinkedList<XMLTransitionRule> >
+    private final HashMap<XMLPattern,LinkedList<XMLTransitionRule> >
     			patternTransitionRulesDictionary;
-    private final HashMap< Integer,LinkedList<XMLErrorRule> >
+    private final HashMap<XMLPattern,LinkedList<XMLErrorRule> >
                 patternErrorRulesDictionary;
 }

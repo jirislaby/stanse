@@ -10,9 +10,14 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.utils.CFGTraversal;
+import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.utils.CFGsNavigator;
+import cz.muni.stanse.utils.ArgumentPassingManager;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -45,13 +50,22 @@ final class CheckerErrorBuilder {
      *         PatternLocations.
      */
     static LinkedList<CheckerError>
-    buildErrorList(final HashMap<cz.muni.stanse.codestructures.CFGNode,
-                                 PatternLocation> edgeLocationDictionary) {
+    buildErrorList(final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+                                                       edgeLocationDictionary,
+                   final ArgumentPassingManager passingManager,
+                   final CFGsNavigator navigator,
+                   final HashMap<CFGNode,CFG> nodeCFGdictionary) {
         final LinkedList<CheckerError> errorsList =
-                                                 new LinkedList<CheckerError>();
-        for (PatternLocation location : edgeLocationDictionary.values())
-            errorsList.addAll(buildErrorsInLocation(location,
-                                                    edgeLocationDictionary));
+                new LinkedList<CheckerError>();
+
+        for (Pair<PatternLocation,PatternLocation> locationsPair :
+                                                edgeLocationDictionary.values())
+            if (locationsPair.getFirst() != null)
+                errorsList.addAll(buildErrorsInLocation(
+                                                 locationsPair.getFirst(),
+                                                 edgeLocationDictionary,
+                                                 passingManager,navigator,
+                                                 nodeCFGdictionary));
 
         return errorsList;
     }
@@ -60,35 +74,53 @@ final class CheckerErrorBuilder {
 
     private static LinkedList<CheckerError> buildErrorsInLocation(
             final PatternLocation location,
-            final HashMap<cz.muni.stanse.codestructures.CFGNode,PatternLocation>
-                                                       edgeLocationDictionary) {
+            final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+                                                       edgeLocationDictionary,
+            final ArgumentPassingManager passingManager,
+            final CFGsNavigator navigator,
+            final HashMap<CFGNode,CFG> nodeCFGdictionary) {
         final LinkedList<CheckerError> errorsList =
             new LinkedList<CheckerError>();
+        final CallSiteDetector callDetector =
+            new CallSiteDetector(navigator,edgeLocationDictionary);
+        final AutomatonStateTransferManager transferor =
+            new AutomatonStateTransferManager(passingManager,callDetector);
+        final CallSiteCFGNavigator callNavigator =
+            new CallSiteCFGNavigator(navigator,callDetector);
 
-        for (ErrorRule rule : location.getErrorRules())
-            if (rule.checkForError(location.getProcessedAutomataStates())) {
-                final LinkedList<ErrorTrace> traces =
-                    CFGTraversal.traverseCFGPathsBackward(
-                        location.getCFG(),location.getCFGreferenceNode(),
-                        (new ErrorTracesListCreator(rule,edgeLocationDictionary,
-                                      location.getCFGreferenceNode(),
-                                      location.getCFG()))).getErrorTracesList();
-                // Next condition eliminates cyclic dependances of two
-                // error locations (diferent). These locations have same error
-                // rule and theirs methods checkForError() returns true (so they
-                // are both error locations). But their cyclic dependancy
-                // disables to find starting nodes of theirs error traces ->
-                // both error traces returned will be empty.
-                if (traces.isEmpty())
-                    continue;
-                final String shortDesc = rule.getErrorDescription();
-                final String fullDesc = "in function '" +
-                                        location.getCFG().getFunctionName() +
-                                        "' " + shortDesc + " [traces: " +
-                                        traces.size() + "]";
-                errorsList.add(new CheckerError(shortDesc,fullDesc,
-                                                rule.getErrorLevel(),traces));
-            }
+        for (final ErrorRule rule : location.getErrorRules())
+            for (final java.util.Stack<CFGNode> cfgContext :
+                                AutomatonStateCFGcontextAlgo.getContexts(
+                                        location.getProcessedAutomataStates()))
+                if (rule.checkForError(AutomatonStateCFGcontextAlgo.
+                            filterStatesByContext(
+                                          location.getProcessedAutomataStates(),
+                                          cfgContext))) {
+                    final LinkedList<ErrorTrace> traces =
+                        CFGTraversal.traverseCFGPathsBackwardInterprocedural(
+                            callNavigator,location.getCFGreferenceNode(),
+                            (new ErrorTracesListCreator(rule,transferor,
+                                            edgeLocationDictionary,
+                                            location.getCFGreferenceNode(),
+                                            nodeCFGdictionary)),
+                            cfgContext).getErrorTracesList();
+                    // Next condition eliminates cyclic dependances of two
+                    // error locations (diferent). These locations have same
+                    // error rule and theirs methods checkForError() returns
+                    // true (so  they are both error locations). But their
+                    // cyclic dependancy disables to find starting nodes of
+                    // theirs error traces -> both error traces returned will
+                    // be empty.
+                    if (traces.isEmpty())
+                        continue;
+                    final String shortDesc = rule.getErrorDescription();
+                    final String fullDesc = "in function '" +
+                        nodeCFGdictionary.get(location.getCFGreferenceNode())
+                                         .getFunctionName() +
+                        "' " + shortDesc + " [traces: " + traces.size() + "]";
+                    errorsList.add(new CheckerError(shortDesc,fullDesc,
+                                                  rule.getErrorLevel(),traces));
+                }
 
         return errorsList;
     }

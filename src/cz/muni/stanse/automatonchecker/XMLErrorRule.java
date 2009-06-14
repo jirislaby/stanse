@@ -11,7 +11,6 @@ package cz.muni.stanse.automatonchecker;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.Triple;
 
-import java.util.HashMap;
 import java.util.Vector;
 import java.util.LinkedList;
 import java.util.Collection;
@@ -33,8 +32,7 @@ final class XMLErrorRule {
      * @throws
      * @see
      */
-    XMLErrorRule(final org.dom4j.Element XMLelement,
-                 final HashMap<String,Integer> statesSymbolTable)
+    XMLErrorRule(final org.dom4j.Element XMLelement)
                                        throws XMLAutomatonSyntaxErrorException {
         description = XMLelement.attribute("desc").getValue().
                                     replaceAll("[ \t]+", " ");
@@ -68,10 +66,8 @@ final class XMLErrorRule {
         checkList(fromList);
         checkVars(1,-1,fromList);
 
-        excludedMatchFlags = buildMatchFlags(fromList,'-',statesSymbolTable,
-                                             locationVarName);
-        includedMatchFlags = buildMatchFlags(fromList,'+',statesSymbolTable,
-                                             locationVarName);
+        excludedMatchFlags = buildMatchFlags(fromList,'-',locationVarName);
+        includedMatchFlags = buildMatchFlags(fromList,'+',locationVarName);
     }
 
     /**
@@ -83,9 +79,9 @@ final class XMLErrorRule {
      * @see
      */
     boolean checkForError(final Collection<AutomatonState> statesCollection,
-                                                        final int automatonID) {
-        return checkExcludedStates(statesCollection,automatonID) &&
-               checkIncludedStates(statesCollection,automatonID);
+                          final SimpleAutomatonID simpleID) {
+        return checkExcludedStates(statesCollection,simpleID) &&
+               checkIncludedStates(statesCollection,simpleID);
     }
 
     /**
@@ -169,20 +165,20 @@ final class XMLErrorRule {
 
     private boolean checkExcludedStates(
                             final Collection<AutomatonState> statesCollection,
-                            final int automatonID) {
+                            final SimpleAutomatonID simpleID) {
         for (final AutomatonState state : statesCollection)
             for (int i = 0; i < getExcludedMatchFlags().size(); ++i)
                 if (stateMatch(state,
                                getExcludedMatchFlags().get(i).getFirst(),
                                getExcludedMatchFlags().get(i).getSecond(),
-                               automatonID))
+                               simpleID))
                     return false;
         return true;
     }
 
     private boolean checkIncludedStates(
                             final Collection<AutomatonState> statesCollection,
-                            final int automatonID) {
+                            final SimpleAutomatonID simpleID) {
 
         final int numIncluded = getIncludedMatchFlags().size();
 
@@ -194,7 +190,7 @@ final class XMLErrorRule {
                 if (stateMatch(state,
                                getIncludedMatchFlags().get(i).getFirst(),
                                getIncludedMatchFlags().get(i).getSecond(),
-                               automatonID)) {
+                               simpleID)) {
                     matchingFlags.set(i,true);
                     break;
                 }
@@ -204,38 +200,37 @@ final class XMLErrorRule {
     }
 
     private static boolean stateMatch(final AutomatonState state,
-                                      final int symbolID,
-                                      final Vector<Boolean> flags,
-                                      final int automatonID) {
-        if (state.getSymbolID() != symbolID ||
-            state.getAutomatonIDs().size() != flags.size())
+                               final String symbol, final Vector<Boolean> flags,
+                               final SimpleAutomatonID simpleID) {
+        final ComposedAutomatonID composedID = state.getAutomatonID();
+        if (!state.getSymbol().equals(symbol) ||
+             composedID.getSimpleAutomataIDs().size() != flags.size())
             return false;
 
-        final Vector<Integer> stateAutomatonIDs = state.getAutomatonIDs();    
         for (int i = 0; i < flags.size(); ++i)
-            if (( flags.get(i) && stateAutomatonIDs.get(i) != automatonID) ||
-                (!flags.get(i) && stateAutomatonIDs.get(i) == automatonID) )
+            if (( flags.get(i) &&
+                !composedID.getSimpleAutomataIDs().get(i).equals(simpleID))||
+                (!flags.get(i) &&
+                composedID.getSimpleAutomataIDs().get(i).equals(simpleID))  )
                 return false;
 
         return true;
     }
 
-    private static Vector< Pair<Integer,Vector<Boolean> > >
+    private static Vector< Pair<String,Vector<Boolean> > >
     buildMatchFlags(
             final LinkedList<Triple<String,Vector<String>,Character> > symbols,
-            final char mode,
-            final HashMap<String,Integer> statesSymbolTable,
-            final String locationVarName) {
-        final Vector< Pair<Integer,Vector<Boolean> > > result =
-            new Vector< Pair<Integer,Vector<Boolean> > >();
+            final char mode, final String locationVarName) {
+        final Vector< Pair<String,Vector<Boolean> > > result =
+            new Vector< Pair<String,Vector<Boolean> > >();
         for (Triple<String,Vector<String>,Character> symbol : symbols) {
             if (symbol.getThird().equals(mode)) {
                 final Vector<Boolean> flags =
                     new Vector<Boolean>(symbol.getSecond().size());
                 for (int i = 0; i < symbol.getSecond().size(); ++i)
                    flags.add(symbol.getSecond().get(i).equals(locationVarName));
-                result.add(new Pair< Integer,Vector<Boolean> >
-                              (statesSymbolTable.get(symbol.getFirst()),flags));
+                result.add(new Pair< String,Vector<Boolean> >
+                                                     (symbol.getFirst(),flags));
             }
         }
         return result;
@@ -265,11 +260,11 @@ final class XMLErrorRule {
                                                 "Invalid number of variables.");
     }
 
-    private Vector< Pair<Integer,Vector<Boolean> > > getExcludedMatchFlags() {
+    private Vector< Pair<String,Vector<Boolean> > > getExcludedMatchFlags() {
         return excludedMatchFlags;
     }
 
-    private Vector< Pair<Integer,Vector<Boolean> > > getIncludedMatchFlags() {
+    private Vector< Pair<String,Vector<Boolean> > > getIncludedMatchFlags() {
         return includedMatchFlags;
     }
 
@@ -280,6 +275,6 @@ final class XMLErrorRule {
     private final String propagMessage;
     private final String endMessage;
     private final String patternName;
-    private final Vector< Pair<Integer,Vector<Boolean> > > excludedMatchFlags;
-    private final Vector< Pair<Integer,Vector<Boolean> > > includedMatchFlags;
+    private final Vector< Pair<String,Vector<Boolean> > > excludedMatchFlags;
+    private final Vector< Pair<String,Vector<Boolean> > > includedMatchFlags;
 }

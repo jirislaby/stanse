@@ -27,7 +27,8 @@ final class TransitionRule {
      * @throws
      * @see
      */
-    TransitionRule(final XMLTransitionRule XMLrule, final int automatonID) {
+    TransitionRule(final XMLTransitionRule XMLrule,
+                   final SimpleAutomatonID automatonID) {
         this.XMLrule = XMLrule;
         this.automatonID = automatonID;
     }
@@ -53,7 +54,7 @@ final class TransitionRule {
      * @throws
      * @see
      */
-    int getAutomatonID() {
+    SimpleAutomatonID getAutomatonID() {
         return automatonID;
     }
 
@@ -64,5 +65,5 @@ final class TransitionRule {
     }
 
     private final XMLTransitionRule XMLrule;
-    private final int automatonID;
+    private final SimpleAutomatonID automatonID;
 }

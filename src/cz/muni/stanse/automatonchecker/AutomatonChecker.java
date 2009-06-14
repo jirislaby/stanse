@@ -48,9 +48,11 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * @param XMLdefinition XML representation of AST
      * @throws XMLAutomatonSyntaxErrorException 
      */
-    public AutomatonChecker(final LinkedList<File> xmlFiles) {
+    public AutomatonChecker(final LinkedList<File> xmlFiles,
+                            final boolean interprocedural) {
         super();
         this.xmlFiles = xmlFiles;
+        this.interprocedural = interprocedural;
     }
 
     /**
@@ -104,8 +106,8 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         for (File file : getXmlFiles()) {
             final Document XMLdefinition = readXMLdefinition(file);
             if (XMLdefinition != null)
-                result.addAll(new AutomatonCheckerImpl(XMLdefinition).
-                                        check(units));
+                result.addAll(new AutomatonCheckerImpl(XMLdefinition)
+                                        .check(units,isInterprocedural()));
         }
         return result;
     }
@@ -114,6 +116,10 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     private final List<File> getXmlFiles() {
         return Collections.unmodifiableList(xmlFiles);
+    }
+
+    private boolean isInterprocedural() {
+        return interprocedural;
     }
 
     private static final Document readXMLdefinition(final File file) {
@@ -127,4 +133,5 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     }
 
     private final LinkedList<File> xmlFiles;
+    private final boolean interprocedural;
 }

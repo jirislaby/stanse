@@ -27,8 +27,13 @@ final class ErrorRule {
      * @throws
      * @see
      */
-    ErrorRule(final XMLErrorRule XMLrule, final int automatonID) {
+    ErrorRule(final XMLErrorRule XMLrule, final SimpleAutomatonID automatonID) {
         this.XMLrule = XMLrule;
+        this.automatonID = automatonID;
+    }
+
+    ErrorRule(final ErrorRule source, final SimpleAutomatonID automatonID) {
+        this.XMLrule = source.getXMLrule();
         this.automatonID = automatonID;
     }
 
@@ -128,16 +133,16 @@ final class ErrorRule {
         return getXMLrule().isExitRule();
     }
 
+    SimpleAutomatonID getAutomatonID() {
+        return automatonID;
+    }
+
     // private section
 
     private XMLErrorRule getXMLrule() {
         return XMLrule;
     }
 
-    private int getAutomatonID() {
-        return automatonID;
-    }
-
     private final XMLErrorRule XMLrule;
-    private final int automatonID;
+    private final SimpleAutomatonID automatonID;
 }

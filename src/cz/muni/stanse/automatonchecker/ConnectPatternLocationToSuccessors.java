@@ -11,6 +11,7 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFGNode;
+import cz.muni.stanse.utils.Pair;
 
 import java.util.HashMap;
 
@@ -37,17 +38,18 @@ final class ConnectPatternLocationToSuccessors extends
      */
     @Override
     public boolean visit(final CFGNode node, final org.dom4j.Element element) {
-        final PatternLocation nodeLocation = 
+        final Pair<PatternLocation,PatternLocation> nodeLocationsPair =
             getNodeLocationsDictionary().get(node);
 
-        if (nodeLocation == null || nodeLocation == getReferenceLocation())
+        if (nodeLocationsPair == null ||
+            nodeLocationsPair.getSecond() == getReferenceLocation())
             return true;
 
-        assert(node == nodeLocation.getCFGreferenceNode());
+        assert(node == nodeLocationsPair.getFirst().getCFGreferenceNode());
         if (!getReferenceLocation().getSuccessorPatternLocations().
-                contains(nodeLocation))
+                contains(nodeLocationsPair.getFirst()))
             getReferenceLocation().getSuccessorPatternLocations().
-                add(nodeLocation);
+                add(nodeLocationsPair.getFirst());
 
         return false;
     }
@@ -62,9 +64,9 @@ final class ConnectPatternLocationToSuccessors extends
      * @throws
      * @see
      */
-    ConnectPatternLocationToSuccessors(
-                        final PatternLocation location,
-                        final HashMap<CFGNode,PatternLocation> dictionary) {
+    ConnectPatternLocationToSuccessors(final PatternLocation location,
+                    final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+                            dictionary) {
         super();
         referenceLocation = location;
         nodeLocationsDictionary = dictionary;
@@ -76,10 +78,12 @@ final class ConnectPatternLocationToSuccessors extends
         return referenceLocation; 
     }
 
-    private HashMap<CFGNode,PatternLocation> getNodeLocationsDictionary() {
+    private HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+    getNodeLocationsDictionary() {
         return nodeLocationsDictionary; 
     }
 
     private PatternLocation referenceLocation;
-    private HashMap<CFGNode,PatternLocation> nodeLocationsDictionary;
+    private HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+                nodeLocationsDictionary;
 }

@@ -14,10 +14,12 @@ package cz.muni.stanse.automatonchecker;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
+import cz.muni.stanse.utils.CFGInstrumentationEraser;
+import cz.muni.stanse.utils.CFGInstrumentationBuilder;
+import cz.muni.stanse.utils.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.utils.UnitsToCFGs;
 import cz.muni.stanse.utils.Pair;
 
-import java.util.Set;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
@@ -87,42 +89,54 @@ final class AutomatonCheckerImpl {
      * @see cz.muni.stanse.checker.Checker#check(java.util.List)
      */
     List<cz.muni.stanse.checker.CheckerError>
-    check(final List<Unit> units) throws XMLAutomatonSyntaxErrorException {
+    check(final List<Unit> units, final boolean interprocedural)
+                                       throws XMLAutomatonSyntaxErrorException {
         final Pair< HashMap<CFG,CFG>,HashMap<CFGNode,CFGNode> > CFGbackMapping =
-            CFGInstrumentationBuilder.run(buildSetOfCFGs(units));
-        final Set<CFG> CFGs = CFGbackMapping.getFirst().keySet();
+            CFGInstrumentationBuilder.run(UnitsToCFGs.run(units));
 
-        final HashMap<CFGNode,PatternLocation> nodeLocationDictionary =
-            PatternLocationBuilder.buildPatternLocations(CFGs,
-                                                   getXMLAutomatonDefinition());
+        final LazyInternalProgramStructuresCollection internals =
+            new LazyInternalProgramStructuresCollection(
+                    CFGbackMapping.getFirst().keySet(),interprocedural);
+
+        final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+            nodeLocationDictionary = PatternLocationBuilder
+                   .buildPatternLocations(internals.getCFGs(),
+                                          getXMLAutomatonDefinition(),
+                                          internals.getArgumentPassingManager(),
+                                          internals.getNavigator(),
+                                          internals.getStartFunctions());
 
         final LinkedList<PatternLocation> progressQueue =
                 new LinkedList<PatternLocation>();
-        for (final CFG cfg : CFGs)
-            progressQueue.add(nodeLocationDictionary.get(cfg.getStartNode()));
-
+        for (final CFG cfg : internals.getCFGs()) {
+            final PatternLocation location =
+                nodeLocationDictionary.get(cfg.getStartNode()).getSecond();
+            if (location.isIsStartLocation())
+                progressQueue.add(location);
+        }
         while (!progressQueue.isEmpty()) {
             final PatternLocation currentLocation = progressQueue.remove();
             if (!currentLocation.hasUnprocessedAutomataStates())
                 continue;
             final boolean successorsWereAffected =
                 currentLocation.processUnprocessedAutomataStates();
-            if (successorsWereAffected)
+            if (successorsWereAffected) {
                 progressQueue.addAll(
                         currentLocation.getSuccessorPatternLocations());
+                if (currentLocation.getLocationForCallNotPassedStates() != null)
+                    progressQueue.add(
+                           currentLocation.getLocationForCallNotPassedStates());
+            }
         }
+
         return CFGInstrumentationEraser.run(CFGbackMapping,
-                    CheckerErrorBuilder.buildErrorList(nodeLocationDictionary));
+                    CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,
+                                          internals.getArgumentPassingManager(),
+                                          internals.getNavigator(),
+                                          internals.getNodeToCFGdictionary()));
     }
 
     // private section
-
-    private static HashSet<CFG> buildSetOfCFGs(final List<Unit> units) {
-        final HashSet<CFG> CFGs = new HashSet<CFG>();
-        for (final Unit unit : units)
-            CFGs.addAll(unit.getCFGs());
-        return CFGs;
-    }
 
     private XMLAutomatonDefinition getXMLAutomatonDefinition() {
         return XMLAutomatonDefinition;
