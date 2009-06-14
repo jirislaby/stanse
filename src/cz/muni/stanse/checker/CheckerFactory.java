@@ -10,9 +10,14 @@ public final class CheckerFactory {
 
     // public section
 
-    public static Checker create(final String checkerName,
+    public static Checker createInterprocedural(final String checkerName,
                           final LinkedList<File> args) throws Exception {
-        return getCheckerCreator(checkerName).create(args);
+        return getCheckerCreator(checkerName).createInterprocedural(args);
+    }
+
+    public static Checker createIntraprocedural(final String checkerName,
+                          final LinkedList<File> args) throws Exception {
+        return getCheckerCreator(checkerName).createIntraprocedural(args);
     }
 
     public static String getCheckerCreationInfo(final String checkerName)
