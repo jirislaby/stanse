@@ -102,9 +102,16 @@ public final class Triple<A,B,C> {
      * @see
      */
     public boolean isEqualWith(final Triple<A,B,C> other) {
-        return first.equals(other.first) &&
-               second.equals(other.second) &&
-               third.equals(other.third);
+        return ((first == null && other.first == null) ||
+                    first.equals(other.first)) &&
+               ((second == null && other.second == null) ||
+                    second.equals(other.second)) &&
+               ((third == null && other.third == null) ||
+                    third.equals(other.third));
+    }
+
+    public static <A,B,C> Triple<A,B,C> make(final A a, final B b, final C c) {
+        return new Triple<A,B,C>(a,b,c);
     }
 
     // private section
