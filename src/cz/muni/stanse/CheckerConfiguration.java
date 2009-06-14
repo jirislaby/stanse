@@ -10,21 +10,28 @@ public final class CheckerConfiguration {
     // public section
 
     public CheckerConfiguration(final String checkerClassName,
-                         final File checkerArgument) {
+                                final File checkerArgument,
+                                final boolean interprocedural) {
         this.checkerClassName = checkerClassName;
         checkerArgumentsList = new LinkedList<File>();
         checkerArgumentsList.add(checkerArgument);
+        this.interprocedural = interprocedural;
     }
 
     public CheckerConfiguration(final String checkerClassName,
-                         final LinkedList<File> checkerArgumentsList) {
+                                final LinkedList<File> checkerArgumentsList,
+                                final boolean interprocedural) {
         this.checkerClassName = checkerClassName;
         this.checkerArgumentsList = checkerArgumentsList;
+        this.interprocedural = interprocedural;
     }
 
     public cz.muni.stanse.checker.Checker getChecker() throws Exception {
-        return CheckerFactory.create(getCheckerClassName(),
-                                     getCheckerArgumentsList());
+        return (interprocedural) ?
+                    CheckerFactory.createInterprocedural(getCheckerClassName(),
+                                                    getCheckerArgumentsList()) :
+                    CheckerFactory.createIntraprocedural(getCheckerClassName(),
+                                                    getCheckerArgumentsList());
     }
 
     public String getCheckerClassName() {
@@ -35,8 +42,13 @@ public final class CheckerConfiguration {
         return checkerArgumentsList;
     }
 
+    public boolean isInterprocedural() {
+        return interprocedural;
+    }
+
     // private section
 
     private final String checkerClassName;
     private final LinkedList<File> checkerArgumentsList;
+    private final boolean interprocedural;
 }

@@ -116,7 +116,7 @@ public final class Configuration {
                               "/data/checkers/AutomatonChecker/interrupts.xml"),
                         new File(Stanse.getRootDirectory() +
                               "/data/checkers/AutomatonChecker/locking.xml")
-           )));
+                ),true));
     }
 
     private final SourceConfiguration sourceConfiguration;
