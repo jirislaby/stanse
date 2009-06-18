@@ -50,8 +50,11 @@ public final class XMLLinearizeASTElement {
         final LinkedList<Element> result = new LinkedList<Element>();
         result.add((Element)fnDecl.selectSingleNode(".//id"));
         for (final Element param : (List<Element>)((Element)
-                         fnDecl.selectSingleNode(".//functionDecl")).elements())
-            result.add((Element)param.selectSingleNode(".//id"));
+                       fnDecl.selectSingleNode(".//functionDecl")).elements()) {
+            final Element paramElem = (Element)param.selectSingleNode(".//id");
+            if (paramElem != null)
+                result.add(paramElem);
+        }
         return result;
     }
 
