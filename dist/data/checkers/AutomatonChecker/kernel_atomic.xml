@@ -52,11 +52,14 @@
             end="Here is an attempt to perform non-atomic in atomic." />
 
     <pattern name="nonatomic">
-        <functionCall>
-            <id>kmalloc</id>
+	<assignExpression>
 	    <ignore/>
-	    <id>__st_GFP_KERNEL_st__</id>
-        </functionCall>
+	    <functionCall>
+		<id>kmalloc</id>
+		<ignore />
+		<id>__st_GFP_KERNEL_st__</id>
+	    </functionCall>
+	</assignExpression>
     </pattern>
 
     <pattern name="nonatomic">
