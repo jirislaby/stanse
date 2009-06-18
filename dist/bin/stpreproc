@@ -20,6 +20,7 @@ my @kuntouchables = (
 	"mutex_unlock",
 	"lock_kernel", "unlock_kernel",
 	"spin_lock", "spin_trylock", "spin_lock_nested", "spin_unlock",
+	"spin_lock_bh", "spin_unlock_bh",
 	"spin_lock_irq", "spin_trylock_irq", "spin_lock_irq_nested",
 		"spin_unlock_irq",
 	"spin_lock_irqsave", "spin_trylock_irqsave", "spin_lock_irqsave_nested",

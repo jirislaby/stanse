@@ -90,6 +90,121 @@
         </functionCall>
     </pattern>
 
+    <pattern name="atomize">
+        <functionCall>
+            <id>__st_spin_lock_nested_st__</id>
+            <ignore/>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <!-- true branch of 'if (spin_trylock())' -->
+    <pattern name="atomize">
+        <assert>
+            <binaryExpressionEquality>
+                <prefixExpressionLogicalNot>
+                    <functionCall>
+                        <id>__st_spin_trylock_st__</id>
+                        <ignore/>
+                    </functionCall>
+                </prefixExpressionLogicalNot>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
+
+    <pattern name="atomize">
+        <functionCall>
+            <id>__st_spin_lock_irq_st__</id>
+            <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="atomize">
+        <functionCall>
+            <id>__st_spin_lock_bh_st__</id>
+            <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="atomize">
+        <functionCall>
+            <id>__st_spin_lock_irq_nested_st__</id>
+            <ignore/>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <!-- true branch of 'if (spin_trylock_irq())' -->
+    <pattern name="atomize">
+        <assert>
+            <binaryExpressionEquality>
+                <prefixExpressionLogicalNot>
+                    <functionCall>
+                        <id>__st_spin_trylock_irq_st__</id>
+                        <ignore/>
+                    </functionCall>
+                </prefixExpressionLogicalNot>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
+
+    <pattern name="atomize">
+        <functionCall>
+            <id>__st_spin_lock_irqsave_st__</id>
+            <ignore/>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="atomize">
+        <functionCall>
+            <id>__st_spin_lock_irqsave_nested_st__</id>
+            <ignore/>
+	    <ignore/>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <!-- true branch of 'if (spin_trylock_irqsave())' -->
+    <pattern name="atomize">
+        <assert>
+            <binaryExpressionEquality>
+                <prefixExpressionLogicalNot>
+                    <functionCall>
+                        <id>__st_spin_trylock_irqsave_st__</id>
+                        <ignore/>
+			<ignore/>
+                    </functionCall>
+                </prefixExpressionLogicalNot>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
+
+    <pattern name="deatomize">
+        <functionCall>
+            <id>__st_spin_unlock_irqrestore_st__</id>
+            <ignore/>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="deatomize">
+        <functionCall>
+            <id>__st_spin_unlock_irq_st__</id>
+            <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="deatomize">
+        <functionCall>
+            <id>__st_spin_unlock_bh_st__</id>
+            <ignore/>
+        </functionCall>
+    </pattern>
+
     <pattern name="deatomize">
         <functionCall>
             <id>__st_spin_unlock_st__</id>

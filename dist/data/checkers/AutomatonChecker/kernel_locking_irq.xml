@@ -156,6 +156,13 @@
 
     <pattern name="lock">
         <functionCall>
+            <id>__st_spin_lock_bh_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
             <id>__st_spin_lock_irq_nested_st__</id>
             <var name="A" />
 	    <ignore/>
@@ -247,6 +254,13 @@
     <pattern name="unlock">
         <functionCall>
             <id>__st_spin_unlock_irq_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_spin_unlock_bh_st__</id>
             <var name="A" />
         </functionCall>
     </pattern>
