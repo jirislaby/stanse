@@ -48,7 +48,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * @param XMLdefinition XML representation of AST
      * @throws XMLAutomatonSyntaxErrorException 
      */
-    public AutomatonChecker(final LinkedList<File> xmlFiles,
+    public AutomatonChecker(final List<File> xmlFiles,
                             final boolean interprocedural) {
         super();
         this.xmlFiles = xmlFiles;
@@ -132,6 +132,6 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
             }
     }
 
-    private final LinkedList<File> xmlFiles;
+    private final List<File> xmlFiles;
     private final boolean interprocedural;
 }

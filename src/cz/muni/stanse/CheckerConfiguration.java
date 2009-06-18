@@ -1,9 +1,12 @@
 package cz.muni.stanse;
 
+import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerFactory;
 
-import java.util.LinkedList;
 import java.io.File;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public final class CheckerConfiguration {
 
@@ -19,14 +22,14 @@ public final class CheckerConfiguration {
     }
 
     public CheckerConfiguration(final String checkerClassName,
-                                final LinkedList<File> checkerArgumentsList,
+                                final List<File> checkerArgumentsList,
                                 final boolean interprocedural) {
         this.checkerClassName = checkerClassName;
         this.checkerArgumentsList = checkerArgumentsList;
         this.interprocedural = interprocedural;
     }
 
-    public cz.muni.stanse.checker.Checker getChecker() throws Exception {
+    public Checker getChecker() throws Exception {
         return (interprocedural) ?
                     CheckerFactory.createInterprocedural(getCheckerClassName(),
                                                     getCheckerArgumentsList()) :
@@ -38,7 +41,7 @@ public final class CheckerConfiguration {
         return checkerClassName;
     }
 
-    public LinkedList<File> getCheckerArgumentsList() {
+    public List<File> getCheckerArgumentsList() {
         return checkerArgumentsList;
     }
 
@@ -49,6 +52,6 @@ public final class CheckerConfiguration {
     // private section
 
     private final String checkerClassName;
-    private final LinkedList<File> checkerArgumentsList;
+    private final List<File> checkerArgumentsList;
     private final boolean interprocedural;
 }

@@ -2,9 +2,12 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerCreator;
+import cz.muni.stanse.checker.CheckerException;
+
+import java.io.File;
 
 import java.util.LinkedList;
-import java.io.File;
+import java.util.List;
 
 public final class AutomatonCheckerCreator extends CheckerCreator {
 
@@ -43,28 +46,25 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
     }
 
     @Override
-    public Checker createIntraprocedural(final LinkedList<File> args)
-                                        throws XMLAutomatonSyntaxErrorException,
-                                               Exception {
+    public Checker createIntraprocedural(final List<File> args)
+		throws CheckerException {
         checkArgumentList(args);
         return new AutomatonChecker(args,false);
     }
 
     @Override
-    public Checker createInterprocedural(final LinkedList<File> args)
-                                        throws XMLAutomatonSyntaxErrorException,
-                                               Exception {
-        checkArgumentList(args);
-        return new AutomatonChecker(args,true);
+    public Checker createInterprocedural(final List<File> args)
+		throws CheckerException {
+	checkArgumentList(args);
+	return new AutomatonChecker(args,true);
     }
 
     // private section
 
-    private static void checkArgumentList(final LinkedList<File> args)
-                                        throws XMLAutomatonSyntaxErrorException,
-                                               Exception {
+    private static void checkArgumentList(final List<File> args)
+		throws CheckerException {
         if (args.size() < 1)
-            throw new Exception("Bad number of data arguments. Accepts one or" +
-                                "more XML definition files.");
+            throw new CheckerException("Bad number of data arguments. " +
+			"Accepts one or more XML definition files.");
     }
 }

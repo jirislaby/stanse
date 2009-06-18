@@ -33,7 +33,8 @@ public final class MainWindow extends javax.swing.JFrame {
     		getOpenedSourceFilesManager().showSourceFile(new java.io.File(source));
     	}
     	// replace sources enumerator by AllOpenedFilesEnumerator
-    	LinkedList<CheckerConfiguration> checkerConf = config.getCheckerConfigurations();
+	List<CheckerConfiguration> checkerConf =
+		config.getCheckerConfigurations();
     	SourceConfiguration sourceConf = new SourceConfiguration(new AllOpenedFilesEnumerator());
     	setConfiguration(new Configuration(sourceConf, checkerConf));
     }

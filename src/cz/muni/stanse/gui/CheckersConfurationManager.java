@@ -1,22 +1,33 @@
 package cz.muni.stanse.gui;
 
 import cz.muni.stanse.CheckerConfiguration;
+import cz.muni.stanse.checker.CheckerFactory;
 import cz.muni.stanse.utils.ClassLogger;
+import cz.muni.stanse.utils.FileAlgo;
+
+import java.io.File;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Enumeration;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 final class CheckersConfurationManager {
 
     // package-private section
 
-    CheckersConfurationManager(final javax.swing.JTree checkersTree,
-                                  final javax.swing.JButton addCheckerButton,
-                                  final javax.swing.JButton removeCheckerButton,
-                                  final javax.swing.JButton addDataButton,
-                                  final javax.swing.JButton removeDataButton) {
+    CheckersConfurationManager(final JTree checkersTree,
+                                  final JButton addCheckerButton,
+                                  final JButton removeCheckerButton,
+                                  final JButton addDataButton,
+                                  final JButton removeDataButton) {
         this.checkersTree = checkersTree;
         this.addCheckerButton = addCheckerButton;
         this.removeCheckerButton = removeCheckerButton;
@@ -27,31 +38,23 @@ final class CheckersConfurationManager {
                                  getConfiguration().getCheckerConfigurations());
         JTreeAlgo.present(getCheckersTree());
 
-        getAddCheckerButton().addActionListener(
-        new java.awt.event.ActionListener() {
-            @Override public void actionPerformed(
-                                           final java.awt.event.ActionEvent e) {
+        getAddCheckerButton().addActionListener(new ActionListener() {
+            @Override public void actionPerformed(final ActionEvent e) {
                 onAddChecker(); expandTree();
             }
         });
-        getRemoveCheckerButton().addActionListener(
-        new java.awt.event.ActionListener() {
-            @Override public void actionPerformed(
-                                           final java.awt.event.ActionEvent e) {
+        getRemoveCheckerButton().addActionListener(new ActionListener() {
+            @Override public void actionPerformed(final ActionEvent e) {
                 onRemoveChecker(); expandTree();
             }
         });
-        getAddDataButton().addActionListener(
-        new java.awt.event.ActionListener() {
-            @Override public void actionPerformed(
-                                           final java.awt.event.ActionEvent e) {
+        getAddDataButton().addActionListener(new ActionListener() {
+            @Override public void actionPerformed(final ActionEvent e) {
                 onAddData(); expandTree();
             }
         });
-        getRemoveDataButton().addActionListener(
-        new java.awt.event.ActionListener() {
-            @Override public void actionPerformed(
-                                           final java.awt.event.ActionEvent e) {
+        getRemoveDataButton().addActionListener(new ActionListener() {
+            @Override public void actionPerformed(final ActionEvent e) {
                 onRemoveData(); expandTree();
             }
         });
@@ -59,8 +62,8 @@ final class CheckersConfurationManager {
         expandTree();
     }
 
-    LinkedList<CheckerConfiguration> getCheckersConfiguration() {
-        final LinkedList<CheckerConfiguration> result =
+    List<CheckerConfiguration> getCheckersConfiguration() {
+	final List<CheckerConfiguration> result =
                  new LinkedList<CheckerConfiguration>();
         for (Enumeration treeNodesEnumetration = JTreeAlgo.getRoot(
                                                   getCheckersTree()).children();
@@ -73,24 +76,23 @@ final class CheckersConfurationManager {
     // private section
 
     private void fillTreeByCheckersConfiguration(
-                 final LinkedList<CheckerConfiguration> checkersConfiguration) {
+                 final List<CheckerConfiguration> checkersConfiguration) {
         for (CheckerConfiguration configuration : checkersConfiguration) {
             final DefaultMutableTreeNode checkerTreeNode = JTreeAlgo.add(
-                         getCheckersTree(),buildCheckerTreeID(configuration));
+                         getCheckersTree(), buildCheckerTreeID(configuration));
             checkerTreeNode.setAllowsChildren(true);
-            for (java.io.File arg : configuration.getCheckerArgumentsList())
-                JTreeAlgo.add(getCheckersTree(),checkerTreeNode,
+            for (File arg : configuration.getCheckerArgumentsList())
+                JTreeAlgo.add(getCheckersTree(), checkerTreeNode,
                                  arg.toString()).setAllowsChildren(false);
         }
     }
 
     private CheckerConfiguration
     createCheckerConfiguration(final DefaultMutableTreeNode checkerTreeNode) {
-        final LinkedList<java.io.File> arguments =
-                 new LinkedList<java.io.File>();
+        final List<File> arguments = new LinkedList<File>();
         for (Enumeration treeNodesEnumetration = checkerTreeNode.children();
                 treeNodesEnumetration.hasMoreElements(); )
-            arguments.add(new java.io.File((String)JTreeAlgo.getData(
+            arguments.add(new File((String)JTreeAlgo.getData(
                 (DefaultMutableTreeNode)treeNodesEnumetration.nextElement())));
         final String treeID = (String)JTreeAlgo.getData(checkerTreeNode);
         return new CheckerConfiguration(parseCheckerNameFromTreeID(treeID),
@@ -129,14 +131,12 @@ final class CheckersConfurationManager {
         String data;
         try {
             data = chooseDataFileOnDisc((String)JTreeAlgo.getData(node));
-        }
-        catch(final Exception exception) {
-            ClassLogger.error(this,exception);
+        } catch (final UnsupportedOperationException e) {
+	    ClassLogger.error(this, e);
             return;
         }
         if (data != null)
-            JTreeAlgo.add(getCheckersTree(),node,data)
-                        .setAllowsChildren(false);
+	    JTreeAlgo.add(getCheckersTree(),node,data).setAllowsChildren(false);
     }
 
     private void onRemoveData() {
@@ -163,20 +163,17 @@ final class CheckersConfurationManager {
         return (selectedNode.getAllowsChildren()) ? null : selectedNode;
     }
 
-    private String chooseDataFileOnDisc(String checkerName) throws Exception {
+    private String chooseDataFileOnDisc(String checkerName) {
         checkerName = parseCheckerNameFromTreeID(checkerName);
-        final javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File("."));
-        chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+	final JFileChooser chooser = new JFileChooser();
+	chooser.setCurrentDirectory(new File("."));
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter(new FileChooserFileFilter(
-                cz.muni.stanse.utils.FileAlgo.getExtension(checkerName) +
-                    " data file types",
-                cz.muni.stanse.checker.CheckerFactory.getDataFilesExtensions(
-                    checkerName),
-                null));
-        return (chooser.showDialog(getAddDataButton(),"Add") !=
-                    javax.swing.JFileChooser.APPROVE_OPTION) ? null :
-                                           chooser.getSelectedFile().toString();
+		FileAlgo.getExtension(checkerName) + " data file types",
+		CheckerFactory.getDataFilesExtensions(checkerName), null));
+        return (chooser.showDialog(getAddDataButton(), "Add") !=
+			JFileChooser.APPROVE_OPTION) ? null :
+                        chooser.getSelectedFile().toString();
     }
 
     private void expandTree() {
@@ -206,29 +203,29 @@ final class CheckersConfurationManager {
         return !treeID.contains("--intraprocedural");
     }
 
-    private javax.swing.JTree getCheckersTree() {
+    private JTree getCheckersTree() {
         return checkersTree;
     }
 
-    private javax.swing.JButton getAddCheckerButton() {
+    private JButton getAddCheckerButton() {
         return addCheckerButton;
     }
 
-    private javax.swing.JButton getRemoveCheckerButton() {
+    private JButton getRemoveCheckerButton() {
         return removeCheckerButton;
     }
 
-    private javax.swing.JButton getAddDataButton() {
+    private JButton getAddDataButton() {
         return addDataButton;
     }
 
-    private javax.swing.JButton getRemoveDataButton() {
+    private JButton getRemoveDataButton() {
         return removeDataButton;
     }
 
-    private final javax.swing.JTree checkersTree;
-    private final javax.swing.JButton addCheckerButton;
-    private final javax.swing.JButton removeCheckerButton;
-    private final javax.swing.JButton addDataButton;
-    private final javax.swing.JButton removeDataButton;
+    private final JTree checkersTree;
+    private final JButton addCheckerButton;
+    private final JButton removeCheckerButton;
+    private final JButton addDataButton;
+    private final JButton removeDataButton;
 }

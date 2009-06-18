@@ -2,17 +2,25 @@ package cz.muni.stanse.gui;
 
 import cz.muni.stanse.utils.ClassLogger;
 
-import java.util.LinkedList;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.JViewport;
+import javax.swing.text.BadLocationException;
 
 final class OpenedSourceFilesManager {
 
     // package-private section
 
-    OpenedSourceFilesManager(
-                           final javax.swing.JTabbedPane sourceCodeTabbedPane) {
+    OpenedSourceFilesManager(final JTabbedPane sourceCodeTabbedPane) {
         this.sourceCodeTabbedPane = sourceCodeTabbedPane;
     }
 
@@ -27,18 +35,15 @@ final class OpenedSourceFilesManager {
     }
 
     void selectLineInShowedSourceFile(final int line) {
-        final JTextArea sourceCodeText = getShowedTabTextArea();
+        final JTextArea sourceCodeText = getShownTabTextArea();
         int start,end;
         try {
             start = sourceCodeText.getLineStartOffset(line - 1);
             end = sourceCodeText.getLineEndOffset(line - 1);
-        }
-        catch(final javax.swing.text.BadLocationException exception) {
-            ClassLogger.error(this,"Cannot mark text in actual source " +
-                                   "code file because line to be marked lies" +
-                                   " outside of the file. See exception " +
-                                   "trace for details:");
-            ClassLogger.error(this,exception);
+        } catch (final BadLocationException e) {
+            ClassLogger.error(this, "Cannot mark text in actual source " +
+			    "code file because line to be marked lies outside " +
+			    "of the file. See exception trace for details:", e);
             return;
         }
         sourceCodeText.select(start,end);
@@ -53,8 +58,8 @@ final class OpenedSourceFilesManager {
         return getFileAt(selectedIndex).toString();
     }
 
-    java.util.List<String> getAllFiles() {
-        final LinkedList<String> result = new LinkedList<String>();
+    List<String> getAllFiles() {
+        final List<String> result = new LinkedList<String>();
         for (int i = 0; i < getSourceCodeTabbedPane().getTabCount(); ++i)
             result.add(getFileAt(i).toString());
         return result;
@@ -73,10 +78,8 @@ final class OpenedSourceFilesManager {
     // private section
 
     private void createTabWithSourceCodeFile(final File sourceFile) {
-        getSourceCodeTabbedPane().addTab(
-                    sourceFile.getName(),null,
-                    new javax.swing.JScrollPane(
-                           loadSourceFileIntoTextArea(sourceFile,
+	getSourceCodeTabbedPane().addTab(sourceFile.getName(), null,
+			new JScrollPane(loadSourceFileIntoTextArea(sourceFile,
                                             createTextAreaForSourceCodeFile())),
                     sourceFile.toString());
         final int tabIndex = getSourceCodeTabbedPane().getTabCount() - 1;
@@ -91,29 +94,25 @@ final class OpenedSourceFilesManager {
         return textArea;
     }
 
-    private JTextArea loadSourceFileIntoTextArea(final java.io.File sourcefile,
+    private JTextArea loadSourceFileIntoTextArea(final File sourcefile,
                                                final JTextArea sourceCodeArea) {
         try {
-            final java.io.BufferedReader reader = new java.io.BufferedReader(
-                                            new java.io.FileReader(sourcefile));
+	    final BufferedReader reader = new BufferedReader(
+			    new FileReader(sourcefile));
             String readedLine;
             while ((readedLine = reader.readLine()) != null)
                 sourceCodeArea.append(readedLine + '\n');
             reader.close();
-        }
-        catch (final java.io.IOException exception) {
-            ClassLogger.error(this,"Loading of source file '" + sourcefile +
-                                   "' to Stanse has FAILED. See exception " +
-                                   "trace for details:");
-            ClassLogger.error(this,exception);
+	} catch (final IOException e) {
+	    ClassLogger.error(this, "Loading of source file '" + sourcefile +
+			    "' to Stanse has FAILED. See exception trace for " +
+			    "details:", e);
         }
         return sourceCodeArea;
     }
 
-    private JTextArea getShowedTabTextArea() {
-        return (JTextArea)
-               ((javax.swing.JViewport)
-               ((javax.swing.JScrollPane)getSourceCodeTabbedPane().
+    private JTextArea getShownTabTextArea() {
+        return (JTextArea)((JViewport)((JScrollPane)getSourceCodeTabbedPane().
                        getSelectedComponent()).getComponent(0)).getComponent(0);
     }
 
@@ -133,9 +132,9 @@ final class OpenedSourceFilesManager {
         return getSourceCodeTabbedPane().getToolTipTextAt(tabIndex);
     }
 
-    private javax.swing.JTabbedPane getSourceCodeTabbedPane() {
+    private JTabbedPane getSourceCodeTabbedPane() {
         return sourceCodeTabbedPane;
     }
 
-    private final javax.swing.JTabbedPane sourceCodeTabbedPane;
+    private final JTabbedPane sourceCodeTabbedPane;
 }

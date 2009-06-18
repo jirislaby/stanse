@@ -7,6 +7,11 @@ public final class ClassLogger {
     // public section
 
     public static <TClass,TObject> void error(final TClass forWhichClass,
+		final TObject object, final Throwable t) {
+        Logger.getLogger(forWhichClass.getClass()).error(object, t);
+    }
+
+    public static <TClass,TObject> void error(final TClass forWhichClass,
                                               final TObject object) {
         Logger.getLogger(forWhichClass.getClass()).error(object);
     }

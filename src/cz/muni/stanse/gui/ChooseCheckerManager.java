@@ -1,19 +1,31 @@
 package cz.muni.stanse.gui;
 
+import cz.muni.stanse.checker.CheckerFactory;
 import cz.muni.stanse.utils.ClassLogger;
 
 import java.util.Set;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JList;
+import javax.swing.JTextArea;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 final class ChooseCheckerManager {
 
     // package-private section
 
     ChooseCheckerManager(final ChooseCheckerDialog dialog,
-                         final javax.swing.JList checkerNamesList,
-                         final javax.swing.JTextArea checkerInfoTextArea,
-                         final javax.swing.JButton chooseCheckerButton,
-                         final javax.swing.JButton cancelButton,
-                         final javax.swing.JCheckBox interproceduralCheckBox) {
+                         final JList checkerNamesList,
+                         final JTextArea checkerInfoTextArea,
+                         final JButton chooseCheckerButton,
+                         final JButton cancelButton,
+                         final JCheckBox interproceduralCheckBox) {
         this.checkerName = null;
         this.lastSelection = -1;
         this.interprocedural = interproceduralCheckBox.isSelected();
@@ -24,36 +36,29 @@ final class ChooseCheckerManager {
         this.cancelButton = cancelButton;
         this.interproceduralCheckBox = interproceduralCheckBox;
 
-        fillCheckerNamesList(cz.muni.stanse.checker.CheckerFactory.
-                             getRegisteredCheckers());
+        fillCheckerNamesList(CheckerFactory.getRegisteredCheckers());
 
         getCheckerNamesList().addListSelectionListener(
-        new javax.swing.event.ListSelectionListener() {
-            @Override public void valueChanged(
-                                 final javax.swing.event.ListSelectionEvent e) {
+			new ListSelectionListener() {
+            @Override public void valueChanged(final ListSelectionEvent e) {
                 onCheckersSelectionChanged();
             }
         });
-        getChooseCheckerButton().addActionListener(
-        new java.awt.event.ActionListener() {
-            @Override public void actionPerformed(
-                                           final java.awt.event.ActionEvent e) {
+        getChooseCheckerButton().addActionListener(new ActionListener() {
+            @Override public void actionPerformed(final ActionEvent e) {
                 checkerName = readSelectedCheckerName();
                 dialog.setVisible(false);
                 dialog.dispose();
             }
         });
-        getCancelButton().addActionListener(new java.awt.event.ActionListener(){
-            @Override public void actionPerformed(
-                                           final java.awt.event.ActionEvent e) {
+        getCancelButton().addActionListener(new ActionListener(){
+            @Override public void actionPerformed(final ActionEvent e) {
                 dialog.setVisible(false);
                 dialog.dispose();
             }
         });
-        getInterproceduralCheckBox().addActionListener(
-        new java.awt.event.ActionListener() {
-            @Override public void actionPerformed(
-                                           final java.awt.event.ActionEvent e) {
+        getInterproceduralCheckBox().addActionListener(new ActionListener() {
+            @Override public void actionPerformed(final ActionEvent e) {
                 interprocedural = !interprocedural;
             }
         });
@@ -74,9 +79,9 @@ final class ChooseCheckerManager {
     }
 
     private void fillCheckerNamesList(final Set<String> namesSet) {
-        final javax.swing.DefaultListModel guiListModel =
-                 (javax.swing.DefaultListModel)getCheckerNamesList().getModel();
-        for (String name : namesSet)
+        final DefaultListModel guiListModel =
+		(DefaultListModel)getCheckerNamesList().getModel();
+        for (String name: namesSet)
             guiListModel.addElement(name);
     }
 
@@ -87,14 +92,11 @@ final class ChooseCheckerManager {
         setLastSelection(newSelection);
         String checkerInfo;
         try {
-            checkerInfo = cz.muni.stanse.checker.CheckerFactory.
-                              getCheckerCreationInfo(readSelectedCheckerName());
-        }
-        catch (final Exception exception) {
-            ClassLogger.error(this,"Cannot retrieve creation info for checker" +
-                              ": " + readSelectedCheckerName());
-            ClassLogger.error(this,exception);
-            ClassLogger.error(this,exception.getStackTrace());
+            checkerInfo = CheckerFactory.getCheckerCreationInfo(
+			readSelectedCheckerName());
+        } catch (final Exception e) {
+            ClassLogger.error(this, "Cannot retrieve creation info for " +
+			"checker: " + readSelectedCheckerName(), e);
             return;
         }
         getCheckerInfoTextArea().setText(checkerInfo);
@@ -109,32 +111,32 @@ final class ChooseCheckerManager {
         lastSelection = value;
     }
 
-    private javax.swing.JList getCheckerNamesList() {
+    private JList getCheckerNamesList() {
         return checkerNamesList;
     }
 
-    private javax.swing.JTextArea getCheckerInfoTextArea() {
+    private JTextArea getCheckerInfoTextArea() {
         return checkerInfoTextArea;
     }
 
-    private javax.swing.JButton getChooseCheckerButton() {
+    private JButton getChooseCheckerButton() {
         return chooseCheckerButton;
     }
 
-    private javax.swing.JButton getCancelButton() {
+    private JButton getCancelButton() {
         return cancelButton;
     }
 
-    private javax.swing.JCheckBox getInterproceduralCheckBox() {
+    private JCheckBox getInterproceduralCheckBox() {
         return interproceduralCheckBox;
     }
 
     private String checkerName;
     private int lastSelection;
     private boolean interprocedural;
-    private final javax.swing.JList checkerNamesList;
-    private final javax.swing.JTextArea checkerInfoTextArea;
-    private final javax.swing.JButton chooseCheckerButton;
-    private final javax.swing.JButton cancelButton;
-    private final javax.swing.JCheckBox interproceduralCheckBox;
+    private final JList checkerNamesList;
+    private final JTextArea checkerInfoTextArea;
+    private final JButton chooseCheckerButton;
+    private final JButton cancelButton;
+    private final JCheckBox interproceduralCheckBox;
 }

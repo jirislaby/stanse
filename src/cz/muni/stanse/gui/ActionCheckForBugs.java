@@ -28,37 +28,34 @@ final class ActionCheckForBugs extends javax.swing.AbstractAction {
         @Override
         public void run() {
             Pair<LinkedList<CheckerError>,LinkedList<PresentableError> > errors;
+	    ConsoleManager man = getConsoleManager();
             try {
                 errors = CheckForBugs.run(MainWindow.getInstance().
                                           getConfiguration(),
                                           new CheckingProgressHandler());
-            }
-            catch(final Exception exception) {
-                ClassLogger.error(this,"Checking for bugs has failed (see " +
-                                       "following exception trace for " +
-                                       "details):");
-                ClassLogger.error(this,exception);
-                ClassLogger.error(this,exception.getStackTrace());
-                getConsoleManager().appendText(
-                    "Checking for bugs has failed (see following exception" +
-                    "trace for details):\n");
-                getConsoleManager().appendText(
-                    exception.toString() + '\n');
-                getConsoleManager().appendText(
-                    exception.getStackTrace().toString() + '\n');
+	    } catch(final Exception e) {
+		ClassLogger.error(this, "Checking for bugs has failed (see " +
+			"following exception trace for details):", e);
+		man.appendText("Checking for bugs has failed (see following " +
+				"exception trace for details):\n");
+		man.appendText(e.toString() + "\n");
+		for (StackTraceElement s: e.getStackTrace()) {
+		    man.appendText(s.toString());
+		    man.appendText("\n");
+		}
                 getErrorsTreeManager().clear();
                 getErrorsTreeManager().present();
 
                 getErrorTracingManager().onSelectionChanged(null);
                 return;
             }
-            getConsoleManager().appendText("Delivering errors to GUI...");
+	    man.appendText("Delivering errors to GUI...");
             getErrorsTreeManager().clear();
             getErrorsTreeManager().addAll(errors.getSecond());
             getErrorsTreeManager().present();
 
             getErrorTracingManager().onSelectionChanged(null);
-            getConsoleManager().appendText("Done.\n");
+	    man.appendText("Done.\n");
         }
     }
 

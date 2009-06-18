@@ -1,32 +1,35 @@
 package cz.muni.stanse.checker;
 
+import java.io.File;
+
 import java.util.Set;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.io.File;
+import java.util.List;
 
 public final class CheckerFactory {
 
     // public section
 
     public static Checker createInterprocedural(final String checkerName,
-                          final LinkedList<File> args) throws Exception {
+		final List<File> args)
+		throws UnsupportedOperationException, CheckerException {
         return getCheckerCreator(checkerName).createInterprocedural(args);
     }
 
     public static Checker createIntraprocedural(final String checkerName,
-                          final LinkedList<File> args) throws Exception {
+		final List<File> args)
+		throws UnsupportedOperationException, CheckerException {
         return getCheckerCreator(checkerName).createIntraprocedural(args);
     }
 
     public static String getCheckerCreationInfo(final String checkerName)
-                                                              throws Exception {
+		throws UnsupportedOperationException {
         return getCheckerCreator(checkerName).getCheckerCreationInfo();
     }
 
-    public static LinkedList<String> getDataFilesExtensions(
-                                    final String checkerName) throws Exception {
+    public static List<String> getDataFilesExtensions(
+		final String checkerName) throws UnsupportedOperationException {
         return getCheckerCreator(checkerName).getDataFilesExtensions();
     }
 
@@ -40,11 +43,11 @@ public final class CheckerFactory {
     }
 
     private static CheckerCreator getCheckerCreator(final String checkerName)
-                                                              throws Exception {
+		throws UnsupportedOperationException {
         final CheckerCreator creator = creatorsDictionary.get(checkerName);
         if (creator == null)
-            throw new Exception("Checker '" + checkerName + "' is not " +
-                                "registered to the factory.");
+            throw new UnsupportedOperationException("Checker '" + checkerName +
+			"' is not registered to the factory.");
         return creator;
     }
 

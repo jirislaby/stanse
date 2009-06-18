@@ -34,12 +34,10 @@ public final class BatchFileEnumerator
                     result.add(readLine);
             }
             reader.close();
-        } catch (final IOException exception) {
-            ClassLogger.error(this,"Cannot read files in batch file '" +
-                                    getReferenceFile() + "'. See exception " +
-                                   "trace for details:");
-            ClassLogger.error(this,exception);
-            ClassLogger.error(this,exception.getStackTrace());
+	} catch (final IOException e) {
+	    ClassLogger.error(this, "Cannot read files in batch file '" +
+				    getReferenceFile() + "'. See exception " +
+				   "trace for details:", e);
         }
         return result;
     }

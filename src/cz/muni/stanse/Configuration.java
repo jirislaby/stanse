@@ -28,7 +28,7 @@ public final class Configuration {
     }
 
     public Configuration(final SourceConfiguration sourceConfiguration,
-                  final LinkedList<CheckerConfiguration> checkerConfiguration) {
+                  final List<CheckerConfiguration> checkerConfiguration) {
         this.sourceConfiguration = sourceConfiguration;
         this.checkerConfigurations = checkerConfiguration;
     }
@@ -87,7 +87,7 @@ public final class Configuration {
         return sourceConfiguration;
     }
 
-    public LinkedList<CheckerConfiguration> getCheckerConfigurations() {
+    public List<CheckerConfiguration> getCheckerConfigurations() {
         return checkerConfigurations;
     }
 
@@ -120,5 +120,5 @@ public final class Configuration {
     }
 
     private final SourceConfiguration sourceConfiguration;
-    private final LinkedList<CheckerConfiguration> checkerConfigurations;
+    private final List<CheckerConfiguration> checkerConfigurations;
 }
