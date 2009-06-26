@@ -45,6 +45,10 @@ public final class PresentableErrorTrace {
     }
 
     public PresentableErrorTraceLocation getCauseLocation() {
+        for (final PresentableErrorTraceLocation location : getLocations())
+            if (!location.isContextLocation())
+                return location;
+        assert(false);
         return getLocations().get(0);
     }
 

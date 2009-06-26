@@ -73,8 +73,7 @@ final class ErrorTracingManager {
         if (getErrorTrace() == errorTrace)
             return;
         setErrorTrace(errorTrace);
-        setTraceLocationIndex(0);
-        markActualErrorTraceLocation();
+        setTraceLocationIndex(getTraceLocationsStartIndex());
     }
 
     void markActualErrorTraceLocation() {
@@ -128,6 +127,12 @@ final class ErrorTracingManager {
     }
 
     // private section
+
+    private int getTraceLocationsStartIndex() {
+        return (getErrorTrace() != null &&
+                !getErrorTrace().getLocations().get(0).isContextLocation())
+                    ? 0 : -1;
+    }
 
     private List<PresentableErrorTraceLocation> getTraceLocations() {
         return getErrorTrace().getLocations();

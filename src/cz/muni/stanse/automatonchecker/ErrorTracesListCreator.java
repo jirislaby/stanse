@@ -53,7 +53,7 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
                     getRule().getErrorBeginMessage(),
                     getRule().getErrorPropagMessage(),
                     getRule().getErrorEndMessage(),
-                    path));
+                    path,cfgContext));
             return false;
         }
 
@@ -62,7 +62,7 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
                     getRule().getErrorEntryMessage(),
                     getRule().getErrorPropagMessage(),
                     getRule().getErrorEndMessage(),
-                    path));
+                    path,cfgContext));
             return false;
         }
 
@@ -105,9 +105,14 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
     private ErrorTrace buildErrorTrace(final String beginMsg,
                                        final String innerMsg,
                                        final String endMsg,
-                                       final List<CFGNode> path) {
+                                       final List<CFGNode> path,
+                                       final java.util.Stack<CFGNode> context) {
         final List< Triple<CFGNode,String,CFG> > trace =
                                 new LinkedList< Triple<CFGNode,String,CFG> >();
+        for (final CFGNode node : context)
+            trace.add(new Triple<CFGNode,String,CFG>(node,
+                                            "<context>When called from here.",
+                                            getNodeCFGdictionary().get(node)));
         trace.add(new Triple<CFGNode,String,CFG>(path.get(0),beginMsg,
                                       getNodeCFGdictionary().get(path.get(0))));
         if (path.size() > 1)

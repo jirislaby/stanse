@@ -67,8 +67,7 @@ final class ErrorsTreeManager {
     private void onSelectionChenged() {
         if (!JTreeAlgo.isSomethingSelected(getErrorsTree()))
             return;
-        if (onSelectionChangedForErrorTracingManager(getSelectedData()))
-            return;
+        onSelectionChangedForErrorTracingManager(getSelectedData());
         final PresentableErrorTraceLocation location =
                             getErrorLocationOfSelectedObject(getSelectedData());
         getOpenedSourceFilesManager().showSourceFile(
@@ -80,12 +79,11 @@ final class ErrorsTreeManager {
                                                      location.getDescription());
     }
 
-    private boolean onSelectionChangedForErrorTracingManager(
+    private void onSelectionChangedForErrorTracingManager(
                                                   final Object selectedObject) {
         MainWindow.getInstance().getErrorTracingManager().
             onSelectionChanged((selectedObject instanceof PresentableErrorTrace)
                                 ? (PresentableErrorTrace)selectedObject : null);
-        return selectedObject instanceof PresentableErrorTrace;
     }
 
     private PresentableErrorTraceLocation getErrorLocationOfSelectedObject(

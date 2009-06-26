@@ -66,6 +66,10 @@ public final class PresentableErrorTraceLocation {
                getDescription().equals(other.getDescription());
     }
 
+    public boolean isContextLocation() {
+        return getDescription().startsWith("<context>");
+    }
+
     // private section
 
     private final String unitName;
