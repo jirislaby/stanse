@@ -3,7 +3,6 @@ package cz.muni.stanse.utils;
 import cz.muni.stanse.codestructures.CFGNode;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import org.dom4j.Element;
 
@@ -30,7 +29,7 @@ public final class ReturnValuePassingManager {
 
     private void build(final CFGsNavigator navigator) {
         for (final CFGNode call : navigator.callSites()) {
-            final LinkedList<Element> callElem = XMLLinearizeASTElement.
+            final java.util.Vector<Element> callElem = XMLLinearizeASTElement.
                 assignFunctionCall(call.getElement());
             if (callElem != null)
                 for (final CFGNode endPredecessor :
@@ -38,7 +37,8 @@ public final class ReturnValuePassingManager {
                     final Element retElem = XMLLinearizeASTElement.
                         functionRet(endPredecessor.getElement());
                     if (retElem != null)
-                        build(call,callElem.getFirst(),endPredecessor,retElem);
+                        build(call,callElem.firstElement(),endPredecessor,
+                              retElem);
                 }
         }
     }

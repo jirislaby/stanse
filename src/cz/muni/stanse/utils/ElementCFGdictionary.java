@@ -27,10 +27,10 @@ public final class ElementCFGdictionary {
         final HashMap<Pair<String,Integer>,CFG> dictionary =
             new HashMap<Pair<String,Integer>,CFG>();
         for (final CFG cfg : CFGs) {
-            final java.util.LinkedList<Element> linerDecl =
+            final java.util.Vector<Element> linerDecl =
                 XMLLinearizeASTElement.functionDeclaration(cfg.getElement());
             assert(linerDecl != null);
-            dictionary.put(Pair.make(linerDecl.getFirst().getText(),
+            dictionary.put(Pair.make(linerDecl.firstElement().getText(),
                                      linerDecl.size() - 1),cfg);
         }
         return dictionary;
@@ -38,10 +38,10 @@ public final class ElementCFGdictionary {
 
     private static Pair<String,Integer>
     buildKey(final Element elem) {
-        final java.util.LinkedList<Element> linerCall =
+        final java.util.Vector<Element> linerCall =
             XMLLinearizeASTElement.functionCall(elem);
         return (linerCall == null) ?
-                    null : Pair.make(linerCall.getFirst().getText(),
+                    null : Pair.make(linerCall.firstElement().getText(),
                                      linerCall.size() - 1);
     }
 
