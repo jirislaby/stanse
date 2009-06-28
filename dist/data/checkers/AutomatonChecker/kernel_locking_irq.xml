@@ -6,11 +6,13 @@
                        cross-locking problem (lock(a)..lock(b)..unlock(a))
                        and detects leaving function in locked state." />
 
-    <start state="U" />
+    <start state="X" />
+    <transition from="X[A]" by="lock[A]" to="L[A]" />
     <transition from="U[A]" by="lock[A]" to="L[A]" />
     <transition from="L[A]" by="lock[B]" to="L[A]" />
     <transition from="L[A]" by="lock[B]" to="LL[A][B]" />
     <transition from="L[A]" by="unlock[A]" to="U[A]" />
+    <transition from="X[A]" by="unlock[A]" to="U[A]" />
     <transition from="LL[A][B]" by="unlock[B]" to="" />
 
     <error  from="U[A]" by="unlock[A]"
