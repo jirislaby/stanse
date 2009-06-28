@@ -312,6 +312,7 @@ directDeclarator1 returns [List<Element> els]
 initDeclarator returns [Element e]
 	: ^(INIT_DECLARATOR declarator initializer?) {
 		$e = newElement("initDeclarator", $initDeclarator.start);
+		$initDeclarator.start.setElement($e);
 		$e.add($declarator.e);
 		addElementCond($e, $initializer.e);
 	}

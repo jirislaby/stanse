@@ -145,9 +145,16 @@ scope Function;
 	}
 	;
 
-declaration
+declaration returns [CFGPart g]
+@init {
+	$g = new CFGPart();
+}
 	: ^('typedef' declarationSpecifiers? initDeclarator*)
-	| ^(DECLARATION declarationSpecifiers initDeclarator*)
+	| ^(DECLARATION declarationSpecifiers (initDeclarator {
+			CFGPart idg = $initDeclarator.g;
+			if (idg != null)
+				$g.append(idg);
+		})*)
 	;
 
 declarationSpecifiers
@@ -169,8 +176,13 @@ directDeclarator1
 	| ^(FUNCTION_DECLARATOR (IDENTIFIER|declarator) (parameterTypeList|identifier*))
 	;
 
-initDeclarator
-	: ^(INIT_DECLARATOR declarator initializer?)
+initDeclarator returns [CFGPart g]
+	: ^(INIT_DECLARATOR declarator initializer?) {
+		if ($initializer.start != null) {
+			$g = new CFGPart();
+			$g.append(new CFGNode($initDeclarator.start.getElement()));
+		}
+	}
 	;
 
 initializer
@@ -210,7 +222,9 @@ compoundStatement returns [CFGPart g]
 			$Function::unreachables.add(cfg1);
 	}
 }
-	: ^(COMPOUND_STATEMENT (declaration | functionDefinition |
+	: ^(COMPOUND_STATEMENT (declaration {
+			cfg.append($declaration.g);
+		} | functionDefinition |
 		st=statement {
 			if (isBreak) {
 				cfg = new CFGPart();
