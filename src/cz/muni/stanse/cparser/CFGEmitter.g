@@ -223,7 +223,8 @@ compoundStatement returns [CFGPart g]
 	}
 }
 	: ^(COMPOUND_STATEMENT (declaration {
-			cfg.append($declaration.g);
+			if (!$declaration.g.isEmpty())
+				cfg.append($declaration.g);
 		} | functionDefinition |
 		st=statement {
 			if (isBreak) {

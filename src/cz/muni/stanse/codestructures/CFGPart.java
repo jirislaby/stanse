@@ -53,12 +53,16 @@ public class CFGPart {
 	endNode = n;
     }
 
+    public boolean isEmpty() {
+	return getEndNode() == null;
+    }
+
     /**
      * Appends one CFG to the another
      * @param g a CFG to append at the end of this instance
      */
     public void append(CFGPart g) {
-	if (getEndNode() == null) {
+	if (isEmpty()) {
 	    setStartNode(g.getStartNode());
 	    setEndNode(g.getEndNode());
 	    return;
@@ -72,7 +76,7 @@ public class CFGPart {
      * @param n a CFGNode to append at the end of this CFG
      */
     public void append(CFGNode n) {
-	if (getEndNode() == null) {
+	if (isEmpty()) {
 	    setStartNode(n);
 	    setEndNode(n);
 	    return;
