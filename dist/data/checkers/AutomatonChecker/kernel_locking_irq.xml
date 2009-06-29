@@ -238,6 +238,12 @@
         </functionCall>
     </pattern>
 
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_rcu_read_lock_st__</id>
+        </functionCall>
+    </pattern>
+
     <pattern name="unlock">
         <functionCall>
             <id>__st_mutex_unlock_st__</id>
@@ -290,6 +296,12 @@
     <pattern name="unlock">
         <functionCall>
             <id>__st_unlock_kernel_st__</id>
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_rcu_read_unlock_st__</id>
         </functionCall>
     </pattern>
 

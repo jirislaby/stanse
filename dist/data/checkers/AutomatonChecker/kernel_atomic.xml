@@ -54,12 +54,60 @@
     <pattern name="nonatomic">
 	<assignExpression>
 	    <ignore/>
-	    <functionCall>
-		<id>kmalloc</id>
-		<ignore />
-		<id>__st_GFP_KERNEL_st__</id>
-	    </functionCall>
+	    <nested>
+		<functionCall>
+		    <id>kmalloc</id>
+		    <ignore />
+		    <id>__st_GFP_KERNEL_st__</id>
+		</functionCall>
+	    </nested>
 	</assignExpression>
+    </pattern>
+
+    <pattern name="nonatomic">
+	<assignExpression>
+	    <ignore/>
+	    <nested>
+		<functionCall>
+		    <id>kzalloc</id>
+		    <ignore />
+		    <id>__st_GFP_KERNEL_st__</id>
+		</functionCall>
+	    </nested>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="nonatomic">
+	<assignExpression>
+	    <ignore/>
+	    <nested>
+		<functionCall>
+		    <id>kcalloc</id>
+		    <ignore />
+		    <ignore />
+		    <id>__st_GFP_KERNEL_st__</id>
+		</functionCall>
+	    </nested>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="nonatomic">
+	<assignExpression>
+	    <ignore/>
+	    <nested>
+		<functionCall>
+		    <id>vmalloc</id>
+		    <ignore />
+		</functionCall>
+	    </nested>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>__st_mutex_lock_st__</id>
+            <var name="A" />
+        </functionCall>
     </pattern>
 
     <pattern name="nonatomic">
@@ -78,9 +126,49 @@
 
     <pattern name="nonatomic">
         <functionCall>
+            <id>msleep_interruptible</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
             <id>ssleep</id>
 	    <ignore/>
         </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>schedule</id>
+        </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
+	<nested>
+	    <functionCall>
+		<id>schedule_timeout</id>
+		<ignore/>
+	    </functionCall>
+	</nested>
+    </pattern>
+
+    <pattern name="nonatomic">
+	<nested>
+	    <functionCall>
+		<id>schedule_timeout_interruptible</id>
+		<ignore/>
+	    </functionCall>
+	</nested>
+    </pattern>
+
+    <pattern name="nonatomic">
+	<nested>
+	    <functionCall>
+		<id>schedule_timeout_uninterruptible</id>
+		<ignore/>
+	    </functionCall>
+	</nested>
     </pattern>
 
     <pattern name="atomize">

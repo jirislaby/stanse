@@ -6,6 +6,7 @@
                        memory leaks." />
 
     <start state="U" />
+    <transition from="U[A]" by="assign[A]" to="V[A]" />
     <transition from="U[A]" by="alloc[A]" to="I[A]" />
     <transition from="N[A]" by="alloc[A]" to="I[A]" />
     <transition from="D[A]" by="alloc[A]" to="I[A]" />
@@ -80,22 +81,6 @@
             propag="not affected ==> pointer still does not point to valid memory."
             end="dereferencing invalid pointer here." />
 
-    <error  from="N[A]" by="null[A]"
-            desc="unnecessary check (checking for NULL)."
-            level="0"
-            entry="pointer is NULL at function entry."
-            begin="pointer is NULL here."
-            propag="not affected ==> pointer is still NULL."
-            end="pointer always points to NULL here, but checking for it." />
-
-    <error  from="V[A]" by="null[A]"
-            desc="unnecessary check (checking for NULL)."
-            level="0"
-            entry="pointer is valid at function entry."
-            begin="pointer is valid here."
-            propag="not affected ==> pointer is still valid."
-            end="pointer always points valid memory here, but checking for it." />
-
     <error  from="V[*]" by=""
             desc="leaving function without releasing memory - memory leak"
             level="0"
@@ -111,6 +96,18 @@
             begin="pointer points to valid memory."
             propag="not affected ==> pointer still points to valid memory."
             end="Leaving function and only reference to valid memory is lost here." />
+
+    <pattern name="assign">
+        <initDeclarator>
+	    <declarator>
+		<pointer/>
+		<var name="A" />
+	    </declarator>
+	    <initializer>
+		<any/>
+	    </initializer>
+        </initDeclarator>
+    </pattern>
 
     <pattern name="alloc">
         <assignExpression>
@@ -129,6 +126,30 @@
                 <ignore />
                 <functionCall>
                     <id>kmalloc</id>
+                    <ignore />
+                    <ignore />
+                </functionCall>
+            </castExpression>
+        </assignExpression>
+    </pattern>
+
+    <pattern name="alloc">
+        <assignExpression>
+            <var name="A" />
+            <functionCall>
+                <id>kzalloc</id>
+                <any />
+            </functionCall>
+        </assignExpression>
+    </pattern>
+
+    <pattern name="alloc">
+        <assignExpression>
+            <var name="A" />
+            <castExpression>
+                <ignore />
+                <functionCall>
+                    <id>kzalloc</id>
                     <ignore />
                     <ignore />
                 </functionCall>
