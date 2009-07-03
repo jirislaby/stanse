@@ -11,8 +11,8 @@
     <transition from="U[A]" by="lock[A]" to="L[A]" />
     <transition from="L[A]" by="lock[B]" to="L[A]" />
     <transition from="L[A]" by="lock[B]" to="LL[A][B]" />
-    <transition from="L[A]" by="unlock[A]" to="U[A]" />
     <transition from="X[A]" by="unlock[A]" to="U[A]" />
+    <transition from="L[A]" by="unlock[A]" to="U[A]" />
     <transition from="LL[A][B]" by="unlock[B]" to="" />
 
     <error  from="U[A]" by="unlock[A]"
@@ -39,24 +39,6 @@
             propag="not affected ==> locked order is still lock(A) lock(B)"
             end="The locked order lock(A) lock(B), but now unlocking A (e.i. before
                  B) ==> cross locking." />
-
-    <error  from="U[A] -L[A]" by="islocked[A]"
-            desc="unnecessary check - always unlocked"
-            level="4"
-            entry="The function called in unlocked state and never called in lock state."
-            begin="The lock in unlocked here and cannot be in locked state here."
-            propag="not affected ==> the lock is still in unlocked and never in locked state."
-            end="The lock is checked for locking state, but here the lock always is
-                 in unlocked state and never in locked state ==> unnecessary check." />
-
-    <error  from="-U[A] L[A]" by="islocked[A]"
-            desc="unnecessary check - always locked"
-            level="4"
-            entry="The function called in locked state and never called in unlock state."
-            begin="The lock in locked here and cannot be in unlocked state here."
-            propag="not affected ==> the lock is still locked and never in unlocked state."
-            end="The lock is checked for locking state, but the lock here is always
-                 in locked state and never in unlocked state ==> unnecessary check." />
 
     <error  from="L[*]" by=""
             desc="leaving function in locked state"

@@ -5,27 +5,53 @@
                        null/dangling pointer dereference, double free, and
                        memory leaks." />
 
-    <start state="U" />
-    <transition from="U[A]" by="assign[A]" to="V[A]" />
-    <transition from="U[A]" by="alloc[A]" to="I[A]" />
-    <transition from="N[A]" by="alloc[A]" to="I[A]" />
-    <transition from="D[A]" by="alloc[A]" to="I[A]" />
-    <transition from="U[A]" by="null[A]" to="N[A]" />
-    <transition from="D[A]" by="null[A]" to="N[A]" />
-    <transition from="I[A]" by="null[A]" to="N[A]" />
-    <transition from="I[A]" by="notnull[A]" to="V[A]" />
-    <transition from="V[A]" by="free[A]" to="D[A]" />
-    <transition from="I[A]" by="free[A]" to="D[A]" />
+    <start state="X" />
+    <transition from="X[A]"	by="assign[A]"	to="" />
+    <transition from="D[A]"	by="assign[A]"	to="" />
+    <transition from="V[A]"	by="assign[A]"	to="" />
+    <transition from="N[A]"	by="assign[A]"	to="" />
+    <transition from="X[A]"	by="alloc[A]"	to="F[A]" />
+    <transition from="D[A]"	by="alloc[A]"	to="F[A]" />
+    <transition from="V[A]"	by="alloc[A]"	to="F[A]" />
+    <transition from="N[A]"	by="alloc[A]"	to="F[A]" />
+    <transition from="X[A]"     by="alloc[A]"    to="V[A]" />
+    <transition from="X[A]"     by="alloc[A]"    to="N[A]" />
+    <transition from="D[A]"     by="alloc[A]"    to="V[A]" />
+    <transition from="D[A]"     by="alloc[A]"    to="N[A]" />
+    <transition from="V[A]"     by="alloc[A]"    to="VV[A]"/>
+    <transition from="V[A]"     by="alloc[A]"    to="VN[A]"/>
+    <transition from="N[A]"     by="alloc[A]"    to="V[A]" />
+    <transition from="N[A]"     by="alloc[A]"    to="N[A]" />
+    <transition from="X[A]"     by="free[A]"      to="D[A]" />
+    <transition from="V[A]"     by="free[A]"      to="D[A]" />
+    <transition from="VV[A]"    by="free[A]"      to="V[A]" />
+    <transition from="VN[A]"    by="free[A]"      to="V[A]" />
+    <transition from="X[A]"     by="deref[A]"     to="V[A]" />
+    <transition from="X[A]"     by="isnull[A]"    to="N[A]" />
+    <transition from="D[A]"     by="isnull[A]"    to=""     />
+    <transition from="V[A]"     by="isnull[A]"    to=""     />
+    <transition from="VV[A]"    by="isnull[A]"    to="V[A]" />
+    <transition from="X[A]"     by="isnotnull[A]" to="V[A]" />
+    <transition from="N[A]"     by="isnotnull[A]" to=""     />
+    <transition from="VN[A]"    by="isnotnull[A]" to="V[A]" />
 
-    <error  from="U[A]" by="free[A]"
-            desc="releasing of unallocated memory."
+    <error  from="N[A]" by="deref[A]"
+            desc="dereferencing NULL pointer"
             level="0"
-            entry="pointer is not initialized at function entry."
-            begin="pointer is not initialized."
-            propag="not affected ==> pointer is still not initialized."
-            end="pointer is not initialized, but is released here." />
+            entry="pointer is NULL at function entry."
+            begin="pointer is NULL."
+            propag="not affected ==> pointer is still NULL."
+            end="dereferencing NULL pointer here." />
 
-    <error  from="D[A]" by="free[A]"
+    <error  from="D[A]" by="deref[A]"
+            desc="dereferencing dangling pointer."
+            level="0"
+            entry="pointer does not point to valid memory at function entry."
+            begin="pointer does not point to valid memory."
+            propag="not affected ==> pointer still does not point to valid memory."
+            end="dereferencing dangling pointer here." />
+
+    <error  from="D[A] -V[A]" by="free[A]"
             desc="releasing already released memory"
             level="0"
             entry=""
@@ -33,81 +59,29 @@
             propag="not affected ==> pointer is still dangling."
             end="pointer is dangling and releasing it here." />
 
-    <error  from="I[A]" by="alloc[A]"
-            desc="memory leak"
-            level="0"
-            entry=""
-            begin="pointer is pointing to the valid memory."
-            propag="not affected ==> still pointing to valid memory."
-            end="the only reference to valid memory is lost here." />
+<!--    <error  from="N[A] -V[A] -X[A] -D[A]" by="isnull[A]"
+            desc="unnecessary check (checking for NULL)."
+            level="4"
+            entry="pointer is NULL at function entry."
+            begin="pointer is NULL here."
+            propag="not affected ==> pointer is still NULL."
+            end="pointer always points to NULL here, but checking for it." />
 
-    <error  from="V[A]" by="alloc[A]"
-            desc="memory leak"
-            level="0"
-            entry=""
-            begin="pointer is pointing to the valid memory."
-            propag="not affected ==> still pointing to valid memory."
-            end="the only reference to valid memory is lost here." />
-
-    <error  from="U[A]" by="deref[A]"
-            desc="dereferencing invalid pointer"
-            level="0"
-            entry="pointer is invalid at function entry."
-            begin="pointer is invalid here."
-            propag="not affected ==> pointer is still invalid."
-            end="dereferencing invalid pointer here." />
-
-    <error  from="I[A]" by="deref[A]"
-            desc="dereferencing invalid pointer"
-            level="0"
-            entry="pointer does not point to valid memory at function entry."
-            begin="pointer does not point to valid memory."
-            propag="not affected ==> pointer still does not point to valid memory."
-            end="dereferencing invalid pointer here." />
-
-    <error  from="N[A]" by="deref[A]"
-            desc="dereferencing invalid pointer"
-            level="0"
-            entry="pointer does not point to valid memory at function entry."
-            begin="pointer does not point to valid memory."
-            propag="not affected ==> pointer still does not point to valid memory."
-            end="dereferencing invalid pointer here." />
-
-    <error  from="D[A]" by="deref[A]"
-            desc="dereferencing invalid pointer"
-            level="0"
-            entry="pointer does not point to valid memory at function entry."
-            begin="pointer does not point to valid memory."
-            propag="not affected ==> pointer still does not point to valid memory."
-            end="dereferencing invalid pointer here." />
-
+    <error  from="V[A] -N[A] -X[A] -D[A]" by="isnotnull[A]"
+            desc="unnecessary check (checking for not NULL)."
+            level="4"
+            entry="pointer is not NULL at function entry."
+            begin="pointer is not NULL here."
+            propag="not affected ==> pointer is still not NULL."
+            end="pointer always points to valid memory here, but checking for not NULL." />
+-->
     <error  from="V[*]" by=""
-            desc="leaving function without releasing memory - memory leak"
-            level="0"
+            desc="memory leak - leaving function without releasing memory"
+            level="2"
             entry=""
             begin="pointer points to valid memory."
             propag="not affected ==> pointer still points to valid memory."
             end="Leaving function and only reference to valid memory is lost here." />
-
-    <error  from="I[*]" by=""
-            desc="leaving function without releasing memory - memory leak"
-            level="0"
-            entry=""
-            begin="pointer points to valid memory."
-            propag="not affected ==> pointer still points to valid memory."
-            end="Leaving function and only reference to valid memory is lost here." />
-
-    <pattern name="assign">
-        <initDeclarator>
-	    <declarator>
-		<pointer/>
-		<var name="A" />
-	    </declarator>
-	    <initializer>
-		<any/>
-	    </initializer>
-        </initDeclarator>
-    </pattern>
 
     <pattern name="alloc">
         <assignExpression>
@@ -157,34 +131,57 @@
         </assignExpression>
     </pattern>
 
-    <pattern name="free">
+    <pattern name="free" constructive="false">
         <functionCall>
             <id>kfree</id>
             <var name="A"/>
         </functionCall>
     </pattern>
 
-    <pattern name="deref">
+    <!-- creating an alias, we won't care about the pointer anymore -->
+    <pattern name="assign" constructive="false">
+        <assignExpression>
+            <ignore/>
+            <var name="A"/>
+        </assignExpression>
+    </pattern>
+
+    <pattern name="assign" constructive="false">
+        <returnStatement>
+            <var name="A"/>
+        </returnStatement>
+    </pattern>
+
+    <pattern name="deref" constructive="false">
         <nested exclude0="sizeofExpression">
             <derefExpression>
-                <var name="A" constructive="false" />
+                <var name="A" />
             </derefExpression>
         </nested>
     </pattern>
 
-    <pattern name="deref">
+    <pattern name="deref" constructive="false">
+        <nested exclude0="sizeofExpression">
+            <dotExpression>
+                <var name="A" />
+                <ignore />
+            </dotExpression>
+        </nested>
+    </pattern>
+
+    <pattern name="deref" constructive="false">
         <nested exclude0="sizeofExpression">
             <arrowExpression>
-                <var name="A" constructive="false" />
+                <var name="A" />
                 <ignore />
             </arrowExpression>
         </nested>
     </pattern>
 
-    <pattern name="deref">
+    <pattern name="deref" constructive="false">
         <nested exclude0="sizeofExpression">
             <arrayAccess>
-                <var name="A" constructive="false" />
+                <var name="A" />
                 <ignore />
             </arrayAccess>
         </nested>
@@ -192,54 +189,54 @@
 
     <!-- Matches condition of form:
         if (A) {
-            assert(!(A == 0)); // ~ parttern 'notnull'
+            assert(!(A == 0)); // ~ pattern 'isnotnull'
         } else {
-            assert(A == 0); // ~ parttern 'null'
+            assert(A == 0); // ~ pattern 'isnull'
         }
     -->
-    <pattern name="null">
-        <assert>
-            <binaryExpressionEquality>
-                <var name="A" constructive="false" />
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
-        </assert>
-    </pattern>
-    <pattern name="notnull">
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
-                    <var name="A" constructive="false" />
+                    <var name="A" />
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
+    <pattern name="isnull" constructive="false">
+        <assert>
+            <binaryExpressionEquality>
+                <var name="A" />
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
 
     <!-- Matches condition of form:
         if (!A) {
-            assert(!A == 0); // ~ parttern 'notnull'
+            assert(!(!A == 0)); // ~ pattern 'isnull'
         } else {
-            assert(!(!A == 0)); // ~ parttern 'null'
+            assert(!A == 0); // ~ pattern 'isnotnull'
         }
     -->
-    <pattern name="null">
+    <pattern name="isnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <prefixExpressionLogicalNot>
-                        <var name="A" constructive="false" />
+                        <var name="A" />
                     </prefixExpressionLogicalNot>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-    <pattern name="notnull">
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <binaryExpressionEquality>
                 <prefixExpressionLogicalNot>
-                    <var name="A" constructive="false" />
+                    <var name="A" />
                 </prefixExpressionLogicalNot>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
@@ -248,17 +245,17 @@
 
     <!-- Matches condition of form:
         if (A == 0) {
-            assert((A == 0) == 0); // ~ parttern 'notnull'
+            assert(!((A == 0) == 0)); // ~ pattern 'isnull'
         } else {
-            assert(!((A == 0) == 0)); // ~ parttern 'null'
+            assert((A == 0) == 0); // ~ pattern 'isnotnull'
         }
     -->
-    <pattern name="null">
+    <pattern name="isnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionEquality>
-                        <var name="A" constructive="false" />
+                        <var name="A" />
                         <intConst>0</intConst>
                     </binaryExpressionEquality>
                     <intConst>0</intConst>
@@ -266,11 +263,11 @@
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-    <pattern name="notnull">
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionEquality>
-                    <var name="A" constructive="false" />
+                    <var name="A" />
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
                 <intConst>0</intConst>
@@ -280,17 +277,17 @@
 
     <!-- Matches condition of form:
         if (A == (T*)0) {
-            assert((A == (T*)0) == 0); // ~ parttern 'notnull'
+            assert(!((A == (T*)0) == 0)); // ~ pattern 'isnull'
         } else {
-            assert(!((A == (T*)0) == 0)); // ~ parttern 'null'
+            assert((A == (T*)0) == 0); // ~ pattern 'isnotnull'
         }
     -->
-    <pattern name="null">
+    <pattern name="isnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionEquality>
-                        <var name="A" constructive="false" />
+                        <var name="A" />
                         <castExpression>
                             <ignore />
                             <intConst>0</intConst>
@@ -301,11 +298,11 @@
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-    <pattern name="notnull">
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionEquality>
-                    <var name="A" constructive="false" />
+                    <var name="A" />
                     <castExpression>
                         <ignore />
                         <intConst>0</intConst>
@@ -318,28 +315,17 @@
 
     <!-- Matches condition of form:
         if (A != 0) {
-            assert((A != 0) == 0); // ~ parttern 'notnull'
+            assert(!((A != 0) == 0)); // ~ pattern 'isnotnull'
         } else {
-            assert(!((A != 0) == 0)); // ~ parttern 'null'
+            assert((A != 0) == 0); // ~ pattern 'isnull'
         }
     -->
-    <pattern name="null">
-        <assert>
-            <binaryExpressionEquality>
-                <binaryExpressionNonEquality>
-                    <var name="A" constructive="false" />
-                    <intConst>0</intConst>
-                </binaryExpressionNonEquality>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
-        </assert>
-    </pattern>
-    <pattern name="notnull">
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionNonEquality>
-                        <var name="A" constructive="false" />
+                        <var name="A" />
                         <intConst>0</intConst>
                     </binaryExpressionNonEquality>
                     <intConst>0</intConst>
@@ -347,34 +333,31 @@
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-
-    <!-- Matches condition of form:
-        if (A != (T*)0) {
-            assert(!((A != (T*)0) == 0)); // ~ parttern 'notnull'
-        } else {
-            assert((A != (T*)0) == 0); // ~ parttern 'null'
-        }
-    -->
-    <pattern name="null">
+    <pattern name="isnull" constructive="false">
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionNonEquality>
-                    <var name="A" constructive="false" />
-                    <castExpression>
-                        <ignore />
-                        <intConst>0</intConst>
-                    </castExpression>
+                    <var name="A" />
+                    <intConst>0</intConst>
                 </binaryExpressionNonEquality>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
         </assert>
     </pattern>
-    <pattern name="notnull">
+
+    <!-- Matches condition of form:
+        if (A != (T*)0) {
+            assert(!((A != (T*)0) == 0)); // ~ pattern 'isnotnull'
+        } else {
+            assert((A != (T*)0) == 0); // ~ pattern 'isnull'
+        }
+    -->
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionNonEquality>
-                        <var name="A" constructive="false" />
+                        <var name="A" />
                         <castExpression>
                             <ignore />
                             <intConst>0</intConst>
@@ -385,33 +368,47 @@
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
+    <pattern name="isnull" constructive="false">
+        <assert>
+            <binaryExpressionEquality>
+                <binaryExpressionNonEquality>
+                    <var name="A" />
+                    <castExpression>
+                        <ignore />
+                        <intConst>0</intConst>
+                    </castExpression>
+                </binaryExpressionNonEquality>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
 
     <!-- Matches condition of form:
         if (0 == A) {
-            assert(!((0 == A) == 0)); // ~ parttern 'notnull'
+            assert(!((0 == A) == 0)); // ~ pattern 'isnull'
         } else {
-            assert((0 == A) == 0); // ~ parttern 'null'
+            assert((0 == A) == 0); // ~ pattern 'isnotnull'
         }
     -->
-    <pattern name="null">
+    <pattern name="isnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionEquality>
                         <intConst>0</intConst>
-                        <var name="A" constructive="false" />
+                        <var name="A" />
                     </binaryExpressionEquality>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-    <pattern name="notnull">
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionEquality>
                     <intConst>0</intConst>
-                    <var name="A" constructive="false" />
+                    <var name="A" />
                 </binaryExpressionEquality>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
@@ -420,12 +417,12 @@
 
     <!-- Matches condition of form:
         if ((T*)0 == A) {
-            assert(((T*)0 == A) == 0); // ~ parttern 'notnull'
+            assert(!(((T*)0 == A) == 0)); // ~ pattern 'isnull'
         } else {
-            assert(!(((T*)0 == A) == 0)); // ~ parttern 'null'
+            assert(((T*)0 == A) == 0); // ~ pattern 'isnotnull'
         }
     -->
-    <pattern name="null">
+    <pattern name="isnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
@@ -434,14 +431,14 @@
                             <ignore />
                             <intConst>0</intConst>
                         </castExpression>
-                        <var name="A" constructive="false" />
+                        <var name="A" />
                     </binaryExpressionEquality>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-    <pattern name="notnull">
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionEquality>
@@ -449,7 +446,7 @@
                         <ignore />
                         <intConst>0</intConst>
                     </castExpression>
-                    <var name="A" constructive="false" />
+                    <var name="A" />
                 </binaryExpressionEquality>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
@@ -458,58 +455,44 @@
 
     <!-- Matches condition of form:
         if ((0 != A) {
-            assert(!((0 != A) == 0)); // ~ parttern 'notnull'
+            assert(!((0 != A) == 0)); // ~ pattern 'isnotnull'
         } else {
-            assert((0 != A) == 0); // ~ parttern 'null'
+            assert((0 != A) == 0); // ~ pattern 'isnull'
         }
     -->
-    <pattern name="null">
-        <assert>
-            <binaryExpressionEquality>
-                <binaryExpressionNonEquality>
-                    <intConst>0</intConst>
-                    <var name="A" constructive="false" />
-                </binaryExpressionNonEquality>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
-        </assert>
-    </pattern>
-    <pattern name="notnull">
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
                     <binaryExpressionNonEquality>
                         <intConst>0</intConst>
-                        <var name="A" constructive="false" />
+                        <var name="A" />
                     </binaryExpressionNonEquality>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-
-    <!-- Matches condition of form:
-        if ((T*)0 != A) {
-            assert(!(((T*)0 != A) == 0)); // ~ parttern 'notnull'
-        } else {
-            assert(((T*)0 != A) == 0); // ~ parttern 'null'
-        }
-    -->
-    <pattern name="null">
+    <pattern name="isnull" constructive="false">
         <assert>
             <binaryExpressionEquality>
                 <binaryExpressionNonEquality>
-                    <castExpression>
-                        <ignore />
-                        <intConst>0</intConst>
-                    </castExpression>
-                    <var name="A" constructive="false" />
+                    <intConst>0</intConst>
+                    <var name="A" />
                 </binaryExpressionNonEquality>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
         </assert>
     </pattern>
-    <pattern name="notnull">
+
+    <!-- Matches condition of form:
+        if ((T*)0 != A) {
+            assert(!(((T*)0 != A) == 0)); // ~ pattern 'isnotnull'
+        } else {
+            assert(((T*)0 != A) == 0); // ~ pattern 'isnull'
+        }
+    -->
+    <pattern name="isnotnull" constructive="false">
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
@@ -518,12 +501,27 @@
                             <ignore />
                             <intConst>0</intConst>
                         </castExpression>
-                        <var name="A" constructive="false" />
+                        <var name="A" />
                     </binaryExpressionNonEquality>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
             </prefixExpressionLogicalNot>
         </assert>
     </pattern>
+    <pattern name="isnull" constructive="false">
+        <assert>
+            <binaryExpressionEquality>
+                <binaryExpressionNonEquality>
+                    <castExpression>
+                        <ignore />
+                        <intConst>0</intConst>
+                    </castExpression>
+                    <var name="A" />
+                </binaryExpressionNonEquality>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
 
 </automaton>
+
