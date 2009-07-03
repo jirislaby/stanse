@@ -14,8 +14,8 @@ options {
 }
 
 scope Symbols {
-	Stack<String> variables;
-	Stack<String> variablesOld;
+	List<String> variables;
+	List<String> variablesOld;
 }
 
 @header {
@@ -40,7 +40,7 @@ import org.dom4j.Element;
 
 	/* configuration */
 	final private Boolean normalizeTypes = false;
-	final private Boolean uniqueVariables = false;
+	final private Boolean uniqueVariables = true;
 	final private Boolean uniqueVariablesDebug = false;
 
 	private Element newElement(String text) {
@@ -144,38 +144,53 @@ import org.dom4j.Element;
 			return old;
 		String new_ = old;
 
-		while ($Symbols::variables.search(new_) > 0)
+		while (true) {
+			int a;
+			for (a = $Symbols.size() - 1; a >= 0; a--)
+				if ($Symbols[a]::variables.contains(new_))
+					break;
+			if (a < 0)
+				break;
 			new_ = old + "_" + uniqCnt++;
+		}
 		return new_;
 	}
 
-	private void pushSymbol(String old, String new_, int type) {
+	private void pushSymbol(String old, String new_, boolean upper) {
 		if (!uniqueVariables || !symbolsEnabled)
 			return;
-		$Symbols::variablesOld.push(old);
-		$Symbols::variables.push(new_);
-		if (uniqueVariablesDebug && type != 0) {
-			System.out.println($Symbols::variablesOld);
-			System.out.println($Symbols::variables + " added" + type + ": " + new_);
+		if (upper) {
+			$Symbols[-1]::variablesOld.add(old);
+			$Symbols[-1]::variables.add(new_);
+		} else {
+			$Symbols::variablesOld.add(old);
+			$Symbols::variables.add(new_);
 		}
-	}
-
-	private void popUntil(String s) {
-		if (!uniqueVariables)
-			return;
-		$Symbols::variablesOld.pop();
-		while (!$Symbols::variables.pop().equals(s))
-			$Symbols::variablesOld.pop();
+		if (uniqueVariablesDebug) {
+			for (int a = 0; a < $Symbols.size() - 1; a++) {
+				System.out.print($Symbols[a]::variablesOld);
+				System.out.print(" ");
+			}
+			System.out.println($Symbols::variablesOld);
+			for (int a = 0; a < $Symbols.size() - 1; a++) {
+				System.out.print($Symbols[a]::variables);
+				System.out.print(" ");
+			}
+			System.out.println($Symbols::variables + " added(" +
+					upper + "): " + new_);
+		}
 	}
 
 	private String findVariable(String old) {
 		if (!uniqueVariables)
 			return old;
-		/* find topmost variable (index is bottom based) */
-		int idx = $Symbols::variablesOld.lastIndexOf(old);
-		if (idx < 0)
-			return old; /* throw an exception? */
-		return $Symbols::variables.elementAt(idx);
+		/* find topmost variable */
+		for (int a = $Symbols.size() - 1; a >= 0; a--) {
+			int idx = $Symbols[a]::variablesOld.lastIndexOf(old);
+			if (idx >= 0)
+				return $Symbols[a]::variables.get(idx);
+		}
+		return old; /* throw an exception? */
 	}
 }
 
@@ -183,8 +198,8 @@ translationUnit returns [Document d]
 scope Symbols;
 @init {
 	Element root = xmlDocument.addElement("translationUnit");
-	$Symbols::variables = new Stack<String>();
-	$Symbols::variablesOld = new Stack<String>();
+	$Symbols::variables = new LinkedList<String>();
+	$Symbols::variablesOld = new LinkedList<String>();
 }
 	: ^(TRANSLATION_UNIT (eds=externalDeclaration {root.add($eds.e);} )*) {
 		xmlDocument.setRootElement(root);
@@ -201,17 +216,19 @@ externalDeclaration returns [Element e]
 	;
 
 functionDefinition returns [Element e]
+scope Symbols;
 @init {
 	List<Element> ds = new LinkedList<Element>();
 	$e = newElement("functionDefinition", $functionDefinition.start);
 	$functionDefinition.start.setElement($e);
+	$Symbols::variables = new LinkedList<String>();
+	$Symbols::variablesOld = new LinkedList<String>();
 }
 	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator (d=declaration {ds.add($d.e);})* compoundStatement) {
 		$e.add($declarationSpecifiers.e);
 		$e.add($declarator.e);
 		addAllElements($e, ds);
 		$e.add($compoundStatement.e);
-		popUntil("-");
 	}
 	;
 
@@ -272,7 +289,7 @@ directDeclarator returns [List<Element> els]
 		if (!newName.equals($IDENTIFIER.text))
 			newListElement($els, "oldId").addText($IDENTIFIER.text);
 		newListElement($els, "id").addText(newName);
-		pushSymbol($IDENTIFIER.text, newName, 1);
+		pushSymbol($IDENTIFIER.text, newName, false);
 	}
 	| declarator { newListElement($els, "declarator", $declarator.start).
 			add($declarator.e); }
@@ -299,8 +316,7 @@ directDeclarator1 returns [List<Element> els]
 				if (!newName.equals($IDENTIFIER.text))
 					newListElement($els, "oldId").addText($IDENTIFIER.text);
 				newListElement($els, "id").addText(newName);
-				pushSymbol($IDENTIFIER.text, newName, 3);
-				pushSymbol("-", "-", 0); /* see functionDefinition */
+				pushSymbol($IDENTIFIER.text, newName, false);
 			}|declarator) (pl=parameterTypeList|(i=identifier {l.add(i);})*)) {
 		if ($IDENTIFIER == null)
 			$els.add($declarator.e);
@@ -352,9 +368,11 @@ designator returns [Element e]
 	;
 
 compoundStatement returns [Element e]
+scope Symbols;
 @init {
 	List<Element> els = new LinkedList<Element>();
-	pushSymbol(".", ".", 0);
+	$Symbols::variables = new LinkedList<String>();
+	$Symbols::variablesOld = new LinkedList<String>();
 }
 	: ^(COMPOUND_STATEMENT (d=declaration {els.add($d.e);}|fd=functionDefinition{els.add($fd.e);}|st=statement{els.add($st.e);})*) {
 		$e = newElement("compoundStatement", $compoundStatement.start);
@@ -362,7 +380,6 @@ compoundStatement returns [Element e]
 		if (els.size() == 0)
 			$e.addElement("emptyStatement");
 		$compoundStatement.start.setElement($e);
-		popUntil(".");
 	}
 	;
 
@@ -431,7 +448,7 @@ identifier returns [Element e]
 		if (!newName.equals($IDENTIFIER.text))
 			$e.addAttribute("oldId", $IDENTIFIER.text);
 		$e.addText(newName);
-		pushSymbol($IDENTIFIER.text, newName, 4);
+		pushSymbol($IDENTIFIER.text, newName, false);
 	}
 	;
 
