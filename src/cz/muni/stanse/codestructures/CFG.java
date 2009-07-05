@@ -8,12 +8,15 @@ package cz.muni.stanse.codestructures;
 
 import cz.muni.stanse.utils.XMLAlgo;
 
+import java.util.Set;
+
 import org.dom4j.Element;
 
 /**
  * Represents a control-flow graph of a function
  */
 public class CFG extends CFGPart {
+    private Set<String> symbols;
     private String functionName;
     private Element functionDefinition;
 
@@ -92,6 +95,14 @@ public class CFG extends CFGPart {
                     functionDefinition :
                     (Element)functionDefinition.
                                       selectSingleNode(".//functionDefinition");
+    }
+
+    public void setSymbols(Set<String> symbols) {
+	this.symbols = symbols;
+    }
+
+    public boolean isSymbolLocal(String symbol) {
+	return symbols.contains(symbol);
     }
 
     @Override

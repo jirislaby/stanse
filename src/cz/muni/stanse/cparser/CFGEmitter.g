@@ -24,6 +24,7 @@ scope Function {
 	List<Pair<String, CFGBreakNode>> gotos;
 	Map<String, CFGNode> labels;
 	List<CFGPart> unreachables;
+	Set<String> symbols;
 	CFGNode lastStatement;
 }
 
@@ -35,8 +36,10 @@ import cz.muni.stanse.codestructures.*;
 import java.io.IOException;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.dom4j.DocumentFactory;
@@ -115,10 +118,12 @@ scope Function;
 	$Function::labels = new HashMap<String, CFGNode>();
 	$Function::gotos = new LinkedList<Pair<String, CFGBreakNode>>();
 	$Function::unreachables = new LinkedList<CFGPart>();
+	$Function::symbols = new HashSet<String>();
 }
 	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator declaration* compoundStatement) {
 		$g = CFG.createFromCFGPart($compoundStatement.g,
 				$functionDefinition.start.getElement());
+		$g.setSymbols($Function::symbols);
 		CFGNode endNode = new CFGNode();
 		$g.setEndNode(endNode);
 		for (CFGBreakNode n: $Function::rets)
@@ -166,7 +171,10 @@ declarator
 	;
 
 directDeclarator
-	: IDENTIFIER
+	: IDENTIFIER {
+		if ($Function.size() > 0) /* skip globals */
+			$Function::symbols.add($IDENTIFIER.text);
+	}
 	| declarator
 	| directDeclarator1
 	;
@@ -262,7 +270,7 @@ arrayOrFunctionDeclarator
 	;
 
 identifier
-	: ^(PARAMETER IDENTIFIER)
+	: ^(PARAMETER IDENTIFIER) { $Function::symbols.add($IDENTIFIER.text); }
 	;
 
 /* TYPES */
