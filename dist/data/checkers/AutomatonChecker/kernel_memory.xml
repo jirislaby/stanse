@@ -74,7 +74,6 @@
             begin="pointer is not NULL here."
             propag="not affected ==> pointer is still not NULL."
             end="pointer always points to valid memory here, but checking for not NULL." />
--->
     <error  from="V[*]" by=""
             desc="memory leak - leaving function without releasing memory"
             level="2"
@@ -82,6 +81,7 @@
             begin="pointer points to valid memory."
             propag="not affected ==> pointer still points to valid memory."
             end="Leaving function and only reference to valid memory is lost here." />
+-->
 
     <pattern name="alloc">
         <assignExpression>
@@ -138,6 +138,18 @@
         </functionCall>
     </pattern>
 
+    <pattern name="free" constructive="false">
+        <functionCall>
+            <id>put_device</id>
+	    <addrExpression>
+		<arrowExpression>
+		    <var name="A"/>
+		    <ignore/>
+		</arrowExpression>
+	    </addrExpression>
+        </functionCall>
+    </pattern>
+
     <!-- creating an alias, we won't care about the pointer anymore -->
     <pattern name="assign" constructive="false">
         <assignExpression>
@@ -150,6 +162,32 @@
         <returnStatement>
             <var name="A"/>
         </returnStatement>
+    </pattern>
+
+    <pattern name="assign" constructive="false">
+        <functionCall>
+            <id>list_add</id>
+	    <addrExpression>
+		<arrowExpression>
+		    <var name="A"/>
+		    <ignore/>
+		</arrowExpression>
+	    </addrExpression>
+            <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="assign" constructive="false">
+        <functionCall>
+            <id>list_add_tail</id>
+	    <addrExpression>
+		<arrowExpression>
+		    <var name="A"/>
+		    <ignore/>
+		</arrowExpression>
+	    </addrExpression>
+            <ignore/>
+        </functionCall>
     </pattern>
 
     <pattern name="deref" constructive="false">
