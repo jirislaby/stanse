@@ -15,13 +15,13 @@ import java.io.InputStreamReader;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 import org.antlr.runtime.tree.RewriteCardinalityException;
-;
 
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
@@ -40,40 +40,65 @@ import cz.muni.stanse.Stanse;
  *     nodes (CFGEmitter.g)
  */
 public final class CUnit extends Unit {
-
-    public CUnit(File file) throws IOException, ParserException {
-	this(new FileInputStream(file), file.getAbsolutePath());
-    }
+    private String jobEntry;
+    private List<String> typedefs;
 
     /**
      * Constructor with flags parameter
      *
      * @param jobEntry string in format TODO
      */
-    public CUnit(String jobEntry) throws IOException, ParserException {
-	this(preprocess(jobEntry));
+    public CUnit(String jobEntry) {
+	String file;
+	int outputIdx;
+
+	jobEntry = jobEntry.trim();
+	outputIdx = jobEntry.indexOf("},{");
+	if (outputIdx < 0 || jobEntry.charAt(0) != '{') {
+	    file = jobEntry;
+	    jobEntry = "{" + file + "},{" + file + "},{},{}";
+	} else {
+	    String workDir, output;
+	    File f;
+	    int dirIdx;
+
+	    outputIdx += 3;
+	    dirIdx = jobEntry.indexOf("},{", outputIdx) + 3;
+	    output = jobEntry.substring(outputIdx, dirIdx - 3);
+
+	    f = new File(output);
+	    if (!f.isAbsolute()) {
+		workDir = jobEntry.substring(dirIdx,
+			jobEntry.indexOf("},{", dirIdx));
+		f = new File(workDir, output);
+	    }
+	    file = f.getAbsolutePath();
+	}
+	file += ".preproc";
+	this.jobEntry = jobEntry;
+	this.fileName = new File(file);
+	this.fileName.deleteOnExit();
     }
 
-    public CUnit(InputStream stream, String name) throws IOException,
-				ParserException {
-	this(new Triple<InputStream, String, List<String>>(stream, name, null));
-    }
-
-    private CUnit(Triple<InputStream, String, List<String>> triple)
-				throws IOException, ParserException {
-	super(triple.getFirst(), triple.getSecond());
-
+    public void parse() throws ParserException {
 	GNUCaParser.translationUnit_return parserRet;
-	
 	StanseTreeAdaptor adaptor = new StanseTreeAdaptor();
+	GNUCaLexer lex;
 
-	GNUCaLexer lex = new GNUCaLexer(
-			new ANTLRInputStream(triple.getFirst()));
+	preprocess();
+
+	try {
+	    /* need be after preprocess */
+	    stream = new FileInputStream(fileName);
+	    lex = new GNUCaLexer(new ANTLRInputStream(stream));
+	} catch (IOException e) {
+	    throw new ParserException("parser", e);
+	}
 	CommonTokenStream tokens = new CommonTokenStream(lex);
 
 	GNUCaParser parser = new GNUCaParser(tokens);
 	parser.setTreeAdaptor(adaptor);
-	parser.setTypedefs(triple.getThird());
+	parser.setTypedefs(typedefs);
 	try {
 	    parserRet = parser.translationUnit();
 	} catch (RecognitionException e) {
@@ -104,70 +129,40 @@ public final class CUnit extends Unit {
 	}
     }
 
-    private static Triple<InputStream, String, List<String>> preprocess(
-		String jobEntry) throws IOException, ParserException {
-	List<String> typedefs = new LinkedList<String>();
-	String file;
-	int outputIdx;
-
-	jobEntry = jobEntry.trim();
-	outputIdx = jobEntry.indexOf("},{");
-	if (jobEntry.charAt(0) != '{' || outputIdx < 0) {
-	    file = jobEntry;
-	    jobEntry = "{" + file + "},{" + file + "},{},{}";
-	} else {
-	    String workDir, output;
-	    File f;
-	    int dirIdx;
-
-	    outputIdx += 3;
-	    dirIdx = jobEntry.indexOf("},{", outputIdx) + 3;
-	    output = jobEntry.substring(outputIdx, dirIdx - 3);
-
-	    f = new File(output);
-	    if (!f.isAbsolute()) {
-		workDir = jobEntry.substring(dirIdx,
-			jobEntry.indexOf("},{", dirIdx));
-		f = new File(workDir, output);
-	    }
-	    file = f.getAbsolutePath();
-	}
-	file += ".preproc";
-
-
+    private void preprocess() throws ParserException {
+	typedefs = new LinkedList<String>();
+	Process p;
+	String line;
 	
+	// this is necessary
+	// the environment is modified only AFTER the command is
+	// executed!
+	String command = Stanse.getRootDirectory() + File.separator +
+		"bin" + File.separator + "stpreproc";
+	ProcessBuilder builder = new ProcessBuilder(command, jobEntry);
+	Map<String, String> env = builder.environment();
+	env.put("PATH", env.get("PATH") + File.pathSeparator +
+		Stanse.getRootDirectory() + File.separator + "bin");
 	try {
-		// this is necessary
-		// the environment is modified only AFTER the command is executed!
-		String command = Stanse.getRootDirectory()+ File.separator + "bin" + File.separator + "stpreproc"; 
-		final ProcessBuilder builder = new ProcessBuilder(command, jobEntry);
-		java.util.Map<String, String> env = builder.environment();
-		env.put("PATH", env.get("PATH") + File.pathSeparator + Stanse.getRootDirectory() + File.separator + "bin");
-		Process p = builder.start();
+	    p = builder.start();
 
 	    BufferedReader reader = new BufferedReader(
 			new InputStreamReader(p.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null)
+	    while ((line = reader.readLine()) != null)
 		typedefs.add(line);
-            reader.close();
-
-	    try {
-		int retval = p.waitFor();
-		if (retval != 0)
-			throw new ParserException("preprocessor failed: " +
-					Integer.toString(retval));
-		p.destroy();
-	    } catch (InterruptedException e) {
-		System.err.println("BUBUBU");
-	    }
+	    reader.close();
 	} catch (IOException e) {
-	    System.err.println("Can't exec cpp");
-	    e.printStackTrace();
+	    throw new ParserException("preprocessor", e);
 	}
-	File preprocFile = new File(file);
-	preprocFile.deleteOnExit();
-	return new Triple<InputStream, String, List<String>>(
-			new FileInputStream(preprocFile), file, typedefs);
+
+	try {
+	    int retval = p.waitFor();
+	    if (retval != 0)
+		    throw new ParserException("preprocessor failed: " +
+				    Integer.toString(retval));
+	} catch (InterruptedException e) {
+	    throw new ParserException("preprocessor", e);
+	}
+	p.destroy();
     }
 }

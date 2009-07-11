@@ -17,6 +17,7 @@ import java.util.List;
 import org.dom4j.Document;
 
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.utils.ClassLogger;
 
 /**
  * @brief Holds all the relevant data about the code in one compilation unit (usually a file).
@@ -27,9 +28,13 @@ import cz.muni.stanse.codestructures.CFG;
  */
 public abstract class Unit {
     /**
-     * Name of the unit (usually a filename).
+     * Name of the unit
      */
-    protected String name;
+    protected File fileName;
+    /**
+     * Stream to read from
+     */
+    protected InputStream stream;
     /**
      * XML representation of the unit's AST
      */
@@ -39,24 +44,29 @@ public abstract class Unit {
      */
     protected List<CFG> CFGs;
 
+    /**
+     * Already available/parsed?
+     */
+    protected boolean available = false;
+
     // constructors
     /**
      * Intentionally empty, called by derived class constructors.
      */
-    public Unit() {}
+    protected Unit() {}
     
     /**
      * Calls the appropriate parser(s) to fill in the data members.
      *
-     * @param stream Stream to read the compilation unit from.
-     * @param name Name of the unit. Needs to be supplied explicitly, because
+     * @param file Name of the unit. Needs to be supplied explicitly, because
      * 		it is not derivable from a stream.
+     * @param stream Stream to read the compilation unit from.
      * @throws IOException If there any problems with IO.
      * @throws ParserException In case of parsing problems not related to IO.
      */
-    public Unit(InputStream stream, String name) throws IOException,
-			ParserException {
-	this(new File(name));
+    public Unit(File file, InputStream stream) {
+	this.fileName = file;
+	this.stream = stream;
     }
 
     /**
@@ -66,27 +76,44 @@ public abstract class Unit {
      * @throws IOException If there any problems with IO.
      * @throws ParserException In case of parsing problems not related to IO.
      */
-    public Unit(File file) throws IOException, ParserException {
-	this.name = file.getAbsolutePath();
+    public Unit(File file) throws IOException {
+	this.fileName = file;
+	stream = new FileInputStream(file);
     }
     
     public String getName() {
-	return name;
+	return fileName.getAbsolutePath();
     }
     
     public Document getXMLDocument() {
+	makeAvailable();
 	return xmlDocument;
     }
 
     public void drop() {
+	available = false;
 	for (CFG cfg: CFGs)
 	    cfg.drop();
+    }
+
+    public abstract void parse() throws ParserException;
+
+    private void makeAvailable() {
+	if (!available)
+	    try {
+		parse();
+		available = true;
+	    } catch (ParserException e) {
+		ClassLogger.error(this, "can't parse '" + fileName.getPath() +
+			"'!", e);
+	    }
     }
 
     /**
      * @return Unmodifiable list of CFGs in this compilation unit.
      */
     public List<CFG> getCFGs() {
+	makeAvailable();
 	return Collections.unmodifiableList(CFGs);
     }
 }
