@@ -6,7 +6,7 @@ import cz.muni.stanse.codestructures.Unit;
 
 import cz.muni.stanse.utils.Triple;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public final class PresentableErrorTraceLocation {
 
@@ -33,7 +33,7 @@ public final class PresentableErrorTraceLocation {
 
     public PresentableErrorTraceLocation(
             final Triple<CFGNode,String,CFG> location,
-            final HashMap<CFG,Unit> cfgToUnitMapping) {
+            final Map<CFG,Unit> cfgToUnitMapping) {
         unitName = cfgToUnitMapping.get(location.getThird()).getName();
         lineNumber = new Integer(
 

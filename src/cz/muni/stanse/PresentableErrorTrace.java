@@ -8,10 +8,10 @@ import cz.muni.stanse.codestructures.Unit;
 
 import cz.muni.stanse.utils.Triple;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.HashMap;
-import java.util.Collections;
+import java.util.Map;
 
 public final class PresentableErrorTrace {
 
@@ -36,7 +36,7 @@ public final class PresentableErrorTrace {
     }
 
     public PresentableErrorTrace(final ErrorTrace errorTrace,
-                          final HashMap<CFG,Unit> cfgToUnitMapping) {
+                          final Map<CFG,Unit> cfgToUnitMapping) {
         locations = compileErrorTraceLocations(errorTrace,cfgToUnitMapping);
     }
 
@@ -64,7 +64,7 @@ public final class PresentableErrorTrace {
 
     private static LinkedList<PresentableErrorTraceLocation>
     compileErrorTraceLocations(final ErrorTrace errorTrace,
-                               final HashMap<CFG,Unit> cfgToUnitMapping) {
+                               final Map<CFG,Unit> cfgToUnitMapping) {
         final LinkedList<PresentableErrorTraceLocation> result =
             new LinkedList<PresentableErrorTraceLocation>();
         for (final Triple<CFGNode,String,CFG> location :

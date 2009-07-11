@@ -9,7 +9,7 @@ import cz.muni.stanse.utils.Pair;
 
 import java.util.List;
 import java.util.LinkedList;
-import java.util.HashMap;
+import java.util.Map;
 
 public final class CheckForBugs {
 
@@ -39,7 +39,7 @@ public final class CheckForBugs {
                 @Override
                 public boolean visit(final List<Unit> units,
                                      final Checker checker,
-                                     final HashMap<CFG,Unit> cfgToUnitMapping)
+                                     final Map<CFG,Unit> cfgToUnitMapping)
                                      throws Exception {
                     progressHandler.onCheckerBegin(checker.getName());
                     final List<CheckerError> errors = checker.check(units);

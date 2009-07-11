@@ -6,10 +6,10 @@ import cz.muni.stanse.checker.ErrorTrace;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.Unit;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.HashMap;
-import java.util.Collections;
+import java.util.Map;
 
 public final class PresentableError {
 
@@ -39,7 +39,7 @@ public final class PresentableError {
     }
 
     public PresentableError(final CheckerError checkerError,
-                     final HashMap<CFG,Unit> cfgToUnitMapping) {
+                     final Map<CFG,Unit> cfgToUnitMapping) {
         shortDesc = checkerError.getShortDescription();
         fullDesc = checkerError.getFullDescription();
         traces = compileErrorTraces(checkerError.getErrorTraces(),
@@ -76,7 +76,7 @@ public final class PresentableError {
 
     private static LinkedList<PresentableErrorTrace>
     compileErrorTraces(final List<ErrorTrace> traces,
-                       final HashMap<CFG,Unit> cfgToUnitMapping) {
+                       final Map<CFG,Unit> cfgToUnitMapping) {
         final LinkedList<PresentableErrorTrace> result =
             new LinkedList<PresentableErrorTrace>();
         for (final ErrorTrace trace : traces)

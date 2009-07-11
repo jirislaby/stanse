@@ -11,6 +11,7 @@ import cz.muni.stanse.utils.Make;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.HashMap;
+import java.util.Map;
 import java.io.File;
 
 public final class Configuration {
@@ -38,7 +39,7 @@ public final class Configuration {
         final List<Unit> units = getSourceConfiguration().
                                                       getUnits(progressHandler);
         progressHandler.onCheckingBegin();
-        final HashMap<CFG,Unit> cfgToUnitMapping = buildCfgToUnitMapping(units);
+        final Map<CFG,Unit> cfgToUnitMapping = buildCfgToUnitMapping(units);
         for (CheckerConfiguration checkerCfg : getCheckerConfigurations())
             if (!visitor.visit(units,checkerCfg.getChecker(),cfgToUnitMapping))
                 break;
@@ -93,12 +94,12 @@ public final class Configuration {
 
     // private section
 
-    private static HashMap<CFG,Unit>
-    buildCfgToUnitMapping(final List<Unit> units) throws Exception {
-        final HashMap<CFG,Unit> result = new HashMap<CFG,Unit>();
+    private static Map<CFG,Unit> buildCfgToUnitMapping(final List<Unit> units)
+				throws Exception {
+        final Map<CFG,Unit> result = new HashMap<CFG,Unit>();
         for (final Unit unit : units)   
             for (final CFG cfg : unit.getCFGs())
-                result.put(cfg,unit);
+                result.put(cfg, unit);
         return result;
     }
 
