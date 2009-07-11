@@ -78,6 +78,11 @@ public abstract class Unit {
 	return xmlDocument;
     }
 
+    public void drop() {
+	for (CFG cfg: CFGs)
+	    cfg.drop();
+    }
+
     /**
      * @return Unmodifiable list of CFGs in this compilation unit.
      */

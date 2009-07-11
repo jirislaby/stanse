@@ -143,6 +143,12 @@ public class CFGNode {
 	newTo.addPred(this);
     }
 
+    public void drop() {
+	preds.clear();
+	succs.clear();
+	element = null;
+    }
+
     @Override
     public boolean equals(Object obj) {
 	if (obj == null)

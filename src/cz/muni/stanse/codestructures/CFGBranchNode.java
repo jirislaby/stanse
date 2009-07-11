@@ -61,6 +61,12 @@ public class CFGBranchNode extends CFGNode {
     }
 
     @Override
+    public void drop() {
+	labels.clear();
+	super.drop();
+    }
+
+    @Override
     public String toString() {
 	return "B " + super.toString();
     }

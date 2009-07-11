@@ -112,6 +112,14 @@ public class CFGPart {
 	return Collections.unmodifiableSet(nodesDone);
     }
 
+    public void drop() {
+	Set<CFGNode> nodes = getAllNodes();
+	for (CFGNode n: nodes)
+	    n.drop();
+	setStartNode(null);
+	setEndNode(null);
+    }
+
     @Override
     public boolean equals(Object obj) {
 	if (obj == null) {
