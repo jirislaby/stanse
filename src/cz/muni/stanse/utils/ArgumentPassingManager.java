@@ -3,6 +3,7 @@ package cz.muni.stanse.utils;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 
+import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -14,7 +15,7 @@ public final class ArgumentPassingManager {
     // public section
 
     public ArgumentPassingManager(final CFGsNavigator navigator,
-                                  final HashMap<CFGNode,CFG> nodeToCFGdict) {
+                                  final Map<CFGNode,CFG> nodeToCFGdict) {
         mapping = new HashMap<Pair<CFGNode,CFGNode>,
                               LinkedList<Pair<String,String>>>();
         build(navigator,nodeToCFGdict);
@@ -33,7 +34,7 @@ public final class ArgumentPassingManager {
     // private section
 
     private void build(final CFGsNavigator navigator,
-                       final HashMap<CFGNode,CFG> nodeToCFGdict) {
+                       final Map<CFGNode,CFG> nodeToCFGdict) {
         for (final CFGNode call : navigator.callSites()) {
             final CFGNode start = navigator.getCalleeStart(call);
             buildPassingsForCallSite(call,call.getElement(),start,
@@ -44,8 +45,8 @@ public final class ArgumentPassingManager {
 
     private void
     buildPassingsForCallSite(final CFGNode call, Element callElem,
-                               final CFGNode start, Element calleeElem,
-                               final CFGNode end) {
+                             final CFGNode start, Element calleeElem,
+                             final CFGNode end) {
         final LinkedList<Pair<String,String>> map =
             buildMappingFromCallSiteToCallee(callElem,calleeElem);
         getMapping().put(Pair.make(call,start),map);

@@ -8,9 +8,9 @@
 package cz.muni.stanse;
 
 import cz.muni.stanse.checker.CheckerError;
+import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.XMLAlgo;
 import cz.muni.stanse.gui.MainWindow;
 import cz.muni.stanse.props.Properties;
@@ -32,7 +32,6 @@ import joptsimple.OptionException;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
-import org.dom4j.Document;
 
 /**
  * Class containing the main() method. Not supposed to be instantiated.
@@ -145,7 +144,7 @@ public final class Stanse {
 		.ofType(File.class);
 		OptionSpec<Void> dumpCFG = parser.accepts("dump-cfg", "Dump control flow graphs in Dot format");
 		OptionSpec<Void> dumpXML = parser.accepts("dump-xml", "Dump XML representation of AST");
-		// OptionSpec<Void> dumpCallGraph = parser.accepts("dump-callgraph", "Dump callgraph in Dot format");
+		OptionSpec<Void> dumpCallGraph = parser.accepts("dump-callgraph", "Dump callgraph in Dot format");
 		OptionSpec<File> outputDir = parser.accepts("output-dir", "Sets the output directory for generated files")
 		.withRequiredArg()
 		.describedAs("directory")
@@ -350,7 +349,63 @@ public final class Stanse {
 				System.err.println("No checkers specified, AutomatonChecker used as default.");
 				config = new Configuration(sourceConfig); 
 			}
-			
+
+            // DUMP-XML
+            if (options.has(dumpXML)) {
+                for (final Unit unit : config.getSourceConfiguration()
+                                             .getLazySourceInternals()
+                                             .getUnits()) {
+                    final String name = outputDirectory.toString().isEmpty() ?
+                                           unit.getName() :
+                                           (new File(unit.getName())).getName();
+                    File xmlFile = new File(outputDirectory,name + ".xml");
+                    try {
+                        XMLAlgo.outputXML(unit.getXMLDocument(),
+                                          new PrintStream(xmlFile));
+                    } catch (IOException exception) {
+                        exception.printStackTrace();
+                    }
+                }
+            }
+
+            // DUMP-CFG
+            if (options.has(dumpCFG)) {
+                for (final CFG cfg : config.getSourceConfiguration()
+                                           .getLazySourceInternals()
+                                           .getCFGs()) {
+                    final String unitName = config.getSourceConfiguration()
+                                                  .getLazySourceInternals()
+                                                  .getCFGtoUnitDictionary()
+                                                  .get(cfg)
+                                                  .getName();
+                    final String name = outputDirectory.toString().isEmpty() ?
+                                                unitName :
+                                                (new File(unitName)).getName();
+                    final File cfgFile = new File(outputDirectory, name + "." +
+                                                cfg.getFunctionName() + ".dot");
+                    try {
+                        BufferedWriter out = new BufferedWriter(
+                                new FileWriter(cfgFile));
+                        out.write(cfg.toDot());
+                        out.close();
+                    } catch (IOException exception) {
+                        exception.printStackTrace();
+                    }
+                }
+            }
+
+            // DUMP-CALL GRAPH
+            if (options.has(dumpCallGraph)) {
+                // TODO: function which can dump call graph into dot format
+                //       is needed!
+                config.getSourceConfiguration()
+                      .getLazySourceInternals()
+                      .getCallGraph();
+
+                System.out.println("Call-graph dump into DOT format is not " +
+                                   "supported yet. Sorry :-(");
+            }
+
 			//  *** RUN
 			if (options.has(gui)) { 	// GUI
                 final Configuration configFinal = config;
@@ -368,14 +423,15 @@ public final class Stanse {
 						gui.setVisible(true);
 					}
 				});
-				//return;
 			} else { 					// CLI
-				Pair<LinkedList<CheckerError>, LinkedList<PresentableError> > errors;
 				try {
-					errors= CheckForBugs.run(config, new ConsoleProgressHandler());
-					for (PresentableError error: errors.getSecond()) {
-						System.out.println(error.toString());
-					}
+                    config.evaluate_EachUnitSeparatelly(
+                        new CheckerErrorReceiver() {
+                            @Override
+                            public void receive(final CheckerError error) {
+                                System.out.println(error.toString());
+                            }
+                        });
 				} catch (Exception ex) {
 					System.err.println("Fatal error when " +
 						"executing the checker:");
@@ -396,125 +452,22 @@ public final class Stanse {
 	                     logger.log(Level.FATAL, null, ex1);
 	             }
              return;
-	     }
-	     
+        }
+    }
 
-			
-			// TODO: dumpXML, dumpAST
-			// PARSING, CONVERSION to XML and CFG
-            
-			//Unit unit;
-			Document unitAST;
-			List<CFG> unitCFG;
-			File xmlFile;
-			File cfgFile;
-			String fileName;
-
-            List<Unit> unitsList = new LinkedList<Unit>();
-            try {
-                if (config == null)
-                    throw new Exception("Configuration not set.");
-                unitsList = config.getSourceConfiguration()
-                               .getProcessedUnits(new ConsoleProgressHandler());
-            }
-            catch (final Exception e) {
-                System.err.println("Dump error: ");
-            }
-
-            for (Unit unit : unitsList)
-			{		
-				try {
-					fileName = unit.getName();
-					// we know we are dealing with C
-					// TODO make this universal
-					//unit = new CUnit(unitFile);
-					//units.add(unit);
-					
-					// DUMP-XML
-					if (options.has(dumpXML)) {
-						unitAST = unit.getXMLDocument();
-                        final String name =
-                                outputDirectory.toString().isEmpty() ?
-                                    fileName : (new File(fileName)).getName();
-						xmlFile = new File(outputDirectory,name + ".xml");
-						try {
-							 //BufferedWriter out = new BufferedWriter(new
-							 //FileWriter(xmlFile));
-							XMLAlgo.outputXML(unitAST,	new PrintStream(xmlFile));
-							 //out.close();
-						} catch (IOException e) {
-							// TODO
-							e.printStackTrace();
-						}
-					}
-					// DUMP-CFG
-					if (options.has(dumpCFG)) {
-						unitCFG = unit.getCFGs();
-						for (CFG cfg : unitCFG) {
-                            final String name =
-                                    outputDirectory.toString().isEmpty() ?
-                                        fileName : (new File(fileName)).getName();
-							cfgFile = new File(outputDirectory, name + "." +
-                                                cfg.getFunctionName() + ".dot");
-							try {
-								BufferedWriter out = new BufferedWriter(
-										new FileWriter(cfgFile));
-								out.write(cfg.toDot());
-								out.close();
-							} catch (IOException e) {
-								// TODO
-							}
-						}
-					}
-//				} catch (ParserException e) {
-//					logger.log(Level.FATAL, null, e);
-//				} catch (NullPointerException e) {
-//					logger.log(Level.FATAL, null, e);
-//				} catch (RecognitionException e) {
-//					logger.log(Level.FATAL, null, e);
-//				} catch (IOException e) {
-				} catch (Exception e) {
-					logger.log(Level.FATAL, null, e);
-				}
-
-
-			// TODO:  DUMP-CALL GRAPH
-
-			
-			
-
-		//		// Sets up the logging facility (reads the logging options from log4j.properties file.
-		//		// This needs to be done only once
-		//		// This is done after the verbosity level is set to use it as default
-		//		LoggerConfigurator.doConfigure();
-		//
-		//		if(options.has(OPT_REPORT)) {
-		//			FileAppender reportAppender = new FileAppender();
-		//			reportAppender.setLayout(new HTMLLayout());
-		//			reportAppender.setFile(options.argumentOf(OPT_REPORT));
-		//			reportAppender.setThreshold(Level.INFO);
-		//			reportAppender.activateOptions();
-		//			/*                Logger.getLogger(StaticChecker.class).addAppender(reportAppender);
-		//                Logger.getLogger(StaticChecker.class).setLevel(Level.INFO);*/
-		//		}
-		//
-			}
-            
-     }
-
-		/**
-		 * This should be the setting, all the other classes should use. Log4j uses
-		 * this as default for the level of debuging SILENT - no log4j output given
-		 * by default LOW - FATAL, ERROR and WARN levels are dumped by default
-		 * MIDDLE - FATAL, ERROR, WARN and INFO levels are dumped by default HIGH -
-		 * all messages dumped by default This can be changed by the settings in the
-		 * log4j.properties file.
-		 * 
-		 * @return Verbosity level
-		 */
-		public static Properties.VerbosityLevel getVerbosityLevel() {
-			return VERBOSITY_LEVEL;
-		}
+    /**
+     * This should be the setting, all the other classes should use. Log4j uses
+     * this as default for the level of debuging SILENT - no log4j output given
+     * by default LOW - FATAL, ERROR and WARN levels are dumped by default
+     * MIDDLE - FATAL, ERROR, WARN and INFO levels are dumped by default HIGH -
+     * all messages dumped by default This can be changed by the settings in the
+     * log4j.properties file.
+     *
+     * @return Verbosity level
+     */
+    public static Properties.VerbosityLevel getVerbosityLevel() {
+        return VERBOSITY_LEVEL;
+    }
 
 
     public static String getRootDirectory() {

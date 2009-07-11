@@ -14,6 +14,7 @@ package cz.muni.stanse;
  *        in SourceCodeEnumerators.
  * @see java.lang.Exception
  */
+@SuppressWarnings("serial")
 public class SourceCodeFilesException extends Exception {
 
     // public section

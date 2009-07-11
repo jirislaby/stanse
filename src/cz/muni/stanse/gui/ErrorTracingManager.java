@@ -1,7 +1,7 @@
 package cz.muni.stanse.gui;
 
-import cz.muni.stanse.PresentableErrorTraceLocation;
-import cz.muni.stanse.PresentableErrorTrace;
+import cz.muni.stanse.checker.CheckerErrorTraceLocation;
+import cz.muni.stanse.checker.CheckerErrorTrace;
 import java.util.List;
 
 final class ErrorTracingManager {
@@ -69,7 +69,7 @@ final class ErrorTracingManager {
         });
     }
 
-    void onSelectionChanged(final PresentableErrorTrace errorTrace) {
+    void onSelectionChanged(final CheckerErrorTrace errorTrace) {
         if (getErrorTrace() == errorTrace)
             return;
         setErrorTrace(errorTrace);
@@ -79,7 +79,7 @@ final class ErrorTracingManager {
     void markActualErrorTraceLocation() {
         if (getErrorTrace() == null)
             return;
-        final PresentableErrorTraceLocation location =
+        final CheckerErrorTraceLocation location =
                     getErrorTrace().getLocations().get(getTraceLocationIndex());
         getOpenedSourceFilesManager().showSourceFile(
                                       new java.io.File(location.getUnitName()));
@@ -134,7 +134,7 @@ final class ErrorTracingManager {
                     ? 0 : -1;
     }
 
-    private List<PresentableErrorTraceLocation> getTraceLocations() {
+    private List<CheckerErrorTraceLocation> getTraceLocations() {
         return getErrorTrace().getLocations();
     }
 
@@ -142,11 +142,11 @@ final class ErrorTracingManager {
         return MainWindow.getInstance().getOpenedSourceFilesManager();
     }
 
-    private PresentableErrorTrace getErrorTrace() {
+    private CheckerErrorTrace getErrorTrace() {
         return errorTrace;
     }
 
-    private void setErrorTrace(final PresentableErrorTrace trace) {
+    private void setErrorTrace(final CheckerErrorTrace trace) {
         errorTrace = trace;
     }
 
@@ -158,6 +158,6 @@ final class ErrorTracingManager {
         traceLocationIndex = value;
     }
 
-    private PresentableErrorTrace errorTrace;
+    private CheckerErrorTrace errorTrace;
     private int traceLocationIndex;
 }

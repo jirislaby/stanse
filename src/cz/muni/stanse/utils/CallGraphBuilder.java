@@ -4,7 +4,7 @@ import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Collection;
 
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -16,13 +16,13 @@ public final class CallGraphBuilder {
 
     public static DefaultDirectedGraph<CFG,DefaultEdge>
     run(final Unit unit, final CFGsNavigator navigator,
-                         final HashMap<CFGNode,CFG> nodeToCFGdict) {
+                         final Map<CFGNode,CFG> nodeToCFGdict) {
         return run(unit.getCFGs(),navigator,nodeToCFGdict);
     }
 
     public static DefaultDirectedGraph<CFG,DefaultEdge>
     run(final Collection<CFG> CFGs, final CFGsNavigator navigator,
-                                    final HashMap<CFGNode,CFG> nodeToCFGdict) {
+                                    final Map<CFGNode,CFG> nodeToCFGdict) {
         final DefaultDirectedGraph<CFG,DefaultEdge> result =
             new DefaultDirectedGraph<CFG,DefaultEdge>(DefaultEdge.class);
         for (final CFG cfg : CFGs)

@@ -15,7 +15,7 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
 
     @Override
     public String getCheckerName() {
-        return "AutomatonChecker";//AutomatonChecker.class.getName();
+        return getNameForCheckerFactory();
     }
 
     @Override
@@ -57,6 +57,12 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
 		throws CheckerException {
 	checkArgumentList(args);
 	return new AutomatonChecker(args,true);
+    }
+
+    // package-private section
+
+    static String getNameForCheckerFactory() {
+        return "AutomatonChecker";//AutomatonChecker.class.getName();
     }
 
     // private section

@@ -1,8 +1,8 @@
 package cz.muni.stanse.gui;
 
-import cz.muni.stanse.PresentableError;
-import cz.muni.stanse.PresentableErrorTraceLocation;
-import cz.muni.stanse.PresentableErrorTrace;
+import cz.muni.stanse.checker.CheckerError;
+import cz.muni.stanse.checker.CheckerErrorTraceLocation;
+import cz.muni.stanse.checker.CheckerErrorTrace;
 import java.util.Collection;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -24,40 +24,44 @@ final class ErrorsTreeManager {
         });
     }
 
-    void clear() {
+    synchronized void clear() {
         JTreeAlgo.clear(getErrorsTree());
     }
 
-    void present() {
+    synchronized void present() {
         JTreeAlgo.present(getErrorsTree());
     }
 
-    void addAll(final Collection<PresentableError> collection) {
-        for (final PresentableError error : collection)
+    synchronized void addAll(final Collection<CheckerError> collection) {
+        for (final CheckerError error : collection)
             add(error);
+    }
+
+    synchronized void add(final CheckerError error) {
+        final DefaultMutableTreeNode errorNode =
+                JTreeAlgo.add(getErrorsTree(),error);
+        for (final CheckerErrorTrace trace : error.getTraces())
+            add(errorNode,trace);
+//JTreeAlgo.present(getErrorsTree(),errorNode);
     }
 
     // private section
 
-    private void add(final PresentableError error) {
-        final DefaultMutableTreeNode errorNode =
-                JTreeAlgo.add(getErrorsTree(),error);
-        for (final PresentableErrorTrace trace : error.getTraces())
-            add(errorNode,trace);
-    }
-
     private void add(final DefaultMutableTreeNode parent,
-                                      final PresentableErrorTrace trace) {
+                                      final CheckerErrorTrace trace) {
         final DefaultMutableTreeNode traceNode =
                 JTreeAlgo.add(getErrorsTree(),parent,trace);
-        for (final PresentableErrorTraceLocation location :
+        for (final CheckerErrorTraceLocation location :
                    trace.getLocations())
             add(traceNode,location);
+//JTreeAlgo.present(getErrorsTree(),traceNode);
     }
 
     private void add(final DefaultMutableTreeNode parent,
-                     final PresentableErrorTraceLocation location) {
+                     final CheckerErrorTraceLocation location) {
+//final DefaultMutableTreeNode locationNode =
         JTreeAlgo.add(getErrorsTree(),parent,location);
+//JTreeAlgo.present(getErrorsTree(),locationNode);
     }
 
     private Object getSelectedData() {
@@ -68,7 +72,7 @@ final class ErrorsTreeManager {
         if (!JTreeAlgo.isSomethingSelected(getErrorsTree()))
             return;
         onSelectionChangedForErrorTracingManager(getSelectedData());
-        final PresentableErrorTraceLocation location =
+        final CheckerErrorTraceLocation location =
                             getErrorLocationOfSelectedObject(getSelectedData());
         getOpenedSourceFilesManager().showSourceFile(
                           new java.io.File(location.getUnitName()));
@@ -82,17 +86,17 @@ final class ErrorsTreeManager {
     private void onSelectionChangedForErrorTracingManager(
                                                   final Object selectedObject) {
         MainWindow.getInstance().getErrorTracingManager().
-            onSelectionChanged((selectedObject instanceof PresentableErrorTrace)
-                                ? (PresentableErrorTrace)selectedObject : null);
+            onSelectionChanged((selectedObject instanceof CheckerErrorTrace)
+                                ? (CheckerErrorTrace)selectedObject : null);
     }
 
-    private PresentableErrorTraceLocation getErrorLocationOfSelectedObject(
+    private CheckerErrorTraceLocation getErrorLocationOfSelectedObject(
                                                   final Object selectedObject) {
-        if (selectedObject instanceof PresentableErrorTraceLocation)
-            return (PresentableErrorTraceLocation)selectedObject;
-        if (selectedObject instanceof PresentableErrorTrace)
-            return ((PresentableErrorTrace)selectedObject).getCauseLocation();
-        return ((PresentableError)selectedObject).getErrorLocation();
+        if (selectedObject instanceof CheckerErrorTraceLocation)
+            return (CheckerErrorTraceLocation)selectedObject;
+        if (selectedObject instanceof CheckerErrorTrace)
+            return ((CheckerErrorTrace)selectedObject).getCauseLocation();
+        return ((CheckerError)selectedObject).getErrorLocation();
     }
 
     private OpenedSourceFilesManager getOpenedSourceFilesManager() {

@@ -10,17 +10,16 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.checker.CheckerError;
-import cz.muni.stanse.checker.ErrorTrace;
+import cz.muni.stanse.checker.CheckerErrorTrace;
+import cz.muni.stanse.checker.CheckerErrorReceiver;
+import cz.muni.stanse.utils.LazyInternalProgramStructuresCollection;
 import cz.muni.stanse.utils.CFGTraversal;
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.utils.CFGsNavigator;
-import cz.muni.stanse.utils.ArgumentPassingManager;
 
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Map;
+import java.util.List;
 
 /**
  * @brief Provides static method buildErrorList which compute the checker-errors
@@ -49,45 +48,41 @@ final class CheckerErrorBuilder {
      * @return List of checker-errors recognized from automata states at
      *         PatternLocations.
      */
-    static LinkedList<CheckerError>
-    buildErrorList(final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+    static void
+    buildErrorList(final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        edgeLocationDictionary,
-                   final ArgumentPassingManager passingManager,
-                   final CFGsNavigator navigator,
-                   final HashMap<CFGNode,CFG> nodeCFGdictionary) {
-        final LinkedList<CheckerError> errorsList =
-                new LinkedList<CheckerError>();
-
+                   final LazyInternalProgramStructuresCollection internals,
+                   final CheckerErrorReceiver errReciver,
+                   final AutomatonCheckerLogger monitor) {
+        int numErrors = 0;
         for (Pair<PatternLocation,PatternLocation> locationsPair :
                                                 edgeLocationDictionary.values())
             if (locationsPair.getFirst() != null)
-                errorsList.addAll(buildErrorsInLocation(
-                                                 locationsPair.getFirst(),
-                                                 edgeLocationDictionary,
-                                                 passingManager,navigator,
-                                                 nodeCFGdictionary));
-
-        return errorsList;
+                numErrors += buildErrorsInLocation(locationsPair.getFirst(),
+                                      edgeLocationDictionary,internals,
+                                      errReciver,monitor);
+        if (numErrors > 0)
+            monitor.note("*** " + numErrors + " error(s) found");
     }
 
     // private section
 
-    private static LinkedList<CheckerError> buildErrorsInLocation(
-            final PatternLocation location,
-            final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+    private static int buildErrorsInLocation(final PatternLocation location,
+            final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        edgeLocationDictionary,
-            final ArgumentPassingManager passingManager,
-            final CFGsNavigator navigator,
-            final HashMap<CFGNode,CFG> nodeCFGdictionary) {
-        final LinkedList<CheckerError> errorsList =
-            new LinkedList<CheckerError>();
+            final LazyInternalProgramStructuresCollection internals,
+            final CheckerErrorReceiver errReciver,
+            final AutomatonCheckerLogger monitor) {
         final CallSiteDetector callDetector =
-            new CallSiteDetector(navigator,edgeLocationDictionary);
+            new CallSiteDetector(internals.getNavigator(),
+                                 edgeLocationDictionary);
         final AutomatonStateTransferManager transferor =
-            new AutomatonStateTransferManager(passingManager,callDetector);
+            new AutomatonStateTransferManager(
+                            internals.getArgumentPassingManager(),callDetector);
         final CallSiteCFGNavigator callNavigator =
-            new CallSiteCFGNavigator(navigator,callDetector);
+            new CallSiteCFGNavigator(internals.getNavigator(),callDetector);
 
+        int numErrors = 0;
         for (final ErrorRule rule : location.getErrorRules())
             for (final java.util.Stack<CFGNode> cfgContext :
                                 AutomatonStateCFGcontextAlgo.getContexts(
@@ -96,14 +91,15 @@ final class CheckerErrorBuilder {
                             filterStatesByContext(
                                           location.getProcessedAutomataStates(),
                                           cfgContext))) {
-                    final LinkedList<ErrorTrace> traces =
+                    final List<CheckerErrorTrace> traces =
                         CFGTraversal.traverseCFGPathsBackwardInterprocedural(
                             callNavigator,location.getCFGreferenceNode(),
                             (new ErrorTracesListCreator(rule,transferor,
                                             edgeLocationDictionary,
                                             location.getCFGreferenceNode(),
-                                            nodeCFGdictionary)),
+                                            internals)),
                             cfgContext).getErrorTracesList();
+
                     // Next condition eliminates cyclic dependances of two
                     // error locations (diferent). These locations have same
                     // error rule and theirs methods checkForError() returns
@@ -113,16 +109,28 @@ final class CheckerErrorBuilder {
                     // be empty.
                     if (traces.isEmpty())
                         continue;
+
                     final String shortDesc = rule.getErrorDescription();
-                    final String fullDesc = "in function '" +
-                        nodeCFGdictionary.get(location.getCFGreferenceNode())
-                                         .getFunctionName() +
-                        "' " + shortDesc + " [traces: " + traces.size() + "]";
-                    errorsList.add(new CheckerError(shortDesc,fullDesc,
-                                                  rule.getErrorLevel(),traces));
+                    final String fullDesc
+                            = "{"
+                            + AutomatonCheckerCreator.getNameForCheckerFactory()
+                            + "} in function '"
+                            + internals.getNodeToCFGdictionary()
+                                       .get(location.getCFGreferenceNode())
+                                       .getFunctionName()
+                            + "' "
+                            + shortDesc
+                            + " [traces: " + traces.size() + "]";
+                    errReciver.receive(
+                       new CheckerError(shortDesc,fullDesc,rule.getErrorLevel(),
+                                        AutomatonCheckerCreator.
+                                            getNameForCheckerFactory(),
+                                        traces));
+                    ++numErrors;
+                    monitor.note("*** error found: " + shortDesc);
                 }
 
-        return errorsList;
+        return numErrors;
     }
 
     private CheckerErrorBuilder() {

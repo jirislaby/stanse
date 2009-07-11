@@ -5,14 +5,14 @@ import cz.muni.stanse.utils.CFGsNavigator;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.HashSet;
-import java.util.HashMap;
+import java.util.Map;
 
 final class CallSiteDetector {
 
     // package-private section
 
     CallSiteDetector(final CFGsNavigator navigator,
-                     final HashMap<CFGNode,Pair<PatternLocation,
+                     final Map<CFGNode,Pair<PatternLocation,
                                                 PatternLocation>>
                                                        nodeLocationDictionary) {
         this.nodeLocationDictionary = nodeLocationDictionary;
@@ -43,12 +43,12 @@ final class CallSiteDetector {
         return navigator;
     }
 
-    private HashMap<CFGNode, Pair<PatternLocation, PatternLocation>>
+    private Map<CFGNode, Pair<PatternLocation, PatternLocation>>
     getNodeLocationDictionary() {
         return nodeLocationDictionary;
     }
 
-    private final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+    private final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                          nodeLocationDictionary;
     private final CFGsNavigator navigator;
 }

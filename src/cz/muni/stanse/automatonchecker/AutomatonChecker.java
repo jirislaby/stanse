@@ -11,7 +11,9 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.codestructures.Unit;
+import cz.muni.stanse.utils.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.utils.ProgressMonitor;
+import cz.muni.stanse.checker.CheckerErrorReceiver;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -20,7 +22,6 @@ import org.dom4j.io.SAXReader;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
-import java.util.LinkedList;
 
 /**
  * @brief Static checker which is able to detect locking problems, interrupts
@@ -99,27 +100,32 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * @see cz.muni.stanse.checker.Checker#check(java.util.List)
      */
     @Override
-    public List<cz.muni.stanse.checker.CheckerError>
-    check(final List<Unit> units) throws XMLAutomatonSyntaxErrorException {
-        final LinkedList<cz.muni.stanse.checker.CheckerError> result =
-                          new LinkedList<cz.muni.stanse.checker.CheckerError>();
+    public void check(final LazyInternalProgramStructuresCollection internals,
+                      final CheckerErrorReceiver errReciver,
+                      final ProgressMonitor monitor)
+                      throws XMLAutomatonSyntaxErrorException {
+//        assert((isInterprocedural() && internals instanceof ) ||
+//               (!isInterprocedural() && internals instanceof ) );
         for (File file : getXmlFiles()) {
+            final AutomatonCheckerLogger automatonMonitor =
+                    new AutomatonCheckerLogger(monitor);
+            automatonMonitor.note("Checker: " +
+                            AutomatonCheckerCreator.getNameForCheckerFactory() +
+                            " of " + file.toString());
+            automatonMonitor.pushTab();
+            automatonMonitor.phaseLog("parsing configuration XML file");
             final Document XMLdefinition = readXMLdefinition(file);
             if (XMLdefinition != null)
-                result.addAll(new AutomatonCheckerImpl(XMLdefinition)
-                                        .check(units,isInterprocedural()));
+                new AutomatonCheckerImpl(XMLdefinition).check(
+                        internals,errReciver,automatonMonitor);
+            automatonMonitor.phaseBreak("checking done in ");
         }
-        return result;
     }
 
     // private section
 
     private final List<File> getXmlFiles() {
         return Collections.unmodifiableList(xmlFiles);
-    }
-
-    private boolean isInterprocedural() {
-        return interprocedural;
     }
 
     private static final Document readXMLdefinition(final File file) {

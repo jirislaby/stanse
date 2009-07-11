@@ -11,17 +11,13 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.codestructures.Unit;
+import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.utils.CFGInstrumentationEraser;
-import cz.muni.stanse.utils.CFGInstrumentationBuilder;
 import cz.muni.stanse.utils.LazyInternalProgramStructuresCollection;
-import cz.muni.stanse.utils.UnitsToCFGs;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.LinkedList;
 
 /**
@@ -88,16 +84,11 @@ final class AutomatonCheckerImpl {
      *              error is detected in XML automata definition.
      * @see cz.muni.stanse.checker.Checker#check(java.util.List)
      */
-    List<cz.muni.stanse.checker.CheckerError>
-    check(final List<Unit> units, final boolean interprocedural)
-                                       throws XMLAutomatonSyntaxErrorException {
-        final Pair< HashMap<CFG,CFG>,HashMap<CFGNode,CFGNode> > CFGbackMapping =
-            CFGInstrumentationBuilder.run(UnitsToCFGs.run(units));
-
-        final LazyInternalProgramStructuresCollection internals =
-            new LazyInternalProgramStructuresCollection(
-                    CFGbackMapping.getFirst().keySet(),interprocedural);
-
+    void check(final LazyInternalProgramStructuresCollection internals,
+               final CheckerErrorReceiver errReciver,
+               final AutomatonCheckerLogger monitor)
+               throws XMLAutomatonSyntaxErrorException {
+        monitor.phaseLog("building pattern locations");
         final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
             nodeLocationDictionary = PatternLocationBuilder
                    .buildPatternLocations(internals.getCFGs(),
@@ -106,6 +97,7 @@ final class AutomatonCheckerImpl {
                                           internals.getNavigator(),
                                           internals.getStartFunctions());
 
+        monitor.phaseLog("processing automata states");
         final LinkedList<PatternLocation> progressQueue =
                 new LinkedList<PatternLocation>();
         for (final CFG cfg : internals.getCFGs()) {
@@ -129,11 +121,11 @@ final class AutomatonCheckerImpl {
             }
         }
 
-        return CFGInstrumentationEraser.run(CFGbackMapping,
-                    CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,
-                                          internals.getArgumentPassingManager(),
-                                          internals.getNavigator(),
-                                          internals.getNodeToCFGdictionary()));
+        monitor.phaseLog("building error traces");
+        monitor.pushTab();
+        CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,internals,
+                                           errReciver,monitor);
+        monitor.popTab();
     }
 
     // private section

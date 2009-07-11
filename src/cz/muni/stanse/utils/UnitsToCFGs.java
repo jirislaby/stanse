@@ -4,14 +4,14 @@ import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.Unit;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.Vector;
 
 public final class UnitsToCFGs {
 
     // public section
 
-    public static LinkedList<CFG> run(final Collection<Unit> units) {
-        final LinkedList<CFG> result = new LinkedList<CFG>();
+    public static Vector<CFG> run(final Collection<Unit> units) {
+        final Vector<CFG> result = new Vector<CFG>();
         for (final Unit unit : units)
             result.addAll(unit.getCFGs());
         return result;

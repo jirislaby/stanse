@@ -10,13 +10,14 @@ final class ConsoleManager {
         this.consoleTextArea = consoleTextArea;
     }
 
-    void clear() {
+    synchronized void clear() {
         getConsoleTextArea().setText("");
     }
 
-    void appendText(final String text) {
+    synchronized void appendText(final String text) {
         getConsoleTextArea().append(text);
-        getConsoleTextArea().setCaretPosition(getConsoleTextArea().getDocument().getLength());
+        getConsoleTextArea().setCaretPosition(getConsoleTextArea().getDocument()
+                                                                  .getLength());
     }
 
     // private section

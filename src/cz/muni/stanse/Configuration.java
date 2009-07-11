@@ -1,16 +1,16 @@
 package cz.muni.stanse;
 
-import cz.muni.stanse.checker.Checker;
-import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.codestructures.ParserException;
-import cz.muni.stanse.codestructures.Unit;
-import cz.muni.stanse.cparser.CUnit;
+import cz.muni.stanse.checker.CheckerError;
+import cz.muni.stanse.checker.CheckerException;
+import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.gui.AllOpenedFilesEnumerator;
 import cz.muni.stanse.utils.Make;
+import cz.muni.stanse.utils.ClassLogger;
+import cz.muni.stanse.utils.ProgressMonitor;
+import cz.muni.stanse.utils.ColumnMessageFormater;
 
 import java.util.List;
 import java.util.LinkedList;
-import java.util.HashMap;
 import java.util.Map;
 import java.io.File;
 
@@ -34,54 +34,147 @@ public final class Configuration {
         this.checkerConfigurations = checkerConfiguration;
     }
 
-    public void visit(final ConfigurationVisitor visitor,
-           final ConfigurationProgressHandler progressHandler) throws Exception{
-        final List<Unit> units = getSourceConfiguration().
-                                                      getUnits(progressHandler);
-        progressHandler.onCheckingBegin();
-        final Map<CFG,Unit> cfgToUnitMapping = buildCfgToUnitMapping(units);
-        for (CheckerConfiguration checkerCfg : getCheckerConfigurations())
-            if (!visitor.visit(units,checkerCfg.getChecker(),cfgToUnitMapping))
-                break;
-        progressHandler.onCheckingEnd();
+    public void evaluate(final CheckerErrorReceiver receiver) {
+        evaluate(receiver,
+                 new ProgressMonitor() {
+                    @Override
+                    public void write(final String s) {
+                    }
+                 });
+    }
+
+    public void evaluate(final CheckerErrorReceiver receiver,
+                         final ProgressMonitor monitor) {
+        final java.util.Vector<Integer> numCheckerCongfigs =
+                new java.util.Vector<Integer>();
+        numCheckerCongfigs.add(getCheckerConfigurations().size());
+        int threadID = 0;
+        for (final CheckerConfiguration checkerCfg : getCheckerConfigurations())
+            new MonitoredThread(new MonitorForThread(++threadID,monitor)) {
+                @Override
+                public void run() {
+                    try {
+                        checkerCfg.getChecker().check(
+                            checkerCfg.isInterprocedural() ?
+                                    getSourceConfiguration()
+                                       .getLazySourceInternals() :
+                                    getSourceConfiguration()
+                                       .getLazySourceIntraproceduralInternals(),
+                            receiver,getMonitor());
+                    }
+                    catch (final CheckerException e) {
+                        ClassLogger.error(Configuration.class,
+                            "evalueate() failed :: when running configuration "+
+                            checkerCfg.getCheckerClassName() + "arguments " +
+                            checkerCfg.getCheckerArgumentsList() + " this " +
+                            "exception arose:\n" + e.getStackTrace());
+                    }
+                    catch (final Exception e) {
+                        ClassLogger.error(Configuration.class,
+                            "evalueate() failed :: unknown - configuration=["+
+                            checkerCfg.getCheckerClassName() + ", " +
+                            checkerCfg.getCheckerArgumentsList() +
+                            "] exception:\n" + e.getStackTrace());
+                    }
+                    finally {
+                        synchronized(this.getClass()) {
+                            assert(numCheckerCongfigs.get(0) > 0);
+                            numCheckerCongfigs.set(0,
+                                         numCheckerCongfigs.firstElement() - 1);
+                            if (numCheckerCongfigs.get(0) == 0)
+                                receiver.onEnd();
+                        }
+                    }
+                }
+            }.start();
+    }
+
+    public void evaluateWait(final CheckerErrorReceiver receiver) {
+        evaluateWait(receiver,
+                     new ProgressMonitor() {
+                        @Override
+                        public void write(final String s) {
+                        }
+                     });
+    }
+
+    public void evaluateWait(final CheckerErrorReceiver receiver,
+                             final ProgressMonitor monitor) {
+        int threadID = 0;
+        for (final CheckerConfiguration checkerCfg : getCheckerConfigurations())
+            try {
+                checkerCfg.getChecker().check(
+                    checkerCfg.isInterprocedural() ?
+                            getSourceConfiguration()
+                               .getLazySourceInternals() :
+                            getSourceConfiguration()
+                               .getLazySourceIntraproceduralInternals(),
+                    receiver,new MonitorForThread(++threadID,monitor));
+            }
+            catch (final CheckerException e) {
+                ClassLogger.error(Configuration.class,
+                    "evalueateWait() failed :: when running configuration "+
+                    checkerCfg.getCheckerClassName() + "arguments " +
+                    checkerCfg.getCheckerArgumentsList() + " this " +
+                    "exception arose:\n" + e.getStackTrace());
+            }
+            catch (final Exception e) {
+                ClassLogger.error(Configuration.class,
+                    "evalueateWait() failed :: unknown - configuration=["+
+                    checkerCfg.getCheckerClassName() + ", " +
+                    checkerCfg.getCheckerArgumentsList() +
+                    "] exception:\n" + e.getStackTrace());
+            }
+        receiver.onEnd();
     }
 
     @Deprecated
-    public void visitIntraprocedutral(final ConfigurationVisitor visitor,
-            final ConfigurationProgressHandler progressHandler)throws Exception{
-        final List<Checker> checkers = new LinkedList<Checker>();
+    public void
+    evaluate_EachUnitSeparatelly(final CheckerErrorReceiver receiver) {
+        evaluate_EachUnitSeparatelly(receiver,
+                                     new ProgressMonitor() {
+                                        @Override
+                                        public void write(final String s) {
+                                        }
+                                     });
+    }
 
-        for (CheckerConfiguration checkerCfg: getCheckerConfigurations())
-            checkers.add(checkerCfg.getChecker());
-
-        final SourceCodeFilesEnumerator sourceEnumerator =
-                                 getSourceConfiguration().getSourceEnumerator();
-        final List<Unit> processedUnits = new LinkedList<Unit>();
-
-        progressHandler.onParsingBegin();
-        progressHandler.onCheckingBegin();
-
-        for (String filePathName: sourceEnumerator.getSourceCodeFiles()) {
-	    final List<Unit> units;
-            progressHandler.onFileBegin(filePathName);
-	    try {
-		units = Make.<Unit>linkedList(new CUnit(filePathName));
-	    } catch (ParserException e) {
-		System.err.println("Failed to parse '" + filePathName + "':");
-		e.printStackTrace();
-		progressHandler.onFileEnd();
-		continue;
-	    }
-            progressHandler.onFileEnd();
-            for (Checker checker: checkers)
-                if (!visitor.visit(units,checker,buildCfgToUnitMapping(units)))
-                    break;
-
-            processedUnits.addAll(units);
-        }
-        progressHandler.onCheckingEnd();
-        progressHandler.onParsingEnd();
-        getSourceConfiguration().setProcessedUnits(processedUnits);
+    @Deprecated
+    public void
+    evaluate_EachUnitSeparatelly(final CheckerErrorReceiver receiver,
+                                 final ProgressMonitor monitor) {
+        new java.lang.Thread() {
+            @Override
+            public void run() {
+                final CheckerErrorReceiver receiverWrapper =
+                    new CheckerErrorReceiver() {
+                        @Override
+                        public void receive(final CheckerError error) {
+                            receiver.receive(error);
+                        }
+                    };
+                try {
+                    for (final String fileName : getSourceConfiguration()
+                                                        .getSourceEnumerator()
+                                                        .getSourceCodeFiles()) {
+                        monitor.write("<-> File: " + fileName + "\n");
+                        new Configuration(
+                            new SourceConfiguration(new FileListEnumerator(
+                                                    Make.linkedList(fileName))),
+                            getCheckerConfigurations())
+                        .evaluateWait(receiverWrapper,monitor);
+                        monitor.write("<-> --------------------------------\n");
+                    }
+                }
+                catch (final SourceCodeFilesException e) {
+                    ClassLogger.error(Configuration.class,
+                        "evalueateWait_EachUnitSeparatelly() failed :: " +
+                        "due to this exception :\n" +
+                        e.getStackTrace());
+                }
+                receiver.onEnd();
+            }
+        }.start();
     }
 
     public SourceConfiguration getSourceConfiguration() {
@@ -94,13 +187,33 @@ public final class Configuration {
 
     // private section
 
-    private static Map<CFG,Unit> buildCfgToUnitMapping(final List<Unit> units)
-				throws Exception {
-        final Map<CFG,Unit> result = new HashMap<CFG,Unit>();
-        for (final Unit unit : units)   
-            for (final CFG cfg : unit.getCFGs())
-                result.put(cfg, unit);
-        return result;
+    private final class MonitorForThread implements ProgressMonitor {
+        MonitorForThread(int threadID, final ProgressMonitor monitor) {
+            super();
+            formater = new ColumnMessageFormater("<" + threadID + "> ",1);
+            this.monitor = monitor;
+        }
+
+        @Override
+        public void write(final String s) {
+            monitor.write(formater.write(s + (s.endsWith("\n") ? "" : "\n")));
+        }
+
+        private final ColumnMessageFormater formater;
+        private final ProgressMonitor monitor;
+    }
+
+    private class MonitoredThread extends java.lang.Thread {
+        MonitoredThread(final MonitorForThread monitor) {
+            super();
+            this.monitor = monitor;
+        }
+
+        final MonitorForThread getMonitor() {
+            return monitor;
+        }
+
+        private final MonitorForThread monitor;
     }
 
     private static SourceConfiguration createDefaultSourceConfiguration() {

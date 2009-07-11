@@ -8,6 +8,7 @@
  */
 package cz.muni.stanse.checker;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,167 +20,89 @@ import java.util.List;
  * obligation to report all its errors via instances of this class.  
  *
  * @see cz.muni.stanse.checker#Checker
- *      cz.muni.stanse.checker#ErrorTrace
+ *      cz.muni.stanse.checker#CheckerErrorTrace
  */
 public final class CheckerError {
 
     // public section
 
-    /**
-     * @brief Accepts all the data necessary to construct instance of this
-     *        class (wich are short and full string description, level of
-     *        error importance and by list of error-traces), and stores them
-     *        in created instance.
-     * @param shortDesc Short description of error, like null-dereference,
-     *                  memory-leak, and so on
-     * @param fullDesc Complete descriprion of error. Checker can put here
-     *                 the message as much detailed as it likes.
-     * @param level Level of importance of the error message.
-     * @param traces List of error traces. (See ErrorTrace class for more info)
-     * @see cz.muni.stanse.checker#ErrorTrace 
-     */
-    public CheckerError(String shortDesc, String fullDesc, int level,
-                        List<ErrorTrace> traces) {
+    public CheckerError(final String shortDesc, final String fullDesc,
+                        final int importance, final String checkerName,
+                        final List<CheckerErrorTrace> traces) {
         this.shortDesc = shortDesc;
         this.fullDesc = fullDesc;
-        this.level = level;
+        this.importance = importance;
+        this.checkerName = checkerName;
         this.traces = traces;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @see
-     */
-    public int getErrorLevel() {
-        return level;
-    }
-    
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @see
-     */
-    public String getShortDescription() {
-        return shortDesc;
-    }
-
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @see
-     */
-    public String getFullDescription() {
-        return fullDesc;
-    }
-
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @see
-     */
-    public List<ErrorTrace> getErrorTraces() {
-        return traces;
-    }
-
-    /**
-     * 
-     * @brief
-     *
-     * @param
-     * @return
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        StringBuilder result = new StringBuilder("CheckerError:\n").
-	    append("    - shortDesc: ").append(getShortDescription()).
-		    append('\n').
-	    append("    - fullDesc: ").append(getFullDescription()).
-		    append('\n').
-	    append("    - errorLevel: ").append(getErrorLevel()).append('\n');
-	for (ErrorTrace trace : getErrorTraces())
-            result.append(trace.toString().replaceAll("\n","\n    "));
-
-        return result.toString();
-    }
-
-    /**
-     * 
-     * @brief
-     *
-     * @param
-     * @return
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        final int PRIME = 31;
-        int result = 1;
-        result = PRIME * result + ((fullDesc == null) ? 0 : fullDesc.hashCode());
-        result = PRIME * result + level;
-        result = PRIME * result + ((shortDesc == null) ? 0 : shortDesc.hashCode());
-        result = PRIME * result + ((traces == null) ? 0 : traces.hashCode());
-        return result;
-    }
-
-    /**
-     * 
-     * @brief
-     *
-     * @param
-     * @return
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         return (obj == null || getClass() != obj.getClass()) ?
                 false : isEqualWith((CheckerError)obj);
     }
 
-    /**
-     * 
-     * @brief
-     *
-     * @param
-     * @return
-     * @see
-     */
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + getShortDesc().hashCode();
+        hash = 59 * hash + getFullDesc().hashCode();
+        hash = 59 * hash + getImportance();
+        hash = 59 * hash + getCheckerName().hashCode();
+        hash = 59 * hash + getTraces().hashCode();
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        final CheckerErrorTraceLocation errorLocation = getErrorLocation();
+        return new java.io.File(errorLocation.getUnitName()).getAbsolutePath()
+                  .replaceFirst(cz.muni.stanse.Stanse.getRootDirectory()+'/',"")
+               + " [" + errorLocation.getLineNumber() + "] : "
+               + getFullDesc();
+    }
+
+    public CheckerErrorTraceLocation getCauseLocation() {
+        return getTraces().iterator().next().getCauseLocation();
+    }
+
+    public CheckerErrorTraceLocation getErrorLocation() {
+        return getTraces().iterator().next().getErrorLocation();
+    }
+
     public boolean isEqualWith(final CheckerError other) {
-        return getShortDescription().equals(other.getShortDescription()) &&
-               getFullDescription().equals(other.getFullDescription()) &&
-               getErrorLevel() == other.getErrorLevel() &&
-               getErrorTraces().equals(other.getErrorTraces());
+        return getShortDesc().equals(other.getShortDesc()) &&
+               getFullDesc().equals(other.getFullDesc()) &&
+               getImportance() == other.getImportance() &&
+               getCheckerName().equals(other.getCheckerName()) &&
+               getTraces().equals(other.getTraces());
+    }
+
+    public String getShortDesc() {
+        return new String(shortDesc);
+    }
+
+    public String getFullDesc() {
+        return new String(fullDesc);
+    }
+
+    public int getImportance() {
+        return importance;
+    }
+
+    public String getCheckerName() {
+        return checkerName;
+    }
+
+    public List<CheckerErrorTrace> getTraces() {
+        return Collections.unmodifiableList(traces);
     }
 
     // private section
 
-    /**
-     *  @brief
-     * 
-     */
-    private final String shortDesc; 
-    /**
-     *  @brief
-     * 
-     */
+    private final String shortDesc;
     private final String fullDesc;
-    /**
-     *  @brief
-     * 
-     */
-    private final int level;
-    /**
-     *  @brief
-     * 
-     */
-    private final List<ErrorTrace> traces;
+    private final int importance;
+    private final String checkerName;
+    private final List<CheckerErrorTrace> traces;
 }
