@@ -113,8 +113,8 @@ public final class Configuration {
 
     @Deprecated
     public void
-    evaluate_EachUnitSeparatelly(final CheckerErrorReceiver receiver) {
-        evaluate_EachUnitSeparatelly(receiver,
+    evaluate_EachUnitSeparately(final CheckerErrorReceiver receiver) {
+        evaluate_EachUnitSeparately(receiver,
                                      new ProgressMonitor() {
                                         @Override
                                         public void write(final String s) {
@@ -124,7 +124,7 @@ public final class Configuration {
 
     @Deprecated
     public void
-    evaluate_EachUnitSeparatelly(final CheckerErrorReceiver receiver,
+    evaluate_EachUnitSeparately(final CheckerErrorReceiver receiver,
                                  final ProgressMonitor monitor) {
         new java.lang.Thread() {
             @Override
@@ -151,7 +151,7 @@ public final class Configuration {
                 }
                 catch (final SourceCodeFilesException e) {
                     ClassLogger.error(Configuration.class,
-                        "evalueateWait_EachUnitSeparatelly() failed :: " +
+                        "evalueateWait_EachUnitSeparately() failed :: " +
                         "due to this exception:\n", e);
                 }
                 receiver.onEnd();

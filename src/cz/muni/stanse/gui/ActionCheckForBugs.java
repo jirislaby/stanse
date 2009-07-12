@@ -21,7 +21,7 @@ final class ActionCheckForBugs extends javax.swing.AbstractAction {
         getErrorsTreeManager().present();
         getConsoleManager().clear();
 
-        getConfiguration().evaluate_EachUnitSeparatelly(
+        getConfiguration().evaluate_EachUnitSeparately(
             new CheckerErrorReceiver() {
                 @Override
                 public void receive(final CheckerError error) {

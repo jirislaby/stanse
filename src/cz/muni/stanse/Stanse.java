@@ -454,7 +454,7 @@ public final class Stanse {
 		    }
 		});
 	    } else { 					// CLI
-		config.evaluate_EachUnitSeparatelly(new CheckerErrorReceiver() {
+		config.evaluate_EachUnitSeparately(new CheckerErrorReceiver() {
 			@Override
 			public void receive(final CheckerError error) {
 			    System.out.println(error.toString());
