@@ -8,6 +8,8 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.muni.stanse.checker.CheckerException;
+
 public final class CheckerConfiguration {
 
     // public section
@@ -29,7 +31,7 @@ public final class CheckerConfiguration {
         this.interprocedural = interprocedural;
     }
 
-    public Checker getChecker() throws Exception {
+    public Checker getChecker() throws CheckerException {
         return (interprocedural) ?
                     CheckerFactory.createInterprocedural(getCheckerClassName(),
                                                     getCheckerArgumentsList()) :

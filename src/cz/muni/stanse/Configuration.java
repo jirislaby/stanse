@@ -61,22 +61,13 @@ public final class Configuration {
                                     getSourceConfiguration()
                                        .getLazySourceIntraproceduralInternals(),
                             receiver,getMonitor());
-                    }
-                    catch (final CheckerException e) {
+                    } catch (final CheckerException e) {
                         ClassLogger.error(Configuration.class,
                             "evalueate() failed :: when running configuration "+
                             checkerCfg.getCheckerClassName() + "arguments " +
                             checkerCfg.getCheckerArgumentsList() + " this " +
-                            "exception arose:\n" + e.getStackTrace());
-                    }
-                    catch (final Exception e) {
-                        ClassLogger.error(Configuration.class,
-                            "evalueate() failed :: unknown - configuration=["+
-                            checkerCfg.getCheckerClassName() + ", " +
-                            checkerCfg.getCheckerArgumentsList() +
-                            "] exception:\n" + e.getStackTrace());
-                    }
-                    finally {
+                            "exception arose:\n", e);
+                    } finally {
                         synchronized(this.getClass()) {
                             assert(numCheckerCongfigs.get(0) > 0);
                             numCheckerCongfigs.set(0,
@@ -110,20 +101,12 @@ public final class Configuration {
                             getSourceConfiguration()
                                .getLazySourceIntraproceduralInternals(),
                     receiver,new MonitorForThread(++threadID,monitor));
-            }
-            catch (final CheckerException e) {
+            } catch (final CheckerException e) {
                 ClassLogger.error(Configuration.class,
                     "evalueateWait() failed :: when running configuration "+
                     checkerCfg.getCheckerClassName() + "arguments " +
                     checkerCfg.getCheckerArgumentsList() + " this " +
-                    "exception arose:\n" + e.getStackTrace());
-            }
-            catch (final Exception e) {
-                ClassLogger.error(Configuration.class,
-                    "evalueateWait() failed :: unknown - configuration=["+
-                    checkerCfg.getCheckerClassName() + ", " +
-                    checkerCfg.getCheckerArgumentsList() +
-                    "] exception:\n" + e.getStackTrace());
+                    "exception arose:\n", e);
             }
         receiver.onEnd();
     }
@@ -169,8 +152,7 @@ public final class Configuration {
                 catch (final SourceCodeFilesException e) {
                     ClassLogger.error(Configuration.class,
                         "evalueateWait_EachUnitSeparatelly() failed :: " +
-                        "due to this exception :\n" +
-                        e.getStackTrace());
+                        "due to this exception:\n", e);
                 }
                 receiver.onEnd();
             }

@@ -454,18 +454,12 @@ public final class Stanse {
 		    }
 		});
 	    } else { 					// CLI
-		try {
-		    config.evaluate_EachUnitSeparatelly(
-			new CheckerErrorReceiver() {
-			    @Override
-			    public void receive(final CheckerError error) {
-				System.out.println(error.toString());
-			    }
-			});
-		} catch (Exception ex) {
-		    logger.log(Level.FATAL, "Fatal error when executing the " +
-			    "checker:", ex);
-		}
+		config.evaluate_EachUnitSeparatelly(new CheckerErrorReceiver() {
+			@Override
+			public void receive(final CheckerError error) {
+			    System.out.println(error.toString());
+			}
+		    });
 	    }
 
 	// UNKNOWN ARGUMENT

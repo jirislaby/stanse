@@ -86,21 +86,15 @@ final class ChooseCheckerManager {
     }
 
     private void onCheckersSelectionChanged() {
-        final int newSelection = getCheckerNamesList().getSelectedIndex();
-        if (newSelection == getLastSelection())
-            return;
-        setLastSelection(newSelection);
-        String checkerInfo;
-        try {
-            checkerInfo = CheckerFactory.getCheckerCreationInfo(
-			readSelectedCheckerName());
-        } catch (final Exception e) {
-            ClassLogger.error(this, "Cannot retrieve creation info for " +
-			"checker: " + readSelectedCheckerName(), e);
-            return;
-        }
-        getCheckerInfoTextArea().setText(checkerInfo);
-        getCheckerInfoTextArea().setCaretPosition(0);
+	final int newSelection = getCheckerNamesList().getSelectedIndex();
+	if (newSelection == getLastSelection())
+	    return;
+	setLastSelection(newSelection);
+	String checkerInfo;
+	checkerInfo = CheckerFactory.getCheckerCreationInfo(
+		    readSelectedCheckerName());
+	getCheckerInfoTextArea().setText(checkerInfo);
+	getCheckerInfoTextArea().setCaretPosition(0);
     }
 
     private int getLastSelection() {
