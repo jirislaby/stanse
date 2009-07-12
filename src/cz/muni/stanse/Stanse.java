@@ -356,8 +356,8 @@ public final class Stanse {
 	    if (options.has(checkers)) { // at least one checker was specified
 		// TODO - short names instead of classes
 		String checkerName;
-		LinkedList<File> CheckerDataFiles;
-		LinkedList<CheckerConfiguration> checkerConfig =
+		List<File> CheckerDataFiles;
+		List<CheckerConfiguration> checkerConfig =
 		    new LinkedList<CheckerConfiguration>();
 		for (String s: options.valuesOf(checkers)) {
 		    // empty by default
