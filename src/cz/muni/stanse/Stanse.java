@@ -189,11 +189,11 @@ public final class Stanse {
 	try {
 	    // HELP - called explicitly or no options given
 	    // -> exit
-	    if (options.has(help) || (args.length==0)) {
+	    if (options.has(help) || args.length == 0) {
 		try {
 		    parser.printHelpOn(System.out);
 		} catch (IOException ex) {
-		    Logger.getLogger(Stanse.class.getName()).log(Level.FATAL, null, ex);
+		    logger.log(Level.FATAL, "can't print help", ex);
 		} finally {
 		    System.exit(0);
 		}
@@ -463,10 +463,8 @@ public final class Stanse {
 			    }
 			});
 		} catch (Exception ex) {
-		    System.err.println("Fatal error when executing the " +
-			    "checker:");
-		    ex.printStackTrace();
-		    logger.log(Level.FATAL, null, ex);
+		    logger.log(Level.FATAL, "Fatal error when executing the " +
+			    "checker:", ex);
 		}
 	    }
 
@@ -479,7 +477,7 @@ public final class Stanse {
 		//System.out.println("Invalid option.");
 		parser.printHelpOn(System.err);
 	    } catch (IOException ex1) {
-		logger.log(Level.FATAL, null, ex1);
+		logger.log(Level.FATAL, "can't print help", ex1);
 	    }
 	    return;
 	}
