@@ -97,8 +97,7 @@ public final class SourceConfiguration {
             files = sourceEnumerator.getSourceCodeFiles();
         } catch (SourceCodeFilesException e) {
             ClassLogger.error(SourceConfiguration.class,
-                              "Failed to get source files.");
-            e.printStackTrace();
+                              "Failed to get source files.", e);
             return Collections.unmodifiableList(result);
         }
         for (String pathName: files)
