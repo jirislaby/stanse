@@ -57,7 +57,8 @@ final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
             return false;
         }
 
-        if (cfgContext.isEmpty() && location.isIsStartLocation()) {
+        if (cfgContext.isEmpty() &&
+                getInternals().getNavigator().isStartNode(node)) {
             getErrorTracesList().add(buildErrorTrace(
                     getRule().getErrorEntryMessage(),
                     getRule().getErrorPropagMessage(),

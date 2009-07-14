@@ -27,16 +27,23 @@ final class SimpleAutomatonID {
 
     // package-private section
 
-    SimpleAutomatonID(final XMLPatternVariablesAssignment assignment) {
+    SimpleAutomatonID(final XMLPatternVariablesAssignment assignment,
+                      final boolean isGlobal) {
         this.varsAssignment = buildVarsCollection(assignment);
+        this.isGlobal = isGlobal;
     }
 
-    SimpleAutomatonID(final List<String> varsAssignment) {
+    SimpleAutomatonID(final List<String> varsAssignment,final boolean isGlobal){
         this.varsAssignment = new Vector<String>(varsAssignment);
+        this.isGlobal = isGlobal;
     }
 
     Vector<String> getVarsAssignment() {
         return varsAssignment;
+    }
+
+    boolean isGlobal() {
+        return isGlobal;
     }
 
     boolean isEqualWith(final SimpleAutomatonID other) {
@@ -62,4 +69,5 @@ final class SimpleAutomatonID {
     }
 
     private final Vector<String> varsAssignment;
+    private final boolean isGlobal;
 }

@@ -122,7 +122,7 @@ final class XMLTransitionRule {
                   simpleID : inAutomatonID.getSimpleAutomataIDs()
                                           .get(getMatchOutIndices().get(i)));
         return new AutomatonState(getOutSymbol(),AutomatonStateContextAlgo
-                                .swop(state.getContext(),state.getCFGNode(),
+                                    .swop(state.getContext(),state.getCFGNode(),
                                       new ComposedAutomatonID(outAutomatonID)));
     }
 

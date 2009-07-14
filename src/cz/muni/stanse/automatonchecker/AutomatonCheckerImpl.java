@@ -103,13 +103,14 @@ final class AutomatonCheckerImpl {
         for (final CFG cfg : internals.getCFGs()) {
             final PatternLocation location =
                 nodeLocationDictionary.get(cfg.getStartNode()).getSecond();
-            if (location.isIsStartLocation())
+            if (location.hasUnprocessedAutomataStates())
                 progressQueue.add(location);
         }
         while (!progressQueue.isEmpty()) {
             final PatternLocation currentLocation = progressQueue.remove();
             if (!currentLocation.hasUnprocessedAutomataStates())
                 continue;
+            currentLocation.fireLocalAutomataStates();
             final boolean successorsWereAffected =
                 currentLocation.processUnprocessedAutomataStates();
             if (successorsWereAffected) {

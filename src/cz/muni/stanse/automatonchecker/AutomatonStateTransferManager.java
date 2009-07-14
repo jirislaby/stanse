@@ -37,7 +37,6 @@ final class AutomatonStateTransferManager {
                                final CFGNode to) {
         if (isIdentityTransfer(from,to)) return id;
         else return transferImpl(from,id,to);
-
     }
 
     // private section
@@ -59,7 +58,7 @@ final class AutomatonStateTransferManager {
     private AutomatonState transferFromCallToStartImpl(final CFGNode from,
                                  final AutomatonState state, final CFGNode to) {
         final ComposedAutomatonID transformedID =
-            transferImpl(from,state.getAutomatonID(),to);
+                    transferImpl(from,state.getAutomatonID(),to);
         if (transformedID == null ||
             !AutomatonStateContextAlgo
                 .canPush(state.getContext(),from,transformedID))
@@ -98,6 +97,8 @@ final class AutomatonStateTransferManager {
     private SimpleAutomatonID transferImpl(final CFGNode from,
                                final SimpleAutomatonID id,
                                final CFGNode to) {
+        if (id.isGlobal())
+            return id;
         final LinkedList<String> transformedVarsAssignments =
                 new LinkedList<String>();
         for (final String varsAssignment : id.getVarsAssignment()) {
@@ -107,7 +108,7 @@ final class AutomatonStateTransferManager {
                 return null;
             transformedVarsAssignments.add(transformedVarAssign);
         }
-        return new SimpleAutomatonID(transformedVarsAssignments);
+        return new SimpleAutomatonID(transformedVarsAssignments,id.isGlobal());
     }
 
     private CallSiteDetector getCallDetector() {

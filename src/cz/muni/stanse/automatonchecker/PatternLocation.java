@@ -39,7 +39,6 @@ final class PatternLocation {
         this.errorRules = new LinkedList<ErrorRule>(errorRules);
 
         this.transferor = transferor;
-        isStartLocation = false;
         locationForCallNotPassedStates = null;
     }
 
@@ -77,14 +76,6 @@ final class PatternLocation {
         return errorRules;
     }
 
-    boolean isIsStartLocation() {
-        return isStartLocation;
-    }
-
-    void setIsStartLocation(final boolean state) {
-        isStartLocation = state;
-    }
-
     AutomatonStateTransferManager getTransferor() {
         return transferor;
     }
@@ -99,6 +90,10 @@ final class PatternLocation {
 
     void setLocationForCallNotPassedStates(final PatternLocation location) {
         locationForCallNotPassedStates = location;
+    }
+
+    void fireLocalAutomataStates() {
+        
     }
 
     boolean processUnprocessedAutomataStates() {
@@ -172,6 +167,5 @@ final class PatternLocation {
     private final LinkedList<ErrorRule> errorRules;
 
     private AutomatonStateTransferManager transferor;
-    private boolean isStartLocation;
     private PatternLocation locationForCallNotPassedStates;
 }

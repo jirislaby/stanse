@@ -35,7 +35,7 @@ final class PatternLocationCreator extends CFGvisitor {
             if (matchResult.getFirst())
                 matchings.add(Pair.make(pattern,
                                    new SimpleAutomatonID(matchResult
-                                                         .getSecond())));
+                                                         .getSecond(),false)));
         }
         assert(matchings.size() <= 1);
 

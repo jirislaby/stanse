@@ -186,8 +186,8 @@ final class XMLErrorRule {
         for (int i = 0; i < numIncluded; ++i) matchingFlags.add(false);
 
         for (AutomatonState state : statesCollection) {
-            if (isExitRule() && state.getContext().size() > 1)
-                continue;
+//            if (isExitRule() && state.getContext().size() > 1)
+//                continue;
             for (int i = 0; i < numIncluded; ++i)
                 if (stateMatch(state,
                                getIncludedMatchFlags().get(i).getFirst(),

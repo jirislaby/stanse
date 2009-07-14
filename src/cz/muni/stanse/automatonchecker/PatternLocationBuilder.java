@@ -12,6 +12,7 @@ import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.CFGTraversal;
 import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.utils.Triple;
 import cz.muni.stanse.utils.CFGsNavigator;
 import cz.muni.stanse.utils.ArgumentPassingManager;
 
@@ -35,13 +36,16 @@ final class PatternLocationBuilder {
         final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
             nodeLocationDictionary=new HashMap<CFGNode,Pair<PatternLocation,
                                                             PatternLocation>>();
+        final HashSet<SimpleAutomatonID> globalAutomataIDs =
+            new HashSet<SimpleAutomatonID>();
 
         for (final CFG cfg : cfgs) {
-    		final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
-                locationsForCurrentCFG = buildPatternLocationsForOneCFG(cfg,
-                                                 automatonDefinition,navigator,
-                                                 startFunctions.contains(cfg));
-    		nodeLocationDictionary.putAll(locationsForCurrentCFG);
+    		final Pair<HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>,
+                       HashSet<SimpleAutomatonID>> locationsAndStates =
+                buildPatternLocationsAndStatesForOneCFG(cfg,automatonDefinition,
+                                        navigator,startFunctions.contains(cfg));
+    		nodeLocationDictionary.putAll(locationsAndStates.getFirst());
+            globalAutomataIDs.addAll(locationsAndStates.getSecond());
         }
 
         final CallSiteDetector callDetector =
@@ -53,6 +57,13 @@ final class PatternLocationBuilder {
         setStateTransferorToLocations(nodeLocationDictionary.values(),
                 new AutomatonStateTransferManager(passingManager,callDetector));
 
+        if (!globalAutomataIDs.isEmpty())
+            for (final CFG cfg : startFunctions)
+                addInitialAutomatonStatesForCFGLocations(
+                    nodeLocationDictionary.get(cfg.getStartNode()).getSecond(),
+                    nodeLocationDictionary.get(cfg.getEndNode()).getFirst(),
+                    automatonDefinition,globalAutomataIDs,true);
+
         return nodeLocationDictionary;
     }
 
@@ -61,11 +72,12 @@ final class PatternLocationBuilder {
     private PatternLocationBuilder() {
     }
 
-    private static HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
-    buildPatternLocationsForOneCFG(final CFG cfg,
+    private static Pair<HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>,
+                        HashSet<SimpleAutomatonID>>
+    buildPatternLocationsAndStatesForOneCFG(final CFG cfg,
                                final XMLAutomatonDefinition automatonDefinition,
                                final CFGsNavigator navigator,
-                               final boolean generateAutomamtaStates)
+                               final boolean isStartFunction)
                                        throws XMLAutomatonSyntaxErrorException {
         final PatternLocationCreator patternLocationCreator =
             new PatternLocationCreator(cfg,automatonDefinition,navigator);
@@ -79,17 +91,22 @@ final class PatternLocationBuilder {
         createIntraproceduralConnectionsBetweenPatternLocations(
             nodeLocationsDictionary,cfg);
 
-        final HashSet<SimpleAutomatonID> automataIDs =
-            (generateAutomamtaStates) ?
-                patternLocationCreator.getAutomataIDs() :
-                getParameterIndependentAutomataIDs(cfg,patternLocationCreator.
-                                                              getAutomataIDs());
-        if (!automataIDs.isEmpty())
-            setupAutomatonStatesForCFG(cfg,automatonDefinition,
-                                       nodeLocationsDictionary,
-                                       patternLocationCreator.getAutomataIDs());
-
-        return nodeLocationsDictionary;
+        final Triple<HashSet<SimpleAutomatonID>,
+                     HashSet<SimpleAutomatonID>,
+                     HashSet<SimpleAutomatonID>> automataIDs =
+            splitAutomataIDsIntoGlobalLocalAndFloation(patternLocationCreator.
+                                                          getAutomataIDs(),cfg);
+        if (!automataIDs.getSecond().isEmpty())
+            addInitialAutomatonStatesForCFGLocations(
+                    nodeLocationsDictionary.get(cfg.getStartNode()).getSecond(),
+                    nodeLocationsDictionary.get(cfg.getEndNode()).getFirst(),
+                    automatonDefinition,automataIDs.getSecond(),false);
+        if (isStartFunction && !automataIDs.getThird().isEmpty())
+            addInitialAutomatonStatesForCFGLocations(
+                    nodeLocationsDictionary.get(cfg.getStartNode()).getSecond(),
+                    nodeLocationsDictionary.get(cfg.getEndNode()).getFirst(),
+                    automatonDefinition,automataIDs.getThird(),false);
+        return Pair.make(nodeLocationsDictionary,automataIDs.getFirst());
     }
 
     private static void setStateTransferorToLocations(
@@ -144,25 +161,39 @@ final class PatternLocationBuilder {
                          .add(returnLocation);
     }
 
-    private static HashSet<SimpleAutomatonID>
-    getParameterIndependentAutomataIDs(final CFG cfg,
-                                 final HashSet<SimpleAutomatonID> automataIDs) {
-        final HashSet<SimpleAutomatonID> result =
-            new HashSet<SimpleAutomatonID>();
-        for (final SimpleAutomatonID id : automataIDs) {
-            final java.util.Iterator<org.dom4j.Element> paramIter =
-                cz.muni.stanse.utils.XMLLinearizeASTElement
-                    .functionDeclaration(cfg.getElement()).iterator();
-            boolean paramDependent = false;
-            for (paramIter.next(); paramIter.hasNext(); )
-                if (isParameterDependentID(id,paramIter.next().getText())) {
-                    paramDependent = true;
-                    break;
-                }
-            if (!paramDependent)
-                result.add(id);
-        }
+    private static Triple<HashSet<SimpleAutomatonID>,HashSet<SimpleAutomatonID>,
+                          HashSet<SimpleAutomatonID>>
+    splitAutomataIDsIntoGlobalLocalAndFloation(
+                          final HashSet<SimpleAutomatonID> IDs, final CFG cfg) {
+        final Triple<HashSet<SimpleAutomatonID>,
+                     HashSet<SimpleAutomatonID>,
+                     HashSet<SimpleAutomatonID>>
+            result = Triple.make(new HashSet<SimpleAutomatonID>(),
+                                 new HashSet<SimpleAutomatonID>(),
+                                 new HashSet<SimpleAutomatonID>());
+        for (final SimpleAutomatonID id : IDs)
+            if (isParameterDependentID(id,cz.muni.stanse.utils.
+                    XMLLinearizeASTElement.functionDeclaration(cfg.getElement())
+                                          .iterator()))
+                result.getThird().add(id);
+            else if (isOfLocallyDeclaredVariable(id,cfg)) {
+                if (isInReturnExpression(id,cfg))
+                    result.getThird().add(id);
+                else
+                    result.getSecond().add(id);
+            }
+            else
+                result.getFirst().add(id);
         return result;
+    }
+
+    private static boolean
+    isParameterDependentID(final SimpleAutomatonID automatonID,
+                        final java.util.Iterator<org.dom4j.Element> paramIter) {
+        for (paramIter.next(); paramIter.hasNext(); )
+            if (isParameterDependentID(automatonID,paramIter.next().getText()))
+                return true;
+        return false;
     }
 
     private static boolean isParameterDependentID(final SimpleAutomatonID id,
@@ -173,40 +204,70 @@ final class PatternLocationBuilder {
         return false;
     }
 
-    private static void setupAutomatonStatesForCFG(final CFG cfg,
+    private static boolean
+    isOfLocallyDeclaredVariable(final SimpleAutomatonID id, final CFG cfg) {
+        for (final String varsAssign : id.getVarsAssignment())
+            if (!cfg.isSymbolLocal(cz.muni.stanse.utils.PassingSolver.
+                        parseRootVariableName(varsAssign)))
+                return false;
+        return true;
+    }
+
+    private static boolean isInReturnExpression(final SimpleAutomatonID id,
+                                                 final CFG cfg) {
+        for (final CFGNode node : cfg.getEndNode().getPredecessors())
+            if (node.getElement().getName().equals("returnStatement") &&
+                isInReturnExpression(id,node))
+                return true;
+        return false;
+    }
+
+    private static boolean isInReturnExpression(final SimpleAutomatonID id,
+                                                final CFGNode retNode) {
+        for (final String varsAssign : id.getVarsAssignment()) {
+            final String varName = cz.muni.stanse.utils.PassingSolver.
+                                              parseRootVariableName(varsAssign);
+            for (Object idElem : retNode.getElement().selectNodes("id"))
+                if (varName.equals(((org.dom4j.Element)idElem).getText()))
+                    return true;
+        }
+        return false;
+    }
+
+    private static void addInitialAutomatonStatesForCFGLocations(
+                    final PatternLocation startLoc,final PatternLocation endLoc,
                     final XMLAutomatonDefinition automatonDefinition,
-                    final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
-                                                        nodeLocationsDictionary,
-                    final HashSet<SimpleAutomatonID> automataIDs) {
-        nodeLocationsDictionary.get(cfg.getStartNode()).getSecond().
-            setInitialAutomataStates(
-                getAutomataStates(automatonDefinition.getStartSymbol(),
-                                  automataIDs));
-        nodeLocationsDictionary.get(cfg.getEndNode()).getFirst().
-            getErrorRules().addAll(getExitErrorRules(
-                                  automatonDefinition.getExitErrorRules(),
-                                  automataIDs));
-        nodeLocationsDictionary.get(cfg.getStartNode()).getSecond().
-            setIsStartLocation(true);
+                    final HashSet<SimpleAutomatonID> automataIDs,
+                    final boolean asGlobal) {
+        startLoc.setInitialAutomataStates(
+                    getAutomataStates(automatonDefinition.getStartSymbol(),
+                                      automataIDs,asGlobal));
+        endLoc.getErrorRules()
+              .addAll(getExitErrorRules(automatonDefinition.getExitErrorRules(),
+                                        automataIDs,asGlobal));
     }
 
     private static LinkedList<AutomatonState>
     getAutomataStates(final String startSymbol,
-                      final HashSet<SimpleAutomatonID> automataIDs){
+                      final HashSet<SimpleAutomatonID> automataIDs,
+                      final boolean asGlobal){
         final LinkedList<AutomatonState> states =
             new LinkedList<AutomatonState>();
         for (final SimpleAutomatonID id : automataIDs)
-            states.add(new AutomatonState(startSymbol,id));
+            states.add(new AutomatonState(startSymbol,new SimpleAutomatonID(
+                                          id.getVarsAssignment(),asGlobal)));
         return states;
     }
 
     private static LinkedList<ErrorRule>
     getExitErrorRules(final LinkedList<XMLErrorRule> XMLrules,
-                      final HashSet<SimpleAutomatonID> automataIDs){
+                      final HashSet<SimpleAutomatonID> automataIDs,
+                      final boolean asGlobal){
         final LinkedList<ErrorRule> errorRules = new LinkedList<ErrorRule>();
         for (XMLErrorRule rule : XMLrules)
             for (final SimpleAutomatonID id : automataIDs)
-                errorRules.add(new ErrorRule(rule,id));
+                errorRules.add(new ErrorRule(rule,new SimpleAutomatonID(
+                                             id.getVarsAssignment(),asGlobal)));
         return errorRules;
     }
 }
