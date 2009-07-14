@@ -205,6 +205,7 @@ public final class MainWindow extends javax.swing.JFrame {
 
         ouputConsoleTextArea.setColumns(20);
         ouputConsoleTextArea.setEditable(false);
+        ouputConsoleTextArea.setFont(new java.awt.Font("Andale Mono", 0, 12)); // NOI18N
         ouputConsoleTextArea.setLineWrap(true);
         ouputConsoleTextArea.setRows(5);
         ouputConsoleTextArea.setWrapStyleWord(true);
@@ -232,12 +233,12 @@ public final class MainWindow extends javax.swing.JFrame {
                 .add(gotoNextNodeButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(gotoLastNodeButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 451, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 167, Short.MAX_VALUE)
                 .add(checkButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(configureButton)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, locationInfoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 725, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, locationInfoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
         );
         tracingHolderLayout.setVerticalGroup(
             tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -250,7 +251,7 @@ public final class MainWindow extends javax.swing.JFrame {
                     .add(configureButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(checkButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(locationInfoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
+                .add(locationInfoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
         );
 
         splitterErrorTreeAndTracing.setBottomComponent(tracingHolder);
