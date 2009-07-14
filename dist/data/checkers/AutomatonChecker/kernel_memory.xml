@@ -262,9 +262,11 @@
         <assert>
             <prefixExpressionLogicalNot>
                 <binaryExpressionEquality>
-                    <prefixExpressionLogicalNot>
-                        <var name="A" />
-                    </prefixExpressionLogicalNot>
+		    <nested>
+			<prefixExpressionLogicalNot>
+			    <var name="A" />
+			</prefixExpressionLogicalNot>
+		    </nested>
                     <intConst>0</intConst>
                 </binaryExpressionEquality>
             </prefixExpressionLogicalNot>
@@ -273,9 +275,11 @@
     <pattern name="isnotnull" constructive="false">
         <assert>
             <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <var name="A" />
-                </prefixExpressionLogicalNot>
+		<nested>
+		    <prefixExpressionLogicalNot>
+			<var name="A" />
+		    </prefixExpressionLogicalNot>
+		</nested>
                 <intConst>0</intConst>
             </binaryExpressionEquality>
         </assert>
