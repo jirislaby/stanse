@@ -28,6 +28,7 @@ my @kuntouchables = (
 		"spin_unlock_irqrestore",
 	"local_irq_save", "local_irq_restore",
 	"local_irq_disable", "local_irq_enable",
+	"likely", "unlikely",
 	"GFP_KERNEL"
 );
 
@@ -63,6 +64,7 @@ close(ASRC);
 close(SRC);
 
 my $cpp = "gcc -E -w -I$sourcedir " .
+	"-D__st_unlikely_st__\\(x\\)=x -D__st_likely_st__\\(x\\)=x " .
 	"-D__attribute__\\(x\\)= -D__attribute\\(x\\)= " .
 	"-Dva_list='void *' -Dva_arg\\(ap,t\\)=\\(t\\)0 " .
 	"-D__builtin_va_list=int -D__builtin_offsetof\\(x,y\\)=1 " .
