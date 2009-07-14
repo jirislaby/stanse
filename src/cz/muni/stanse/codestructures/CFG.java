@@ -77,6 +77,7 @@ public class CFG extends CFGPart {
 	super();
 	this.functionDefinition = cfg.functionDefinition;
 	this.functionName = cfg.getFunctionName();
+	this.symbols = cfg.symbols;
 	setStartNode(cfg.getStartNode());
 	setEndNode(cfg.getEndNode());
     }
