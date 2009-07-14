@@ -77,7 +77,7 @@ public final class XMLLinearizeASTElement {
 
     private static <T> Vector<T> cons(final T v, final List<T> l) {
         final Vector<T> result = new Vector<T>(l);
-        result.add(v);
+        result.insertElementAt(v,0);
         return result;
     }
 
