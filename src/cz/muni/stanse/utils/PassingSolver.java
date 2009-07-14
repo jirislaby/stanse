@@ -32,14 +32,30 @@ public final class PassingSolver {
 
     public static String
     pass(final String argument, final Pair<String,String> callMapping) {
-        return (!argument.contains(callMapping.getFirst())) ?
-                     null : simplify(argument.replace(callMapping.getFirst(),
-                                                      callMapping.getSecond()));
+        if (argument.contains(callMapping.getFirst()))
+            return simplify(argument.replace(callMapping.getFirst(),
+                                             callMapping.getSecond()));
+        if (callMapping.getFirst().contains(argument) &&
+            callMapping.getFirst().charAt(0) == '&')
+            return "* " + callMapping.getSecond();
+        return null;
     }
 
     public static String simplify(final String argument) {
-        return argument.replace("* &","")
+        return argument.replace("* & ","")
                        .replace("->",". *");
+    }
+
+    public static String parseRootVariableName(final String argument) {
+        for (int i = 0; i < argument.length(); ++i)
+            if (argument.charAt(i) == '_' ||
+                    Character.isLetter(argument.charAt(i))) {
+                int j = i+1;
+                for ( ; j < argument.length() && argument.charAt(j) != ' '; )
+                    ++j;
+                return argument.substring(i,j);
+            }
+        return null;
     }
 
     // private section
