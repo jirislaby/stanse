@@ -47,16 +47,16 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
 
     @Override
     public Checker createIntraprocedural(final List<File> args)
-		throws CheckerException {
+                                                       throws CheckerException {
         checkArgumentList(args);
-        return new AutomatonChecker(args,false);
+        return new AutomatonChecker(args.get(0));
     }
 
     @Override
     public Checker createInterprocedural(final List<File> args)
-		throws CheckerException {
-	checkArgumentList(args);
-	return new AutomatonChecker(args,true);
+                                                       throws CheckerException {
+        checkArgumentList(args);
+        return new AutomatonChecker(args.get(0));
     }
 
     // package-private section
@@ -69,8 +69,8 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
 
     private static void checkArgumentList(final List<File> args)
 		throws CheckerException {
-        if (args.size() < 1)
+        if (args.size() != 1)
             throw new CheckerException("Bad number of data arguments. " +
-			"Accepts one or more XML definition files.");
+			"AutomatonChecker accepts exactly one XML definition file.");
     }
 }

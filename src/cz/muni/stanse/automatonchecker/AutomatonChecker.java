@@ -11,17 +11,22 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.checker.CheckerErrorReceiver;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.LazyInternalProgramStructuresCollection;
 import cz.muni.stanse.utils.ProgressMonitor;
-import cz.muni.stanse.checker.CheckerErrorReceiver;
+import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.utils.ClassLogger;
+
+import java.util.HashMap;
+import java.util.LinkedList;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @brief Static checker which is able to detect locking problems, interrupts
@@ -49,11 +54,9 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * @param XMLdefinition XML representation of AST
      * @throws XMLAutomatonSyntaxErrorException 
      */
-    public AutomatonChecker(final List<File> xmlFiles,
-                            final boolean interprocedural) {
+    public AutomatonChecker(final File xmlFile) {
         super();
-        this.xmlFiles = xmlFiles;
-        this.interprocedural = interprocedural;
+        this.xmlFile = xmlFile;
     }
 
     /**
@@ -64,7 +67,8 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      */
     @Override
     public String getName() {
-        return "Automaton checker " + getXmlFiles().toString();
+        return AutomatonCheckerCreator.getNameForCheckerFactory() +
+               " of " + getXmlFile().toString();
     }
 
     /**
@@ -104,40 +108,95 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                       final CheckerErrorReceiver errReciver,
                       final ProgressMonitor monitor)
                       throws XMLAutomatonSyntaxErrorException {
-//        assert((isInterprocedural() && internals instanceof ) ||
-//               (!isInterprocedural() && internals instanceof ) );
-        for (File file : getXmlFiles()) {
-            final AutomatonCheckerLogger automatonMonitor =
-                    new AutomatonCheckerLogger(monitor);
-            automatonMonitor.note("Checker: " +
-                            AutomatonCheckerCreator.getNameForCheckerFactory() +
-                            " of " + file.toString());
-            automatonMonitor.pushTab();
-            automatonMonitor.phaseLog("parsing configuration XML file");
-            final Document XMLdefinition = readXMLdefinition(file);
-            if (XMLdefinition != null)
-                new AutomatonCheckerImpl(XMLdefinition).check(
-                        internals,errReciver,automatonMonitor);
-            automatonMonitor.phaseBreak("checking done in ");
-        }
+        final AutomatonCheckerLogger automatonMonitor =
+                new AutomatonCheckerLogger(monitor);
+        automatonMonitor.note("Checker: " + getName());
+        automatonMonitor.pushTab();
+        automatonMonitor.phaseLog("parsing configuration XML file");
+        final XMLAutomatonDefinition XMLdefinition =
+            parseXMLAutomatondefinition(loadXMLdefinition());
+        if (XMLdefinition != null)
+            check(XMLdefinition,internals,errReciver,automatonMonitor);
+        automatonMonitor.phaseBreak("checking done in ");
     }
 
     // private section
 
-    private final List<File> getXmlFiles() {
-        return Collections.unmodifiableList(xmlFiles);
-    }
+    private void check(final XMLAutomatonDefinition xmlAutomatonDefinition,
+                       final LazyInternalProgramStructuresCollection internals,
+                       final CheckerErrorReceiver errReciver,
+                       final AutomatonCheckerLogger monitor)
+                                       throws XMLAutomatonSyntaxErrorException {
+        monitor.phaseLog("building pattern locations");
+        final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
+            nodeLocationDictionary = PatternLocationBuilder
+                   .buildPatternLocations(internals.getCFGs(),
+                                          xmlAutomatonDefinition,
+                                          internals.getArgumentPassingManager(),
+                                          internals.getNavigator(),
+                                          internals.getStartFunctions());
 
-    private static final Document readXMLdefinition(final File file) {
-            try {
-                return (new SAXReader()).read(file);
-            } catch (final DocumentException e) {
-		System.err.println("Cannot open '" + file.getAbsolutePath() +
-			"': " + e.getLocalizedMessage());
-                return null;
+        monitor.phaseLog("processing automata states");
+        final LinkedList<PatternLocation> progressQueue =
+                new LinkedList<PatternLocation>();
+        for (final CFG cfg : internals.getCFGs()) {
+            final PatternLocation location =
+                nodeLocationDictionary.get(cfg.getStartNode()).getSecond();
+            if (location.hasUnprocessedAutomataStates())
+                progressQueue.add(location);
+        }
+        while (!progressQueue.isEmpty()) {
+            final PatternLocation currentLocation = progressQueue.remove();
+            if (!currentLocation.hasUnprocessedAutomataStates())
+                continue;
+            currentLocation.fireLocalAutomataStates();
+            final boolean successorsWereAffected =
+                currentLocation.processUnprocessedAutomataStates();
+            if (successorsWereAffected) {
+                progressQueue.addAll(
+                        currentLocation.getSuccessorPatternLocations());
+                if (currentLocation.getLocationForCallNotPassedStates() != null)
+                    progressQueue.add(
+                           currentLocation.getLocationForCallNotPassedStates());
             }
+        }
+
+        monitor.phaseLog("building error traces");
+        monitor.pushTab();
+        CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,internals,
+                                           errReciver,monitor);
+        monitor.popTab();
     }
 
-    private final List<File> xmlFiles;
-    private final boolean interprocedural;
+    private File getXmlFile() {
+        return xmlFile;
+    }
+
+    private Document loadXMLdefinition() {
+        try {
+            return (new SAXReader()).read(getXmlFile());
+        } catch (final DocumentException e) {
+            ClassLogger.error(AutomatonChecker.class,
+                              "Cannot open '" + getXmlFile().getAbsolutePath() +
+                              "': " + e.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    private XMLAutomatonDefinition
+    parseXMLAutomatondefinition(final Document XMLdefinition) {
+        if (XMLdefinition == null)
+            return null;
+        try {
+            return new XMLAutomatonDefinition(XMLdefinition.getRootElement());
+        } catch (final XMLAutomatonSyntaxErrorException e) {
+            ClassLogger.error(AutomatonChecker.class,
+                              "Error found in XML definition file '" +
+                              getXmlFile().getAbsolutePath() + "': " +
+                              e.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    private final File xmlFile;
 }
