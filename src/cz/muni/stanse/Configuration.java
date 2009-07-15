@@ -11,7 +11,6 @@ import cz.muni.stanse.utils.ColumnMessageFormater;
 
 import java.util.List;
 import java.util.LinkedList;
-import java.util.Map;
 import java.io.File;
 
 public final class Configuration {

@@ -425,14 +425,17 @@ public final class Stanse {
 
 	    // DUMP-CALL GRAPH
 	    if (options.has(dumpCallGraph)) {
-		// TODO: function which can dump call graph into dot format
-		//       is needed!
-		config.getSourceConfiguration()
-		      .getLazySourceInternals()
-		      .getCallGraph();
-
-		System.out.println("Call-graph dump into DOT format is not " +
-			"supported yet. Sorry :-(");
+            final File file = new File(outputDirectory,"call-graph.dot");
+            try {
+                BufferedWriter out = new BufferedWriter(new FileWriter(file));
+                out.write(cz.muni.stanse.utils.CallGraphToDot.run(
+                                                config.getSourceConfiguration()
+                                                      .getLazySourceInternals()
+                                                      .getCallGraph()));
+                out.close();
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
 	    }
 
 	    //  *** RUN
