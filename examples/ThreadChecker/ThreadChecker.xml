@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : ThreadChecker.xml
+    Created on : February 11, 2009, 7:01 PM
+    Author     : Jan Kučera
+    Description:
+        Purpose of the document follows.
+-->
+
+<threadChecker>
+    <startWith>
+        <functionCall>
+            <id>solo1_midi_release</id>
+        </functionCall>
+    </startWith>
+    <pattern name="lockFunction">
+        <functionCall>
+            <id>spin_lock</id>
+            <var name="lock" />
+        </functionCall>
+    </pattern>
+    <pattern name="unlockFunction">
+        <functionCall>
+            <id>spin_unlock</id>
+            <var name="lock" />
+        </functionCall>
+    </pattern>
+    <pattern name="createThreadFunction">
+        <nested>
+        <functionCall>
+            <id>pthread_create</id>
+            <ignore />
+            <ignore />
+            <var name="function" />
+            <ignore />
+        </functionCall>
+        </nested>
+    </pattern>
+    <pattern name="function">
+        <nested>
+            <functionCall>
+                <var name="function" />
+                <any/>
+            </functionCall>
+        </nested>
+    </pattern>
+</threadChecker>
+
