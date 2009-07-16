@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:element name="threadChecker" type="checkerType"/>
+
+    <xsd:complexType name="checkerType">
+        <xsd:all>
+            <xsd:element name="analysis">
+                <xsd:complexType>
+                    <xsd:attribute name="type" type="analyseType"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="configurationBuilder" type="configType"/>
+            <xsd:element name="patterns"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="configType">
+        <xsd:all minOccurs="0" maxOccurs="1">
+            <xsd:element name="file" type="xsd:string"/>
+            <xsd:element name="lockingRegexp" type="xsd:string"/>
+            <xsd:element name="unlockingRegexp" type="xsd:string"/>
+            <xsd:element name="threadRegexp" type="xsd:string"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="patternsType">
+        <xsd:sequence>
+            <xsd:element name="pattern"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="analyseType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="local"/>
+            <xsd:enumeration value="global"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>

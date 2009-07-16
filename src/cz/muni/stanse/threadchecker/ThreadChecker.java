@@ -1,0 +1,179 @@
+package cz.muni.stanse.threadchecker;
+
+import cz.muni.stanse.threadchecker.debug.Utils;
+import cz.muni.stanse.PresentableError;
+import cz.muni.stanse.threadchecker.graph.DependencyCycleDetector;
+import cz.muni.stanse.checker.Checker;
+import cz.muni.stanse.checker.CheckerException;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.Unit;
+import cz.muni.stanse.threadchecker.graph.Cycle;
+import cz.muni.stanse.threadchecker.graph.DependencyGraph;
+import cz.muni.stanse.threadchecker.graph.RAG;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+import org.apache.log4j.Logger;
+
+/**
+ * Class provides static analysis specialized to finding deadlocks in multiple
+ * threads.
+ * @author Jan Kučera
+ */
+public class ThreadChecker extends Checker {
+    private final static Logger logger =
+                                Logger.getLogger(ThreadChecker.class.getName());
+    private static CheckerSettings settings = CheckerSettings.getInstance();
+
+    /**
+     * Function pick choose starting CFG and build their dependency graphs, then
+     * find possible cycles and generate RAG and create appropriate errors
+     * or warnings.
+     * @param units List<Unit> representing all files intended to check
+     * @return List<PresentableError> representing all errors that checker found
+     * @throws cz.muni.stanse.checker.CheckerException
+     */
+    @Override
+    public List<PresentableError> check(List<Unit> units)
+                                                       throws CheckerException {
+        List<PresentableError> errors;
+        PresentableError error;
+        Set<DependencyGraph> graphs = null;
+        List<String> startFunctions;
+        Vector<String> functionNames = new Vector<String>();
+
+        settings.clearData();
+        for(Unit unit : units) {
+            logger.info("===============");
+            logger.info("Analysing file: "+unit.getName());
+            logger.info("===============");
+            settings.addAllCFGs(unit);
+            Utils.showGraph(unit);
+        }
+
+        //Parser somehow creates empty unit - prevent throwing expcetion
+        if(units.size()==1 && units.get(0).getCFGs().isEmpty()) {
+            return new Vector<PresentableError>();
+        }
+
+        startFunctions = settings.getStartFunctions();
+
+        this.analyseFunctions(startFunctions);
+        graphs = this.generateDependencyGraphs();
+        errors = this.findErrors(graphs);
+
+        if(errors.size()>0) {
+            logger.warn("\nError result in file:"+units.get(0).getName()
+                                                                +"\n"+errors);
+        }
+        Collections.sort(errors);
+        return errors;
+    }
+    
+    /**
+     * Method pick startFunctions, create ThreadInfo instance which execute
+     * CFG analysis on every of those threads.
+     * @param startFunctions List<String> of function names
+    */
+    private void analyseFunctions(List<String> startFunctions) {
+        CFG cfg;
+        ThreadInfo thread;
+
+        logger.debug("Start functions are:"+startFunctions);
+
+        for(String functionName : startFunctions) {
+            cfg = settings.getCFG(functionName);
+            if(cfg == null) {
+                logger.warn("Can't found CFG with startName "+functionName);
+                continue;
+            }
+            thread = new ThreadInfo(cfg);
+            settings.addThread(thread);
+        }
+    }
+
+    /**
+     * Detects cycle in every dependency graph, creates RAG and
+     * generate proper error.
+     * @param graphs Set<DependencyGraph> of dependency graphs
+     * @return List<CheckerErrors> founded errors
+     */
+    private List<PresentableError> findErrors(Set<DependencyGraph> graphs){
+        List<PresentableError> errors = new Vector<PresentableError>();
+        PresentableError error;
+        DependencyCycleDetector detector
+                                        = DependencyCycleDetector.getInstance();
+        Set<Cycle> cycles = new HashSet<Cycle>();
+        RAG rag = new RAG();
+        
+        //No dependency graph was created - return with no error
+        if(graphs == null)
+            return errors;
+
+        logger.info("Graph:\n"+graphs);
+        Utils.showDependencyGraphs(graphs);
+        for(DependencyGraph rules : graphs) {
+            cycles.addAll(detector.detect(rules));
+        }
+        for(Cycle cycle : cycles) {
+            logger.info("Cycle detected:"+cycle);
+            error = rag.detectDeadlock(cycle);
+            errors.add(error);
+        }
+            
+        return errors;
+    }
+
+    /**
+     * Method picks all threads created in file and creates dependency graphs.
+     * @return Set<DependencyGraph> dependency graphs
+     */
+    private Set<DependencyGraph> generateDependencyGraphs() {
+            ThreadInfo thread;
+            Set<DependencyGraph> graphs = null;
+            Iterator<ThreadInfo> it = settings.getThreads().iterator();
+            if(!it.hasNext())
+                return new HashSet<DependencyGraph>();
+
+            graphs = it.next().getDependencyGraphs();
+            for(;it.hasNext();) {
+                thread = it.next();
+                graphs = joinGraphs(graphs, thread.getDependencyGraphs());
+            }
+        return graphs;
+    }
+
+    /**
+     * Merge rules from graphs to one -> merge every graph from first with ever
+     * y graph in second.
+     * @param first Set<DependencyGraph>
+     * @param second Set<DependencyGraph>
+     * @return Set<DependencyGraph>
+     */
+    private Set<DependencyGraph> joinGraphs(Set<DependencyGraph> first,
+                                                Set<DependencyGraph> second) {
+       Set<DependencyGraph> graphResult = new HashSet<DependencyGraph>();
+       if(first.isEmpty())
+           return second;
+
+       for(DependencyGraph graphFromFirst : first) {
+            if(second.isEmpty()) {
+                graphResult.add(graphFromFirst);
+                continue;
+            }
+                
+            for(DependencyGraph graphFromSecond : second) {
+                graphResult.add(graphFromFirst.merge(graphFromSecond));
+            }
+       }
+       return graphResult;
+    }
+
+    @Override
+    public String getName() {
+        return "Pthread Checker for finding deadlocks in multiple threads";
+    }
+}
