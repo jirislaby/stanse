@@ -11,14 +11,14 @@ package cz.muni.stanse.automatonchecker;
 import cz.muni.stanse.checker.CheckerErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.utils.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.List;
 import java.util.Vector;
 import java.util.Map;
 
-final class ErrorTracesListCreator extends cz.muni.stanse.utils.CFGPathVisitor {
+final class ErrorTracesListCreator extends cz.muni.stanse.codestructures.traversal.CFGPathVisitor {
 
     // public section
 

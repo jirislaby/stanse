@@ -7,6 +7,15 @@
  */
 package cz.muni.stanse;
 
+import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.SingleFileEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.MakefileSourceEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.DirectorySourceEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.BatchFileEnumerator;
+import cz.muni.stanse.configuration.CheckerConfiguration;
+import cz.muni.stanse.configuration.SourceConfiguration;
+import cz.muni.stanse.configuration.Configuration;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.codestructures.Unit;
@@ -14,7 +23,7 @@ import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.gui.MainWindow;
 import cz.muni.stanse.props.Properties;
 import cz.muni.stanse.utils.ClassLocation;
-import cz.muni.stanse.utils.XMLAlgo;
+import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 
 import java.io.BufferedWriter;
 import java.io.File;

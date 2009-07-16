@@ -10,11 +10,11 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.utils.CFGTraversal;
+import cz.muni.stanse.codestructures.traversal.CFGTraversal;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.Triple;
-import cz.muni.stanse.utils.CFGsNavigator;
-import cz.muni.stanse.utils.ArgumentPassingManager;
+import cz.muni.stanse.codestructures.CFGsNavigator;
+import cz.muni.stanse.codestructures.ArgumentPassingManager;
 
 import java.util.Collection;
 import java.util.Set;
@@ -172,7 +172,7 @@ final class PatternLocationBuilder {
                                  new HashSet<SimpleAutomatonID>(),
                                  new HashSet<SimpleAutomatonID>());
         for (final SimpleAutomatonID id : IDs)
-            if (isParameterDependentID(id,cz.muni.stanse.utils.
+            if (isParameterDependentID(id,cz.muni.stanse.codestructures.builders.
                     XMLLinearizeASTElement.functionDeclaration(cfg.getElement())
                                           .iterator()))
                 result.getThird().add(id);
@@ -207,7 +207,7 @@ final class PatternLocationBuilder {
     private static boolean
     isOfLocallyDeclaredVariable(final SimpleAutomatonID id, final CFG cfg) {
         for (final String varsAssign : id.getVarsAssignment())
-            if (!cfg.isSymbolLocal(cz.muni.stanse.utils.PassingSolver.
+            if (!cfg.isSymbolLocal(cz.muni.stanse.codestructures.PassingSolver.
                         parseRootVariableName(varsAssign)))
                 return false;
         return true;
@@ -225,7 +225,7 @@ final class PatternLocationBuilder {
     private static boolean isInReturnExpression(final SimpleAutomatonID id,
                                                 final CFGNode retNode) {
         for (final String varsAssign : id.getVarsAssignment()) {
-            final String varName = cz.muni.stanse.utils.PassingSolver.
+            final String varName = cz.muni.stanse.codestructures.PassingSolver.
                                               parseRootVariableName(varsAssign);
             for (Object idElem : retNode.getElement().selectNodes("id"))
                 if (varName.equals(((org.dom4j.Element)idElem).getText()))

@@ -10,11 +10,11 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
+import cz.muni.stanse.codestructures.CFGsNavigator;
+import cz.muni.stanse.codestructures.traversal.CFGvisitor;
+import cz.muni.stanse.utils.xmlpatterns.XMLPattern;
+import cz.muni.stanse.utils.xmlpatterns.XMLPatternVariablesAssignment;
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.utils.CFGvisitor;
-import cz.muni.stanse.utils.XMLPattern;
-import cz.muni.stanse.utils.XMLPatternVariablesAssignment;
-import cz.muni.stanse.utils.CFGsNavigator;
 import cz.muni.stanse.utils.Make;
 
 import java.util.LinkedList;

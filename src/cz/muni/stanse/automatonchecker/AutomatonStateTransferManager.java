@@ -1,6 +1,6 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.utils.ArgumentPassingManager;
+import cz.muni.stanse.codestructures.ArgumentPassingManager;
 import cz.muni.stanse.codestructures.CFGNode;
 
 import java.util.LinkedList;

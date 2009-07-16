@@ -1,6 +1,6 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.utils.CFGsNavigator;
+import cz.muni.stanse.codestructures.CFGsNavigator;
 import cz.muni.stanse.codestructures.CFGNode;
 
 import java.util.Set;

@@ -1,14 +1,14 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.utils.ProgressMonitor;
-import cz.muni.stanse.utils.ColumnMessageFormater;
-import cz.muni.stanse.utils.TimedMessageSequenceFormater;
+import cz.muni.stanse.checker.CheckerProgressMonitor;
+import cz.muni.stanse.utils.msgformat.ColumnMessageFormater;
+import cz.muni.stanse.utils.msgformat.TimedMessageSequenceFormater;
 
 final class AutomatonCheckerLogger {
 
     // package-private section
 
-    AutomatonCheckerLogger(final ProgressMonitor monitor) {
+    AutomatonCheckerLogger(final CheckerProgressMonitor monitor) {
         this.monitor = monitor;
         columnsFormater = new ColumnMessageFormater("  ");
         timingFormater = new TimedMessageSequenceFormater(
@@ -38,7 +38,7 @@ final class AutomatonCheckerLogger {
 
     // package-private section
 
-    private ProgressMonitor getMonitor() {
+    private CheckerProgressMonitor getMonitor() {
         return monitor;
     }
 
@@ -50,7 +50,7 @@ final class AutomatonCheckerLogger {
         return timingFormater;
     }
 
-    private final ProgressMonitor monitor;
+    private final CheckerProgressMonitor monitor;
     private final ColumnMessageFormater columnsFormater;
     private final TimedMessageSequenceFormater timingFormater;
 }

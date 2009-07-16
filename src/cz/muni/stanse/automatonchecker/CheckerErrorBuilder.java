@@ -11,11 +11,11 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFGNode;
+import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.traversal.CFGTraversal;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
-import cz.muni.stanse.utils.LazyInternalProgramStructuresCollection;
-import cz.muni.stanse.utils.CFGTraversal;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.Map;

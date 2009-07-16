@@ -22,14 +22,6 @@ final class XMLTransitionRule {
 
     // package-private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     XMLTransitionRule(final org.dom4j.Element XMLtransitionElement)
                                        throws XMLAutomatonSyntaxErrorException {
         final Triple<String,Vector<String>,Character> fromSymbol =
@@ -64,26 +56,10 @@ final class XMLTransitionRule {
         patternName = bySymbol.getFirst();
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     String getPatternName() {
         return patternName;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     Pair<Boolean,AutomatonState>
     transformAutomatonState(final AutomatonState state,
                             final SimpleAutomatonID simpleID) {

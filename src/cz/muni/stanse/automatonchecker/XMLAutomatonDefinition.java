@@ -8,7 +8,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.utils.XMLPattern;
+import cz.muni.stanse.utils.xmlpatterns.XMLPattern;
 import java.util.Vector;
 import java.util.LinkedList;
 import java.util.List;

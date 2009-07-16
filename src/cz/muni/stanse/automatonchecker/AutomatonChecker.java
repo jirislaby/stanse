@@ -11,11 +11,11 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.utils.LazyInternalProgramStructuresCollection;
-import cz.muni.stanse.utils.ProgressMonitor;
+import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.checker.CheckerErrorReceiver;
+import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.ClassLogger;
 
@@ -106,7 +106,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     @Override
     public void check(final LazyInternalProgramStructuresCollection internals,
                       final CheckerErrorReceiver errReciver,
-                      final ProgressMonitor monitor)
+                      final CheckerProgressMonitor monitor)
                       throws XMLAutomatonSyntaxErrorException {
         final AutomatonCheckerLogger automatonMonitor =
                 new AutomatonCheckerLogger(monitor);

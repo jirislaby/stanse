@@ -1,13 +1,15 @@
 package cz.muni.stanse.gui;
 
-import cz.muni.stanse.ReferencedSourceCodeFilesEnumerator;
-import cz.muni.stanse.SourceConfiguration;
-import cz.muni.stanse.BatchFileEnumerator;
-import cz.muni.stanse.FileListEnumerator;
-import cz.muni.stanse.MakefileSourceEnumerator;
-import cz.muni.stanse.DirectorySourceEnumerator;
-import cz.muni.stanse.SingleFileEnumerator;
-import cz.muni.stanse.SourceCodeFilesEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.AllOpenedFilesEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.
+                                             ReferencedSourceCodeFileEnumerator;
+import cz.muni.stanse.configuration.SourceConfiguration;
+import cz.muni.stanse.configuration.source_enumeration.BatchFileEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.MakefileSourceEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.DirectorySourceEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.SingleFileEnumerator;
+import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesEnumerator;
 
 final class SourceConfigurationManager {
 
@@ -190,8 +192,8 @@ final class SourceConfigurationManager {
 
     private String getEnumeratorReferenceFile(
                                    final SourceCodeFilesEnumerator enumerator) {
-        if (enumerator instanceof  ReferencedSourceCodeFilesEnumerator)
-            return ((ReferencedSourceCodeFilesEnumerator)enumerator).
+        if (enumerator instanceof  ReferencedSourceCodeFileEnumerator)
+            return ((ReferencedSourceCodeFileEnumerator)enumerator).
                                                              getReferenceFile();
         if (enumerator instanceof ActiveOpenedFileEnumerator ||
             enumerator instanceof AllOpenedFilesEnumerator) {

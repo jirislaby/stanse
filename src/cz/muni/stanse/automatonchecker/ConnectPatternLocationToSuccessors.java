@@ -24,18 +24,10 @@ import java.util.HashMap;
  * @see cz.muni.stanse.utils.CFGvisitor
  */
 final class ConnectPatternLocationToSuccessors extends
-                                               cz.muni.stanse.utils.CFGvisitor {
+                                               cz.muni.stanse.codestructures.traversal.CFGvisitor {
 
     // public section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     @Override
     public boolean visit(final CFGNode node, final org.dom4j.Element element) {
         final Pair<PatternLocation,PatternLocation> nodeLocationsPair =
@@ -56,14 +48,6 @@ final class ConnectPatternLocationToSuccessors extends
 
     // package-private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     ConnectPatternLocationToSuccessors(final PatternLocation location,
                     final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
                             dictionary) {

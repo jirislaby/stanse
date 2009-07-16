@@ -1,7 +1,7 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.utils.PassingSolver;
-import cz.muni.stanse.utils.XMLPatternVariablesAssignment;
+import cz.muni.stanse.codestructures.PassingSolver;
+import cz.muni.stanse.utils.xmlpatterns.XMLPatternVariablesAssignment;
 
 import java.util.List;
 import java.util.Vector;

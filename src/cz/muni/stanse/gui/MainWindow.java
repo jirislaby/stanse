@@ -1,10 +1,10 @@
 package cz.muni.stanse.gui;
 
-import cz.muni.stanse.Configuration;
-import cz.muni.stanse.CheckerConfiguration;
-import cz.muni.stanse.SourceConfiguration;
+import cz.muni.stanse.configuration.source_enumeration.AllOpenedFilesEnumerator;
+import cz.muni.stanse.configuration.Configuration;
+import cz.muni.stanse.configuration.CheckerConfiguration;
+import cz.muni.stanse.configuration.SourceConfiguration;
 
-import java.util.LinkedList;
 import java.util.List;
 
 @SuppressWarnings("serial")

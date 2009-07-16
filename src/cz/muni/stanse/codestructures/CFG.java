@@ -6,7 +6,7 @@
 
 package cz.muni.stanse.codestructures;
 
-import cz.muni.stanse.utils.XMLAlgo;
+import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 
 import java.util.Set;
 

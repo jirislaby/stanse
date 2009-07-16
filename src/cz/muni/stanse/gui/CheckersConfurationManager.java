@@ -1,6 +1,6 @@
 package cz.muni.stanse.gui;
 
-import cz.muni.stanse.CheckerConfiguration;
+import cz.muni.stanse.configuration.CheckerConfiguration;
 import cz.muni.stanse.checker.CheckerFactory;
 import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.FileAlgo;

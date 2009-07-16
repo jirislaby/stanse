@@ -7,8 +7,7 @@
  */
 package cz.muni.stanse.checker;
 
-import cz.muni.stanse.utils.LazyInternalProgramStructuresCollection;
-import cz.muni.stanse.utils.ProgressMonitor;
+import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
 
 public abstract class Checker {
 
@@ -26,7 +25,7 @@ public abstract class Checker {
     public abstract void
     check(final LazyInternalProgramStructuresCollection internals,
           final CheckerErrorReceiver errReciver,
-          final ProgressMonitor monitor) throws CheckerException;
+          final CheckerProgressMonitor monitor) throws CheckerException;
 
     /**
      * @brief Implements standard string conversion method.

@@ -24,14 +24,6 @@ final class XMLErrorRule {
 
     // package-private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     XMLErrorRule(final org.dom4j.Element XMLelement)
                                        throws XMLAutomatonSyntaxErrorException {
         description = XMLelement.attribute("desc").getValue().
@@ -70,93 +62,21 @@ final class XMLErrorRule {
         includedMatchFlags = buildMatchFlags(fromList,'+',locationVarName);
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     boolean checkForError(final Collection<AutomatonState> statesCollection,
                           final SimpleAutomatonID simpleID) {
         return checkExcludedStates(statesCollection,simpleID) &&
                checkIncludedStates(statesCollection,simpleID);
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     int getErrorLevel() { return errorLevel; }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     String getErrorDescription() { return description; }
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     String getErrorEntryMessage() { return entryMessage; }
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     String getErrorBeginMessage() { return beginMessage; }
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     String getErrorPropagMessage() { return propagMessage; }
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     String getErrorEndMessage() { return endMessage; }
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     String getPatternName() { return patternName; }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     boolean isExitRule() {
         return getPatternName().isEmpty();
     }

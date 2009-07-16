@@ -1,9 +1,9 @@
 package cz.muni.stanse.gui;
 
-import cz.muni.stanse.Configuration;
+import cz.muni.stanse.configuration.Configuration;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
-import cz.muni.stanse.utils.ProgressMonitor;
+import cz.muni.stanse.checker.CheckerProgressMonitor;
 
 @SuppressWarnings("serial")
 final class ActionCheckForBugs extends javax.swing.AbstractAction {
@@ -34,7 +34,7 @@ final class ActionCheckForBugs extends javax.swing.AbstractAction {
                     setOnProgress(false);
                 }
             },
-            new ProgressMonitor() {
+            new CheckerProgressMonitor() {
                 @Override
                 public void write(final String s) {
                     getConsoleManager().appendText(s);

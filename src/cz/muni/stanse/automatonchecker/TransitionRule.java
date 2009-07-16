@@ -19,41 +19,17 @@ final class TransitionRule {
 
     // package-private section
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     TransitionRule(final XMLTransitionRule XMLrule,
                    final SimpleAutomatonID automatonID) {
         this.XMLrule = XMLrule;
         this.automatonID = automatonID;
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     Pair< Boolean,AutomatonState>
     transformAutomatonState(final AutomatonState state) {
         return getXMLrule().transformAutomatonState(state,getAutomatonID());
     }
 
-    /**
-     * @brief
-     *
-     * @param
-     * @return
-     * @throws
-     * @see
-     */
     SimpleAutomatonID getAutomatonID() {
         return automatonID;
     }
