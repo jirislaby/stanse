@@ -1,0 +1,16 @@
+-   Predelat package Stanse, aby jednotne pracoval s GUI,TUI,pluginama apod.
+-   Udelat tool, ktery umozni graficky editovat automat pro automaton checker.
+    Vystupem bude XML soubor.
+-   Dumpovani instrumentovanych CFG
+-   Zpetne mapovani do zdrojaku (souvisi s preprocesorem).
+-   Navratove hodnoty z funkci a AutomatonChecker. Pravdepodobnym resenim je
+    aliasing stavu, tj. kazda polozka (context-item) contextu musi obsahovat
+    mnoziny aliased 'varsAssignment' a ne pouze jednu 'varsAssignment'
+-   Plug-in do NetBeans,Eclipse,Visual Studio.
+-   Udelat TUI, tj. opravdova textova menu, volby a ovladani (vse v ramci
+    konzole - podibne jak je treba help k aplikacim 'man')
+-   Tooly na zobrazovani AST a CFG.
+-   Cachovani checkovanych souboru. Pro interpoceduralni analyzu potrebujeme
+    vsechny soubory ze vsech modulu. To vse se nevleze do pameti, tak je
+    potreba ty CFG a AST streamovat podle potreb checkedu. Tim se konecne
+    zbavime te deprecated vetve v pipe-line checkovani.

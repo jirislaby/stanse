@@ -1,0 +1,3 @@
+-   Dump AST do XML nefunguje spravne, protoze se dumpne
+    originalni dokument a ne ten, ktery odpovida instumentovanemu
+    CFG (elementum na CFGNodes).
