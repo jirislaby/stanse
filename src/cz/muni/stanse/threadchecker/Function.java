@@ -25,12 +25,13 @@ public class Function implements Cloneable {
 
     public Function(CFG cfg) {
         this.functionName = cfg.getFunctionName();
-        this.fileName = cfg.getFileName();
+        this.fileName = CheckerSettings.getInstance().getFileName(cfg);
         this.actualNode = cfg.getStartNode();
         FunctionState data = new FunctionState();
         CFGNode node = cfg.getStartNode();
         data.getBackTrack().addLast(new BackTrack(node.getNumber(),
-                        node.getLine(),"start of function",cfg.getFileName()));
+                        node.getLine(),"start of function",
+                               CheckerSettings.getInstance().getFileName(cfg)));
         this.states.add(data);
     }
 

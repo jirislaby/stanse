@@ -1,15 +1,19 @@
 package cz.muni.stanse.threadchecker;
 
 import cz.muni.stanse.threadchecker.debug.Utils;
-import cz.muni.stanse.PresentableError;
 import cz.muni.stanse.threadchecker.graph.DependencyCycleDetector;
 import cz.muni.stanse.checker.Checker;
+import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
+import cz.muni.stanse.checker.CheckerErrorReceiver;
+import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.Unit;
+import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
 import cz.muni.stanse.threadchecker.graph.Cycle;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
 import cz.muni.stanse.threadchecker.graph.RAG;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,13 +41,18 @@ public class ThreadChecker extends Checker {
      * @throws cz.muni.stanse.checker.CheckerException
      */
     @Override
-    public List<PresentableError> check(List<Unit> units)
+    public void check(
+                        final LazyInternalProgramStructuresCollection internals,
+                        final CheckerErrorReceiver errReciver,
+                        final CheckerProgressMonitor monitor)
                                                        throws CheckerException {
-        List<PresentableError> errors;
-        PresentableError error;
+        List<CheckerError> errors;
+        CheckerError error;
         Set<DependencyGraph> graphs = null;
         List<String> startFunctions;
         Vector<String> functionNames = new Vector<String>();
+
+        Collection<Unit> units = internals.getUnits();
 
         settings.clearData();
         for(Unit unit : units) {
@@ -55,8 +64,8 @@ public class ThreadChecker extends Checker {
         }
 
         //Parser somehow creates empty unit - prevent throwing expcetion
-        if(units.size()==1 && units.get(0).getCFGs().isEmpty()) {
-            return new Vector<PresentableError>();
+        if(units.size()==1 && internals.getCFGs().isEmpty()) {
+            return;
         }
 
         startFunctions = settings.getStartFunctions();
@@ -66,11 +75,13 @@ public class ThreadChecker extends Checker {
         errors = this.findErrors(graphs);
 
         if(errors.size()>0) {
-            logger.warn("\nError result in file:"+units.get(0).getName()
-                                                                +"\n"+errors);
+            logger.warn("\nError result in file:"+
+                        units.iterator().next().getName()+"\n"+errors);
         }
         Collections.sort(errors);
-        return errors;
+
+        for (final CheckerError err : errors)
+            errReciver.receive(err);
     }
     
     /**
@@ -101,9 +112,9 @@ public class ThreadChecker extends Checker {
      * @param graphs Set<DependencyGraph> of dependency graphs
      * @return List<CheckerErrors> founded errors
      */
-    private List<PresentableError> findErrors(Set<DependencyGraph> graphs){
-        List<PresentableError> errors = new Vector<PresentableError>();
-        PresentableError error;
+    private List<CheckerError> findErrors(Set<DependencyGraph> graphs){
+        List<CheckerError> errors = new Vector<CheckerError>();
+        CheckerError error;
         DependencyCycleDetector detector
                                         = DependencyCycleDetector.getInstance();
         Set<Cycle> cycles = new HashSet<Cycle>();

@@ -22,7 +22,7 @@ import java.util.List;
  * @see cz.muni.stanse.checker#Checker
  *      cz.muni.stanse.checker#CheckerErrorTrace
  */
-public final class CheckerError {
+public final class CheckerError implements Comparable<CheckerError> {
 
     // public section
 
@@ -60,6 +60,11 @@ public final class CheckerError {
                   .replaceFirst(cz.muni.stanse.Stanse.getRootDirectory()+'/',"")
                + " [" + errorLocation.getLineNumber() + "] : "
                + getFullDesc();
+    }
+
+    @Override
+    public int compareTo(CheckerError other) {
+        return getImportance() - other.getImportance();
     }
 
     public CheckerErrorTraceLocation getCauseLocation() {

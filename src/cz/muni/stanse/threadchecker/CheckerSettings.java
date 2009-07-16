@@ -1,10 +1,10 @@
 package cz.muni.stanse.threadchecker;
 
 
-import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.Unit;
+import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
 import cz.muni.stanse.threadchecker.config.ConfigurationCreator;
 import java.io.File;
 import java.util.Collection;
@@ -20,8 +20,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
-import org.jgrapht.DirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 
 /**
  * Singleton-stringType Class which holds every useful data required during
@@ -44,6 +42,7 @@ public class CheckerSettings {
     private Set<CFG> cfgsOnStack = new HashSet<CFG>();
     private boolean globalAnalysis;
     private ConfigurationCreator configurationCreator;
+    private LazyInternalProgramStructuresCollection internals = null;
     
     
     private CheckerSettings() {}
@@ -74,6 +73,20 @@ public class CheckerSettings {
         return this.globalAnalysis;
     }
 
+    public final void
+    setInternals(final LazyInternalProgramStructuresCollection internals) {
+        this.internals = internals;
+    }
+
+    public final LazyInternalProgramStructuresCollection getInternals() {
+        assert(internals != null);
+        return internals;
+    }
+
+    public final String getFileName(final CFG cfg) {
+        assert(getInternals().getCFGtoUnitDictionary().get(cfg) != null);
+        return getInternals().getCFGtoUnitDictionary().get(cfg).getName();
+    }
 
     /**
      * 
@@ -226,7 +239,7 @@ public class CheckerSettings {
             throw new NullPointerException("Function is null");
         }
 
-        Element definition = cfg.getFunctionDefinition();
+        Element definition = cfg.getElement();
         Element idNode;
         String functionName;
 
@@ -254,22 +267,8 @@ public class CheckerSettings {
      */
     private List<String> findStartFunctions() {
         List<String> foundedStartFunctions = new Vector<String>();
-        List<Element> functionDefinitions = new Vector<Element>();
-        CallGraph callGraph;
-        DirectedGraph<String, DefaultEdge> graph;
-        for(CFG cfg : this.cfgs.values()) {
-            functionDefinitions.add(cfg.getFunctionDefinition());
-        }
-        
-        callGraph = new CallGraph(functionDefinitions);
-        graph = (DirectedGraph<String, DefaultEdge>) 
-                            callGraph.generateDirectedGraph();
-
-        for(String vertex : graph.vertexSet()) {
-            if(graph.incomingEdgesOf(vertex).size() < 1) {
-                foundedStartFunctions.add(vertex);
-            }
-        }
+        for (final CFG cfg : getInternals().getStartFunctions())
+            foundedStartFunctions.add(cfg.getFunctionName());
         return foundedStartFunctions;
     }
 }

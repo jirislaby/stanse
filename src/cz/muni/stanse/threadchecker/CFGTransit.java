@@ -7,8 +7,8 @@ import cz.muni.stanse.props.Properties.VerbosityLevel;
 import cz.muni.stanse.threadchecker.graph.CFGGraphState;
 import cz.muni.stanse.threadchecker.locks.BackTrack;
 import cz.muni.stanse.utils.Pair;
-import cz.muni.stanse.utils.XMLPattern;
-import cz.muni.stanse.utils.XMLPatternVariablesAssignment;
+import cz.muni.stanse.utils.xmlpatterns.XMLPattern;
+import cz.muni.stanse.utils.xmlpatterns.XMLPatternVariablesAssignment;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -313,19 +313,19 @@ public class CFGTransit {
             if(result.getFirst().booleanValue()) {
                 if(pattern.getName().equals("lockFunction")) {
                     parameter = result.getSecond()
-                                        .getVarsAssignments().get("lock");
+                                        .getVarsMap().get("lock");
                     CodeAnalyzer.analyzeLockingFunction(
                                                        node,function,parameter);
                     return;
                 } else if(pattern.getName().equals("unlockFunction")) {
                     parameter = result.getSecond()
-                                        .getVarsAssignments().get("lock");
+                                        .getVarsMap().get("lock");
                     CodeAnalyzer.analyzeUnlockingFunction(
                                                        node,function,parameter);
                     return;
                 } else if(pattern.getName().equals("createThreadFunction")) {
                     parameter = result.getSecond()
-                                        .getVarsAssignments().get("function");
+                                        .getVarsMap().get("function");
                     CodeAnalyzer.analyzeThreadFunction(node,function,parameter);
                     return;
                 } else {

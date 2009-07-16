@@ -64,6 +64,11 @@ public class CFGNode {
 	return element;
     }
 
+    public final int getLine() {
+        return (getElement() != null && getElement().attribute("bl") != null) ?
+                    new Integer(getElement().attribute("bl").getValue()) : 1;
+    }
+
     /**
      * Get all predecessors of the node
      * @return (read only) set of this node's predecessors

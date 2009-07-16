@@ -60,5 +60,7 @@ public final class CheckerFactory {
     static {
         registerCheckerCreator(
             new cz.muni.stanse.automatonchecker.AutomatonCheckerCreator() );
+        registerCheckerCreator(
+            new cz.muni.stanse.threadchecker.ThreadCheckerCreator() );
     }
 }

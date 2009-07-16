@@ -1,8 +1,9 @@
 
 package cz.muni.stanse.threadchecker.graph;
 
-import cz.muni.stanse.PresentableError;
-import cz.muni.stanse.PresentableErrorTrace;
+import cz.muni.stanse.checker.CheckerError;
+import cz.muni.stanse.checker.CheckerErrorTrace;
+import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.threadchecker.ThreadInfo;
 import cz.muni.stanse.threadchecker.exceptions.CycleException;
 import cz.muni.stanse.threadchecker.locks.Lock;
@@ -43,10 +44,10 @@ public class RAG {
      * @param cycle Cycle representing assignment and requirement edges
      * @return CheckerError
      */
-    public PresentableError detectDeadlock(Cycle cycle) {
+    public CheckerError detectDeadlock(Cycle cycle) {
         DependencyRule ruleToProcess;
         List<DependencyRule> processedRules = new Vector<DependencyRule>();
-        PresentableError error;
+        CheckerError error;
 
         this.clearGraph();
 
@@ -260,11 +261,10 @@ public class RAG {
      * @return CheckError describing error occurence
      * @throws CycleException
      */
-    private PresentableError generateError(Cycle cycle) throws CycleException {
-        LinkedList<PresentableErrorTrace> errorTrace
-                                     = new LinkedList<PresentableErrorTrace>();
-        List<Triple<Integer,String,String>> trace;
-        Triple<Integer,String,String> traceNode;
+    private CheckerError generateError(Cycle cycle) throws CycleException {
+        LinkedList<CheckerErrorTrace> errorTrace
+                                     = new LinkedList<CheckerErrorTrace>();
+        CheckerErrorTraceLocation traceNode;
         BackTrack backTrackNode;
         Iterator<BackTrack> it;
         String description = "";
@@ -286,25 +286,25 @@ public class RAG {
             backTrack = rule.getBackTrack();
             thread = rule.getThread();
             nodeId = rule.getSource().getNodeID();
-            trace = new Vector<Triple<Integer,String,String>>();
 
+            final LinkedList<CheckerErrorTraceLocation> trace
+                    = new LinkedList<CheckerErrorTraceLocation>();
             for(it = backTrack.iterator(); it.hasNext(); ) {
                 backTrackNode = it.next();
-                traceNode = new Triple<Integer,String,String>(null, null, null);
-                traceNode.setFirst(backTrackNode.getLine());
-                traceNode.setSecond(backTrackNode.getDescription());
-                traceNode.setThird(backTrackNode.getUnitFilename());
+                traceNode = new CheckerErrorTraceLocation(
+                        backTrackNode.getUnitFilename(),backTrackNode.getLine(),
+                        backTrackNode.getDescription());
                 trace.add(traceNode);
                 if(backTrackNode.getCFGNodeID().equals(nodeId)) {
                     //Is't last lock from this thread - end backTrack
                     break;
                 }
             }
-            PresentableErrorTrace error = new PresentableErrorTrace(
-                                    "Thread "+thread.getId()+" ("
-                                    +thread.getFunctionName()+") lock rules:",
-                                cycle.getRulesByThread().get(thread).toString(),
-                                    trace);
+            CheckerErrorTrace error = new CheckerErrorTrace(trace,
+                        "Thread "+thread.getId()+" ("+thread.getFunctionName()+
+                        ") lock rules:" +
+                        "{"+cycle.getRulesByThread().get(thread).toString()+"}"
+                        );
             errorTrace.add(error);
 
         }
@@ -312,8 +312,8 @@ public class RAG {
         //Level count := Number of locks*2 + number of threads *2
         int level = cycle.getResources().size()*2
                 +cycle.getRulesByThread().keySet().size()*2;
-        return new PresentableError("Deadlock found",description,level,
-                                                                    errorTrace);
+        return new CheckerError("Deadlock found",description,level,
+                                "ThreadChecker",errorTrace);
     }
 
     /**
@@ -322,12 +322,13 @@ public class RAG {
      * @param message String which should be inserted to CheckerError
      * @return CheckerError
      */
-    private PresentableError generateWarning(Cycle cycle, String message) {
+    private CheckerError generateWarning(Cycle cycle, String message) {
         Set<Integer> traceNodes = new HashSet<Integer>();
-        List<Triple<Integer,String,String>> trace;
-        LinkedList<PresentableErrorTrace> errorTraces
-                                    = new LinkedList<PresentableErrorTrace>();
-        Triple<Integer,String,String> traceNode;
+        LinkedList<CheckerErrorTraceLocation> trace
+                                  = new LinkedList<CheckerErrorTraceLocation>();
+        LinkedList<CheckerErrorTrace> errorTraces
+                                    = new LinkedList<CheckerErrorTrace>();
+        CheckerErrorTraceLocation traceNode;
         BackTrack backTrackNode;
         Iterator<BackTrack> it;
         LinkedList<BackTrack> backTrack;
@@ -339,17 +340,15 @@ public class RAG {
             }
             backTrack = cycle.getRulesByThread().get(
                                                   thread).get(0).getBackTrack();
-            trace = new Vector<Triple<Integer,String,String>>();
             for(it = backTrack.iterator(); it.hasNext(); ) {
                 backTrackNode = it.next();
-                traceNode = new Triple<Integer, String, String>(null,null,null);
-                traceNode.setFirst(backTrackNode.getLine());
-                traceNode.setSecond(backTrackNode.getDescription());
-                traceNode.setThird(backTrackNode.getUnitFilename());
+                traceNode = new CheckerErrorTraceLocation(
+                        backTrackNode.getUnitFilename(),backTrackNode.getLine(),
+                        backTrackNode.getDescription());
                 
-                if(traceNodes.contains(traceNode.getFirst())) {
+                if(traceNodes.contains(backTrackNode.getLine())) {
                     trace.add(traceNode);
-                    traceNodes.remove(traceNode.getFirst());
+                    traceNodes.remove(backTrackNode.getLine());
                     if(traceNodes.size()<1) {
                         break;
                     }
@@ -357,18 +356,18 @@ public class RAG {
                     trace.add(traceNode);
                 }
             }
-            PresentableErrorTrace errorTrace = new PresentableErrorTrace(
-                                        "Thread "+thread.getId()+" ("
-                                    +thread.getFunctionName()+") lock rules:",
-                                cycle.getRulesByThread().get(thread).toString(),
-                                        trace);
+            CheckerErrorTrace errorTrace = new CheckerErrorTrace(trace,
+                        "Thread "+thread.getId()+" ("+thread.getFunctionName()+
+                        ") lock rules:"+
+                        "{"+cycle.getRulesByThread().get(thread).toString()+"}"
+                        );
             errorTraces.add(errorTrace);
         }
 
         int level = (cycle.getResources().size()*2
                 +cycle.getRulesByThread().keySet().size()*2)*10;
-        PresentableError error = new PresentableError("Cycle warning",message,
-                                                            level, errorTraces);
+        CheckerError error = new CheckerError("Cycle warning",message,
+                                             level,"ThreadChecker",errorTraces);
         return error;
     }
 

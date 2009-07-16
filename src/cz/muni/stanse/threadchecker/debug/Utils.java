@@ -1,7 +1,6 @@
 package cz.muni.stanse.threadchecker.debug;
 
 import cz.muni.stanse.threadchecker.*;
-import cz.muni.stanse.callgraph.CallGraph;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
@@ -29,7 +28,6 @@ public class Utils {
     private static GraphViz gv;
     private static GraphView view;
     private static boolean debug = false;
-    private static CallGraph callGraph;
 
     private Utils() { }
 
@@ -129,12 +127,10 @@ public class Utils {
              temporary = cfg.toDot();
              temporary = temporary.replaceFirst("digraph CFG", "subgraph CFG");
              toDot += temporary;
-             functionDefinitions.add(cfg.getFunctionDefinition());
+             functionDefinitions.add(cfg.getElement());
         }
 
         toDot +="}";
-
-        callGraph = new CallGraph(functionDefinitions);
 
         gv.graph = new StringBuffer(toDot);
 
@@ -144,7 +140,10 @@ public class Utils {
             view.addImage(new ImageIcon(out.getAbsolutePath()),"Unit");
             view.setVisible(true);
 
-            gv.graph = new StringBuffer(callGraph.toDot());
+            gv.graph = new StringBuffer(cz.muni.stanse.utils.CallGraphToDot.run(
+                                            CheckerSettings.getInstance()
+                                                           .getInternals()
+                                                           .getCallGraph()));
 
             final File callFile = File.createTempFile("CALLGraph",".png");
             gv.writeGraphToFile(gv.getGraph(gv.getDotSource()),callFile);
