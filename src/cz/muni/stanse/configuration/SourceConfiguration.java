@@ -7,7 +7,6 @@ import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
 import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollectionImpl;
 import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollectionIntra;
-import cz.muni.stanse.codestructures.builders.CFGInstrumentationBuilder;
 import cz.muni.stanse.cparser.CUnit;
 import cz.muni.stanse.utils.ClassLogger;
 
@@ -86,9 +85,7 @@ public final class SourceConfiguration {
         cfgToUnitDictionary = new HashMap<CFG,Unit>();
         for (final Unit unit : units)
             for (final CFG cfg : unit.getCFGs())
-                cfgToUnitDictionary.put(CFGInstrumentationBuilder.run(cfg)
-                                                                 .getFirst(),
-                                        unit);
+                cfgToUnitDictionary.put(cfg, unit);
     }
 
     private static List<Unit>

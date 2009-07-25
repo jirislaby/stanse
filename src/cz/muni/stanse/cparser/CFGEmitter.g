@@ -48,7 +48,7 @@ import org.dom4j.Element;
 import cz.muni.stanse.utils.Pair;
 }
 @members {
-	private Element defaultLabel, falseLabel, emptyStatement;
+	private Element defaultLabel, falseLabel, emptyStatement, exit;
 	private DocumentFactory xmlFactory = DocumentFactory.getInstance();
 
 	private CFGPart createCFG(Element e) {
@@ -84,17 +84,62 @@ import cz.muni.stanse.utils.Pair;
 				new CFGBranchNode(nn, cond) :
 				new CFGBranchNode(cond);
 			/* true */
-			branch.addEdge(_then, defaultLabel);
+			addAssert(branch, defaultLabel, _then, cond, false);
 			/* false */
-			branch.addEdge(_else, falseLabel);
+			addAssert(branch, falseLabel, _else, cond, true);
 			return branch;
 		}
+	}
+
+	private CFGNode addAssert(CFGNode n1, Element label, CFGNode n2,
+			Element cond, boolean neg) {
+		Element ae = xmlFactory.createElement("assert");
+		if (cond.getParent() != null)
+			cond = cond.createCopy();
+		if (neg)
+			ae.addElement("prefixExpression").
+				addAttribute("op", "!").add(cond);
+		else
+			ae.add(cond);
+		CFGNode an = new CFGNode(ae);
+		if (n1 instanceof CFGBranchNode) {
+			CFGBranchNode n1b = (CFGBranchNode)n1;
+			n1b.addEdge(an, label);
+		} else
+			n1.addEdge(an);
+		if (n2 != null)
+			an.addEdge(n2);
+		return an;
+	}
+	private void addSwitchDefaultAssert(CFGBranchNode branch,
+			CFGNode breakNode) {
+		CFGNode parent = branch;
+		boolean pin = false;
+		// add all non-default as negated
+		for (Pair<Element, CFGNode> pair: $IterSwitch::cases) {
+			Element caseLabel = pair.getFirst();
+			if (caseLabel.getName().equals("default"))
+				continue;
+			pin = true;
+			Element cond = xmlFactory.
+				createElement("binaryExpression").
+				addAttribute("op", "==");
+			cond.add(branch.getElement().createCopy());
+			cond.add(caseLabel.createCopy());
+			parent = addAssert(parent, defaultLabel, null, cond,
+					true);
+		}
+		if (pin)
+			parent.addEdge(breakNode);
+		else
+			branch.addEdge(breakNode, defaultLabel);
 	}
 }
 
 translationUnit returns [List<CFG> g]
 @init {
 	$g = new LinkedList<CFG>();
+	exit = xmlFactory.createElement("exit");
 	emptyStatement = xmlFactory.createElement("emptyStatement");
 	defaultLabel = xmlFactory.createElement("default");
 	falseLabel = xmlFactory.createElement("intConst");
@@ -124,7 +169,7 @@ scope Function;
 		$g = CFG.createFromCFGPart($compoundStatement.g,
 				$functionDefinition.start.getElement());
 		$g.setSymbols($Function::symbols);
-		CFGNode endNode = new CFGNode();
+		CFGNode endNode = new CFGNode(exit);
 		$g.setEndNode(endNode);
 		for (CFGBreakNode n: $Function::rets)
 			n.addBreakEdge(endNode);
@@ -452,11 +497,24 @@ scope IterSwitch;
 		$g.setStartNode(n);
 		CFGNode breakNode = new CFGJoinNode();
 		$g.setEndNode(breakNode);
-		for (Pair<Element, CFGNode> pair: $IterSwitch::cases)
-			n.addEdge(pair.getSecond(), pair.getFirst());
+		for (Pair<Element, CFGNode> pair: $IterSwitch::cases) {
+			Element caseLabel = pair.getFirst();
+			if (caseLabel.getName().equals("default")) {
+				addSwitchDefaultAssert(n, pair.getSecond());
+			} else {
+				Element cond = xmlFactory.
+					createElement("binaryExpression").
+					addAttribute("op", "==");
+				cond.add(n.getElement().createCopy());
+				cond.add(caseLabel.createCopy());
+				addAssert(n, caseLabel, pair.getSecond(),
+						cond, false);
+			}
+		}
 		/* add default if not present */
 		if (!$IterSwitch::haveDefault)
-			n.addEdge(breakNode, defaultLabel);
+			addSwitchDefaultAssert(n, breakNode);
+
 		/* backpatch break */
 		for (CFGBreakNode c: $IterSwitch::breaks)
 			c.addBreakEdge(breakNode);
