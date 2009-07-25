@@ -159,14 +159,14 @@ final class ErrorTracesListCreator extends cz.muni.stanse.codestructures.travers
     }
 
     private int getNodeLine(final CFGNode node) {
-        return new Integer(
-                       // TODO: following two lines of code can be removed, when
-                       //       there are no CFGNodes without XML element and
-                       //       each XML element has 'bl' attribute .
-                       (node.getElement() == null ||
-                        node.getElement().attribute("bl") == null) ? "1" :
-
-                        node.getElement().attribute("bl").getValue());
+	// TODO: following lines can be removed, when there are no CFGNodes
+	// without XML element and each XML element has 'bl' attribute.
+	if (node.getElement() == null)
+	    return 1;
+	String attr = node.getElement().attributeValue("bl");
+	if (attr == null)
+	    return 1;
+	return Integer.parseInt(attr);
     }
 
     private ErrorRule rule;
