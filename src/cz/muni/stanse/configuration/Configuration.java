@@ -204,17 +204,20 @@ public final class Configuration {
         return new SourceConfiguration(new AllOpenedFilesEnumerator());
     }
 
-    private static LinkedList<CheckerConfiguration>
+    private static List<CheckerConfiguration>
 	    createDefaultCheckerConfiguration() {
         return Make.<CheckerConfiguration>linkedList(
-            new CheckerConfiguration("AutomatonChecker", Make.<File>linkedList(
-                        new File(Stanse.getRootDirectory() +
-                              "/data/checkers/AutomatonChecker/memory.xml"),
-                        new File(Stanse.getRootDirectory() +
-                              "/data/checkers/AutomatonChecker/interrupts.xml"),
-                        new File(Stanse.getRootDirectory() +
-                              "/data/checkers/AutomatonChecker/locking.xml")
-                ),true));
+	    new CheckerConfiguration("AutomatonChecker",
+		    new File(Stanse.getRootDirectory() +
+			  "/data/checkers/AutomatonChecker/memory.xml"), true),
+	    new CheckerConfiguration("AutomatonChecker",
+		    new File(Stanse.getRootDirectory() +
+			  "/data/checkers/AutomatonChecker/interrupts.xml"),
+		    true),
+	    new CheckerConfiguration("AutomatonChecker",
+		    new File(Stanse.getRootDirectory() +
+			  "/data/checkers/AutomatonChecker/locking.xml"),
+		    true));
     }
 
     private final SourceConfiguration sourceConfiguration;
