@@ -84,21 +84,35 @@ import cz.muni.stanse.utils.Pair;
 				new CFGBranchNode(nn, cond) :
 				new CFGBranchNode(cond);
 			/* true */
-			addAssert(branch, defaultLabel, _then, cond, false);
+			addAssert(branch, defaultLabel, _then, cond, false,
+					_then.getElement());
 			/* false */
-			addAssert(branch, falseLabel, _else, cond, true);
+			addAssert(branch, falseLabel, _else, cond, true,
+					_else.getElement());
 			return branch;
 		}
 	}
 
 	private CFGNode addAssert(CFGNode n1, Element label, CFGNode n2,
-			Element cond, boolean neg) {
+			Element cond, boolean neg, Element lineElem) {
 		Element ae = xmlFactory.createElement("assert");
+
+		if (lineElem == null || lineElem.attribute("bl") == null)
+			lineElem = n1.getElement();
+		assert(lineElem != null);
+		String bl = lineElem.attributeValue("bl");
+		assert(bl != null);
+
+		ae.addAttribute("bl", bl);
 		if (cond.getParent() != null)
 			cond = cond.createCopy();
+		else if (cond.attribute("bl") == null)
+			cond.addAttribute("bl", bl);
 		if (neg)
 			ae.addElement("prefixExpression").
-				addAttribute("op", "!").add(cond);
+				addAttribute("op", "!").
+				addAttribute("bl", bl).
+				add(cond);
 		else
 			ae.add(cond);
 		CFGNode an = new CFGNode(ae);
@@ -112,7 +126,7 @@ import cz.muni.stanse.utils.Pair;
 		return an;
 	}
 	private void addSwitchDefaultAssert(CFGBranchNode branch,
-			CFGNode breakNode) {
+			CFGNode breakNode, Element lineElem) {
 		CFGNode parent = branch;
 		boolean pin = false;
 		// add all non-default as negated
@@ -127,7 +141,7 @@ import cz.muni.stanse.utils.Pair;
 			cond.add(branch.getElement().createCopy());
 			cond.add(caseLabel.createCopy());
 			parent = addAssert(parent, defaultLabel, null, cond,
-					true);
+					true, lineElem);
 		}
 		if (pin)
 			parent.addEdge(breakNode);
@@ -500,7 +514,8 @@ scope IterSwitch;
 		for (Pair<Element, CFGNode> pair: $IterSwitch::cases) {
 			Element caseLabel = pair.getFirst();
 			if (caseLabel.getName().equals("default")) {
-				addSwitchDefaultAssert(n, pair.getSecond());
+				addSwitchDefaultAssert(n, pair.getSecond(),
+					caseLabel);
 			} else {
 				Element cond = xmlFactory.
 					createElement("binaryExpression").
@@ -508,12 +523,12 @@ scope IterSwitch;
 				cond.add(n.getElement().createCopy());
 				cond.add(caseLabel.createCopy());
 				addAssert(n, caseLabel, pair.getSecond(),
-						cond, false);
+						cond, false, caseLabel);
 			}
 		}
 		/* add default if not present */
 		if (!$IterSwitch::haveDefault)
-			addSwitchDefaultAssert(n, breakNode);
+			addSwitchDefaultAssert(n, breakNode, n.getElement());
 
 		/* backpatch break */
 		for (CFGBreakNode c: $IterSwitch::breaks)
