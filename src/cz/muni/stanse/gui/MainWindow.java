@@ -76,7 +76,6 @@ public final class MainWindow extends javax.swing.JFrame {
 
         setIconImage(new javax.swing.ImageIcon(getIconPathName()).getImage());
 
-        configuration = new Configuration();
         errorsTreeManager = new ErrorsTreeManager(errorsTree);
         openedSourceFilesManager = new OpenedSourceFilesManager(
                                                           sourceCodeTabbedPane);
