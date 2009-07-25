@@ -22,7 +22,19 @@ public final class SourceConfiguration {
     public SourceConfiguration(final SourceCodeFilesEnumerator
                                sourceEnumerator) {
         this.sourceEnumerator = sourceEnumerator;
-        units = null;
+	units = new LinkedList<Unit>();
+	List<String> files = null;
+	try {
+	    files = sourceEnumerator.getSourceCodeFiles();
+	} catch (SourceCodeFilesException e) {
+	    ClassLogger.error(SourceConfiguration.class,
+			      "Failed to get source files.", e);
+	}
+
+	if (files != null)
+	    for (String pathName: files)
+		units.add(new CUnit(pathName));
+
         cfgToUnitDictionary = null;
         internals = null;
         itraproceduralInternals = null;
@@ -48,9 +60,7 @@ public final class SourceConfiguration {
     // private section
 
     private List<Unit> getUnits() {
-        if (units == null)
-            setUnits();
-        return units;
+	return Collections.unmodifiableList(units);
     }
 
     private HashMap<CFG,Unit> getCFGtoUnitDictionary() {
@@ -72,12 +82,6 @@ public final class SourceConfiguration {
                                            getUnits(),getCFGtoUnitDictionary());
     }
 
-    private synchronized void setUnits() {
-        if (units == null)
-            units = Collections.unmodifiableList(
-                                             buildUnits(getSourceEnumerator()));
-    }
-
     private synchronized void setCFGtoUnitDictionary() {
         if (cfgToUnitDictionary != null)
             return;
@@ -86,22 +90,6 @@ public final class SourceConfiguration {
         for (final Unit unit : units)
             for (final CFG cfg : unit.getCFGs())
                 cfgToUnitDictionary.put(cfg, unit);
-    }
-
-    private static List<Unit>
-    buildUnits(final SourceCodeFilesEnumerator sourceEnumerator) {
-        final List<Unit> result = new LinkedList<Unit>();
-        List <String> files;
-        try {
-            files = sourceEnumerator.getSourceCodeFiles();
-        } catch (SourceCodeFilesException e) {
-            ClassLogger.error(SourceConfiguration.class,
-                              "Failed to get source files.", e);
-            return Collections.unmodifiableList(result);
-        }
-        for (String pathName: files)
-            result.add(new CUnit(pathName));
-        return result;
     }
 
     private final SourceCodeFilesEnumerator sourceEnumerator;
