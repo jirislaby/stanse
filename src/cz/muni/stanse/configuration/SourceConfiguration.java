@@ -37,7 +37,7 @@ public final class SourceConfiguration {
 
         cfgToUnitDictionary = null;
         internals = null;
-        itraproceduralInternals = null;
+	intraproceduralInternals = null;
     }
 
     public LazyInternalProgramStructuresCollection getLazySourceInternals() {
@@ -47,10 +47,10 @@ public final class SourceConfiguration {
     }
 
     public LazyInternalProgramStructuresCollection
-    getLazySourceIntraproceduralInternals() {
-        if (itraproceduralInternals == null)
+		getLazySourceIntraproceduralInternals() {
+	if (intraproceduralInternals == null)
             setLazySourceIntraproceduralInternals();
-        return itraproceduralInternals;
+	return intraproceduralInternals;
     }
 
     public SourceCodeFilesEnumerator getSourceEnumerator() {
@@ -72,14 +72,14 @@ public final class SourceConfiguration {
     private synchronized void setLazySourceInternals() {
         if (internals == null)
             internals = new LazyInternalProgramStructuresCollectionImpl(
-                                           getUnits(),getCFGtoUnitDictionary());
+		    getUnits(), getCFGtoUnitDictionary());
     }
 
     private synchronized void setLazySourceIntraproceduralInternals() {
-        if (itraproceduralInternals == null)
-            itraproceduralInternals =
-                new LazyInternalProgramStructuresCollectionIntra(
-                                           getUnits(),getCFGtoUnitDictionary());
+	if (intraproceduralInternals == null)
+	    intraproceduralInternals =
+		new LazyInternalProgramStructuresCollectionIntra(getUnits(),
+			getCFGtoUnitDictionary());
     }
 
     private synchronized void setCFGtoUnitDictionary() {
@@ -96,5 +96,5 @@ public final class SourceConfiguration {
     private List<Unit> units;
     private HashMap<CFG,Unit> cfgToUnitDictionary;
     private LazyInternalProgramStructuresCollection internals;
-    private LazyInternalProgramStructuresCollection itraproceduralInternals;
+    private LazyInternalProgramStructuresCollection intraproceduralInternals;
 }
