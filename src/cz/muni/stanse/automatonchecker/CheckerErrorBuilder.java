@@ -52,6 +52,7 @@ final class CheckerErrorBuilder {
     buildErrorList(final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        edgeLocationDictionary,
                    final LazyInternalProgramStructuresCollection internals,
+                   final java.util.List<FalsePositivesDetector> detectors,
                    final CheckerErrorReceiver errReciver,
                    final AutomatonCheckerLogger monitor) {
         int numErrors = 0;
@@ -60,7 +61,7 @@ final class CheckerErrorBuilder {
             if (locationsPair.getFirst() != null)
                 numErrors += buildErrorsInLocation(locationsPair.getFirst(),
                                       edgeLocationDictionary,internals,
-                                      errReciver,monitor);
+                                      detectors,errReciver,monitor);
         if (numErrors > 0)
             monitor.note("*** " + numErrors + " error(s) found");
     }
@@ -71,6 +72,7 @@ final class CheckerErrorBuilder {
             final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        edgeLocationDictionary,
             final LazyInternalProgramStructuresCollection internals,
+            final java.util.List<FalsePositivesDetector> detectors,
             final CheckerErrorReceiver errReciver,
             final AutomatonCheckerLogger monitor) {
         final CallSiteDetector callDetector =
@@ -97,7 +99,7 @@ final class CheckerErrorBuilder {
                             (new ErrorTracesListCreator(rule,transferor,
                                             edgeLocationDictionary,
                                             location.getCFGreferenceNode(),
-                                            internals)),
+                                            internals,detectors)),
                             cfgContext).getErrorTracesList();
 
                     // Next condition eliminates cyclic dependances of two

@@ -21,6 +21,7 @@ import cz.muni.stanse.utils.ClassLogger;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Collections;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -161,10 +162,16 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
             }
         }
 
+        monitor.phaseLog("collecting false-positives detectors");
+        final java.util.List<FalsePositivesDetector> detectors =
+            FalsePositivesDetectorFactory.getDetectors(
+                        xmlAutomatonDefinition,internals,
+                        Collections.unmodifiableMap(nodeLocationDictionary));
+
         monitor.phaseLog("building error traces");
         monitor.pushTab();
         CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,internals,
-                                           errReciver,monitor);
+                                           detectors,errReciver,monitor);
         monitor.popTab();
     }
 

@@ -12,13 +12,14 @@ import cz.muni.stanse.checker.CheckerErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.traversal.CFGPathVisitor;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.List;
 import java.util.Vector;
 import java.util.Map;
 
-final class ErrorTracesListCreator extends cz.muni.stanse.codestructures.traversal.CFGPathVisitor {
+final class ErrorTracesListCreator extends CFGPathVisitor {
 
     // public section
 
@@ -49,21 +50,23 @@ final class ErrorTracesListCreator extends cz.muni.stanse.codestructures.travers
         if (!getRule().checkForError(
                 AutomatonStateCFGcontextAlgo.filterStatesByContext(
                            location.getProcessedAutomataStates(),cfgContext))) {
-            getErrorTracesList().add(buildErrorTrace(
-                    getRule().getErrorBeginMessage(),
-                    getRule().getErrorPropagMessage(),
-                    getRule().getErrorEndMessage(),
-                    path,cfgContext));
+            if (!isFalsePositive(path,cfgContext))
+                getErrorTracesList().add(buildErrorTrace(
+                        getRule().getErrorBeginMessage(),
+                        getRule().getErrorPropagMessage(),
+                        getRule().getErrorEndMessage(),
+                        path,cfgContext));
             return false;
         }
 
         if (cfgContext.isEmpty() &&
                 getInternals().getNavigator().isStartNode(node)) {
-            getErrorTracesList().add(buildErrorTrace(
-                    getRule().getErrorEntryMessage(),
-                    getRule().getErrorPropagMessage(),
-                    getRule().getErrorEndMessage(),
-                    path,cfgContext));
+            if (!isFalsePositive(path,cfgContext))
+                getErrorTracesList().add(buildErrorTrace(
+                        getRule().getErrorEntryMessage(),
+                        getRule().getErrorPropagMessage(),
+                        getRule().getErrorEndMessage(),
+                        path,cfgContext));
             return false;
         }
 
@@ -87,7 +90,8 @@ final class ErrorTracesListCreator extends cz.muni.stanse.codestructures.travers
                     final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                          nodeLocationDictionary,
                     final CFGNode startNode,
-                    final LazyInternalProgramStructuresCollection internals) {
+                    final LazyInternalProgramStructuresCollection internals,
+                    final java.util.List<FalsePositivesDetector> detectors) {
         super();
         this.rule = rule;
         this.transferor = transferor;
@@ -95,6 +99,7 @@ final class ErrorTracesListCreator extends cz.muni.stanse.codestructures.travers
         this.startNode = startNode;
         this.internals = internals;
         errorTracesList = new Vector<CheckerErrorTrace>();
+        this.detectors = detectors;
     }
 
     Vector<CheckerErrorTrace> getErrorTracesList() {
@@ -102,6 +107,14 @@ final class ErrorTracesListCreator extends cz.muni.stanse.codestructures.travers
     }
 
     // private section
+
+    private boolean isFalsePositive(final List<CFGNode> path,
+                                    final java.util.Stack<CFGNode> cfgContext) {
+        for (final FalsePositivesDetector detector : detectors)
+            if (detector.isFalsePositive(path,cfgContext,getRule()))
+                return true;
+        return false;
+    }
 
     private CheckerErrorTrace buildErrorTrace(final String beginMsg,
                                        final String innerMsg,
@@ -176,4 +189,5 @@ final class ErrorTracesListCreator extends cz.muni.stanse.codestructures.travers
     private final CFGNode startNode;
     private final LazyInternalProgramStructuresCollection internals;
     private final Vector<CheckerErrorTrace> errorTracesList;
+    private final java.util.List<FalsePositivesDetector> detectors;
 }
