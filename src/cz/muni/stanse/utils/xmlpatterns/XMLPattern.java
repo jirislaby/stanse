@@ -160,10 +160,6 @@ public final class XMLPattern {
             return pivotAttr.equals(elemAttr);
 
         final boolean negated =  (pivotAttr.charAt(0) == '-') ? true : false;
-String zzz = pivotAttr.substring(pivotAttr.indexOf('{')+1,
-                                 pivotAttr.lastIndexOf('}'));
-String[] xxx = zzz.split("\\}\\{");
-
         for (final String attr : pivotAttr.substring(pivotAttr.indexOf('{') + 1,
                                                      pivotAttr.lastIndexOf('}'))
                                           .split("\\}\\{"))
