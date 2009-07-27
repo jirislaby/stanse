@@ -4,7 +4,7 @@ package cz.muni.stanse.threadchecker;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.Unit;
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.threadchecker.config.ConfigurationCreator;
 import java.io.File;
 import java.util.Collection;
@@ -42,7 +42,7 @@ public class CheckerSettings {
     private Set<CFG> cfgsOnStack = new HashSet<CFG>();
     private boolean globalAnalysis;
     private ConfigurationCreator configurationCreator;
-    private LazyInternalProgramStructuresCollection internals = null;
+    private LazyInternalStructures internals = null;
     
     
     private CheckerSettings() {}
@@ -74,11 +74,11 @@ public class CheckerSettings {
     }
 
     public final void
-    setInternals(final LazyInternalProgramStructuresCollection internals) {
+    setInternals(final LazyInternalStructures internals) {
         this.internals = internals;
     }
 
-    public final LazyInternalProgramStructuresCollection getInternals() {
+    public final LazyInternalStructures getInternals() {
         assert(internals != null);
         return internals;
     }

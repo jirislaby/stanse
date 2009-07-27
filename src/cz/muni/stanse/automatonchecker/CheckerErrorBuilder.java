@@ -11,7 +11,7 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.codestructures.traversal.CFGTraversal;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorTrace;
@@ -51,7 +51,7 @@ final class CheckerErrorBuilder {
     static void
     buildErrorList(final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        edgeLocationDictionary,
-                   final LazyInternalProgramStructuresCollection internals,
+                   final LazyInternalStructures internals,
                    final java.util.List<FalsePositivesDetector> detectors,
                    final CheckerErrorReceiver errReciver,
                    final AutomatonCheckerLogger monitor) {
@@ -71,7 +71,7 @@ final class CheckerErrorBuilder {
     private static int buildErrorsInLocation(final PatternLocation location,
             final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        edgeLocationDictionary,
-            final LazyInternalProgramStructuresCollection internals,
+            final LazyInternalStructures internals,
             final java.util.List<FalsePositivesDetector> detectors,
             final CheckerErrorReceiver errReciver,
             final AutomatonCheckerLogger monitor) {

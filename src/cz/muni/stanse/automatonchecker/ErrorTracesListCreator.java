@@ -11,7 +11,7 @@ package cz.muni.stanse.automatonchecker;
 import cz.muni.stanse.checker.CheckerErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.codestructures.traversal.CFGPathVisitor;
 import cz.muni.stanse.utils.Pair;
 
@@ -90,7 +90,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                     final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                          nodeLocationDictionary,
                     final CFGNode startNode,
-                    final LazyInternalProgramStructuresCollection internals,
+                    final LazyInternalStructures internals,
                     final java.util.List<FalsePositivesDetector> detectors) {
         super();
         this.rule = rule;
@@ -160,7 +160,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         return transferor;
     }
 
-    private LazyInternalProgramStructuresCollection getInternals() {
+    private LazyInternalStructures getInternals() {
         return internals;
     }
 
@@ -187,7 +187,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     private final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                          nodeLocationDictionary;
     private final CFGNode startNode;
-    private final LazyInternalProgramStructuresCollection internals;
+    private final LazyInternalStructures internals;
     private final Vector<CheckerErrorTrace> errorTracesList;
     private final java.util.List<FalsePositivesDetector> detectors;
 }

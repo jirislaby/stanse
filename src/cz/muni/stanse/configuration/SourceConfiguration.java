@@ -4,9 +4,9 @@ import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesException;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesEnumerator;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollectionImpl;
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollectionIntra;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
+import cz.muni.stanse.codestructures.LazyInternalStructuresInter;
+import cz.muni.stanse.codestructures.LazyInternalStructuresIntra;
 import cz.muni.stanse.codestructures.builders.CFGtoUnitDictionaryBuilder;
 import cz.muni.stanse.cparser.CUnit;
 import cz.muni.stanse.utils.ClassLogger;
@@ -41,13 +41,13 @@ public final class SourceConfiguration {
 	intraproceduralInternals = null;
     }
 
-    public LazyInternalProgramStructuresCollection getLazySourceInternals() {
+    public LazyInternalStructures getLazySourceInternals() {
         if (internals == null)
             setLazySourceInternals();
         return internals;
     }
 
-    public LazyInternalProgramStructuresCollection
+    public LazyInternalStructures
 		getLazySourceIntraproceduralInternals() {
 	if (intraproceduralInternals == null)
             setLazySourceInternalsIntra();
@@ -73,7 +73,7 @@ public final class SourceConfiguration {
     private synchronized void setLazySourceInternals() {
 	if (internals != null)
 	    return;
-	internals = new LazyInternalProgramStructuresCollectionImpl(getUnits(),
+	internals = new LazyInternalStructuresInter(getUnits(),
 		getCFGtoUnitDictionary());
     }
 
@@ -82,7 +82,7 @@ public final class SourceConfiguration {
 	    return;
 
 	intraproceduralInternals =
-	    new LazyInternalProgramStructuresCollectionIntra(getUnits(),
+	    new LazyInternalStructuresIntra(getUnits(),
 		    getCFGtoUnitDictionary());
     }
 
@@ -96,6 +96,6 @@ public final class SourceConfiguration {
     private final SourceCodeFilesEnumerator sourceEnumerator;
     private List<Unit> units;
     private HashMap<CFG,Unit> cfgToUnitDictionary;
-    private LazyInternalProgramStructuresCollection internals;
-    private LazyInternalProgramStructuresCollection intraproceduralInternals;
+    private LazyInternalStructures internals;
+    private LazyInternalStructures intraproceduralInternals;
 }

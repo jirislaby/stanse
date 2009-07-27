@@ -12,11 +12,10 @@ import java.util.Map;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-public abstract class LazyInternalProgramStructuresCollection {
+public abstract class LazyInternalStructures {
 
-    public LazyInternalProgramStructuresCollection(
-                                      final Collection<Unit> units,
-                                      final Map<CFG,Unit> cfgToUnitDictionary) {
+    public LazyInternalStructures(final Collection<Unit> units,
+		final Map<CFG,Unit> cfgToUnitDictionary) {
         this.units = units;
         this.cfgToUnitDictionary =
                 Collections.unmodifiableMap(cfgToUnitDictionary);

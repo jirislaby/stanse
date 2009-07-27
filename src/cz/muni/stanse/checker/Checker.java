@@ -7,7 +7,7 @@
  */
 package cz.muni.stanse.checker;
 
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 
 public abstract class Checker {
 
@@ -23,7 +23,7 @@ public abstract class Checker {
     public abstract String getName();
 
     public abstract void
-    check(final LazyInternalProgramStructuresCollection internals,
+    check(final LazyInternalStructures internals,
           final CheckerErrorReceiver errReciver,
           final CheckerProgressMonitor monitor) throws CheckerException;
 

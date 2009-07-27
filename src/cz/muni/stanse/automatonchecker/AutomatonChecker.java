@@ -13,7 +13,7 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.utils.Pair;
@@ -105,7 +105,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * @see cz.muni.stanse.checker.Checker#check(java.util.List)
      */
     @Override
-    public void check(final LazyInternalProgramStructuresCollection internals,
+    public void check(final LazyInternalStructures internals,
                       final CheckerErrorReceiver errReciver,
                       final CheckerProgressMonitor monitor)
                       throws XMLAutomatonSyntaxErrorException {
@@ -124,7 +124,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     // private section
 
     private void check(final XMLAutomatonDefinition xmlAutomatonDefinition,
-                       final LazyInternalProgramStructuresCollection internals,
+                       final LazyInternalStructures internals,
                        final CheckerErrorReceiver errReciver,
                        final AutomatonCheckerLogger monitor)
                                        throws XMLAutomatonSyntaxErrorException {

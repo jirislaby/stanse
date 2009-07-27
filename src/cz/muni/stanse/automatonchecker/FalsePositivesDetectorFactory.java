@@ -1,9 +1,9 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.codestructures.
-                                    LazyInternalProgramStructuresCollectionImpl;
+                                    LazyInternalStructuresInter;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.Vector;
@@ -14,14 +14,14 @@ class FalsePositivesDetectorFactory {
 
     static List<FalsePositivesDetector>
     getDetectors(final XMLAutomatonDefinition definition,
-                 final LazyInternalProgramStructuresCollection internals,
+                 final LazyInternalStructures internals,
                  final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                         nodeLocationDictionary) {
         final Vector<FalsePositivesDetector> result =
                 new Vector<FalsePositivesDetector>();
 
         final boolean isIterprocedural =
-               internals instanceof LazyInternalProgramStructuresCollectionImpl;
+               internals instanceof LazyInternalStructuresInter;
         for (FalsePositivesDetectorCreator creator : creators)
             if (creator.isApplicable(definition,isIterprocedural))
                 result.add(creator.create(definition,internals,

@@ -9,7 +9,7 @@ import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.Unit;
-import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.threadchecker.graph.Cycle;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
 import cz.muni.stanse.threadchecker.graph.RAG;
@@ -42,7 +42,7 @@ public class ThreadChecker extends Checker {
      */
     @Override
     public void check(
-                        final LazyInternalProgramStructuresCollection internals,
+                        final LazyInternalStructures internals,
                         final CheckerErrorReceiver errReciver,
                         final CheckerProgressMonitor monitor)
                                                        throws CheckerException {

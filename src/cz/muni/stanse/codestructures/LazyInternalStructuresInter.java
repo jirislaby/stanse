@@ -3,12 +3,11 @@ package cz.muni.stanse.codestructures;
 import java.util.Collection;
 import java.util.Map;
 
-public final class LazyInternalProgramStructuresCollectionImpl
-                            extends LazyInternalProgramStructuresCollection {
+public final class LazyInternalStructuresInter
+			extends LazyInternalStructures {
 
-    public LazyInternalProgramStructuresCollectionImpl(
-                                      final Collection<Unit> units,
-                                      final Map<CFG,Unit> cfgToUnitDictionary) {
+    public LazyInternalStructuresInter(final Collection<Unit> units,
+		final Map<CFG,Unit> cfgToUnitDictionary) {
 	super(units, cfgToUnitDictionary);
     }
 
