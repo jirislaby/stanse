@@ -7,6 +7,7 @@ import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollection;
 import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollectionImpl;
 import cz.muni.stanse.codestructures.LazyInternalProgramStructuresCollectionIntra;
+import cz.muni.stanse.codestructures.builders.CFGtoUnitDictionaryBuilder;
 import cz.muni.stanse.cparser.CUnit;
 import cz.muni.stanse.utils.ClassLogger;
 
@@ -49,7 +50,7 @@ public final class SourceConfiguration {
     public LazyInternalProgramStructuresCollection
 		getLazySourceIntraproceduralInternals() {
 	if (intraproceduralInternals == null)
-            setLazySourceIntraproceduralInternals();
+            setLazySourceInternalsIntra();
 	return intraproceduralInternals;
     }
 
@@ -70,26 +71,26 @@ public final class SourceConfiguration {
     }
 
     private synchronized void setLazySourceInternals() {
-        if (internals == null)
-            internals = new LazyInternalProgramStructuresCollectionImpl(
-		    getUnits(), getCFGtoUnitDictionary());
+	if (internals != null)
+	    return;
+	internals = new LazyInternalProgramStructuresCollectionImpl(getUnits(),
+		getCFGtoUnitDictionary());
     }
 
-    private synchronized void setLazySourceIntraproceduralInternals() {
-	if (intraproceduralInternals == null)
-	    intraproceduralInternals =
-		new LazyInternalProgramStructuresCollectionIntra(getUnits(),
-			getCFGtoUnitDictionary());
+    private synchronized void setLazySourceInternalsIntra() {
+	if (intraproceduralInternals != null)
+	    return;
+
+	intraproceduralInternals =
+	    new LazyInternalProgramStructuresCollectionIntra(getUnits(),
+		    getCFGtoUnitDictionary());
     }
 
     private synchronized void setCFGtoUnitDictionary() {
         if (cfgToUnitDictionary != null)
             return;
 
-        cfgToUnitDictionary = new HashMap<CFG,Unit>();
-        for (final Unit unit : units)
-            for (final CFG cfg : unit.getCFGs())
-                cfgToUnitDictionary.put(cfg, unit);
+        cfgToUnitDictionary = CFGtoUnitDictionaryBuilder.run(units);
     }
 
     private final SourceCodeFilesEnumerator sourceEnumerator;
