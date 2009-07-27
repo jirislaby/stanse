@@ -10,8 +10,10 @@ package cz.muni.stanse.utils.xmlpatterns;
 
 import cz.muni.stanse.utils.Pair;
 import java.util.Iterator;
+import java.util.List;
 
 import org.dom4j.Element;
+import org.dom4j.Attribute;
 
 /**
  * @brief
@@ -79,9 +81,9 @@ public final class XMLPattern {
                            final XMLPatternVariablesAssignment varsAssignment) {
         if (XMLpivot.getName().equals("nested"))
         {
-            final String elementAliasedName = getAliasedName(XMLelement);
+            final String elementName = XMLelement.getName();
             for (final Iterator j = XMLpivot.attributeIterator(); j.hasNext(); )
-                if (elementAliasedName.equals(
+                if (elementName.equals(
                         ((org.dom4j.Attribute)j.next()).getValue()))
                     return false;
             return onNested(XMLpivot,XMLelement,varsAssignment);
@@ -94,8 +96,9 @@ public final class XMLPattern {
             return true;
         }
         
-        //if (!XMLpivot.getName().equals(XMLelement.getName()))
-        if (!XMLpivot.getName().equals(getAliasedName(XMLelement)))
+        if (!XMLpivot.getName().equals(XMLelement.getName()))
+            return false;
+        if (!matchingAttributes(XMLpivot.attributes(),XMLelement))
             return false;
         if (XMLpivot.isTextOnly() != XMLelement.isTextOnly())
             return false;
@@ -136,22 +139,39 @@ public final class XMLPattern {
         return (Element)patternXMLelement.elementIterator().next();
     }
     
-    private static String getAliasedName(final Element element) {
-        final String elemName = element.getName();
-
-        if (elemName.equals("prefixExpression") &&
-            element.attribute("op").getText().equals("!"))
-            return "prefixExpressionLogicalNot";  
-        if (elemName.equals("binaryExpression") &&
-            element.attribute("op").getText().equals("=="))
-            return "binaryExpressionEquality";
-        if (elemName.equals("binaryExpression") &&
-            element.attribute("op").getText().equals("!="))
-            return "binaryExpressionNonEquality";
-
-        return elemName;
+    private static boolean matchingAttributes(final List pivotATTRs,
+                                              final Element XMLelement) {
+        for (final Object obj : pivotATTRs) {
+            assert(obj instanceof Attribute);
+            final Attribute pivotAttr = (Attribute)obj;
+            final Attribute elemAttr=XMLelement.attribute(pivotAttr.getName());
+            if (elemAttr == null || !matchingAttribute(pivotAttr.getValue(),
+                                                       elemAttr.getValue()))
+                return false;
+        }
+        return true;
     }
-            
+
+    private static boolean matchingAttribute(String pivotAttr,
+                                             final String elemAttr) {
+        pivotAttr = pivotAttr.replace(" ","")
+                             .replace("\t","");
+        if (pivotAttr.charAt(0) != '-' && pivotAttr.charAt(0) != '{')
+            return pivotAttr.equals(elemAttr);
+
+        final boolean negated =  (pivotAttr.charAt(0) == '-') ? true : false;
+String zzz = pivotAttr.substring(pivotAttr.indexOf('{')+1,
+                                 pivotAttr.lastIndexOf('}'));
+String[] xxx = zzz.split("\\}\\{");
+
+        for (final String attr : pivotAttr.substring(pivotAttr.indexOf('{') + 1,
+                                                     pivotAttr.lastIndexOf('}'))
+                                          .split("\\}\\{"))
+            if (elemAttr.equals(attr))
+                return !negated;
+        return negated;
+    }
+
     private final Element patternXMLelement;
     private final String name;
     private final boolean constructive;
