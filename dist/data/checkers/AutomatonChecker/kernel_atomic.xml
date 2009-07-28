@@ -104,6 +104,88 @@
     </pattern>
 
     <pattern name="nonatomic">
+	<assignExpression>
+	    <ignore/>
+	    <functionCall>
+		<id>vmalloc</id>
+		<ignore />
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="nonatomic">
+	<assignExpression>
+	    <ignore/>
+	    <functionCall>
+		<id>kmap</id>
+		<ignore />
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>copy_from_user</id>
+	    <ignore/>
+	    <ignore/>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
+<ifStatement>
+        <functionCall>
+            <id>copy_to_user</id>
+	    <ignore/>
+	    <ignore/>
+	    <ignore/>
+        </functionCall>
+<ignore/>
+</ifStatement>
+    </pattern>
+
+    <pattern name="nonatomic">
+	<returnStatement>
+	    <functionCall>
+		<id>__st_put_user_st__</id>
+		<ignore/>
+		<ignore/>
+	    </functionCall>
+	</returnStatement>
+    </pattern>
+
+    <pattern name="nonatomic">
+	<returnStatement>
+	    <functionCall>
+		<id>__st_get_user_st__</id>
+		<ignore/>
+		<ignore/>
+	    </functionCall>
+	</returnStatement>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>lock_page</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>lock_page_killable</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
+        <functionCall>
+            <id>lock_page_nosync</id>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="nonatomic">
         <functionCall>
             <id>__st_mutex_lock_st__</id>
             <var name="A" />

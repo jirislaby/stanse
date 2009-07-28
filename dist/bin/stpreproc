@@ -29,6 +29,7 @@ my @kuntouchables = (
 	"local_irq_save", "local_irq_restore",
 	"local_irq_disable", "local_irq_enable",
 	"likely", "unlikely",
+	"put_user", "get_user",
 	"GFP_KERNEL"
 );
 
