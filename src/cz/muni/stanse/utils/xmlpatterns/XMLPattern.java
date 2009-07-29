@@ -91,6 +91,10 @@ public final class XMLPattern {
         if (XMLpivot.getName().equals("ignore"))
             return true;
         if (XMLpivot.getName().equals("var")) {
+            if (!satisfyVarConstraints(XMLelement.getName(),
+                                       XMLpivot.attribute("match"),
+                                       XMLpivot.attribute("except")))
+                return false;
             varsAssignment.put(XMLpivot.attribute("name").getValue(),
                                XMLelement);
             return true;
@@ -152,20 +156,43 @@ public final class XMLPattern {
         return true;
     }
 
-    private static boolean matchingAttribute(String pivotAttr,
+    private static boolean matchingAttribute(final String pivotAttr,
                                              final String elemAttr) {
-        pivotAttr = pivotAttr.replace(" ","")
-                             .replace("\t","");
-        if (pivotAttr.charAt(0) != '-' && pivotAttr.charAt(0) != '{')
-            return pivotAttr.equals(elemAttr);
+        final Pair<Boolean,String[]> parsedData = splitAttrSymbols(pivotAttr);
+        return retvalWhenItemInSet(!parsedData.getFirst(),elemAttr,
+                                   parsedData.getSecond());
+    }
 
-        final boolean negated =  (pivotAttr.charAt(0) == '-') ? true : false;
-        for (final String attr : pivotAttr.substring(pivotAttr.indexOf('{') + 1,
-                                                     pivotAttr.lastIndexOf('}'))
-                                          .split("\\}\\{"))
-            if (elemAttr.equals(attr))
-                return !negated;
-        return negated;
+    private static boolean satisfyVarConstraints(final String elemName,
+                                                 final Attribute matchAttr,
+                                                 final Attribute exceptAttr) {
+        return (matchAttr != null) ?
+                   retvalWhenItemInSet(true,elemName,
+                           splitAttrSymbols(matchAttr.getValue()).getSecond()) :
+               (exceptAttr != null) ?
+                   retvalWhenItemInSet(false,elemName,
+                           splitAttrSymbols(exceptAttr.getValue()).getSecond()):
+                   true;
+    }
+
+    private static boolean retvalWhenItemInSet(final boolean retval,
+                                               final String item,
+                                               final String[] set) {
+        for (final String setItem : set)
+            if (setItem.equals(item))
+                return retval;
+        return !retval;
+    }
+
+    private static Pair<Boolean,String[]> splitAttrSymbols(String attrString){
+        attrString = attrString.replace(" ","")
+                               .replace("\t","");
+        return (attrString.charAt(0) != '-' && attrString.charAt(0) != '{') ?
+                    Pair.make(false,attrString.split(" ")) :
+                    Pair.make(attrString.charAt(0) == '-' ? true : false,
+                              attrString.substring(attrString.indexOf('{') + 1,
+                                                   attrString.lastIndexOf('}'))
+                                        .split("\\}\\{"));
     }
 
     private final Element patternXMLelement;
