@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import java.util.LinkedList;
@@ -25,8 +24,6 @@ import org.antlr.runtime.tree.RewriteCardinalityException;
 
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
-import cz.muni.stanse.cparser.CFGEmitter;
-import cz.muni.stanse.utils.Triple;
 import cz.muni.stanse.Stanse;
 
 /**
