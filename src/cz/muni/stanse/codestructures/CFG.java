@@ -40,7 +40,7 @@ public class CFG extends CFGPart {
      *
      * @param functionDefinition XML representation of a function definition
      */
-    public CFG(Element functionDefinition) {
+    private CFG(Element functionDefinition) {
 	super();
 	this.functionDefinition = functionDefinition;
 	Element declarator = (Element)functionDefinition.
@@ -63,23 +63,6 @@ public class CFG extends CFGPart {
 	    System.err.println("\n============");
 	} else
 	    functionName = nameElem.getText();
-    }
-
-    /**
-     * @brief Copy constructor. It creates shallow copy of original one.
-     *
-     * Nothing is duplicated! All CFGNodes are shared with original CFG. This
-     * sharing holds for function name and XML representation of AST as well.
-     *
-     * @param cfg Original CFG to be copied
-     */
-    public CFG(final CFG cfg) {
-	super();
-	this.functionDefinition = cfg.functionDefinition;
-	this.functionName = cfg.getFunctionName();
-	this.symbols = cfg.symbols;
-	setStartNode(cfg.getStartNode());
-	setEndNode(cfg.getEndNode());
     }
 
     /**
