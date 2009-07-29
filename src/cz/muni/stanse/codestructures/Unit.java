@@ -42,7 +42,7 @@ public abstract class Unit {
     /**
      * List of units control flow graphs.
      */
-    protected List<CFG> CFGs;
+    protected List<CFG> CFGs = null;
 
     /**
      * Already available/parsed?
@@ -90,22 +90,28 @@ public abstract class Unit {
 	return xmlDocument;
     }
 
-    public void drop() {
+    public synchronized void drop() {
+	assert(CFGs != null);
 	available = false;
 	for (CFG cfg: CFGs)
 	    cfg.drop();
+	CFGs.clear();
+	CFGs = null;
     }
 
     public abstract void parse() throws ParserException;
 
     private void makeAvailable() {
 	if (!available)
-	    try {
-		parse();
-		available = true;
-	    } catch (ParserException e) {
-		ClassLogger.error(this, "can't parse '" + fileName.getPath() +
-			"'!", e);
+	    synchronized(this) {
+		if (!available)
+		    try {
+			parse();
+			available = true;
+		    } catch (ParserException e) {
+			ClassLogger.error(this, "can't parse '" +
+					fileName.getPath() + "'!", e);
+		    }
 	    }
     }
 
