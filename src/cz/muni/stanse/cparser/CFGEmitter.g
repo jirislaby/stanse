@@ -48,7 +48,7 @@ import org.dom4j.Element;
 import cz.muni.stanse.utils.Pair;
 }
 @members {
-	private Element defaultLabel, falseLabel, emptyStatement, exit;
+	private Element defaultLabel, falseLabel, emptyStatement;
 	private DocumentFactory xmlFactory = DocumentFactory.getInstance();
 
 	private CFGPart createCFG(Element e) {
@@ -153,7 +153,6 @@ import cz.muni.stanse.utils.Pair;
 translationUnit returns [List<CFG> g]
 @init {
 	$g = new LinkedList<CFG>();
-	exit = xmlFactory.createElement("exit");
 	emptyStatement = xmlFactory.createElement("emptyStatement");
 	defaultLabel = xmlFactory.createElement("default");
 	falseLabel = xmlFactory.createElement("intConst");
@@ -183,7 +182,9 @@ scope Function;
 		$g = CFG.createFromCFGPart($compoundStatement.g,
 				$functionDefinition.start.getElement());
 		$g.setSymbols($Function::symbols);
-		CFGNode endNode = new CFGNode(exit);
+		CFGNode endNode = new CFGNode(xmlFactory.createElement("exit").
+				addAttribute("bl", Integer.toString(
+					$functionDefinition.start.getLine())));
 		$g.setEndNode(endNode);
 		for (CFGBreakNode n: $Function::rets)
 			n.addBreakEdge(endNode);
