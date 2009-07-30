@@ -1,6 +1,6 @@
 package cz.muni.stanse.threadchecker.graph;
 
-import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Pair;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 public class CFGGraphState {
         private static final Logger logger =
                                 Logger.getLogger(CFGGraphState.class.getName());
-        private final CFG cfg;
+        private final CFGHandle cfg;
         private final Set<CFGNode> visitedNodes = new HashSet<CFGNode>();
         private final Set<CFGNode> reachableNodes = new HashSet<CFGNode>();
         private final Map<Integer,CFGNode> idToNode
@@ -32,12 +32,12 @@ public class CFGGraphState {
         private final Map<Pair<CFGNode,CFGNode>,Set<CFGNode>> cycleCache
                             = new HashMap<Pair<CFGNode,CFGNode>,Set<CFGNode>>();
                                        
-    public CFGGraphState(CFG cfg) {
+    public CFGGraphState(CFGHandle cfg) {
         this.cfg = cfg;
         this.findReachableNodes(cfg); 
     }
 
-    public CFG getCfg() {
+    public CFGHandle getCfg() {
         return this.cfg;
     }
 
@@ -131,10 +131,10 @@ public class CFGGraphState {
     * Method traverse CFG and sets reachable nodes from startNode of CFG
     * @param cfg CFG
     */
-    private void findReachableNodes(CFG cfg) {
+    private void findReachableNodes(CFGHandle cfg) {
         CFGNode node;
         LinkedList<CFGNode> queue = new LinkedList<CFGNode>();
-        queue.add(cfg.getStartNode());
+        queue.add(cfg.getCFG().getStartNode());
 
         while(!queue.isEmpty()) {
             node = queue.poll();

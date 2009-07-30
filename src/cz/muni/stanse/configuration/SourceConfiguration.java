@@ -4,10 +4,10 @@ import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesException;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesEnumerator;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.codestructures.LazyInternalStructuresInter;
 import cz.muni.stanse.codestructures.LazyInternalStructuresIntra;
-import cz.muni.stanse.codestructures.builders.CFGtoUnitDictionaryBuilder;
 import cz.muni.stanse.cparser.CUnit;
 import cz.muni.stanse.utils.ClassLogger;
 
@@ -64,17 +64,19 @@ public final class SourceConfiguration {
 	return Collections.unmodifiableList(units);
     }
 
-    private HashMap<CFG,Unit> getCFGtoUnitDictionary() {
-        if (cfgToUnitDictionary == null)
-            setCFGtoUnitDictionary();
-        return cfgToUnitDictionary;
+    private List<CFGHandle> getCFGHandles() {
+        List<CFGHandle> cfghs = new LinkedList<CFGHandle>();
+        for (Unit unit: getUnits())
+            for (CFG cfg: unit.getCFGs())
+                cfghs.add(new CFGHandle(unit, cfg));
+        return cfghs;
     }
 
     private synchronized void setLazySourceInternals() {
 	if (internals != null)
 	    return;
-	internals = new LazyInternalStructuresInter(getUnits(),
-		getCFGtoUnitDictionary());
+
+	internals = new LazyInternalStructuresInter(getUnits(), getCFGHandles());
     }
 
     private synchronized void setLazySourceInternalsIntra() {
@@ -82,15 +84,7 @@ public final class SourceConfiguration {
 	    return;
 
 	intraproceduralInternals =
-	    new LazyInternalStructuresIntra(getUnits(),
-		    getCFGtoUnitDictionary());
-    }
-
-    private synchronized void setCFGtoUnitDictionary() {
-        if (cfgToUnitDictionary != null)
-            return;
-
-        cfgToUnitDictionary = CFGtoUnitDictionaryBuilder.run(units);
+	    new LazyInternalStructuresIntra(getUnits(), getCFGHandles());
     }
 
     private final SourceCodeFilesEnumerator sourceEnumerator;

@@ -7,7 +7,7 @@ import java.util.Set;
 public final class IntraproceduralCFGsNavigator implements CFGsNavigator {
     // public section
 
-    public IntraproceduralCFGsNavigator(final Collection<CFG> CFGs) {
+    public IntraproceduralCFGsNavigator(final Collection<CFGHandle> CFGs) {
         emptySet = new HashSet<CFGNode>();
         beginings = new HashSet<CFGNode>();
         endings = new HashSet<CFGNode>();
@@ -63,8 +63,9 @@ public final class IntraproceduralCFGsNavigator implements CFGsNavigator {
 
     // private section
 
-    private void buildBeginingsAndEndings(final Collection<CFG> CFGs) {
-        for (final CFG cfg : CFGs) {
+    private void buildBeginingsAndEndings(final Collection<CFGHandle> CFGs) {
+        for (final CFGHandle cfgh: CFGs) {
+            CFG cfg = cfgh.getCFG();
             getBeginings().add(cfg.getStartNode());
             getEndings().add(cfg.getEndNode());
         }

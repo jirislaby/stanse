@@ -15,7 +15,7 @@ public final class ArgumentPassingManager {
     // public section
 
     public ArgumentPassingManager(final CFGsNavigator navigator,
-                                  final Map<CFGNode,CFG> nodeToCFGdict) {
+                                  final Map<CFGNode,CFGHandle> nodeToCFGdict) {
         mapping = new HashMap<Pair<CFGNode,CFGNode>,
                               LinkedList<Pair<String,String>>>();
         build(navigator,nodeToCFGdict);
@@ -34,12 +34,12 @@ public final class ArgumentPassingManager {
     // private section
 
     private void build(final CFGsNavigator navigator,
-                       final Map<CFGNode,CFG> nodeToCFGdict) {
+                       final Map<CFGNode,CFGHandle> nodeToCFGdict) {
         for (final CFGNode call : navigator.callSites()) {
             final CFGNode start = navigator.getCalleeStart(call);
             buildPassingsForCallSite(call,call.getElement(),start,
-                                     nodeToCFGdict.get(start).getElement(),
-                                     navigator.getCalleeEnd(call));
+                    nodeToCFGdict.get(start).getCFG().getElement(),
+                    navigator.getCalleeEnd(call));
         }
     }
 

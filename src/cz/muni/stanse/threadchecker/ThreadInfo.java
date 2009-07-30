@@ -1,8 +1,8 @@
 package cz.muni.stanse.threadchecker;
 
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
-import cz.muni.stanse.threadchecker.graph.DependencyRule;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -26,7 +26,7 @@ public class ThreadInfo {
                                                 = CheckerSettings.getInstance();
 
     @SuppressWarnings("static-access")
-    public ThreadInfo(CFG cfg) {
+    public ThreadInfo(CFGHandle cfg) {
         if(cfg == null) {
             throw new NullPointerException("CFG is null");
         }
@@ -85,7 +85,7 @@ public class ThreadInfo {
      * Method builds Function from CFG and stores it to checkerSettings
      * @param cfg CFG
      */
-    private void buildInitialGraph(CFG cfg) {
+    private void buildInitialGraph(CFGHandle cfg) {
         DependencyGraph graph;
         logger.info("===============");
         logger.info("Analyzing thread: "+this.getFunctionName());
@@ -98,7 +98,7 @@ public class ThreadInfo {
         //Checker settings hasn't function already processed
         if(this.function == null) {
             this.function = CFGTransit.analyseCFG(cfg);
-            checkerSettings.addFunction(function,cfg);
+            checkerSettings.addFunction(function, cfg);
         }
 
         this.dependencyGraphs = new HashSet<DependencyGraph>();

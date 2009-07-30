@@ -1,19 +1,18 @@
 package cz.muni.stanse.codestructures;
 
 import java.util.Collection;
-import java.util.Map;
 
 public final class LazyInternalStructuresIntra
 			extends LazyInternalStructures {
 
     public LazyInternalStructuresIntra(final Collection<Unit> units,
-		final Map<CFG,Unit> cfgToUnitDictionary) {
-	super(units, cfgToUnitDictionary);
+		final Collection<CFGHandle> cfgs) {
+	super(units, cfgs);
     }
 
     @Override
     synchronized void setNavigator() {
         if (navigator == null)
-            navigator = new IntraproceduralCFGsNavigator(getCFGs());
+            navigator = new IntraproceduralCFGsNavigator(getCFGHandles());
     }
 }

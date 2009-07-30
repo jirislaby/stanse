@@ -7,7 +7,7 @@ import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
-import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.threadchecker.graph.Cycle;
@@ -64,7 +64,7 @@ public class ThreadChecker extends Checker {
         }
 
         //Parser somehow creates empty unit - prevent throwing expcetion
-        if(units.size()==1 && internals.getCFGs().isEmpty()) {
+        if(units.size()==1 && internals.getCFGHandles().isEmpty()) {
             return;
         }
 
@@ -90,7 +90,7 @@ public class ThreadChecker extends Checker {
      * @param startFunctions List<String> of function names
     */
     private void analyseFunctions(List<String> startFunctions) {
-        CFG cfg;
+        CFGHandle cfg;
         ThreadInfo thread;
 
         logger.debug("Start functions are:"+startFunctions);

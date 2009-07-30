@@ -15,10 +15,9 @@ import org.jgrapht.graph.DefaultEdge;
 public abstract class LazyInternalStructures {
 
     public LazyInternalStructures(final Collection<Unit> units,
-		final Map<CFG,Unit> cfgToUnitDictionary) {
+                final Collection<CFGHandle> cfgs) {
         this.units = units;
-        this.cfgToUnitDictionary =
-                Collections.unmodifiableMap(cfgToUnitDictionary);
+        this.cfgs = cfgs;
 
         startFunctions = null;
         callGraph = null;
@@ -33,17 +32,13 @@ public abstract class LazyInternalStructures {
         return units;
     }
 
-    public Collection<CFG> getCFGs() {
-        return Collections.unmodifiableSet(getCFGtoUnitDictionary().keySet());
-    }
-
-    public Set<CFG> getStartFunctions() {
+    public Set<CFGHandle> getStartFunctions() {
         if (startFunctions == null)
             setStartFunctions();
         return startFunctions;
     }
 
-    public DefaultDirectedGraph<CFG, DefaultEdge> getCallGraph() {
+    public DefaultDirectedGraph<CFGHandle, DefaultEdge> getCallGraph() {
         if (callGraph == null)
             setCallGraph();
         return callGraph;
@@ -67,14 +62,14 @@ public abstract class LazyInternalStructures {
         return navigator;
     }
 
-    public Map<CFGNode,CFG> getNodeToCFGdictionary() {
+    public Map<CFGNode,CFGHandle> getNodeToCFGdictionary() {
         if (nodeToCFGdictionary == null)
             setNodeToCFGdictionary();
         return nodeToCFGdictionary;
     }
 
-    public Map<CFG,Unit> getCFGtoUnitDictionary() {
-        return cfgToUnitDictionary;
+    public Collection<CFGHandle> getCFGHandles() {
+        return cfgs;
     }
 
     public ElementCFGdictionary getElementToCFGdictionary() {
@@ -111,7 +106,7 @@ public abstract class LazyInternalStructures {
 
     private synchronized void setCallGraph() {
         if (callGraph == null)
-            callGraph = CallGraphBuilder.run(getCFGs(),getNavigator(),
+            callGraph = CallGraphBuilder.run(getCFGHandles(),getNavigator(),
                                              getNodeToCFGdictionary());
     }
 
@@ -132,22 +127,22 @@ public abstract class LazyInternalStructures {
     private synchronized void setNodeToCFGdictionary() {
         if (nodeToCFGdictionary == null)
             nodeToCFGdictionary = Collections.unmodifiableMap(
-                                     NodeToCFGdictionaryBuilder.run(getCFGs()));
+                                     NodeToCFGdictionaryBuilder.run(getCFGHandles()));
     }
 
     private synchronized void setElementToCFGdictionary() {
         if (elementToCFGdictionary == null)
-            elementToCFGdictionary = new ElementCFGdictionary(getCFGs());
+            elementToCFGdictionary = new ElementCFGdictionary(getCFGHandles());
     }
 
     private final Collection<Unit> units;
-    private final Map<CFG,Unit> cfgToUnitDictionary;
+    private final Collection<CFGHandle> cfgs;
 
-    private Set<CFG> startFunctions;
-    private DefaultDirectedGraph<CFG,DefaultEdge> callGraph;
+    private Set<CFGHandle> startFunctions;
+    private DefaultDirectedGraph<CFGHandle,DefaultEdge> callGraph;
     protected CFGsNavigator navigator;
     private ArgumentPassingManager argumentPassingManager;
     private ReturnValuePassingManager returnValuePassingManager;
-    private Map<CFGNode,CFG> nodeToCFGdictionary;
+    private Map<CFGNode,CFGHandle> nodeToCFGdictionary;
     private ElementCFGdictionary elementToCFGdictionary;
 }

@@ -2,6 +2,7 @@ package cz.muni.stanse.threadchecker;
 
 import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.props.Properties.VerbosityLevel;
 import cz.muni.stanse.threadchecker.graph.CFGGraphState;
@@ -94,7 +95,7 @@ public class CFGTransit {
      * @param cfg CFG representing C function
      * @return Function generated from traversing CFG graph
      */
-    public static Function analyseCFG(CFG cfg) {
+    public static Function analyseCFG(CFGHandle cfg) {
         final LinkedList<Function> queue = new LinkedList<Function>();
         final CFGGraphState graphState = new CFGGraphState(cfg);
         List<CFGNode> waitForNodes;
@@ -194,7 +195,7 @@ public class CFGTransit {
         logger.debug("Processing node "+actualNode+" with lockset!");
         
         if(actualNode.getElement() == null) {
-            if(actualNode.equals(graphState.getCfg().getEndNode())) {
+            if(actualNode.equals(graphState.getCfg().getCFG().getEndNode())) {
                 queue.clear();
             }
             return;

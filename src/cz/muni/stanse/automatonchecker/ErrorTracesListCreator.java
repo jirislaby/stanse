@@ -165,10 +165,8 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     }
 
     private String getNodeUnitName(final CFGNode node) {
-        return getInternals().getCFGtoUnitDictionary()
-                             .get(getInternals().getNodeToCFGdictionary()
-                                                .get(node))
-                             .getName();
+        return getInternals().getNodeToCFGdictionary().get(node).getUnit().
+                             getName();
     }
 
     private int getNodeLine(final CFGNode node) {

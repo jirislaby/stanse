@@ -12,7 +12,7 @@ public final class ElementCFGdictionary {
 
     // public section
 
-    public ElementCFGdictionary(final Collection<CFG> CFGs) {
+    public ElementCFGdictionary(final Collection<CFGHandle> CFGs) {
         dictionary = buildDictionary(CFGs);
     }
 
@@ -24,10 +24,11 @@ public final class ElementCFGdictionary {
     // private section
 
     private static HashMap<Pair<String,Integer>,CFG>
-    buildDictionary(final Collection<CFG> CFGs) {
+    buildDictionary(final Collection<CFGHandle> CFGs) {
         final HashMap<Pair<String,Integer>,CFG> dictionary =
             new HashMap<Pair<String,Integer>,CFG>();
-        for (final CFG cfg : CFGs) {
+        for (final CFGHandle cfgh: CFGs) {
+            CFG cfg = cfgh.getCFG();
             final java.util.Vector<Element> linerDecl =
                 XMLLinearizeASTElement.functionDeclaration(cfg.getElement());
             assert(linerDecl != null);

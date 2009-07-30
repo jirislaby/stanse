@@ -8,7 +8,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.traversal.CFGTraversal;
 import cz.muni.stanse.utils.Pair;
@@ -16,6 +16,7 @@ import cz.muni.stanse.utils.Triple;
 import cz.muni.stanse.codestructures.CFGsNavigator;
 import cz.muni.stanse.codestructures.ArgumentPassingManager;
 
+import cz.muni.stanse.codestructures.CFG;
 import java.util.Collection;
 import java.util.Set;
 import java.util.HashSet;
@@ -27,11 +28,11 @@ final class PatternLocationBuilder {
     // package-private section
 
     static HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
-    buildPatternLocations(final Collection<CFG> cfgs,
+    buildPatternLocations(final Collection<CFGHandle> cfgs,
                           final XMLAutomatonDefinition automatonDefinition,
                           final ArgumentPassingManager passingManager,
                           final CFGsNavigator navigator,
-                          final Set<CFG> startFunctions)
+                          final Set<CFGHandle> startFunctions)
                                        throws XMLAutomatonSyntaxErrorException {
         final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
             nodeLocationDictionary=new HashMap<CFGNode,Pair<PatternLocation,
@@ -39,11 +40,12 @@ final class PatternLocationBuilder {
         final HashSet<SimpleAutomatonID> globalAutomataIDs =
             new HashSet<SimpleAutomatonID>();
 
-        for (final CFG cfg : cfgs) {
+        for (final CFGHandle cfg: cfgs) {
     		final Pair<HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>,
                        HashSet<SimpleAutomatonID>> locationsAndStates =
-                buildPatternLocationsAndStatesForOneCFG(cfg,automatonDefinition,
-                                        navigator,startFunctions.contains(cfg));
+                buildPatternLocationsAndStatesForOneCFG(cfg.getCFG(),
+                        automatonDefinition, navigator,
+                        startFunctions.contains(cfg));
     		nodeLocationDictionary.putAll(locationsAndStates.getFirst());
             globalAutomataIDs.addAll(locationsAndStates.getSecond());
         }
@@ -58,11 +60,13 @@ final class PatternLocationBuilder {
                 new AutomatonStateTransferManager(passingManager,callDetector));
 
         if (!globalAutomataIDs.isEmpty())
-            for (final CFG cfg : startFunctions)
+            for (final CFGHandle cfgh: startFunctions) {
+                CFG cfg = cfgh.getCFG();
                 addInitialAutomatonStatesForCFGLocations(
                     nodeLocationDictionary.get(cfg.getStartNode()).getSecond(),
                     nodeLocationDictionary.get(cfg.getEndNode()).getFirst(),
                     automatonDefinition,globalAutomataIDs,true);
+            }
 
         return nodeLocationDictionary;
     }
@@ -80,7 +84,7 @@ final class PatternLocationBuilder {
                                final boolean isStartFunction)
                                        throws XMLAutomatonSyntaxErrorException {
         final PatternLocationCreator patternLocationCreator =
-            new PatternLocationCreator(cfg,automatonDefinition,navigator);
+            new PatternLocationCreator(cfg, automatonDefinition,navigator);
 
         final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
             nodeLocationsDictionary = CFGTraversal.traverseCFGToBreadthForward(

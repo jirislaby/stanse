@@ -1,7 +1,7 @@
 
 package cz.muni.stanse.threadchecker;
 
-import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.threadchecker.locks.BackTrack;
 import cz.muni.stanse.threadchecker.locks.Lock;
@@ -193,7 +193,7 @@ public class CodeAnalyzer {
     private static Function getCallee(Element parameter, String callerName) {
         String functionCall;
         Function callee;
-        CFG cfg;
+        CFGHandle cfg;
 
         functionCall = CodeAnalyzer.parseStringVariable(parameter);
         logger.info("Analyzing functionCall "+functionCall);
@@ -231,7 +231,7 @@ public class CodeAnalyzer {
         ThreadInfo thread;
         String threadFunction;
         BackTrack backTrackNode;
-        CFG cfg;
+        CFGHandle cfg;
 
         threadFunction = CodeAnalyzer.parseStringVariable(parameter);
         logger.info("Creating thread ("+threadFunction+") detected");

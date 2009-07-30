@@ -7,6 +7,7 @@
  */
 package cz.muni.stanse;
 
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.SingleFileEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.MakefileSourceEnumerator;
@@ -18,8 +19,9 @@ import cz.muni.stanse.configuration.SourceConfiguration;
 import cz.muni.stanse.configuration.Configuration;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
-import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
+import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.gui.MainWindow;
 import cz.muni.stanse.props.Properties;
 import cz.muni.stanse.utils.ClassLocation;
@@ -409,14 +411,11 @@ public final class Stanse {
 
 	    // DUMP-CFG
 	    if (options.has(dumpCFG)) {
-		for (final CFG cfg: config.getSourceConfiguration()
-					  .getLazySourceInternals()
-					  .getCFGs()) {
-		    final String unitName = config.getSourceConfiguration()
-			.getLazySourceInternals()
-			.getCFGtoUnitDictionary()
-			.get(cfg)
-			.getName();
+                LazyInternalStructures internals = config.
+                        getSourceConfiguration().getLazySourceInternals();
+		for (final CFGHandle cfgh: internals.getCFGHandles()) {
+                    CFG cfg = cfgh.getCFG();
+		    final String unitName = cfgh.getUnit().getName();
 		    final String name = outputDirectory.toString().isEmpty() ?
 			    unitName : (new File(unitName)).getName();
 		    final File cfgFile = new File(outputDirectory, name + "." +

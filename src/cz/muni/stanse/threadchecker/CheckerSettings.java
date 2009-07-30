@@ -2,6 +2,7 @@ package cz.muni.stanse.threadchecker;
 
 
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
@@ -34,12 +35,12 @@ public class CheckerSettings {
     private Document configDocument;
     private Map<String,Function> functions = new HashMap<String,Function>(50);
     private Map<String,Function> cachedFunctions;
-    private Map<CFG,Function> functionsByCFG = new HashMap<CFG,Function>();
-    private Map<CFG,Unit> unitsByCFG = new HashMap<CFG,Unit>();
+    private Map<CFGHandle, Function> functionsByCFG =
+            new HashMap<CFGHandle, Function>();
     private Map<String,ThreadInfo> threads = new HashMap<String,ThreadInfo>();
-    private Map<String,CFG> cfgs = new HashMap<String, CFG>();
+    private Map<String, CFGHandle> cfgs = new HashMap<String, CFGHandle>();
     private final List<String> startFunctions = new Vector<String>();
-    private Set<CFG> cfgsOnStack = new HashSet<CFG>();
+    private Set<CFGHandle> cfgsOnStack = new HashSet<CFGHandle>();
     private boolean globalAnalysis;
     private ConfigurationCreator configurationCreator;
     private LazyInternalStructures internals = null;
@@ -55,17 +56,17 @@ public class CheckerSettings {
         return this.findStartFunctions();
     }
 
-    public void addOnStack(CFG cfg) {
+    public void addOnStack(CFGHandle cfg) {
         if(this.cfgsOnStack.contains(cfg))
             throw new IllegalArgumentException("Function is already analysing");
         this.cfgsOnStack.add(cfg);
     }
 
-    public void removeFromOnStack(CFG cfg) {
+    public void removeFromOnStack(CFGHandle cfg) {
         this.cfgsOnStack.remove(cfg);
     }
 
-    public boolean isOnStack(CFG cfg) {
+    public boolean isOnStack(CFGHandle cfg) {
         return this.cfgsOnStack.contains(cfg);
     }
 
@@ -83,9 +84,8 @@ public class CheckerSettings {
         return internals;
     }
 
-    public final String getFileName(final CFG cfg) {
-        assert(getInternals().getCFGtoUnitDictionary().get(cfg) != null);
-        return getInternals().getCFGtoUnitDictionary().get(cfg).getName();
+    public final String getFileName(final CFGHandle cfgh) {
+        return cfgh.getUnit().getName();
     }
 
     /**
@@ -128,7 +128,6 @@ public class CheckerSettings {
         }
         this.functions.clear();
         this.functionsByCFG.clear();
-        this.unitsByCFG.clear();
         this.threads.clear();
         this.cfgs.clear();
         this.cfgsOnStack.clear();
@@ -140,7 +139,7 @@ public class CheckerSettings {
      * @param funcName String name of function which should be returned as CFG
      * @return CFG or null if funcName isn't in cfgs
      */
-    public CFG getCFG(String funcName) {
+    public CFGHandle getCFG(String funcName) {
         return this.cfgs.get(funcName);
     }
 
@@ -149,11 +148,6 @@ public class CheckerSettings {
      * @param unit Unit object representing C file with functions
      */
     public void addAllCFGs(Unit unit) {
-        for(CFG cfg : unit.getCFGs()) {
-            addCFG(cfg);
-            unitsByCFG.put(cfg, unit);
-        }
-
         //Creator is not null - user want generate configuration
         if(this.configurationCreator != null) {
             try {
@@ -168,7 +162,7 @@ public class CheckerSettings {
      * Function check, whether this.cfgs contain this cfg, if not cfg is stored
      * @param cfg
      */
-    private void addCFG(CFG cfg) {
+    private void addCFG(CFGHandle cfg) {
         if(cfgs.containsKey(cfg)) {
             throw new IllegalArgumentException("CFG "+cfg.getFunctionName()
                     +"already in!");
@@ -194,8 +188,8 @@ public class CheckerSettings {
         threads.put(thread.getFunctionName(), thread);
     }
 
-    public Unit getUnitByCFG(CFG cfg) {
-        return unitsByCFG.get(cfg);
+    public Unit getUnitByCFG(CFGHandle cfg) {
+        return cfg.getUnit();
     }
 
     /**
@@ -218,7 +212,7 @@ public class CheckerSettings {
         return Collections.unmodifiableSet(this.cfgs.keySet());
     }
 
-    public Function getFunction(CFG cfg) {
+    public Function getFunction(CFGHandle cfg) {
         return this.functionsByCFG.get(cfg);
     }
 
@@ -234,12 +228,12 @@ public class CheckerSettings {
      * @param function
      * @param cfg 
      */
-    public void addFunction(Function function, CFG cfg) {
+    public void addFunction(Function function, CFGHandle cfg) {
         if(function == null) {
             throw new NullPointerException("Function is null");
         }
 
-        Element definition = cfg.getElement();
+        Element definition = cfg.getCFG().getElement();
         Element idNode;
         String functionName;
 
@@ -267,7 +261,7 @@ public class CheckerSettings {
      */
     private List<String> findStartFunctions() {
         List<String> foundedStartFunctions = new Vector<String>();
-        for (final CFG cfg : getInternals().getStartFunctions())
+        for (final CFGHandle cfg: getInternals().getStartFunctions())
             foundedStartFunctions.add(cfg.getFunctionName());
         return foundedStartFunctions;
     }
