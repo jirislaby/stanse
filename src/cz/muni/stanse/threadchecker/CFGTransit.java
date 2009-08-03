@@ -196,7 +196,7 @@ public class CFGTransit {
         logger.debug("Processing node "+actualNode+" with lockset!");
         
         if(actualNode.getElement() == null) {
-            if(actualNode.equals(graphState.getCfg().getCFG().getEndNode())) {
+            if(actualNode.equals(graphState.getCfg().getEndNode())) {
                 queue.clear();
             }
             return;

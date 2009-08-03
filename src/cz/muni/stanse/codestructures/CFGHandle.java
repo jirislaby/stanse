@@ -6,6 +6,11 @@
 
 package cz.muni.stanse.codestructures;
 
+import cz.muni.stanse.Stanse;
+import org.dom4j.Element;
+
+import java.util.Set;
+
 /**
  * Holds a handle to a CFG which might be unmapped
  */
@@ -26,13 +31,36 @@ public class CFGHandle {
         cfg = null;
     }
 
-    public CFG getCFG() {
-        if (cfg == null)
-            makeAvailable();
-        return cfg;
+    public Element getElement() {
+        return getCFG().getElement();
     }
 
-    public Unit getUnit() {
+    public Set<CFGNode> getAllNodes() {
+        return getCFG().getAllNodes();
+    }
+
+    public CFGNode getStartNode() {
+        return getCFG().getStartNode();
+    }
+
+    public CFGNode getEndNode() {
+        return getCFG().getEndNode();
+    }
+
+    public String toDot() {
+        return getCFG().toDot();
+    }
+
+    @Override
+    public String toString() {
+        return getCFG().toString();
+    }
+
+    public boolean isSymbolLocal(String symbol) {
+        return getCFG().isSymbolLocal(symbol);
+    }
+
+    protected Unit getUnit() {
         return unit;
     }
 
@@ -40,14 +68,17 @@ public class CFGHandle {
         return functionName;
     }
 
+    private CFG getCFG() {
+        Stanse.getUnitManager().touchUnit(unit);
+        if (cfg == null)
+            makeAvailable();
+        return cfg;
+    }
+
     private synchronized void makeAvailable() {
         if (cfg != null)
             return;
-        for (CFG c: unit.getCFGs())
-            if (c.getFunctionName().equals(functionName)) {
-                cfg = c;
-                break;
-            }
+        cfg = unit.getCFG(functionName);
         assert(cfg != null);
     }
 }

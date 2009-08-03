@@ -13,6 +13,8 @@ import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.Unit;
+import cz.muni.stanse.codestructures.UnitManager;
+import cz.muni.stanse.codestructures.UnitManagerLRU;
 import cz.muni.stanse.gui.MainWindow;
 import cz.muni.stanse.props.Properties.VerbosityLevel;
 import cz.muni.stanse.utils.ClassLocation;
@@ -72,6 +74,10 @@ public final class Stanse {
         return outputDirectory;
     }
 
+    public static UnitManager getUnitManager() {
+	return unitManager;
+    }
+
     public void setOutputDirectory(final String dir) {
         outputDirectory = dir;
     }
@@ -93,7 +99,7 @@ public final class Stanse {
             unit.getName() : (new File(unit.getName())).getName();
             File xmlFile = new File(getOutputDirectory(), name + ".xml");
             try {
-                XMLAlgo.outputXML(unit.getXMLDocument(),
+                XMLAlgo.outputXML(getUnitManager().getXMLDocument(unit),
                 new PrintStream(xmlFile));
             } catch (IOException exception) {
                 exception.printStackTrace();
@@ -103,18 +109,18 @@ public final class Stanse {
 
     public synchronized void dumpCFG() {
         assert(getConfiguration() != null);
-        for (final CFGHandle hcfg : getConfiguration().getSourceConfiguration()
+        for (final CFGHandle cfg: getConfiguration().getSourceConfiguration()
                                                       .getLazySourceInternals()
                                                       .getCFGHandles()) {
-            final String unitName = hcfg.getUnit().getName();
+            final String unitName = getUnitManager().getUnitName(cfg);
             final String name = getOutputDirectory().toString().isEmpty() ?
                                       unitName : (new File(unitName)).getName();
             final File cfgFile = new File(getOutputDirectory(), name + "." +
-                                      hcfg.getCFG().getFunctionName() + ".dot");
+                                      cfg.getFunctionName() + ".dot");
             try {
                 BufferedWriter out = new BufferedWriter(
                                         new FileWriter(cfgFile));
-                out.write(hcfg.getCFG().toDot());
+                out.write(cfg.toDot());
                 out.close();
             } catch (IOException exception) {
                 exception.printStackTrace();
@@ -252,6 +258,7 @@ public final class Stanse {
         return rootDirectory;
     }
 
+    private static UnitManager unitManager = new UnitManagerLRU();
     private Configuration configuration;
     private String outputDirectory;
     private final String rootDirectory;

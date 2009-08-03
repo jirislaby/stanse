@@ -89,7 +89,7 @@ public class CFGPart {
      * Returns all nodes in this CFG
      * @return list of all nodes
      */
-    public Set<CFGNode> getAllNodes() {
+    protected Set<CFGNode> getAllNodes() {
 	Set<CFGNode> nodesToDo = new HashSet<CFGNode>();
 	Set<CFGNode> nodesDone = new LinkedHashSet<CFGNode>();
 

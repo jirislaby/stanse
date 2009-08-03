@@ -38,7 +38,7 @@ public final class ArgumentPassingManager {
         for (final CFGNode call : navigator.callSites()) {
             final CFGNode start = navigator.getCalleeStart(call);
             buildPassingsForCallSite(call,call.getElement(),start,
-                    nodeToCFGdict.get(start).getCFG().getElement(),
+                    nodeToCFGdict.get(start).getElement(),
                     navigator.getCalleeEnd(call));
         }
     }

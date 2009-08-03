@@ -8,7 +8,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.CFGsNavigator;
 import cz.muni.stanse.codestructures.traversal.CFGvisitor;
@@ -62,7 +62,7 @@ final class PatternLocationCreator extends CFGvisitor {
 
     // package-private section
 
-    PatternLocationCreator(final CFG cfg,
+    PatternLocationCreator(final CFGHandle cfg,
                            final XMLAutomatonDefinition XMLdefinition,
                            final CFGsNavigator navigator) {
         super();
@@ -120,7 +120,7 @@ final class PatternLocationCreator extends CFGvisitor {
                                    Make.<ErrorRule>linkedList());
     }
 
-    private void createStartEndPatternLocations(final CFG cfg) {
+    private void createStartEndPatternLocations(final CFGHandle cfg) {
         final PatternLocation startLocation =
                     createRuleLessPatternLocation(cfg.getStartNode());
         getNodeLocationDictionary().put(cfg.getStartNode(),

@@ -25,6 +25,8 @@ import org.antlr.runtime.tree.RewriteCardinalityException;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.Stanse;
+import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 
 /**
  * Holds all the code-related data for C compilation units (files).
@@ -120,7 +122,10 @@ public final class CUnit extends Unit {
 
 	CFGEmitter cfgEmitter = new CFGEmitter(nodes);
 	try {
-	    CFGs = cfgEmitter.translationUnit();
+            CFGHs = new LinkedList<CFGHandle>();
+            CFGs = cfgEmitter.translationUnit();
+	    for (CFG cfg: CFGs)
+                CFGHs.add(new CFGHandle(this, cfg));
 	} catch (RecognitionException e) {
 	    throw new ParserException("CFGEmitter", e);
 	}

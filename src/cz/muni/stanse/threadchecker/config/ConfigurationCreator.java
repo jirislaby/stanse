@@ -1,5 +1,6 @@
 package cz.muni.stanse.threadchecker.config;
 
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.threadchecker.*;
 import cz.muni.stanse.codestructures.Unit;
 import java.io.File;
@@ -109,9 +110,11 @@ public class ConfigurationCreator {
         
         this.unit = unit;
         //Load all function calls
-        functionCalls = unit.getXMLDocument().selectNodes("//functionCall");
+        functionCalls = Stanse.getUnitManager().getXMLDocument(unit).
+                selectNodes("//functionCall");
         //Load all function definitions in document
-        declaredFunctionsElements = unit.getXMLDocument().selectNodes(
+        declaredFunctionsElements = Stanse.getUnitManager().
+                getXMLDocument(unit).selectNodes(
                                        "//functionDefinition/declarator[1]/id");
         for(Element functionDef : declaredFunctionsElements) {
             declaredFunctions.add(functionDef.getText());

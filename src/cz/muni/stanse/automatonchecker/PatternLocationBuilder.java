@@ -43,7 +43,7 @@ final class PatternLocationBuilder {
         for (final CFGHandle cfg: cfgs) {
     		final Pair<HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>,
                        HashSet<SimpleAutomatonID>> locationsAndStates =
-                buildPatternLocationsAndStatesForOneCFG(cfg.getCFG(),
+                buildPatternLocationsAndStatesForOneCFG(cfg,
                         automatonDefinition, navigator,
                         startFunctions.contains(cfg));
     		nodeLocationDictionary.putAll(locationsAndStates.getFirst());
@@ -60,8 +60,7 @@ final class PatternLocationBuilder {
                 new AutomatonStateTransferManager(passingManager,callDetector));
 
         if (!globalAutomataIDs.isEmpty())
-            for (final CFGHandle cfgh: startFunctions) {
-                CFG cfg = cfgh.getCFG();
+            for (final CFGHandle cfg: startFunctions) {
                 addInitialAutomatonStatesForCFGLocations(
                     nodeLocationDictionary.get(cfg.getStartNode()).getSecond(),
                     nodeLocationDictionary.get(cfg.getEndNode()).getFirst(),
@@ -78,7 +77,7 @@ final class PatternLocationBuilder {
 
     private static Pair<HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>,
                         HashSet<SimpleAutomatonID>>
-    buildPatternLocationsAndStatesForOneCFG(final CFG cfg,
+    buildPatternLocationsAndStatesForOneCFG(final CFGHandle cfg,
                                final XMLAutomatonDefinition automatonDefinition,
                                final CFGsNavigator navigator,
                                final boolean isStartFunction)
@@ -125,7 +124,7 @@ final class PatternLocationBuilder {
     private static void createIntraproceduralConnectionsBetweenPatternLocations(
                     final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                          nodeLocationDictionary,
-                    final CFG cfg) {
+                    final CFGHandle cfg) {
         for (final Pair<PatternLocation,PatternLocation> locationsPair :
                                                 nodeLocationDictionary.values())
             CFGTraversal.traverseCFGToBreadthForward(
@@ -168,7 +167,8 @@ final class PatternLocationBuilder {
     private static Triple<HashSet<SimpleAutomatonID>,HashSet<SimpleAutomatonID>,
                           HashSet<SimpleAutomatonID>>
     splitAutomataIDsIntoGlobalLocalAndFloation(
-                          final HashSet<SimpleAutomatonID> IDs, final CFG cfg) {
+                          final HashSet<SimpleAutomatonID> IDs,
+                          final CFGHandle cfg) {
         final Triple<HashSet<SimpleAutomatonID>,
                      HashSet<SimpleAutomatonID>,
                      HashSet<SimpleAutomatonID>>
@@ -209,7 +209,7 @@ final class PatternLocationBuilder {
     }
 
     private static boolean
-    isOfLocallyDeclaredVariable(final SimpleAutomatonID id, final CFG cfg) {
+    isOfLocallyDeclaredVariable(final SimpleAutomatonID id, final CFGHandle cfg) {
         for (final String varsAssign : id.getVarsAssignment())
             if (!cfg.isSymbolLocal(cz.muni.stanse.codestructures.PassingSolver.
                         parseRootVariableName(varsAssign)))
@@ -218,7 +218,7 @@ final class PatternLocationBuilder {
     }
 
     private static boolean isInReturnExpression(final SimpleAutomatonID id,
-                                                 final CFG cfg) {
+            final CFGHandle cfg) {
         for (final CFGNode node : cfg.getEndNode().getPredecessors())
             if (node.getElement().getName().equals("returnStatement") &&
                 isInReturnExpression(id,node))

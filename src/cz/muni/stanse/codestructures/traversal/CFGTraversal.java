@@ -13,6 +13,7 @@ import java.util.Stack;
 import java.util.Collections;
 
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 
 // Node followers --------------------------------------------------------------
@@ -129,7 +130,7 @@ public final class CFGTraversal {
     // public section
 
     public static <T extends CFGvisitor>
-    T traverseCFGToBreadthForward(final CFG cfg,
+    T traverseCFGToBreadthForward(final CFGHandle cfg,
                                   final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
                     new ForwardCFGNodeFollowers(),
@@ -139,7 +140,7 @@ public final class CFGTraversal {
     }
 
     public static <T extends CFGvisitor>
-    T traverseCFGToBreadthBackward(final CFG cfg,
+    T traverseCFGToBreadthBackward(final CFGHandle cfg,
                                    final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
                     new BackwardCFGNodeFollowers(),
@@ -149,7 +150,7 @@ public final class CFGTraversal {
     }
 
     public static <T extends CFGvisitor>
-    T traverseCFGToDepthForward(final CFG cfg,
+    T traverseCFGToDepthForward(final CFGHandle cfg,
                                 final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
                     new ForwardCFGNodeFollowers(),
@@ -159,7 +160,7 @@ public final class CFGTraversal {
     }
 
     public static <T extends CFGvisitor>
-    T traverseCFGToDepthBackward(final CFG cfg,
+    T traverseCFGToDepthBackward(final CFGHandle cfg,
                                  final CFGNode startNode, final T visitor) {
         traverseCFG(cfg,startNode,
                     new BackwardCFGNodeFollowers(),
@@ -230,7 +231,7 @@ public final class CFGTraversal {
 
     // private section
 
-    private static void traverseCFG(final CFG cfg,
+    private static void traverseCFG(final CFGHandle cfg,
                            final CFGNode startNode,
                            final CFGNodeFollowers nodeFollowers,
                            final CFGTraversationContainer<CFGNode> nodesToVisit,

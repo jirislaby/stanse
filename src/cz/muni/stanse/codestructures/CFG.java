@@ -70,11 +70,11 @@ public class CFG extends CFGPart {
      *
      * @return function name
      */
-    public String getFunctionName() {
+    protected String getFunctionName() {
 	return functionName;
     }
 
-    public Element getElement() {
+    protected Element getElement() {
         return functionDefinition.getName().equals("functionDefinition") ?
                     functionDefinition :
                     (Element)functionDefinition.

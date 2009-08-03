@@ -14,7 +14,7 @@ public class CallGraphToDot {
 
         result += "digraph stronglyConnected {\n";
         for(final CFGHandle cfgh: graph.vertexSet())
-            result += "\"" + cfgh.getCFG() + "\"\n";
+            result += "\"" + cfgh.toString() + "\"\n";
         for(DefaultEdge edge : graph.edgeSet())
             result += "\"" + graph.getEdgeSource(edge) + "\" -> \"" +
                              graph.getEdgeTarget(edge) + "\";\n";

@@ -64,8 +64,7 @@ public final class IntraproceduralCFGsNavigator implements CFGsNavigator {
     // private section
 
     private void buildBeginingsAndEndings(final Collection<CFGHandle> CFGs) {
-        for (final CFGHandle cfgh: CFGs) {
-            CFG cfg = cfgh.getCFG();
+        for (final CFGHandle cfg: CFGs) {
             getBeginings().add(cfg.getStartNode());
             getEndings().add(cfg.getEndNode());
         }

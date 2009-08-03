@@ -1,7 +1,7 @@
 
 package cz.muni.stanse.threadchecker;
 
-import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.threadchecker.locks.BackTrack;
@@ -24,16 +24,14 @@ public class Function implements Cloneable {
     private final static Logger logger 
                                 = Logger.getLogger(Function.class.getName());
 
-    public Function(CFGHandle cfgh) {
-        CFG cfg = cfgh.getCFG();
-        this.functionName = cfg.getFunctionName();
-        this.fileName = cfgh.getUnit().getName();
-        this.actualNode = cfg.getStartNode();
+    public Function(CFGHandle cfg) {
+        functionName = cfg.getFunctionName();
+        fileName = Stanse.getUnitManager().getUnitName(cfg);
+        actualNode = cfg.getStartNode();
         FunctionState data = new FunctionState();
         CFGNode node = cfg.getStartNode();
         data.getBackTrack().addLast(new BackTrack(node.getNumber(),
-                        node.getLine(),"start of function",
-                               cfgh.getUnit().getName()));
+                        node.getLine(),"start of function", functionName));
         this.states.add(data);
     }
 

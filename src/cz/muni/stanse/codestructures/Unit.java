@@ -16,7 +16,6 @@ import java.util.List;
 
 import org.dom4j.Document;
 
-import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.utils.ClassLogger;
 
 /**
@@ -42,6 +41,7 @@ public abstract class Unit {
     /**
      * List of units control flow graphs.
      */
+    protected List<CFGHandle> CFGHs = null;
     protected List<CFG> CFGs = null;
 
     /**
@@ -85,7 +85,7 @@ public abstract class Unit {
 	return fileName.getAbsolutePath();
     }
     
-    public Document getXMLDocument() {
+    protected Document getXMLDocument() {
 	makeAvailable();
 	return xmlDocument;
     }
@@ -93,7 +93,7 @@ public abstract class Unit {
     public synchronized void drop() {
 	assert(CFGs != null);
 	available = false;
-	for (CFG cfg: CFGs)
+	for (CFGHandle cfg: CFGHs)
 	    cfg.drop();
 	CFGs.clear();
 	CFGs = null;
@@ -120,8 +120,17 @@ public abstract class Unit {
     /**
      * @return Unmodifiable list of CFGs in this compilation unit.
      */
-    public List<CFG> getCFGs() {
+    protected List<CFGHandle> getCFGHandles() {
 	makeAvailable();
-	return Collections.unmodifiableList(CFGs);
+	return Collections.unmodifiableList(CFGHs);
+    }
+
+    protected CFG getCFG(String functionName) {
+        makeAvailable();
+        for (CFG c: CFGs)
+            if (c.getFunctionName().equals(functionName))
+                return c;
+        assert(false);
+        return null;
     }
 }

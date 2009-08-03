@@ -1,5 +1,6 @@
 package cz.muni.stanse.configuration;
 
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesException;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesEnumerator;
 import cz.muni.stanse.codestructures.Unit;
@@ -67,8 +68,7 @@ public final class SourceConfiguration {
     private List<CFGHandle> getCFGHandles() {
         List<CFGHandle> cfghs = new LinkedList<CFGHandle>();
         for (Unit unit: getUnits())
-            for (CFG cfg: unit.getCFGs())
-                cfghs.add(new CFGHandle(unit, cfg));
+            cfghs.addAll(Stanse.getUnitManager().getCFGHandles(unit));
         return cfghs;
     }
 

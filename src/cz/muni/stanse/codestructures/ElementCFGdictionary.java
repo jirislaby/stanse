@@ -16,24 +16,23 @@ public final class ElementCFGdictionary {
         dictionary = buildDictionary(CFGs);
     }
 
-    public CFG get(final Element elem) {
+    public CFGHandle get(final Element elem) {
         final Pair<String,Integer> key = buildKey(elem);
         return (key == null) ? null : getDictionary().get(key);
     }
 
     // private section
 
-    private static HashMap<Pair<String,Integer>,CFG>
+    private static HashMap<Pair<String,Integer>,CFGHandle>
     buildDictionary(final Collection<CFGHandle> CFGs) {
-        final HashMap<Pair<String,Integer>,CFG> dictionary =
-            new HashMap<Pair<String,Integer>,CFG>();
+        final HashMap<Pair<String,Integer>, CFGHandle> dictionary =
+            new HashMap<Pair<String,Integer>, CFGHandle>();
         for (final CFGHandle cfgh: CFGs) {
-            CFG cfg = cfgh.getCFG();
             final java.util.Vector<Element> linerDecl =
-                XMLLinearizeASTElement.functionDeclaration(cfg.getElement());
+                XMLLinearizeASTElement.functionDeclaration(cfgh.getElement());
             assert(linerDecl != null);
             dictionary.put(Pair.make(linerDecl.firstElement().getText(),
-                                     linerDecl.size() - 1),cfg);
+                                     linerDecl.size() - 1),cfgh);
         }
         return dictionary;
     }
@@ -47,9 +46,9 @@ public final class ElementCFGdictionary {
                                      linerCall.size() - 1);
     }
 
-    private HashMap<Pair<String, Integer>, CFG> getDictionary() {
+    private HashMap<Pair<String, Integer>, CFGHandle> getDictionary() {
         return dictionary;
     }
 
-    private final HashMap<Pair<String,Integer>,CFG> dictionary;
+    private final HashMap<Pair<String,Integer>,CFGHandle> dictionary;
 }

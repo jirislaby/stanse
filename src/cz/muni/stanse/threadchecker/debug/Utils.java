@@ -1,7 +1,9 @@
 package cz.muni.stanse.threadchecker.debug;
 
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.threadchecker.*;
 import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
 import cz.muni.stanse.threadchecker.graph.DependencyRule;
@@ -83,7 +85,7 @@ public class Utils {
         }
     }
 
-    public static void showGraph(CFG cfg) {
+    public static void showGraph(CFGHandle cfg) {
         if(!debug)
             return;
         if(gv == null) {
@@ -123,7 +125,7 @@ public class Utils {
         String toDot = "digraph CFG {";
         String temporary = "";
 
-        for (CFG cfg : unit.getCFGs()) {
+        for (CFGHandle cfg: Stanse.getUnitManager().getCFGHandles(unit)) {
              temporary = cfg.toDot();
              temporary = temporary.replaceFirst("digraph CFG", "subgraph CFG");
              toDot += temporary;

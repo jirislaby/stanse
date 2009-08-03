@@ -8,6 +8,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.checker.CheckerErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.codestructures.CFGNode;
@@ -165,8 +166,8 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     }
 
     private String getNodeUnitName(final CFGNode node) {
-        return getInternals().getNodeToCFGdictionary().get(node).getUnit().
-                             getName();
+        return Stanse.getUnitManager().getUnitName(getInternals().
+                getNodeToCFGdictionary().get(node));
     }
 
     private int getNodeLine(final CFGNode node) {

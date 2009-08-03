@@ -76,13 +76,12 @@ public final class InterproceduralCFGsNavigator implements CFGsNavigator {
     private final void build(final Collection<CFGHandle> CFGs,
                              final ElementCFGdictionary cfgDict) {
         for (final CFGHandle cfgh : CFGs) {
-            CFG cfg = cfgh.getCFG();
-            CFGTraversal.traverseCFGToBreadthForward(cfg,cfg.getStartNode(),
+            CFGTraversal.traverseCFGToBreadthForward(cfgh,cfgh.getStartNode(),
                 new CFGvisitor() {
                     @Override
                     public boolean visit(final CFGNode node,
                                          final Element element) {
-                        final CFG calleeCFG = cfgDict.get(element);
+                        final CFGHandle calleeCFG = cfgDict.get(element);
                         if (calleeCFG != null)
                             fillDictionaries(node,calleeCFG);
                         return true;
@@ -91,7 +90,8 @@ public final class InterproceduralCFGsNavigator implements CFGsNavigator {
         }
     }
 
-    private final void fillDictionaries(final CFGNode node, final CFG cfg) {
+    private final void fillDictionaries(final CFGNode node,
+            final CFGHandle cfg) {
         getCallToStart().put(node,cfg.getStartNode());
 
         getCallToEnd().put(node,cfg.getEndNode());

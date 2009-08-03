@@ -1,7 +1,7 @@
 package cz.muni.stanse.threadchecker;
 
 
-import cz.muni.stanse.codestructures.CFG;
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.Unit;
@@ -84,8 +84,8 @@ public class CheckerSettings {
         return internals;
     }
 
-    public final String getFileName(final CFGHandle cfgh) {
-        return cfgh.getUnit().getName();
+    public final String getFileName(final CFGHandle cfg) {
+        return Stanse.getUnitManager().getUnitName(cfg);
     }
 
     /**
@@ -188,10 +188,6 @@ public class CheckerSettings {
         threads.put(thread.getFunctionName(), thread);
     }
 
-    public Unit getUnitByCFG(CFGHandle cfg) {
-        return cfg.getUnit();
-    }
-
     /**
      * Function tries to find thread which has function equals with arg name.
      * @param name
@@ -233,7 +229,7 @@ public class CheckerSettings {
             throw new NullPointerException("Function is null");
         }
 
-        Element definition = cfg.getCFG().getElement();
+        Element definition = cfg.getElement();
         Element idNode;
         String functionName;
 

@@ -11,7 +11,6 @@
  */
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
@@ -141,8 +140,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         monitor.phaseLog("processing automata states");
         final LinkedList<PatternLocation> progressQueue =
                 new LinkedList<PatternLocation>();
-        for (final CFGHandle cfgh :internals.getCFGHandles()) {
-            CFG cfg = cfgh.getCFG();
+        for (final CFGHandle cfg: internals.getCFGHandles()) {
             final PatternLocation location =
                 nodeLocationDictionary.get(cfg.getStartNode()).getSecond();
             if (location.hasUnprocessedAutomataStates())

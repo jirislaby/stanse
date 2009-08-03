@@ -134,7 +134,7 @@ public class CFGGraphState {
     private void findReachableNodes(CFGHandle cfg) {
         CFGNode node;
         LinkedList<CFGNode> queue = new LinkedList<CFGNode>();
-        queue.add(cfg.getCFG().getStartNode());
+        queue.add(cfg.getStartNode());
 
         while(!queue.isEmpty()) {
             node = queue.poll();
