@@ -40,7 +40,7 @@ import cz.muni.stanse.codestructures.CFGHandle;
  */
 public final class CUnit extends Unit {
     private String jobEntry;
-    private List<String> typedefs;
+    private List<String> typedefs = null;
 
     /**
      * Constructor with flags parameter
@@ -166,5 +166,13 @@ public final class CUnit extends Unit {
 	    throw new ParserException("preprocessor", e);
 	}
 	p.destroy();
+    }
+
+    @Override
+    public synchronized void drop() {
+        super.drop();
+        assert(typedefs != null);
+        typedefs.clear();
+        typedefs = null;
     }
 }

@@ -151,6 +151,7 @@ public class CFGNode {
     public void drop() {
 	preds.clear();
 	succs.clear();
+	element.clearContent();
 	element = null;
     }
 
