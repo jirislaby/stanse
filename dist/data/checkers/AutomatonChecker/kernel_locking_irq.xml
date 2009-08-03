@@ -226,6 +226,14 @@
         </functionCall>
     </pattern>
 
+    <pattern name="lock">
+	<nested>
+	    <functionCall>
+		<id>__st_get_cpu_st__</id>
+	    </functionCall>
+	</nested>
+    </pattern>
+
     <pattern name="unlock">
         <functionCall>
             <id>__st_mutex_unlock_st__</id>
@@ -285,6 +293,12 @@
         <functionCall>
             <id>__st_rcu_read_unlock_st__</id>
         </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+	<functionCall>
+	    <id>__st_put_cpu_st__</id>
+	</functionCall>
     </pattern>
 
 </automaton>
