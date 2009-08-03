@@ -6,8 +6,6 @@
 
 package cz.muni.stanse.codestructures;
 
-import org.dom4j.Element;
-
 /**
  * Represents a node in control-flow graph
  */
@@ -22,6 +20,7 @@ public class CFGJoinNode extends CFGNode {
      *
      * @param to which node to add the edge to
      */
+    @Override
     public void addEdge(CFGNode to) {
 	for (CFGNode n: getPredecessors())
 	    n.replaceEdge(this, to);
