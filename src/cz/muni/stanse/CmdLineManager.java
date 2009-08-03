@@ -122,21 +122,21 @@ final class CmdLineManager {
     }
 
     SourceConfiguration getSourceConfiguration() {
-	    if (getOptions().has(makefile))
+        if (getOptions().has(makefile))
             return new SourceConfiguration(new MakefileSourceEnumerator(
                             getOptions().valueOf(makefile),
                             getOptions().has(makeParams) ?
                                 getOptions().valueOf(makeParams) : ""));
-	    if (getOptions().has(jobfile))
+        if (getOptions().has(jobfile))
             return new SourceConfiguration(new BatchFileEnumerator(
                             getOptions().valueOf(jobfile)));
-	    if (getOptions().has(dir))
+        if (getOptions().has(dir))
             return new SourceConfiguration(new DirectorySourceEnumerator(
                             getOptions().valueOf(dir),"c",false));
-	    if (getOptions().has(rdir))
+        if (getOptions().has(rdir))
             return new SourceConfiguration(new DirectorySourceEnumerator(
                             getOptions().valueOf(dir),"c",true));
-	    if (getOptions().has(singleSourceFile))
+        if (getOptions().has(singleSourceFile))
             return new SourceConfiguration(new SingleFileEnumerator(
                             getOptions().valueOf(singleSourceFile)));
         if (!getOptions().nonOptionArguments().isEmpty())
