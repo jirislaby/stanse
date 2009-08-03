@@ -54,7 +54,8 @@ public class CFGTransit {
     private static CheckerSettings settings = CheckerSettings.getInstance();
     private static Map<String,List<XMLPattern>> patternMap
                                        = new HashMap<String,List<XMLPattern>>();
-    private static VerbosityLevel verbLevel = Stanse.getVerbosityLevel();
+    private static VerbosityLevel verbLevel = Stanse.getInstance()
+                                                    .getVerbosityLevel();
 
     /*
      * This static code fills patterMap with function names for faster searching

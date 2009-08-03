@@ -44,7 +44,7 @@ public class LoggerConfigurator {
     private LoggerConfigurator() {
         java.util.Properties properties = new java.util.Properties();
         Level loggingLevel = null;
-        switch (Stanse.getVerbosityLevel()) {
+        switch (Stanse.getInstance().getVerbosityLevel()) {
             case SILENT:
                 Logger.getRootLogger().setLevel(Level.OFF);
                 loggingLevel = Level.OFF;

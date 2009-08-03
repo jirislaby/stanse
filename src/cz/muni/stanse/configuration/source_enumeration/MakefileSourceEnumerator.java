@@ -46,7 +46,8 @@ public final class MakefileSourceEnumerator extends
         final Map<String, String> environment = builder.environment();
         environment.put("JOB_FILE",batchFile);
         environment.put("PATH", environment.get("PATH") + File.pathSeparator +
-                            Stanse.getRootDirectory() + File.separator + "bin");
+                        Stanse.getInstance().getRootDirectory() +
+                        File.separator + "bin");
 	try {
 	    builder.directory(new File(makeFile).getParentFile()).start().
 		waitFor();

@@ -262,7 +262,7 @@
                           <Component id="gotoNextNodeButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="gotoLastNodeButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="167" max="32767" attributes="0"/>
+                          <EmptySpace pref="157" max="32767" attributes="0"/>
                           <Component id="checkButton" min="-2" pref="39" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="configureButton" min="-2" max="-2" attributes="0"/>
@@ -283,7 +283,7 @@
                               <Component id="checkButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="locationInfoScrollPane" pref="174" max="32767" attributes="0"/>
+                          <Component id="locationInfoScrollPane" pref="172" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

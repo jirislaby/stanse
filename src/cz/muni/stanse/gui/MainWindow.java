@@ -1,9 +1,7 @@
 package cz.muni.stanse.gui;
 
-import cz.muni.stanse.configuration.source_enumeration.AllOpenedFilesEnumerator;
 import cz.muni.stanse.configuration.Configuration;
-import cz.muni.stanse.configuration.CheckerConfiguration;
-import cz.muni.stanse.configuration.SourceConfiguration;
+import cz.muni.stanse.Stanse;
 
 import java.util.List;
 
@@ -21,32 +19,14 @@ public final class MainWindow extends javax.swing.JFrame {
         lookAndFeelType = type.toUpperCase();
     }
 
-    
-    /**
-     * Opens all specified files in GUI, and then sets AllOpenedSourceFiles enumerator.
-     * 
-     * @param sources
-     * @param checkerConf
-     */
-    public void openSourceFiles(final List<String> sources, Configuration config) {
-    	for (String source : sources ) {
-    		getOpenedSourceFilesManager().showSourceFile(new java.io.File(source));
-    	}
-    	// replace sources enumerator by AllOpenedFilesEnumerator
-	List<CheckerConfiguration> checkerConf =
-		config.getCheckerConfigurations();
-    	SourceConfiguration sourceConf = new SourceConfiguration(new AllOpenedFilesEnumerator());
-    	setConfiguration(new Configuration(sourceConf, checkerConf));
-    }
-    
     // package-private section
 
     Configuration getConfiguration() {
-        return configuration;
+        return Stanse.getInstance().getConfiguration();
     }
 
     public void setConfiguration(final Configuration configuration) {
-        this.configuration = configuration;
+        Stanse.getInstance().setConfiguration(configuration);
     }
 
     ErrorsTreeManager getErrorsTreeManager() {
@@ -93,6 +73,40 @@ public final class MainWindow extends javax.swing.JFrame {
                 dispose();
             }
         });
+
+        if (isConfigurationAdaptionNeeded())
+            adaptConfiguration();
+    }
+
+    boolean isConfigurationAdaptionNeeded() {
+        return
+            getConfiguration().getSourceConfiguration().getSourceEnumerator()
+                instanceof
+            cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
+    }
+
+    void adaptConfiguration() {
+        setConfiguration(
+            new Configuration(
+                new cz.muni.stanse.configuration.SourceConfiguration(
+                    new cz.muni.stanse.configuration.source_enumeration.
+                        AllOpenedFilesEnumerator()),
+                getConfiguration().getCheckerConfigurations()));
+
+        List<String> sources;
+        try {
+            sources = getConfiguration().getSourceConfiguration()
+                                        .getSourceEnumerator()
+                                        .getSourceCodeFiles();
+        }
+        catch(final cz.muni.stanse.configuration.source_enumeration.
+                    SourceCodeFilesException e) {
+            return;
+        }
+
+        for (final String source : sources)
+            getOpenedSourceFilesManager().showSourceFile(
+                                                   new java.io.File(source));
     }
 
     private static void setLookAndFeel() {
@@ -109,10 +123,9 @@ public final class MainWindow extends javax.swing.JFrame {
     }
 
     private static String getIconPathName() {
-        return cz.muni.stanse.Stanse.getRootDirectory() + "/stanse_icon.png";
+        return Stanse.getInstance().getRootDirectory() + "/stanse_icon.png";
     }
 
-    private Configuration configuration;
     private final ErrorsTreeManager errorsTreeManager;
     private final OpenedSourceFilesManager openedSourceFilesManager;
     private final ErrorTracingManager errorTracingManager;

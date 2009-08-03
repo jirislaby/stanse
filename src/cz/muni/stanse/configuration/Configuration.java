@@ -13,7 +13,6 @@ import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.msgformat.ColumnMessageFormater;
 
 import java.util.List;
-import java.util.LinkedList;
 import java.io.File;
 
 public final class Configuration {
@@ -169,6 +168,26 @@ public final class Configuration {
         return checkerConfigurations;
     }
 
+    public static SourceConfiguration createDefaultSourceConfiguration() {
+        return new SourceConfiguration(new AllOpenedFilesEnumerator());
+    }
+
+    public static List<CheckerConfiguration>
+	    createDefaultCheckerConfiguration() {
+        return Make.<CheckerConfiguration>linkedList(
+	    new CheckerConfiguration("AutomatonChecker",
+		    new File(Stanse.getInstance().getRootDirectory() +
+			  "/data/checkers/AutomatonChecker/memory.xml"), true),
+	    new CheckerConfiguration("AutomatonChecker",
+		    new File(Stanse.getInstance().getRootDirectory() +
+			  "/data/checkers/AutomatonChecker/interrupts.xml"),
+		    true),
+	    new CheckerConfiguration("AutomatonChecker",
+		    new File(Stanse.getInstance().getRootDirectory() +
+			  "/data/checkers/AutomatonChecker/locking.xml"),
+		    true));
+    }
+
     // private section
 
     private final class MonitorForThread implements CheckerProgressMonitor {
@@ -198,26 +217,6 @@ public final class Configuration {
         }
 
         private final MonitorForThread monitor;
-    }
-
-    private static SourceConfiguration createDefaultSourceConfiguration() {
-        return new SourceConfiguration(new AllOpenedFilesEnumerator());
-    }
-
-    private static List<CheckerConfiguration>
-	    createDefaultCheckerConfiguration() {
-        return Make.<CheckerConfiguration>linkedList(
-	    new CheckerConfiguration("AutomatonChecker",
-		    new File(Stanse.getRootDirectory() +
-			  "/data/checkers/AutomatonChecker/memory.xml"), true),
-	    new CheckerConfiguration("AutomatonChecker",
-		    new File(Stanse.getRootDirectory() +
-			  "/data/checkers/AutomatonChecker/interrupts.xml"),
-		    true),
-	    new CheckerConfiguration("AutomatonChecker",
-		    new File(Stanse.getRootDirectory() +
-			  "/data/checkers/AutomatonChecker/locking.xml"),
-		    true));
     }
 
     private final SourceConfiguration sourceConfiguration;

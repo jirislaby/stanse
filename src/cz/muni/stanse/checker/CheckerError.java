@@ -57,7 +57,8 @@ public final class CheckerError implements Comparable<CheckerError> {
     public String toString() {
         final CheckerErrorTraceLocation errorLocation = getErrorLocation();
         return new java.io.File(errorLocation.getUnitName()).getAbsolutePath()
-                  .replaceFirst(cz.muni.stanse.Stanse.getRootDirectory()+'/',"")
+                  .replaceFirst(cz.muni.stanse.Stanse.getInstance()
+                                                     .getRootDirectory()+'/',"")
                + " [" + errorLocation.getLineNumber() + "] : "
                + getFullDesc();
     }

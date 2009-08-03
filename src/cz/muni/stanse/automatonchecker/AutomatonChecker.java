@@ -164,7 +164,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
             }
         }
 
-        monitor.phaseLog("collecting false-positives detectors");
+        monitor.phaseLog("collecting false-positive detectors");
         final java.util.List<FalsePositivesDetector> detectors =
             FalsePositivesDetectorFactory.getDetectors(
                         xmlAutomatonDefinition,internals,
