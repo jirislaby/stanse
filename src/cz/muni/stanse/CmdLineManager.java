@@ -217,9 +217,12 @@ final class CmdLineManager {
     }
 
     Pair<String,String> getUIdesc() {
-        return getOptions().has(gui) ?
-                    Pair.make("GUI",getOptions().valueOf(gui)) :
-                    Pair.make("TUI","");
+	if (!getOptions().has(gui))
+	    return Pair.make("TUI","");
+	String value = getOptions().valueOf(gui);
+	if (value == null)
+	    value = "default";
+        return Pair.make("GUI", value);
     }
 
     // private section
