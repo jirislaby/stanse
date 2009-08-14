@@ -109,12 +109,39 @@ public class CFGPart {
 	/* endNode might be unavailable, add it unconditionally */
 	nodesDone.add(getEndNode());
 
-	return Collections.unmodifiableSet(nodesDone);
+	return nodesDone;
+    }
+
+    private Set<CFGNode> getAllNodesReverse() {
+	Set<CFGNode> nodesToDo = new HashSet<CFGNode>();
+	Set<CFGNode> nodesDone = new LinkedHashSet<CFGNode>();
+
+	nodesToDo.add(getEndNode());
+
+	while (!nodesToDo.isEmpty()) {
+	    CFGNode node = nodesToDo.iterator().next();
+	    nodesToDo.remove(node);
+
+	    nodesDone.add(node);
+
+	    for (CFGNode pred: node.getPredecessors())
+		if (!nodesDone.contains(pred))
+		    nodesToDo.add(pred);
+	}
+
+	/* startNode might be unavailable, add it unconditionally */
+	nodesDone.add(getStartNode());
+
+	return nodesDone;
     }
 
     public void drop() {
 	Set<CFGNode> nodes = getAllNodes();
+	Set<CFGNode> nodesr = getAllNodesReverse();
+	nodesr.removeAll(nodes);
 	for (CFGNode n: nodes)
+	    n.drop();
+	for (CFGNode n: nodesr)
 	    n.drop();
 	setStartNode(null);
 	setEndNode(null);
