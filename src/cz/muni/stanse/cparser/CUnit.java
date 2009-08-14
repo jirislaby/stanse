@@ -170,9 +170,13 @@ public final class CUnit extends Unit {
 
     @Override
     public synchronized void drop() {
-        super.drop();
-        assert(typedefs != null);
-        typedefs.clear();
-        typedefs = null;
+	super.drop();
+	assert(typedefs != null);
+	typedefs.clear();
+	typedefs = null;
+	try {
+	    stream.close();
+	} catch (IOException e) {
+	}
     }
 }
