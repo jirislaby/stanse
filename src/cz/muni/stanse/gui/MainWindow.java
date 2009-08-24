@@ -79,7 +79,7 @@ public final class MainWindow extends javax.swing.JFrame {
     }
 
     boolean isConfigurationAdaptionNeeded() {
-        return
+        return getConfiguration() != null &&
             getConfiguration().getSourceConfiguration().getSourceEnumerator()
                 instanceof
             cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
