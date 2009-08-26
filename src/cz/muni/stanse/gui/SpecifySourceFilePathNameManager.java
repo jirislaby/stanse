@@ -34,6 +34,12 @@ final class SpecifySourceFilePathNameManager {
         return getMakefileArgumentsTextField().getText();
     }
 
+    void setComponentsAccessibility(final boolean state) {
+        getSourceCodeFileTextField().setEnabled(state);
+        getChooseFileOnDiscButton().setEnabled(state);
+        getMakefileArgumentsTextField().setEnabled(state);
+    }
+
     // private section
 
     private void onChooseFileOnDisc() {

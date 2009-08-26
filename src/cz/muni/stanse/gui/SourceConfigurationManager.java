@@ -44,6 +44,7 @@ final class SourceConfigurationManager {
 
         addActionListeners();
         buttonForSourceType().setSelected(true);
+        updateComponentsAccessibilityBySourceType(getSourceType());
     }
 
     SourceConfiguration getSourceConfiguration() {
@@ -200,8 +201,22 @@ final class SourceConfigurationManager {
         return sourceType;
     }
 
-    private void setSourceType(SourceType sourceType) {
+    private void setSourceType(final SourceType sourceType) {
         this.sourceType = sourceType;
+        updateComponentsAccessibilityBySourceType(sourceType);
+    }
+
+    private void
+    updateComponentsAccessibilityBySourceType(final SourceType sourceType) {
+        boolean state = true;
+        switch (sourceType)
+        {
+            case ActualOpenedFile:
+            case AllOpenedFiles:
+                state = false;
+                break;
+        }
+        getSpecifySourceFilePathNameManager().setComponentsAccessibility(state);
     }
 
     private javax.swing.JRadioButton getActualOpenedFileRadioButton() {
