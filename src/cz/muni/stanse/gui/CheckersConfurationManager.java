@@ -34,8 +34,9 @@ final class CheckersConfurationManager {
         this.addDataButton = addDataButton;
         this.removeDataButton = removeDataButton;
 
-        fillTreeByCheckersConfiguration(MainWindow.getInstance().
-                                 getConfiguration().getCheckerConfigurations());
+        fillTreeByCheckersConfiguration(MainWindow.getInstance()
+                                                  .getConfiguration()
+                                                  .getCheckerConfigurations());
         JTreeAlgo.present(getCheckersTree());
 
         getAddCheckerButton().addActionListener(new ActionListener() {

@@ -11,8 +11,12 @@ public final class MainWindow extends javax.swing.JFrame {
     // public section
 
     public static MainWindow getInstance() {
-        return (mainWindow != null) ? mainWindow :
-                                     (mainWindow = new MainWindow());
+        if (mainWindow != null)
+            return mainWindow;
+        mainWindow = new MainWindow();
+        if (mainWindow.isConfigurationAdaptionNeeded())
+            mainWindow.adaptConfiguration();
+        return mainWindow;
     }
 
     public static void setLookAndFeel(final String type) {
@@ -25,7 +29,7 @@ public final class MainWindow extends javax.swing.JFrame {
         return Stanse.getInstance().getConfiguration();
     }
 
-    public void setConfiguration(final Configuration configuration) {
+    void setConfiguration(final Configuration configuration) {
         Stanse.getInstance().setConfiguration(configuration);
     }
 
@@ -73,26 +77,16 @@ public final class MainWindow extends javax.swing.JFrame {
                 dispose();
             }
         });
-
-        if (isConfigurationAdaptionNeeded())
-            adaptConfiguration();
     }
 
-    boolean isConfigurationAdaptionNeeded() {
+    private boolean isConfigurationAdaptionNeeded() {
         return getConfiguration() != null &&
             getConfiguration().getSourceConfiguration().getSourceEnumerator()
                 instanceof
             cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
     }
 
-    void adaptConfiguration() {
-        setConfiguration(
-            new Configuration(
-                new cz.muni.stanse.configuration.SourceConfiguration(
-                    new cz.muni.stanse.configuration.source_enumeration.
-                        AllOpenedFilesEnumerator()),
-                getConfiguration().getCheckerConfigurations()));
-
+    private void adaptConfiguration() {
         List<String> sources;
         try {
             sources = getConfiguration().getSourceConfiguration()
@@ -107,6 +101,12 @@ public final class MainWindow extends javax.swing.JFrame {
         for (final String source : sources)
             getOpenedSourceFilesManager().showSourceFile(
                                                    new java.io.File(source));
+        setConfiguration(
+            new Configuration(
+                new cz.muni.stanse.configuration.SourceConfiguration(
+                    new cz.muni.stanse.configuration.source_enumeration.
+                        AllOpenedFilesEnumerator()),
+                getConfiguration().getCheckerConfigurations()));
     }
 
     private static void setLookAndFeel() {

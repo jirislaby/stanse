@@ -8,7 +8,6 @@ import cz.muni.stanse.configuration.source_enumeration.BatchFileEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.MakefileSourceEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.DirectorySourceEnumerator;
-import cz.muni.stanse.configuration.source_enumeration.SingleFileEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesEnumerator;
 
 final class SourceConfigurationManager {
@@ -18,7 +17,6 @@ final class SourceConfigurationManager {
     SourceConfigurationManager(
                     final javax.swing.JRadioButton actualOpenedFileRadioButton,
                     final javax.swing.JRadioButton allOpenedFilesRadioButton,
-                    final javax.swing.JRadioButton singleFileRadioButton,
                     final javax.swing.JRadioButton makefileRadioButton,
                     final javax.swing.JRadioButton allDirectoryFilesRadioButton,
                     final javax.swing.JRadioButton
@@ -33,7 +31,6 @@ final class SourceConfigurationManager {
         this.sourceType = sourceTypeFromEnumerator(oldEnumerator);
         this.actualOpenedFileRadioButton = actualOpenedFileRadioButton;
         this.allOpenedFilesRadioButton = allOpenedFilesRadioButton;
-        this.singleFileRadioButton = singleFileRadioButton;
         this.makefileRadioButton = makefileRadioButton;
         this.allDirectoryFilesRadioButton = allDirectoryFilesRadioButton;
         this.allDirectoryHierarchyFilesRadioButton =
@@ -58,11 +55,10 @@ final class SourceConfigurationManager {
     public enum SourceType {
         ActualOpenedFile(0),
         AllOpenedFiles(1),
-        SingleFile(2),
-        MakefileProject(3),
-        DirectoryFiles(4),
-        DirectoryHierarchyFiles(5),
-        FilesListFile(6);
+        MakefileProject(2),
+        DirectoryFiles(3),
+        DirectoryHierarchyFiles(4),
+        FilesListFile(5);
 
         SourceType(int value) {
             this.value = value;
@@ -88,13 +84,6 @@ final class SourceConfigurationManager {
             @Override public void actionPerformed(
                                            final java.awt.event.ActionEvent e) {
                 setSourceType(SourceType.AllOpenedFiles);
-            }
-        });
-        getSingleFileRadioButton().addActionListener(
-        new java.awt.event.ActionListener() {
-            @Override public void actionPerformed(
-                                           final java.awt.event.ActionEvent e) {
-                setSourceType(SourceType.SingleFile);
             }
         });
         getMakefileRadioButton().addActionListener(
@@ -131,7 +120,6 @@ final class SourceConfigurationManager {
         switch (getSourceType()) {
             case ActualOpenedFile: return getActualOpenedFileRadioButton();
             case AllOpenedFiles: return getAllOpenedFilesRadioButton();
-            case SingleFile: return getSingleFileRadioButton();
             case MakefileProject: return getMakefileRadioButton();
             case DirectoryFiles: return getAllDirectoryFilesRadioButton();
             case DirectoryHierarchyFiles:
@@ -147,9 +135,6 @@ final class SourceConfigurationManager {
                 return new ActiveOpenedFileEnumerator();
             case AllOpenedFiles:
                 return new AllOpenedFilesEnumerator();
-            case SingleFile:
-                return new SingleFileEnumerator(
-                        getSpecifySourceFilePathNameManager().getSourceFile());
             case MakefileProject:
                 return new MakefileSourceEnumerator(
                         getSpecifySourceFilePathNameManager().getSourceFile(),
@@ -176,8 +161,6 @@ final class SourceConfigurationManager {
         if (enumerator instanceof AllOpenedFilesEnumerator ||
             enumerator instanceof FileListEnumerator)
             return SourceType.AllOpenedFiles;
-        if (enumerator instanceof SingleFileEnumerator)
-            return SourceType.SingleFile;
         if (enumerator instanceof MakefileSourceEnumerator)
             return SourceType.MakefileProject;
         if (enumerator instanceof DirectorySourceEnumerator)
@@ -229,10 +212,6 @@ final class SourceConfigurationManager {
         return allOpenedFilesRadioButton;
     }
 
-    private javax.swing.JRadioButton getSingleFileRadioButton() {
-        return singleFileRadioButton;
-    }
-
     private javax.swing.JRadioButton getMakefileRadioButton() {
         return makefileRadioButton;
     }
@@ -256,7 +235,6 @@ final class SourceConfigurationManager {
     private SourceType sourceType;
     private final javax.swing.JRadioButton actualOpenedFileRadioButton;
     private final javax.swing.JRadioButton allOpenedFilesRadioButton;
-    private final javax.swing.JRadioButton singleFileRadioButton;
     private final javax.swing.JRadioButton makefileRadioButton;
     private final javax.swing.JRadioButton allDirectoryFilesRadioButton;
     private final javax.swing.JRadioButton

@@ -3,7 +3,6 @@ package cz.muni.stanse;
 import cz.muni.stanse.configuration.Configuration;
 import cz.muni.stanse.configuration.CheckerConfiguration;
 import cz.muni.stanse.configuration.SourceConfiguration;
-import cz.muni.stanse.configuration.source_enumeration.SingleFileEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.MakefileSourceEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.BatchFileEnumerator;
@@ -79,12 +78,6 @@ final class CmdLineManager {
                     .withRequiredArg()
                     .describedAs("directory")
                     .ofType(String.class);
-        singleSourceFile =
-              parser.accepts("single-file",
-                             "Single source file to be checked for bugs.")
-                    .withRequiredArg()
-                    .describedAs("file")
-                    .ofType(String.class);
 
         dumpCFG =
               parser.accepts("dump-cfg",
@@ -136,9 +129,6 @@ final class CmdLineManager {
         if (getOptions().has(rdir))
             return new SourceConfiguration(new DirectorySourceEnumerator(
                             getOptions().valueOf(dir),"c",true));
-        if (getOptions().has(singleSourceFile))
-            return new SourceConfiguration(new SingleFileEnumerator(
-                            getOptions().valueOf(singleSourceFile)));
         if (!getOptions().nonOptionArguments().isEmpty())
             return new SourceConfiguration(new FileListEnumerator(
                             getOptions().nonOptionArguments()));
@@ -245,7 +235,6 @@ final class CmdLineManager {
     private final OptionSpec<String> jobfile;
     private final OptionSpec<String> dir;
     private final OptionSpec<String> rdir;
-    private final OptionSpec<String> singleSourceFile;
     private final OptionSpec<Void> dumpCFG;
     private final OptionSpec<Void> dumpXML;
     private final OptionSpec<Void> dumpCallGraph;
