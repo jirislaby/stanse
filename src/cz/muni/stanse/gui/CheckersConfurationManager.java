@@ -138,6 +138,7 @@ final class CheckersConfurationManager {
         }
         if (data != null)
 	    JTreeAlgo.add(getCheckersTree(),node,data).setAllowsChildren(false);
+        JTreeAlgo.present(getCheckersTree(),node);
     }
 
     private void onRemoveData() {
