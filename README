@@ -7,7 +7,11 @@ Building
 Prerequisities: ant with cpptasks and antlr3 targets
 By running
 $ ant jar
-one gets dist/stanse.jar
+one gets dist/stanse.jar.
+
+Sometimes ant is unable to find these task definitions even if you put them in
+the ant lib location. In that case it usually helps to run ant as follows:
+CLASSPATH=tools/ant/antlr3.jar:tools/ant/cpptasks.jar ant jar
 
 Running
 -------
@@ -54,3 +58,9 @@ Example of this usage follows:
   4-tuples which Stanse can understand and use for preprocess as described in 
   the previous point. This generated jobfile is intended to be used in the
   same manner.
+
+Other info
+----------
+See our website at http://stanse.fi.muni.cz/ to obtain more documentation and
+information. E.g. format of and conveniences implemented in XML checker
+definitions.
