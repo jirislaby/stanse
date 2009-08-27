@@ -157,11 +157,8 @@ public final class Stanse {
     }
 
     private static void printStanseInfo() {
-	System.out.println("Stanse version \"0.9.9\"");
-	System.out.println("Copyright (c) 2009 Masaryk University, Brno\n");
-	System.out.println("WARNING: This is an alpha-release. The " +
-			   "false-positive rate is not indicative of the " +
-			   "false-positive rate for the full release.\n");
+	System.out.println("Stanse version \"1.0.0alpha\"");
+	System.out.println("Copyright (c) 2008-2009 Masaryk University, Brno\n");
     }
 
     private static void buildConfiguration(final CmdLineManager cmdLineManager){
