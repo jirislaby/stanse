@@ -86,15 +86,10 @@
 <!--
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <functionCall>
-                        <id>trylock</id>
-                        <var name="A" />
-                    </functionCall>
-                </prefixExpressionLogicalNot>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+	    <functionCall>
+		<id>trylock</id>
+		<var name="A" />
+	    </functionCall>
         </assert>
     </pattern>
 -->
@@ -146,123 +141,105 @@
 
     <!-- Matches condition of form:
         if (A) {
-            assert(!(A == 0)); // ~ parttern 'lock'
+            assert(A);
         }
     -->
     <pattern name="lock">
         <assert>
-            <prefixExpressionLogicalNot>
-                <binaryExpressionEquality>
-                    <functionCall>
-                        <id>trylock</id>
-                        <var name="A" />
-                    </functionCall>
-                    <intConst>0</intConst>
-                </binaryExpressionEquality>
-            </prefixExpressionLogicalNot>
+	    <functionCall>
+		<id>trylock</id>
+		<var name="A" />
+	    </functionCall>
         </assert>
     </pattern>
 
     <!-- Matches condition of form:
         if (!A) {
-            assert(!A == 0); // ~ parttern 'lock'
+            assert(!!A);
         }
     -->
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <functionCall>
-                        <id>trylock</id>
-                        <var name="A" />
-                    </functionCall>
-                </prefixExpressionLogicalNot>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+	    <prefixExpression op="!">
+		<prefixExpression op="!">
+		    <functionCall>
+			<id>trylock</id>
+			<var name="A" />
+		    </functionCall>
+		</prefixExpression>
+	    </prefixExpression>
         </assert>
     </pattern>
 
     <!-- Matches condition of form:
         if (A == 0) {
-            assert((A == 0) == 0); // ~ parttern 'lock'
+            assert(A == 0);
         }
     -->
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <binaryExpressionEquality>
-                    <functionCall>
-                        <id>trylock</id>
-                        <var name="A" />
-                    </functionCall>
-                    <intConst>0</intConst>
-                </binaryExpressionEquality>
+            <binaryExpression op="==">
+		<functionCall>
+		    <id>trylock</id>
+		    <var name="A" />
+		</functionCall>
                 <intConst>0</intConst>
-            </binaryExpressionEquality>
+            </binaryExpression>
         </assert>
     </pattern>
 
     <!-- Matches condition of form:
         if (A != 0) {
-            assert((A != 0) == 0); // ~ parttern 'lock'
+            assert(!(A != 0));
         }
     -->
     <pattern name="lock">
         <assert>
-            <prefixExpressionLogicalNot>
-                <binaryExpressionEquality>
-                    <binaryExpressionNonEquality>
-                        <functionCall>
-                            <id>trylock</id>
-                            <var name="A" />
-                        </functionCall>
-                        <intConst>0</intConst>
-                    </binaryExpressionNonEquality>
-                    <intConst>0</intConst>
-                </binaryExpressionEquality>
-            </prefixExpressionLogicalNot>
+            <prefixExpression op="!">
+		<binaryExpression op="!=">
+		    <functionCall>
+			<id>trylock</id>
+			<var name="A" />
+		    </functionCall>
+		    <intConst>0</intConst>
+		</binaryExpression>
+            </prefixExpression>
         </assert>
     </pattern>
 
     <!-- Matches condition of form:
         if (0 == A) {
-            assert(!((0 == A) == 0)); // ~ parttern 'lock'
+            assert(0 == A);
         }
     -->
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <binaryExpressionEquality>
-                    <intConst>0</intConst>
-                    <functionCall>
-                        <id>trylock</id>
-                        <var name="A" />
-                    </functionCall>
-                </binaryExpressionEquality>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+	    <binaryExpression op="==">
+		<intConst>0</intConst>
+		<functionCall>
+		    <id>trylock</id>
+		    <var name="A" />
+		</functionCall>
+	    </binaryExpression>
         </assert>
     </pattern>
 
     <!-- Matches condition of form:
-        if ((0 != A) {
-            assert(!((0 != A) == 0)); // ~ parttern 'lock'
+        if (0 != A) {
+            assert(!(0 != A));
         }
     -->
     <pattern name="lock">
         <assert>
-            <prefixExpressionLogicalNot>
-                <binaryExpressionEquality>
-                    <binaryExpressionNonEquality>
-                        <intConst>0</intConst>
-                        <functionCall>
-                            <id>trylock</id>
-                            <var name="A" />
-                        </functionCall>
-                    </binaryExpressionNonEquality>
-                    <intConst>0</intConst>
-                </binaryExpressionEquality>
-            </prefixExpressionLogicalNot>
+            <prefixExpression op="!">
+		<binaryExpression op="!=">
+		    <intConst>0</intConst>
+		    <functionCall>
+			<id>trylock</id>
+			<var name="A" />
+		    </functionCall>
+		</binaryExpression>
+            </prefixExpression>
         </assert>
     </pattern>
 

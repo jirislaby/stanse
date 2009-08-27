@@ -364,13 +364,13 @@
     <pattern name="isnotnull" constructive="false">
         <assert>
             <prefixExpression op="!">
-		    <binaryExpression op="==">
-			<var name="A" />
-			<castExpression>
-			    <ignore />
-			    <intConst>0</intConst>
-			</castExpression>
-		    </binaryExpression>
+		<binaryExpression op="==">
+		    <var name="A" />
+		    <castExpression>
+			<ignore />
+			<intConst>0</intConst>
+		    </castExpression>
+		</binaryExpression>
             </prefixExpression>
         </assert>
     </pattern>
