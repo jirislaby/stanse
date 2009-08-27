@@ -110,7 +110,6 @@
             <src path="src"/>
 	    <exclude name="cz/muni/stanse/ownershipchecker/*"/>
             <classpath refid="project.classpath"/>
-            <compilerarg value="-Xlint"/>
         </javac>
 	<!-- Copy .properties to the build directory, so they get included in the Jar -->
         <copy todir="build" >
@@ -120,14 +119,14 @@
         </copy>
     </target>
 	
-    <target name="jar" depends="build, svn-info">
+    <target name="jar" depends="build">
 	   <tstamp>
 	     <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
 	   </tstamp>	     
 	<manifest file="manifest.mf">
 	        <attribute name="Built-By" value="${user.name}"/>
 	        <attribute name="Main-Class" value="cz.muni.stanse.Stanse"/>
-		<attribute name="Implementation-Version" value="Revision: ${svnrevision}, Built on: ${TODAY}" />
+		<attribute name="Implementation-Version" value="Built on: ${TODAY}" />
 	        <attribute name="Class-Path" value="lib/antlr-3.1.1-runtime.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/jgrapht-jdk1.6.jar lib/jopt-simple-3.0.jar lib/log4j-1.2.14.jar lib/swing-layout-1.0.jar" />
 	    </manifest>
     	<jar destfile="${dist}/stanse.jar" basedir="build" manifest="manifest.mf"/>
@@ -148,10 +147,6 @@
             <packageset dir="src/" includes="*/**"/>
             <fileset dir="src/" includes="*.java"/>
         </javadoc>
-    </target>
-
-    <target name="svn-info">
-	<exec executable="./getlastrevision.sh" outputproperty="svnrevision"/>
     </target>
 
     <target name="archive">
