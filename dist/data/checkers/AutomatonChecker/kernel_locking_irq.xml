@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <automaton>
-    <description name="lock/unlock/islocked automanton checker"
+    <description name="lock/unlock/islocked automaton checker"
                  desc="Handles locking problem (lock/unlock matching)
                        checks for redundant islocked() calls, detects
                        cross-locking problem (lock(a)..lock(b)..unlock(a))
@@ -63,41 +63,45 @@
         </functionCall>
     </pattern>
 
+    <!-- true branch of 'if (mutex_trylock())' -->
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <functionCall>
-                        <id>__st_mutex_trylock_st__</id>
+	    <functionCall>
+		<id>__st_mutex_trylock_st__</id>
+		<var name="A" />
+	    </functionCall>
+        </assert>
+    </pattern>
+
+    <!-- false branch of 'if (!mutex_trylock())' -->
+    <pattern name="lock">
+        <assert>
+	    <prefixExpression op="!">
+		<prefixExpression op="!">
+		    <functionCall>
+			<id>__st_mutex_trylock_st__</id>
                         <var name="A" />
-                    </functionCall>
-                </prefixExpressionLogicalNot>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+		    </functionCall>
+		</prefixExpression>
+	    </prefixExpression>
         </assert>
     </pattern>
 
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <functionCall>
-                    <id>__st_mutex_lock_interruptible_st__</id>
-                    <var name="A" />
-                </functionCall>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+	    <functionCall>
+		<id>__st_mutex_lock_interruptible_st__</id>
+		<var name="A" />
+	    </functionCall>
         </assert>
     </pattern>
 
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <functionCall>
-                    <id>__st_mutex_lock_killable_st__</id>
-                    <var name="A" />
-                </functionCall>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+	    <functionCall>
+		<id>__st_mutex_lock_killable_st__</id>
+		<var name="A" />
+	    </functionCall>
         </assert>
     </pattern>
 
@@ -119,15 +123,24 @@
     <!-- true branch of 'if (spin_trylock())' -->
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <functionCall>
-                        <id>__st_spin_trylock_st__</id>
+	    <functionCall>
+		<id>__st_spin_trylock_st__</id>
+		<var name="A" />
+	    </functionCall>
+        </assert>
+    </pattern>
+
+    <!-- false branch of 'if (!spin_trylock())' -->
+    <pattern name="lock">
+        <assert>
+	    <prefixExpression op="!">
+		<prefixExpression op="!">
+		    <functionCall>
+			<id>__st_spin_trylock_st__</id>
                         <var name="A" />
-                    </functionCall>
-                </prefixExpressionLogicalNot>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+		    </functionCall>
+		</prefixExpression>
+	    </prefixExpression>
         </assert>
     </pattern>
 
@@ -156,15 +169,24 @@
     <!-- true branch of 'if (spin_trylock_irq())' -->
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <functionCall>
-                        <id>__st_spin_trylock_irq_st__</id>
-                        <var name="A" />
-                    </functionCall>
-                </prefixExpressionLogicalNot>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+	    <functionCall>
+		<id>__st_spin_trylock_irq_st__</id>
+		<var name="A" />
+	    </functionCall>
+        </assert>
+    </pattern>
+
+    <!-- false branch of 'if (!spin_trylock_irq())' -->
+    <pattern name="lock">
+        <assert>
+	    <prefixExpression op="!">
+		<prefixExpression op="!">
+		    <functionCall>
+			<id>__st_spin_trylock_irq_st__</id>
+			<var name="A" />
+		    </functionCall>
+		</prefixExpression>
+	    </prefixExpression>
         </assert>
     </pattern>
 
@@ -188,16 +210,26 @@
     <!-- true branch of 'if (spin_trylock_irqsave())' -->
     <pattern name="lock">
         <assert>
-            <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <functionCall>
-                        <id>__st_spin_trylock_irqsave_st__</id>
-                        <var name="A" />
+	    <functionCall>
+		<id>__st_spin_trylock_irqsave_st__</id>
+		<var name="A" />
+		<ignore/>
+	    </functionCall>
+        </assert>
+    </pattern>
+
+    <!-- false branch of 'if (!spin_trylock_irqsave())' -->
+    <pattern name="lock">
+        <assert>
+	    <prefixExpression op="!">
+		<prefixExpression op="!">
+		    <functionCall>
+			<id>__st_spin_trylock_irqsave_st__</id>
+			<var name="A" />
 			<ignore/>
-                    </functionCall>
-                </prefixExpressionLogicalNot>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+		    </functionCall>
+		</prefixExpression>
+	    </prefixExpression>
         </assert>
     </pattern>
 

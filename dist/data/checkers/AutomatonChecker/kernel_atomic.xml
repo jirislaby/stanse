@@ -1,9 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <automaton>
     <description name="atomic automaton checker"
-                 desc="Handles sleeping while atomic." />
+                 desc="Handles sleeping while atomic, e.g. msleep inside
+			spin_lock block. Supports up to 5 levels of
+			make-atomic operations nesting" />
 
     <start state="N" />
+    <!-- this allows us to track up to 5 nests, e.g.
+	local_irq_disable();
+	...
+	local_irq_save();
+	spin_lock();
+	...
+	spin_unlock();
+	local_irq_restore();
+	...
+	local_irq_enable();
+	-->
     <transition from="N[A]" by="atomize[A]" to="A[A]" />
     <transition from="A[A]" by="deatomize[A]" to="N[A]" />
 
@@ -51,6 +64,7 @@
             propag="Not affected ==> still in atomic."
             end="Here is an attempt to perform non-atomic in atomic." />
 
+    <!-- let's define what is non-atomic operation -->
     <pattern name="nonatomic">
 	<assignExpression>
 	    <ignore/>
@@ -133,15 +147,15 @@
     </pattern>
 
     <pattern name="nonatomic">
-<ifStatement>
-        <functionCall>
-            <id>copy_to_user</id>
+	<ifStatement>
+	    <functionCall>
+		<id>copy_to_user</id>
+		<ignore/>
+		<ignore/>
+		<ignore/>
+	    </functionCall>
 	    <ignore/>
-	    <ignore/>
-	    <ignore/>
-        </functionCall>
-<ignore/>
-</ifStatement>
+	</ifStatement>
     </pattern>
 
     <pattern name="nonatomic">
@@ -271,15 +285,24 @@
     <!-- true branch of 'if (spin_trylock())' -->
     <pattern name="atomize">
         <assert>
-            <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <functionCall>
-                        <id>__st_spin_trylock_st__</id>
-                        <ignore/>
-                    </functionCall>
-                </prefixExpressionLogicalNot>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+	    <functionCall>
+		<id>__st_spin_trylock_st__</id>
+		<ignore/>
+	    </functionCall>
+        </assert>
+    </pattern>
+
+    <!-- false branch of 'if (!spin_trylock())' -->
+    <pattern name="atomize">
+        <assert>
+	    <prefixExpression op="!">
+		<prefixExpression op="!">
+		    <functionCall>
+			<id>__st_spin_trylock_st__</id>
+			<ignore/>
+		    </functionCall>
+		</prefixExpression>
+	    </prefixExpression>
         </assert>
     </pattern>
 
@@ -308,15 +331,24 @@
     <!-- true branch of 'if (spin_trylock_irq())' -->
     <pattern name="atomize">
         <assert>
-            <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <functionCall>
-                        <id>__st_spin_trylock_irq_st__</id>
-                        <ignore/>
-                    </functionCall>
-                </prefixExpressionLogicalNot>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+	    <functionCall>
+		<id>__st_spin_trylock_irq_st__</id>
+		<ignore/>
+	    </functionCall>
+        </assert>
+    </pattern>
+
+    <!-- false branch of 'if (!spin_trylock_irq())' -->
+    <pattern name="atomize">
+        <assert>
+	    <prefixExpression op="!">
+		<prefixExpression op="!">
+		    <functionCall>
+			<id>__st_spin_trylock_irq_st__</id>
+			<ignore/>
+		    </functionCall>
+		</prefixExpression>
+	    </prefixExpression>
         </assert>
     </pattern>
 
@@ -340,16 +372,26 @@
     <!-- true branch of 'if (spin_trylock_irqsave())' -->
     <pattern name="atomize">
         <assert>
-            <binaryExpressionEquality>
-                <prefixExpressionLogicalNot>
-                    <functionCall>
-                        <id>__st_spin_trylock_irqsave_st__</id>
-                        <ignore/>
+	    <functionCall>
+		<id>__st_spin_trylock_irqsave_st__</id>
+		<ignore/>
+		<ignore/>
+	    </functionCall>
+        </assert>
+    </pattern>
+
+    <!-- false branch of 'if (!spin_trylock_irqsave())' -->
+    <pattern name="atomize">
+        <assert>
+	    <prefixExpression op="!">
+		<prefixExpression op="!">
+		    <functionCall>
+			<id>__st_spin_trylock_irqsave_st__</id>
 			<ignore/>
-                    </functionCall>
-                </prefixExpressionLogicalNot>
-                <intConst>0</intConst>
-            </binaryExpressionEquality>
+			<ignore/>
+		    </functionCall>
+		</prefixExpression>
+	    </prefixExpression>
         </assert>
     </pattern>
 
