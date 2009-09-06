@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<automaton>
+    <description name="correct pairing automaton checker"
+                 desc="Handles correct pairing of expressions. I.e. if
+		       everything what was 'gotten' is also 'put'. (e.g.
+		       get_cpu() vs. put_cpu()." />
+
+    <start state="X" />
+    <transition from="X[A]" by="get[A]" to="G[A]" />
+    <transition from="P[A]" by="get[A]" to="G[A]" />
+    <transition from="G[A]" by="get[B]" to="G[A]" />
+    <transition from="G[A]" by="get[A]" to="GG[A]" />
+    <transition from="X[A]" by="put[A]" to="P[A]" />
+    <transition from="G[A]" by="put[A]" to="P[A]" />
+    <transition from="GG[A]" by="put[A]" to="G[A]" />
+
+    <!-- 2 steps: a = get(); if (!a) return; -->
+    <transition from="X[A]" by="assign[A]" to="A[A]" />
+    <transition from="P[A]" by="assign[A]" to="A[A]" />
+    <transition from="A[A]" by="checkT[A]" to="G[A]" />
+    <transition from="A[A]" by="checkF[A]" to="N[A]" />
+    <transition from="A[A]" by="put[A]" to="P[A]" />
+
+    <error  from="P[A]" by="put[A]"
+            desc="double put"
+            level="0"
+            entry="The function called in put state."
+            begin="The put is here."
+            propag="not affected ==> it's still ungotten."
+            end="It's ungotten and here is an attempt to put it." />
+
+    <error  from="G[*]" by=""
+            desc="leaving function with gotten variables"
+            level="1"
+            entry="The function called with ungotten variables."
+            begin="It's gotten here."
+            propag="not affected ==> it's still gotten."
+            end="Leaving function with gotten variables." />
+
+    <error  from="A[*]" by=""
+            desc="leaving function with potentially gotten variables"
+            level="1"
+            entry="The function called with ungotten variables."
+            begin="It's gotten here."
+            propag="not affected ==> it's still gotten."
+            end="Leaving function with gotten variables." />
+
+    <!-- here comes global 'check' stuff -->
+    <!-- assert(A) -->
+    <pattern name="checkT" constructive="false">
+        <assert>
+<!--	    <nested exclude0="prefixExpression" exclude1="binaryExpression"> useless -->
+	    <var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+        </assert>
+    </pattern>
+    <!-- assert(!A) -->
+    <pattern name="checkF" constructive="false">
+        <assert>
+	    <prefixExpression op="!">
+		<var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+	    </prefixExpression>
+        </assert>
+    </pattern>
+    <!-- assert(!!A) i.e. false branch of !A test -->
+    <pattern name="checkT" constructive="false">
+        <assert>
+            <prefixExpression op="!">
+		<prefixExpression op="!">
+		    <var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+		</prefixExpression>
+            </prefixExpression>
+        </assert>
+    </pattern>
+    <!-- assert(!A || *) -->
+    <pattern name="checkF" constructive="false">
+        <assert>
+	    <binaryExpression op="||">
+		<prefixExpression op="!">
+		    <var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+		</prefixExpression>
+		<ignore/>
+	    </binaryExpression>
+        </assert>
+    </pattern>
+    <!-- assert(!(!A || *)) well, this is not accurate -->
+    <pattern name="checkT" constructive="false">
+        <assert>
+	    <prefixExpression op="!">
+		<binaryExpression op="||">
+		    <prefixExpression op="!">
+			<var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+		    </prefixExpression>
+		    <ignore/>
+		</binaryExpression>
+	    </prefixExpression>
+        </assert>
+    </pattern>
+    <!-- assert(* || !A) -->
+    <pattern name="checkF" constructive="false">
+        <assert>
+	    <binaryExpression op="||">
+		<ignore/>
+		<prefixExpression op="!">
+		    <var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+		</prefixExpression>
+	    </binaryExpression>
+        </assert>
+    </pattern>
+    <!-- assert(!(* || !A)) -->
+    <pattern name="checkT" constructive="false">
+        <assert>
+	    <prefixExpression op="!">
+		<binaryExpression op="||">
+		    <ignore/>
+		    <prefixExpression op="!">
+			<var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+		    </prefixExpression>
+		</binaryExpression>
+	    </prefixExpression>
+        </assert>
+    </pattern>
+    <!-- assert(A == 0) -->
+    <pattern name="checkF" constructive="false">
+        <assert>
+	    <nested exclude0="prefixExpression">
+		<binaryExpression op="==">
+		    <var name="A" />
+		    <intConst>0</intConst>
+		</binaryExpression>
+	    </nested>
+        </assert>
+    </pattern>
+    <!-- assert(!(A == 0)) -->
+    <pattern name="checkT" constructive="false">
+        <assert>
+            <prefixExpression op="!">
+		<nested exclude0="prefixExpression">
+		    <binaryExpression op="==">
+			<var name="A" />
+			<intConst>0</intConst>
+		    </binaryExpression>
+		</nested>
+            </prefixExpression>
+        </assert>
+    </pattern>
+    <!-- assert(A == (T*)0) -->
+    <pattern name="checkF" constructive="false">
+        <assert>
+                <binaryExpression op="==">
+                    <var name="A" />
+                    <castExpression>
+                        <ignore />
+                        <intConst>0</intConst>
+                    </castExpression>
+                </binaryExpression>
+        </assert>
+    </pattern>
+    <!-- assert(!(A == (T*)0)) -->
+    <pattern name="checkT" constructive="false">
+        <assert>
+            <prefixExpression op="!">
+		<binaryExpression op="==">
+		    <var name="A" />
+		    <castExpression>
+			<ignore />
+			<intConst>0</intConst>
+		    </castExpression>
+		</binaryExpression>
+            </prefixExpression>
+        </assert>
+    </pattern>
+    <!-- assert(A != (T*)0) -->
+    <pattern name="checkT" constructive="false">
+        <assert>
+                <binaryExpression op="!=">
+                    <var name="A" />
+                    <castExpression>
+                        <ignore />
+                        <intConst>0</intConst>
+                    </castExpression>
+                </binaryExpression>
+        </assert>
+    </pattern>
+    <!-- assert(!(A != (T*)0)) -->
+    <pattern name="checkF" constructive="false">
+        <assert>
+            <prefixExpression op="!">
+		<binaryExpression op="!=">
+		    <var name="A" />
+		    <castExpression>
+			<ignore />
+			<intConst>0</intConst>
+		    </castExpression>
+		</binaryExpression>
+            </prefixExpression>
+        </assert>
+    </pattern>
+
+
+
+
+
+
+    <!-- cpu stuff -->
+    <pattern name="get">
+	<nested> <!-- somebody assigns to a cpu var, somebody doesn't -->
+	    <functionCall>
+		<id>__st_get_cpu_st__</id>
+	    </functionCall>
+	</nested>
+    </pattern>
+
+    <pattern name="put">
+	<functionCall>
+	    <id>__st_put_cpu_st__</id>
+	</functionCall>
+    </pattern>
+
+    <!-- preempt stuff -->
+    <pattern name="get">
+	<functionCall>
+	    <id>__st_preempt_disable_st__</id>
+	</functionCall>
+    </pattern>
+
+    <pattern name="put">
+	<functionCall>
+	    <id>__st_preempt_enable_st__</id>
+	</functionCall>
+    </pattern>
+
+    <!-- tty stuff -->
+    <pattern name="assign">
+	<assignExpression>
+	    <var name="A" />
+	    <functionCall>
+		<id>tty_port_tty_get</id>
+		<ignore/>
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="put">
+	<functionCall>
+	    <id>tty_kref_put</id>
+	    <var name="A" />
+	</functionCall>
+    </pattern>
+
+    <!-- pci stuff -->
+    <pattern name="get">
+	<nested> <!-- can be in assignExpression -->
+	    <functionCall>
+		<id>pci_dev_get</id>
+		<var name="A" />
+	    </functionCall>
+	</nested>
+    </pattern>
+
+    <pattern name="assign">
+	<assignExpression>
+	    <var name="A" />
+	    <functionCall>
+		<id>pci_get_device</id>
+		<any/>
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="assign">
+	<assignExpression>
+	    <var name="A" />
+	    <functionCall>
+		<id>pci_get_subsys</id>
+		<any/>
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="assign">
+	<assignExpression>
+	    <var name="A" />
+	    <functionCall>
+		<id>pci_get_slot</id>
+		<any/>
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="assign">
+	<assignExpression>
+	    <var name="A" />
+	    <functionCall>
+		<id>pci_get_bus_and_slot</id>
+		<any/>
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="assign">
+	<assignExpression>
+	    <var name="A" />
+	    <functionCall>
+		<id>pci_get_class</id>
+		<any/>
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="put">
+	<functionCall>
+	    <id>pci_dev_put</id>
+	    <var name="A" />
+	</functionCall>
+    </pattern>
+
+</automaton>
