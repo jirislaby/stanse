@@ -63,6 +63,14 @@ public final class CheckerError implements Comparable<CheckerError> {
                + getFullDesc();
     }
 
+    public String dump() {
+        String result = new String();
+        result += toString() + '\n';
+        for (final CheckerErrorTrace trace : getTraces())
+            result += trace.dump();
+        return result;
+    }
+
     @Override
     public int compareTo(CheckerError other) {
         return getImportance() - other.getImportance();

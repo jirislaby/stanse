@@ -225,7 +225,7 @@ public final class Stanse {
 		    if (!errors.isEmpty()) {
 			System.out.println("Error(s) found:");
 			for (final CheckerError error : errors)
-			    System.out.println(error.toString());
+			    System.out.println(error.dump());
 		    }
 		    System.out.println("Done.");
 		}

@@ -44,6 +44,14 @@ public final class CheckerErrorTrace {
         return "trace [locations: " + getLocations().size() + "]";
     }
 
+    public String dump() {
+        String result = new String();
+        result += toString() + '\n';
+        for (final CheckerErrorTraceLocation location : getLocations())
+            result += location.toString() + '\n';
+        return result;
+    }
+
     public CheckerErrorTraceLocation getCauseLocation() {
         for (final CheckerErrorTraceLocation location : getLocations())
             if (!location.isContextLocation())
