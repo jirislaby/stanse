@@ -89,7 +89,7 @@
 
     <pattern name="alloc">
         <assignExpression>
-            <var name="A" />
+            <var name="A" match="id" />
             <functionCall>
                 <id>kmalloc</id>
                 <any />
@@ -99,7 +99,7 @@
 
     <pattern name="alloc">
         <assignExpression>
-            <var name="A" />
+            <var name="A" match="id" />
             <castExpression>
                 <ignore />
                 <functionCall>
@@ -113,7 +113,7 @@
 
     <pattern name="alloc">
         <assignExpression>
-            <var name="A" />
+            <var name="A" match="id" />
             <functionCall>
                 <id>kzalloc</id>
                 <any />
@@ -123,7 +123,7 @@
 
     <pattern name="alloc">
         <assignExpression>
-            <var name="A" />
+            <var name="A" match="id" />
             <castExpression>
                 <ignore />
                 <functionCall>
@@ -154,6 +154,13 @@
         </functionCall>
     </pattern>
 
+    <pattern name="noreturn">
+        <functionCall>
+            <id>panic</id>
+	    <any/>
+        </functionCall>
+    </pattern>
+
     <!-- creating an alias, we won't care about the pointer anymore -->
     <pattern name="kill" constructive="false">
         <assignExpression>
@@ -177,11 +184,47 @@
         </returnStatement>
     </pattern>
 
-    <pattern name="noreturn">
-        <functionCall>
-            <id>panic</id>
-	    <any/>
-        </functionCall>
+    <pattern name="kill" constructive="false">
+	<functionCall>
+	    <id>dev_set_drvdata</id>
+	    <ignore/>
+	    <var name="A"/>
+	</functionCall>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
+	<functionCall>
+	    <id>usb_set_intfdata</id>
+	    <ignore/>
+	    <var name="A"/>
+	</functionCall>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
+	<functionCall>
+	    <id>usb_set_serial_data</id>
+	    <ignore/>
+	    <var name="A"/>
+	</functionCall>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
+	<functionCall>
+	    <id>hid_set_drvdata</id>
+	    <ignore/>
+	    <var name="A"/>
+	</functionCall>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
+	<nested>
+	    <functionCall>
+		<id>input_ff_create_memless</id>
+		<ignore/>
+		<var name="A"/>
+		<ignore/>
+	    </functionCall>
+	</nested>
     </pattern>
 
     <pattern name="kill" constructive="false">
