@@ -10,6 +10,10 @@
     <transition from="D[A]"	by="kill[A]"	to="" />
     <transition from="V[A]"	by="kill[A]"	to="" />
     <transition from="N[A]"	by="kill[A]"	to="" />
+    <transition from="X[A]"	by="noreturn[A]"	to="R[A]" />
+    <transition from="D[A]"	by="noreturn[A]"	to="R[A]" />
+    <transition from="V[A]"	by="noreturn[A]"	to="R[A]" />
+    <transition from="N[A]"	by="noreturn[A]"	to="R[A]" />
     <transition from="X[A]"	by="alloc[A]"	to="F[A]" />
     <transition from="D[A]"	by="alloc[A]"	to="F[A]" />
     <transition from="V[A]"	by="alloc[A]"	to="F[A]" />
@@ -36,7 +40,7 @@
     <transition from="N[A]"     by="isnotnull[A]" to=""     />
     <transition from="VN[A]"    by="isnotnull[A]" to="V[A]" />
 
-    <error  from="N[A]" by="deref[A]"
+    <error  from="N[A] -R[A]" by="deref[A]"
             desc="dereferencing NULL pointer"
             level="0"
             entry="pointer is NULL at function entry."
@@ -75,7 +79,7 @@
             begin="pointer is not NULL here."
             propag="not affected ==> pointer is still not NULL."
             end="pointer always points to valid memory here, but checking for not NULL." />
-    <error  from="V[*] F[*]" by=""
+    <error  from="V[*] F[*] -R[*]" by=""
             desc="memory leak - leaving function without releasing memory"
             level="2"
             entry=""
@@ -173,7 +177,7 @@
         </returnStatement>
     </pattern>
 
-    <pattern name="kill" constructive="false">
+    <pattern name="noreturn">
         <functionCall>
             <id>panic</id>
 	    <any/>
