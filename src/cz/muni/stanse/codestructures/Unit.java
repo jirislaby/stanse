@@ -97,7 +97,9 @@ public abstract class Unit {
 	    cfg.drop();
 	CFGs.clear();
 	CFGs = null;
-	xmlDocument.clearContent();
+	/* may happen when prior parsing failed */
+	if (xmlDocument != null)
+		xmlDocument.clearContent();
 	xmlDocument = null;
     }
 
