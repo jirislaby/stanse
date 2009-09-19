@@ -64,11 +64,12 @@ public final class CheckerError implements Comparable<CheckerError> {
     }
 
     public String dump() {
-        String result = new String();
-        result += toString() + '\n';
+        StringBuilder result = new StringBuilder();
+        result.append(toString());
+	result.append('\n');
         for (final CheckerErrorTrace trace : getTraces())
-            result += trace.dump();
-        return result;
+            result.append(trace.dump());
+        return result.toString();
     }
 
     @Override

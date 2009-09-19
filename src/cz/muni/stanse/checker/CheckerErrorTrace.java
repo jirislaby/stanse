@@ -45,11 +45,14 @@ public final class CheckerErrorTrace {
     }
 
     public String dump() {
-        String result = new String();
-        result += toString() + '\n';
-        for (final CheckerErrorTraceLocation location : getLocations())
-            result += location.toString() + '\n';
-        return result;
+        StringBuilder result = new StringBuilder();
+        result.append(toString());
+	result.append('\n');
+        for (final CheckerErrorTraceLocation location : getLocations()) {
+            result.append(location.toString());
+            result.append('\n');
+	}
+        return result.toString();
     }
 
     public CheckerErrorTraceLocation getCauseLocation() {
