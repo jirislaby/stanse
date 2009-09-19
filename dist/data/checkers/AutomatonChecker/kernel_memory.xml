@@ -6,10 +6,10 @@
                        memory leaks." />
 
     <start state="X" />
-    <transition from="X[A]"	by="assign[A]"	to="" />
-    <transition from="D[A]"	by="assign[A]"	to="" />
-    <transition from="V[A]"	by="assign[A]"	to="" />
-    <transition from="N[A]"	by="assign[A]"	to="" />
+    <transition from="X[A]"	by="kill[A]"	to="" />
+    <transition from="D[A]"	by="kill[A]"	to="" />
+    <transition from="V[A]"	by="kill[A]"	to="" />
+    <transition from="N[A]"	by="kill[A]"	to="" />
     <transition from="X[A]"	by="alloc[A]"	to="F[A]" />
     <transition from="D[A]"	by="alloc[A]"	to="F[A]" />
     <transition from="V[A]"	by="alloc[A]"	to="F[A]" />
@@ -151,13 +151,13 @@
     </pattern>
 
     <!-- creating an alias, we won't care about the pointer anymore -->
-    <pattern name="assign" constructive="false">
+    <pattern name="kill" constructive="false">
         <assignExpression>
             <ignore/>
             <var name="A"/>
         </assignExpression>
     </pattern>
-    <pattern name="assign" constructive="false">
+    <pattern name="kill" constructive="false">
         <assignExpression>
             <ignore/>
 	    <castExpression>
@@ -167,13 +167,20 @@
         </assignExpression>
     </pattern>
 
-    <pattern name="assign" constructive="false">
+    <pattern name="kill" constructive="false">
         <returnStatement>
             <var name="A"/>
         </returnStatement>
     </pattern>
 
-    <pattern name="assign" constructive="false">
+    <pattern name="kill" constructive="false">
+        <functionCall>
+            <id>panic</id>
+	    <any/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
         <functionCall>
             <id>list_add</id>
 	    <addrExpression>
@@ -186,7 +193,7 @@
         </functionCall>
     </pattern>
 
-    <pattern name="assign" constructive="false">
+    <pattern name="kill" constructive="false">
         <functionCall>
             <id>list_add_tail</id>
 	    <addrExpression>
