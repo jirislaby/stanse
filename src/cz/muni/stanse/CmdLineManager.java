@@ -46,9 +46,8 @@ final class CmdLineManager {
                                 "Checker name and (possibly) configuration. " +
                                 "Can be used multiple times.")
                     .withRequiredArg()
-                    .describedAs("name:XMLdatabaseFile:" +
-                                 "outputXMLfile:SortKeyword1:" +
-                                 "SortKeyword2 ...]")
+                    .describedAs("name[[:configuration_file1]:" +
+                                 "configuration_file2:name ...]")
                     .ofType(String.class);
 
         makefile =
@@ -136,8 +135,9 @@ final class CmdLineManager {
                              "importance " +
                                 "(importance), ")
                     .withRequiredArg()
-                    .describedAs("name[[:configuration_file1]:" +
-                                 "configuration_file2:name ...]")
+                    .describedAs("XMLdatabaseFile:" +
+                                 "outputXMLfile:SortKeyword1:" +
+                                 "SortKeyword2 ...]")
                     .ofType(String.class);
 
         options = parser.parse(args);
