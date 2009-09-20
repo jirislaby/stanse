@@ -40,7 +40,7 @@
     <transition from="N[A]"     by="isnotnull[A]" to=""     />
     <transition from="VN[A]"    by="isnotnull[A]" to="V[A]" />
 
-    <error  from="N[A] -R[A]" by="deref[A]"
+    <error  from="N[A] -R[*]" by="deref[A]"
             desc="dereferencing NULL pointer"
             level="0"
             entry="pointer is NULL at function entry."
@@ -263,7 +263,9 @@
 
     <pattern name="deref">
 	<initDeclarator>
-	    <ignore/>
+	    <nested>
+		<pointer/>
+	    </nested>
 	    <initializer>
 		<nested>
 		    <arrowExpression>
