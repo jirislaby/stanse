@@ -4,7 +4,6 @@ import cz.muni.stanse.statistics.DummyEvaluationStatistic;
 import cz.muni.stanse.statistics.EvaluationStatistic;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesException;
 import cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
-import cz.muni.stanse.configuration.source_enumeration.AllOpenedFilesEnumerator;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
@@ -312,23 +311,13 @@ public final class Configuration {
     }
 
     public static SourceConfiguration createDefaultSourceConfiguration() {
-        return new SourceConfiguration(new AllOpenedFilesEnumerator());
+        return new SourceConfiguration(
+                    new FileListEnumerator(new java.util.Vector<String>()));
     }
 
     public static List<CheckerConfiguration>
-	    createDefaultCheckerConfiguration() {
-        return Make.<CheckerConfiguration>linkedList(
-	    new CheckerConfiguration("AutomatonChecker",
-		    new File(Stanse.getInstance().getRootDirectory() +
-			  "/data/checkers/AutomatonChecker/memory.xml"), true),
-	    new CheckerConfiguration("AutomatonChecker",
-		    new File(Stanse.getInstance().getRootDirectory() +
-			  "/data/checkers/AutomatonChecker/interrupts.xml"),
-		    true),
-	    new CheckerConfiguration("AutomatonChecker",
-		    new File(Stanse.getInstance().getRootDirectory() +
-			  "/data/checkers/AutomatonChecker/locking.xml"),
-		    true));
+    createDefaultCheckerConfiguration() {
+        return Make.<CheckerConfiguration>linkedList();
     }
 
     // private section

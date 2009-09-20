@@ -68,7 +68,7 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
     }
 
     public String xmlDump(final String tab, final String seek) {
-        String result = tab + "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
+        String result = "";
 
         result += tab + "<files>\n";
         result += xmlDump(getFiles(),"file",tab + seek,seek);

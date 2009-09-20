@@ -46,8 +46,9 @@ final class CmdLineManager {
                                 "Checker name and (possibly) configuration. " +
                                 "Can be used multiple times.")
                     .withRequiredArg()
-                    .describedAs("name[[:configuration_file1]:" +
-                                 "configuration_file2 ...]")
+                    .describedAs("name:XMLdatabaseFile:" +
+                                 "outputXMLfile:SortKeyword1:" +
+                                 "SortKeyword2 ...]")
                     .ofType(String.class);
 
         makefile =
@@ -117,6 +118,27 @@ final class CmdLineManager {
                     .withRequiredArg()
                     .describedAs("file")
                     .ofType(String.class);
+        statsSort =
+              parser.accepts("stats-err-sort",
+                             "Loads statistical database file and then it " +
+                             "will sort error messages by lexicografical " +
+                             "order defined by these keywords: " +
+                             "trace_end_desc " +
+                                "(description of error occurence location), " +
+                             "trace_begin_desc " +
+                                "(description of error cause location), "+
+                             "loc_unit " +
+                                "(unit of location), " +
+                             "loc_line " +
+                                "(line number of location), " +
+                             "checker_name " +
+                                "(checker name), " +
+                             "importance " +
+                                "(importance), ")
+                    .withRequiredArg()
+                    .describedAs("name[[:configuration_file1]:" +
+                                 "configuration_file2:name ...]")
+                    .ofType(String.class);
 
         options = parser.parse(args);
 
@@ -146,11 +168,7 @@ final class CmdLineManager {
 
     List<CheckerConfiguration> getCheckerConfiguration() {
         if (!getOptions().has(checkers))
-        {
-            System.err.println("No checkers specified, AutomatonChecker " +
-                               "used as default.");
             return Configuration.createDefaultCheckerConfiguration();
-        }
 
         Vector<CheckerConfiguration> checkerConfiguration =
             new Vector<CheckerConfiguration>();
@@ -216,7 +234,7 @@ final class CmdLineManager {
     }
 
     boolean statsMode() {
-        return getOptions().has(statsBuild);
+        return getOptions().has(statsBuild) || getOptions().has(statsSort);
     }
 
     String statsBuildFile() {
@@ -224,6 +242,31 @@ final class CmdLineManager {
                     getOptions().valueOf(statsBuild) : null;
     }
 
+    String getStatsDatabase() {
+        if (!getOptions().has(statsSort))
+            return null;
+        String[] cc = getOptions().valueOf(statsSort).split(":");
+        final String database = cc[0];
+        return database;
+    }
+
+    String statsOrderingFile() {
+        if (!getOptions().has(statsSort))
+            return null;
+        String[] cc = getOptions().valueOf(statsSort).split(":");
+        final String orderingFile = cc[1];
+        return orderingFile;
+    }
+
+    Vector<String> getStatsOrdering() {
+        if (!getOptions().has(statsSort))
+            return null;
+        final Vector<String> ordering = new Vector<String>();
+        String[] cc = getOptions().valueOf(statsSort).split(":");
+        for (int i = 2; i < cc.length; i++)
+            ordering.add(cc[i]);
+        return ordering;
+    }
 
     Pair<String,String> getUIdesc() {
 	if (!getOptions().has(gui))
@@ -261,6 +304,7 @@ final class CmdLineManager {
     private final OptionSpec<Integer> debugLevel;
     private final OptionSpec<String> gui;
     private final OptionSpec<String> statsBuild;
+    private final OptionSpec<String> statsSort;
     private final OptionSet options;
     private final int numArgs;
 }

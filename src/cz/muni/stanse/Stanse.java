@@ -194,13 +194,35 @@ public final class Stanse {
     }
 
     private static void processStats(final CmdLineManager cmdLineManager) {
+        System.out.print("Stanse is executed in statistical mode.\n\n\n");
+
         final String buildFile = cmdLineManager.statsBuildFile();
         if (buildFile != null) {
-            System.out.println(
-                "Stanse is executed in statistical mode.\n" +
-                "Statistical results will be stored in output file:\n" +
-                "   " + buildFile + "\n\n\n");
-            cz.muni.stanse.statistics.StatisticBuilder.run(buildFile);
+            System.out.print("Statistical results will be stored in output " +
+                             "file:\n   " + buildFile + "\n\n\n");
+            cz.muni.stanse.statistics.StatisticalDatabaseBuilder.run(buildFile);
+            return;
+        }
+
+        final String databaseFile = cmdLineManager.getStatsDatabase();
+        if (databaseFile == null || !new File(databaseFile).exists()) {
+            System.out.print("Error: cannot find statistical database " +
+                             "XML file:\n   " + databaseFile + "\n\n\n");
+            return;
+        }
+        final org.dom4j.Document database = cz.muni.stanse.statistics.
+                StatisticalDatabaseLoader.run(databaseFile);
+        if (database == null) {
+            System.out.print("Error: parsing of content of database " +
+                             "XML file has FAILED. Parsed file was:\n   " +
+                             databaseFile + "\n\n\n");
+            return;
+        }
+
+        final String orderingFile = cmdLineManager.statsOrderingFile();
+        if (orderingFile != null) {
+            cz.muni.stanse.statistics.CheckerErrorsSorter.run(
+                    database,cmdLineManager.getStatsOrdering(),orderingFile);
             return;
         }
     }
