@@ -10,6 +10,9 @@ package cz.muni.stanse.checker;
 import java.util.List;
 import java.util.Collections;
 
+import org.dom4j.DocumentFactory;
+import org.dom4j.Element;
+
 /**
  * @brief
  *
@@ -55,15 +58,12 @@ public final class CheckerErrorTrace {
         return result.toString();
     }
 
-    public String xmlDump(final String tab, final String seek) {
-        String result = tab + "<trace>\n";
-        result += tab + seek + "<description>" + getDescription() +
-                               "</description>\n";
-        result += tab + seek + "<locations>\n";
-        for (final CheckerErrorTraceLocation location : getLocations())
-            result += location.xmlDump(tab + seek + seek,seek);
-        result += tab + seek + "</locations>\n";
-        result += tab + "</trace>\n";
+    public Element xmlDump() {
+	Element result = DocumentFactory.getInstance().createElement("trace");
+	result.addElement("description").addText(getDescription());
+	Element locs = result.addElement("locations");
+	for (final CheckerErrorTraceLocation location: getLocations())
+	    locs.add(location.xmlDump());
         return result;
     }
 

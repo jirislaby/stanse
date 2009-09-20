@@ -1,7 +1,21 @@
+/**
+ * @brief
+ *
+ * Copyright (c) 2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
+ */
+
 package cz.muni.stanse.statistics;
 
 import cz.muni.stanse.utils.Triple;
+
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
+
+import org.dom4j.DocumentFactory;
+import org.dom4j.Element;
 
 public final class BasicEvaluationStatistic implements EvaluationStatistic {
 
@@ -67,21 +81,11 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
         return internals;
     }
 
-    public String xmlDump(final String tab, final String seek) {
-        String result = "";
-
-        result += tab + "<files>\n";
-        result += xmlDump(getFiles(),"file",tab + seek,seek);
-        result += tab + "</files>\n";
-
-        result += tab + "<internals>\n";
-        result += xmlDump(getInternals(),"internal",tab + seek,seek);
-        result += tab + "</internals>\n";
-
-        result += tab + "<checkers>\n";
-        result += xmlDump(getCheckers(),"checker",tab + seek,seek);
-        result += tab + "</checkers>\n";
-
+    public List<Element> xmlDump() {
+	List<Element> result = new LinkedList<Element>();
+	result.add(xmlDump("files", getFiles(), "file"));
+	result.add(xmlDump("internals", getInternals(), "internal"));
+	result.add(xmlDump("checkers", getCheckers(), "checker"));
         return result;
     }
 
@@ -118,16 +122,17 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
                 Runtime.getRuntime().freeMemory()) / (1024*1024);
     }
 
-    private static String
-    xmlDump(final Vector<Triple<String,Double,Double>> container,
-            final String type, final String tab, final String seek) {
-        String result = "";
-        for (final Triple<String,Double,Double> data : container) {
-            result += tab + '<' + type + ">\n";
-            result += tab + seek + "<name>" + data.getFirst() + "</name>\n";
-            result += tab + seek + "<time>" + data.getSecond() + "</time>\n";
-            result += tab + seek + "<space>" + data.getThird() + "</space>\n";
-            result += tab + "</" + type + ">\n";
+    private static Element
+    xmlDump(String elName, final Vector<Triple<String,Double,Double>> container,
+            final String type) {
+	Element result = DocumentFactory.getInstance().createElement(elName);
+        for (final Triple<String,Double,Double> data: container) {
+	    Element typeEl = result.addElement(type);
+            typeEl.addElement("name").addText(data.getFirst());
+            typeEl.addElement("time").addText(Double.toString(
+			data.getSecond()));
+            typeEl.addElement("space").addText(Double.toString(
+			data.getThird()));
         }
         return result;
     }

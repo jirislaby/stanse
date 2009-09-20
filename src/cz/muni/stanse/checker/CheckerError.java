@@ -11,6 +11,9 @@ package cz.muni.stanse.checker;
 import java.util.Collections;
 import java.util.List;
 
+import org.dom4j.DocumentFactory;
+import org.dom4j.Element;
+
 /**
  * @brief Represent output from checkers, which is the error found in the
  *        source file (reprezented by set of CFGs). 
@@ -72,21 +75,17 @@ public final class CheckerError implements Comparable<CheckerError> {
         return result.toString();
     }
 
-    public String xmlDump(final String tab, final String seek) {
-        String result = tab + "<error>\n";
-        result += tab + seek + "<short-desc>" + getShortDesc() +
-                               "</short-desc>\n";
-        result += tab + seek + "<full-desc>" + getFullDesc() +
-                               "</full-desc>\n";
-        result += tab + seek + "<importance>" + getImportance() +
-                               "</importance>\n";
-        result += tab + seek + "<checker-name>" + getCheckerName() +
-                               "</checker-name>\n";
-        result += tab + seek + "<traces>\n";
-        for (final CheckerErrorTrace trace : getTraces())
-            result += trace.xmlDump(tab + seek + seek,seek);
-        result += tab + seek + "</traces>\n";
-        result += tab + "</error>\n";
+    public Element xmlDump() {
+	Element result = DocumentFactory.getInstance().createElement("error");
+	result.addElement("short_desc").addText(getShortDesc());
+	result.addElement("full_desc").addText(getFullDesc());
+	result.addElement("importance").addText(
+			Integer.toString(getImportance()));
+	result.addElement("checker_name").addText(getCheckerName());
+	Element traces = result.addElement("traces").addText(getCheckerName());
+
+        for (final CheckerErrorTrace trace: getTraces())
+            traces.add(trace.xmlDump());
         return result;
     }
 

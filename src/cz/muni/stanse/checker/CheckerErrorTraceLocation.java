@@ -1,4 +1,15 @@
+/**
+ * @brief
+ *
+ * Copyright (c) 2009 Marek Trtik
+ *
+ * Licensed under GPLv2.
+ */
+
 package cz.muni.stanse.checker;
+
+import org.dom4j.DocumentFactory;
+import org.dom4j.Element;
 
 public final class CheckerErrorTraceLocation {
 
@@ -30,13 +41,12 @@ public final class CheckerErrorTraceLocation {
                getLineNumber() + "]";
     }
 
-    public String xmlDump(final String tab, final String seek) {
-        String result = tab + "<location>\n";
-        result += tab + seek + "<unit>" + getUnitName() + "</unit>\n";
-        result += tab + seek + "<line>" + getLineNumber() + "</line>\n";
-        result += tab + seek + "<description>" + getDescription() +
-                               "</description>\n";
-        result += tab + "</location>\n";
+    public Element xmlDump() {
+	Element result = DocumentFactory.getInstance().
+		    createElement("location");
+	result.addElement("unit").addText(getUnitName());
+	result.addElement("line").addText(Integer.toString(getLineNumber()));
+	result.addElement("description").addText(getDescription());
         return result;
     }
 

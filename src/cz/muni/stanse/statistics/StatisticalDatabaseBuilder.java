@@ -4,8 +4,17 @@ import cz.muni.stanse.Stanse;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
+import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.Vector;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentFactory;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 
 public final class StatisticalDatabaseBuilder {
 
@@ -39,32 +48,35 @@ public final class StatisticalDatabaseBuilder {
         System.out.println("Checking done.\n\n(2/3) Starting conversion of " +
                            "collected data into XML format...");
 
-        final String seek = "  ";
-        final String data =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
-                "<database>\n" +
-                evalStats.xmlDump(seek,seek) +
-                xmlDump(errors,seek,seek) +
-                "</database>\n";
+	Document doc = DocumentHelper.createDocument();
+	Element db = doc.addElement("database");
+	for (Element e: evalStats.xmlDump())
+	    db.add(e);
+	db.add(xmlDump(errors));
 
         System.out.println("Conversion done.\n\n(3/3) Writing statistics in " +
                            "XML format into output file...");
 
-        if (!StringToFileWriter.write(data,outputFile))
-            return;
+	try {
+	    FileOutputStream os = new FileOutputStream(new File(outputFile));
+	    XMLAlgo.outputXML(doc, os);
+	} catch (FileNotFoundException ex) {
+	    System.err.println("Can't write '" + outputFile + "':");
+	    ex.printStackTrace();
+	    return;
+	}
 
-        System.out.println("Writting output done.\n\n\nSee results in " +
+        System.out.println("Output written.\n\n\nSee results in " +
                            "file:\n    " + outputFile + "\n\n\n");
     }
 
     // private section
 
-    private static String xmlDump(final Vector<CheckerError> errors,
-                                  final String tab, final String seek) {
-        String result = tab + "<errors>\n";
-        for (final CheckerError error : errors)
-            result += error.xmlDump(tab + seek,seek);
-        return result + tab + "</errors>\n";
+    private static Element xmlDump(final Vector<CheckerError> errors) {
+        Element result = DocumentFactory.getInstance().createElement("errors");
+        for (final CheckerError error: errors)
+            result.add(error.xmlDump());
+        return result;
     }
 
     private StatisticalDatabaseBuilder() {
