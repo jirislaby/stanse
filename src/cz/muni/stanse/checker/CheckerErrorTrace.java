@@ -55,6 +55,18 @@ public final class CheckerErrorTrace {
         return result.toString();
     }
 
+    public String xmlDump(final String tab, final String seek) {
+        String result = tab + "<trace>\n";
+        result += tab + seek + "<description>" + getDescription() +
+                               "</description>\n";
+        result += tab + seek + "<locations>\n";
+        for (final CheckerErrorTraceLocation location : getLocations())
+            result += location.xmlDump(tab + seek + seek,seek);
+        result += tab + seek + "</locations>\n";
+        result += tab + "</trace>\n";
+        return result;
+    }
+
     public CheckerErrorTraceLocation getCauseLocation() {
         for (final CheckerErrorTraceLocation location : getLocations())
             if (!location.isContextLocation())

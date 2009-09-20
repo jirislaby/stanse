@@ -109,6 +109,15 @@ final class CmdLineManager {
                     .describedAs("name")
                     .ofType(String.class);
 
+        statsBuild =
+              parser.accepts("stats-build","Builds statistical data in XML " +
+                                           "format of processed checking. " +
+                                           "Output file for statistical data " +
+                                           "must be provided as an argument")
+                    .withRequiredArg()
+                    .describedAs("file")
+                    .ofType(String.class);
+
         options = parser.parse(args);
 
         numArgs = args.length;
@@ -206,6 +215,16 @@ final class CmdLineManager {
         return getOptions().has(dumpCallGraph);
     }
 
+    boolean statsMode() {
+        return getOptions().has(statsBuild);
+    }
+
+    String statsBuildFile() {
+        return (getOptions().has(statsBuild)) ?
+                    getOptions().valueOf(statsBuild) : null;
+    }
+
+
     Pair<String,String> getUIdesc() {
 	if (!getOptions().has(gui))
 	    return Pair.make("TUI","");
@@ -241,6 +260,7 @@ final class CmdLineManager {
     private final OptionSpec<File> outputDir;
     private final OptionSpec<Integer> debugLevel;
     private final OptionSpec<String> gui;
+    private final OptionSpec<String> statsBuild;
     private final OptionSet options;
     private final int numArgs;
 }

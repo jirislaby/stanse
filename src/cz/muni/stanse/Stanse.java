@@ -51,7 +51,11 @@ public final class Stanse {
 	buildConfiguration(cmdLineManager);
 	setOutputDirectory(cmdLineManager);
 	processDumping(cmdLineManager);
-	startUI(cmdLineManager);
+
+    if (cmdLineManager.statsMode())
+        processStats(cmdLineManager);
+    else
+        startUI(cmdLineManager);
     }
 
     public static Stanse getInstance() {
@@ -187,6 +191,18 @@ public final class Stanse {
 	if (cmdLineManager.dumpAST()) getInstance().dumpAST();
 	if (cmdLineManager.dumpCFG()) getInstance().dumpCFG();
 	if (cmdLineManager.dumpCallGraph()) getInstance().dumpCallGraph();
+    }
+
+    private static void processStats(final CmdLineManager cmdLineManager) {
+        final String buildFile = cmdLineManager.statsBuildFile();
+        if (buildFile != null) {
+            System.out.println(
+                "Stanse is executed in statistical mode.\n" +
+                "Statistical results will be stored in output file:\n" +
+                "   " + buildFile + "\n\n\n");
+            cz.muni.stanse.statistics.StatisticBuilder.run(buildFile);
+            return;
+        }
     }
 
     private static void startUI(final CmdLineManager cmdLineManager) {

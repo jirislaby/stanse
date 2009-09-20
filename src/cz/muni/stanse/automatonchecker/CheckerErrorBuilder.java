@@ -54,14 +54,16 @@ final class CheckerErrorBuilder {
                    final LazyInternalStructures internals,
                    final java.util.List<FalsePositivesDetector> detectors,
                    final CheckerErrorReceiver errReciver,
-                   final AutomatonCheckerLogger monitor) {
+                   final AutomatonCheckerLogger monitor,
+                   final String automatonName) {
         int numErrors = 0;
         for (Pair<PatternLocation,PatternLocation> locationsPair :
                                                 edgeLocationDictionary.values())
             if (locationsPair.getFirst() != null)
                 numErrors += buildErrorsInLocation(locationsPair.getFirst(),
                                       edgeLocationDictionary,internals,
-                                      detectors,errReciver,monitor);
+                                      detectors,errReciver,monitor,
+                                      automatonName);
         if (numErrors > 0)
             monitor.note("*** " + numErrors + " error(s) found");
     }
@@ -74,7 +76,8 @@ final class CheckerErrorBuilder {
             final LazyInternalStructures internals,
             final java.util.List<FalsePositivesDetector> detectors,
             final CheckerErrorReceiver errReciver,
-            final AutomatonCheckerLogger monitor) {
+            final AutomatonCheckerLogger monitor,
+            final String automatonName) {
         final CallSiteDetector callDetector =
             new CallSiteDetector(internals.getNavigator(),
                                  edgeLocationDictionary);
@@ -114,9 +117,7 @@ final class CheckerErrorBuilder {
 
                     final String shortDesc = rule.getErrorDescription();
                     final String fullDesc
-                            = "{"
-                            + AutomatonCheckerCreator.getNameForCheckerFactory()
-                            + "} in function '"
+                            = "{" + automatonName + "} in function '"
                             + internals.getNodeToCFGdictionary()
                                        .get(location.getCFGreferenceNode())
                                        .getFunctionName()
@@ -125,9 +126,7 @@ final class CheckerErrorBuilder {
                             + " [traces: " + traces.size() + "]";
                     errReciver.receive(
                        new CheckerError(shortDesc,fullDesc,rule.getErrorLevel(),
-                                        AutomatonCheckerCreator.
-                                            getNameForCheckerFactory(),
-                                        traces));
+                                        automatonName,traces));
                     ++numErrors;
                     monitor.note("*** error found: " + shortDesc);
                 }

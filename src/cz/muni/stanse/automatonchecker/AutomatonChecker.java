@@ -171,7 +171,8 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         monitor.phaseLog("building error traces");
         monitor.pushTab();
         CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,internals,
-                                           detectors,errReciver,monitor);
+                                           detectors,errReciver,monitor,
+                                           getName());
         monitor.popTab();
     }
 

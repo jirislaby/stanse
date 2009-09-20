@@ -1,8 +1,11 @@
 package cz.muni.stanse.configuration;
 
+import cz.muni.stanse.statistics.DummyEvaluationStatistic;
+import cz.muni.stanse.statistics.EvaluationStatistic;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesException;
 import cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
 import cz.muni.stanse.configuration.source_enumeration.AllOpenedFilesEnumerator;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
@@ -41,11 +44,29 @@ public final class Configuration {
                     @Override
                     public void write(final String s) {
                     }
-                 });
+                 },
+                 new DummyEvaluationStatistic());
     }
 
     public void evaluate(final CheckerErrorReceiver receiver,
                          final CheckerProgressMonitor monitor) {
+        evaluate(receiver,monitor,new DummyEvaluationStatistic());
+    }
+
+    public void evaluate(final CheckerErrorReceiver receiver,
+                         final EvaluationStatistic statistic) {
+        evaluate(receiver,
+                 new CheckerProgressMonitor() {
+                    @Override
+                    public void write(final String s) {
+                    }
+                 },
+                 statistic);
+    }
+
+    public void evaluate(final CheckerErrorReceiver receiver,
+                         final CheckerProgressMonitor monitor,
+                         final EvaluationStatistic statistic) {
         final java.util.Vector<Integer> numCheckerCongfigs =
                 new java.util.Vector<Integer>();
         numCheckerCongfigs.add(getCheckerConfigurations().size());
@@ -55,13 +76,19 @@ public final class Configuration {
                 @Override
                 public void run() {
                     try {
-                        checkerCfg.getChecker().check(
+                        statistic.internalsStart();
+                        final LazyInternalStructures internals =
                             checkerCfg.isInterprocedural() ?
-                                    getSourceConfiguration()
-                                       .getLazySourceInternals() :
-                                    getSourceConfiguration()
-                                       .getLazySourceIntraproceduralInternals(),
-                            receiver,getMonitor());
+                                getSourceConfiguration()
+                                    .getLazySourceInternals() :
+                                getSourceConfiguration()
+                                    .getLazySourceIntraproceduralInternals();
+                        statistic.internalsEnd();
+                        statistic.checkerStart(checkerCfg.getChecker()
+                                                         .getName());
+                        checkerCfg.getChecker()
+                                  .check(internals,receiver,getMonitor());
+                        statistic.checkerEnd();
                     } catch (final CheckerException e) {
                         ClassLogger.error(Configuration.class,
                             "evalueate() failed :: when running configuration "+
@@ -87,21 +114,44 @@ public final class Configuration {
                         @Override
                         public void write(final String s) {
                         }
-                     });
+                     },
+                     new DummyEvaluationStatistic());
     }
 
     public void evaluateWait(final CheckerErrorReceiver receiver,
                              final CheckerProgressMonitor monitor) {
+        evaluateWait(receiver,monitor,new DummyEvaluationStatistic());
+    }
+
+    public void evaluateWait(final CheckerErrorReceiver receiver,
+                             final EvaluationStatistic statistic) {
+        evaluateWait(receiver,
+                     new CheckerProgressMonitor() {
+                        @Override
+                        public void write(final String s) {
+                        }
+                     },
+                     statistic);
+    }
+
+    public void evaluateWait(final CheckerErrorReceiver receiver,
+                             final CheckerProgressMonitor monitor,
+                             final EvaluationStatistic statistic) {
         int threadID = 0;
         for (final CheckerConfiguration checkerCfg : getCheckerConfigurations())
             try {
-                checkerCfg.getChecker().check(
+                statistic.internalsStart();
+                final LazyInternalStructures internals =
                     checkerCfg.isInterprocedural() ?
-                            getSourceConfiguration()
-                               .getLazySourceInternals() :
-                            getSourceConfiguration()
-                               .getLazySourceIntraproceduralInternals(),
-                    receiver,new MonitorForThread(++threadID,monitor));
+                        getSourceConfiguration().getLazySourceInternals() :
+                        getSourceConfiguration()
+                                       .getLazySourceIntraproceduralInternals();
+                statistic.internalsEnd();
+                statistic.checkerStart(checkerCfg.getChecker().getName());
+                checkerCfg.getChecker()
+                          .check(internals,receiver,
+                                 new MonitorForThread(++threadID,monitor));
+                statistic.checkerEnd();
             } catch (final CheckerException e) {
                 ClassLogger.error(Configuration.class,
                     "evalueateWait() failed :: when running configuration "+
@@ -120,13 +170,36 @@ public final class Configuration {
                                         @Override
                                         public void write(final String s) {
                                         }
-                                     });
+                                     },
+                                     new DummyEvaluationStatistic());
     }
 
     @Deprecated
     public void
     evaluate_EachUnitSeparately(final CheckerErrorReceiver receiver,
-                                 final CheckerProgressMonitor monitor) {
+                                final CheckerProgressMonitor monitor) {
+        evaluate_EachUnitSeparately(receiver,monitor,
+                                    new DummyEvaluationStatistic());
+    }
+
+    @Deprecated
+    public void
+    evaluate_EachUnitSeparately(final CheckerErrorReceiver receiver,
+                                final EvaluationStatistic statistic) {
+        evaluate_EachUnitSeparately(receiver,
+                                    new CheckerProgressMonitor() {
+                                        @Override
+                                        public void write(final String s) {
+                                        }
+                                    },
+                                    statistic);
+    }
+
+    @Deprecated
+    public void
+    evaluate_EachUnitSeparately(final CheckerErrorReceiver receiver,
+                                final CheckerProgressMonitor monitor,
+                                final EvaluationStatistic statistic) {
         new java.lang.Thread() {
             @Override
             public void run() {
@@ -142,22 +215,92 @@ public final class Configuration {
                                                         .getSourceEnumerator()
                                                         .getSourceCodeFiles()) {
                         monitor.write("<-> File: " + fileName + "\n");
+                        statistic.fileStart(fileName);
                         new Configuration(
                             new SourceConfiguration(new FileListEnumerator(
                                                     Make.linkedList(fileName))),
                             getCheckerConfigurations())
-                        .evaluateWait(receiverWrapper,monitor);
+                        .evaluateWait(receiverWrapper,monitor,statistic);
+                        statistic.fileEnd();
                         monitor.write("<-> --------------------------------\n");
                     }
                 }
                 catch (final SourceCodeFilesException e) {
                     ClassLogger.error(Configuration.class,
-                        "evalueateWait_EachUnitSeparately() failed :: " +
+                        "evalueate_EachUnitSeparately() failed :: " +
                         "due to this exception:\n", e);
                 }
                 receiver.onEnd();
             }
         }.start();
+    }
+
+    @Deprecated
+    public void
+    evaluateWait_EachUnitSeparately(final CheckerErrorReceiver receiver) {
+        evaluateWait_EachUnitSeparately(receiver,
+                                        new CheckerProgressMonitor() {
+                                            @Override
+                                            public void write(final String s) {
+                                            }
+                                        },
+                                        new DummyEvaluationStatistic());
+    }
+
+    @Deprecated
+    public void
+    evaluateWait_EachUnitSeparately(final CheckerErrorReceiver receiver,
+                                    final CheckerProgressMonitor monitor) {
+        evaluateWait_EachUnitSeparately(receiver,monitor,
+                                        new DummyEvaluationStatistic());
+    }
+
+    @Deprecated
+    public void
+    evaluateWait_EachUnitSeparately(final CheckerErrorReceiver receiver,
+                                    final EvaluationStatistic statistic) {
+        evaluateWait_EachUnitSeparately(receiver,
+                                        new CheckerProgressMonitor() {
+                                            @Override
+                                            public void write(final String s) {
+                                            }
+                                        },
+                                        statistic);
+    }
+
+    @Deprecated
+    public void
+    evaluateWait_EachUnitSeparately(final CheckerErrorReceiver receiver,
+                                    final CheckerProgressMonitor monitor,
+                                    final EvaluationStatistic statistic) {
+        final CheckerErrorReceiver receiverWrapper =
+            new CheckerErrorReceiver() {
+                @Override
+                public void receive(final CheckerError error) {
+                    receiver.receive(error);
+                }
+            };
+        try {
+            for (final String fileName : getSourceConfiguration()
+                                                .getSourceEnumerator()
+                                                .getSourceCodeFiles()) {
+                monitor.write("<-> File: " + fileName + "\n");
+                statistic.fileStart(fileName);
+                new Configuration(
+                    new SourceConfiguration(new FileListEnumerator(
+                                            Make.linkedList(fileName))),
+                    getCheckerConfigurations())
+                .evaluateWait(receiverWrapper,monitor,statistic);
+                statistic.fileEnd();
+                monitor.write("<-> --------------------------------\n");
+            }
+        }
+        catch (final SourceCodeFilesException e) {
+            ClassLogger.error(Configuration.class,
+                "evalueateWait_EachUnitSeparately() failed :: " +
+                "due to this exception:\n", e);
+        }
+        receiver.onEnd();
     }
 
     public SourceConfiguration getSourceConfiguration() {

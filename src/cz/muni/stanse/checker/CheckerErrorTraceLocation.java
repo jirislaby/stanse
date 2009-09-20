@@ -30,6 +30,16 @@ public final class CheckerErrorTraceLocation {
                getLineNumber() + "]";
     }
 
+    public String xmlDump(final String tab, final String seek) {
+        String result = tab + "<location>\n";
+        result += tab + seek + "<unit>" + getUnitName() + "</unit>\n";
+        result += tab + seek + "<line>" + getLineNumber() + "</line>\n";
+        result += tab + seek + "<description>" + getDescription() +
+                               "</description>\n";
+        result += tab + "</location>\n";
+        return result;
+    }
+
     public String getUnitName() {
         return unitName;
     }

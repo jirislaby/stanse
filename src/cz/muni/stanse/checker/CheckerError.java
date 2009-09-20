@@ -72,6 +72,24 @@ public final class CheckerError implements Comparable<CheckerError> {
         return result.toString();
     }
 
+    public String xmlDump(final String tab, final String seek) {
+        String result = tab + "<error>\n";
+        result += tab + seek + "<short-desc>" + getShortDesc() +
+                               "</short-desc>\n";
+        result += tab + seek + "<full-desc>" + getFullDesc() +
+                               "</full-desc>\n";
+        result += tab + seek + "<importance>" + getImportance() +
+                               "</importance>\n";
+        result += tab + seek + "<checker-name>" + getCheckerName() +
+                               "</checker-name>\n";
+        result += tab + seek + "<traces>\n";
+        for (final CheckerErrorTrace trace : getTraces())
+            result += trace.xmlDump(tab + seek + seek,seek);
+        result += tab + seek + "</traces>\n";
+        result += tab + "</error>\n";
+        return result;
+    }
+
     @Override
     public int compareTo(CheckerError other) {
         return getImportance() - other.getImportance();
