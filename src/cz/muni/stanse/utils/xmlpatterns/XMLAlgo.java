@@ -7,7 +7,7 @@
 package cz.muni.stanse.utils.xmlpatterns;
 
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.OutputStream;
 
 import java.util.Iterator;
 
@@ -50,7 +50,7 @@ public final class XMLAlgo {
      * @param n node to dump
      * @param o stream to dump to
      */
-    public static void outputXML(Node n, PrintStream o) {
+    public static void outputXML(Node n, OutputStream o) {
 	OutputFormat format = OutputFormat.createPrettyPrint();
 	try {
 	    XMLWriter writer = new XMLWriter(o, format);
