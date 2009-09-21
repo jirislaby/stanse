@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : ThreadChecker.xml
+    Created on : February 11, 2009, 7:01 PM
+    Author     : Jan Kučera
+    Description: Configuration file for ThreadChecker module
+
+    PLEASE set starting point (name of starting function) to element startWith
+-->
+
+<threadChecker>
+  <analyseType type="local"/>
+    <patterns>
+      <pattern name="lockFunction">
+        <!--mutex_trylock(*(msg_ctx)->mux) in /home/xatrix/Desktop/linux-2.6.28/fs/ecryptfs/.tmp_messaging.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>mutex_trylock</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="lockFunction">
+        <!--__st_mutex_lock_st__(msg_ctx->mux) in /home/xatrix/Desktop/linux-2.6.28/fs/ecryptfs/.tmp_messaging.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>__st_mutex_lock_st__</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="unlockFunction">
+        <!--__st_mutex_unlock_st__(msg_ctx->mux) in /home/xatrix/Desktop/linux-2.6.28/fs/ecryptfs/.tmp_messaging.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>__st_mutex_unlock_st__</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="lockFunction">
+        <!--__st_spin_lock_st__(dlm->spinlock) in /home/xatrix/Desktop/linux-2.6.28/fs/ocfs2/dlm/.tmp_dlmmaster.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>__st_spin_lock_st__</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="unlockFunction">
+        <!--__st_spin_unlock_st__(dlm->spinlock) in /home/xatrix/Desktop/linux-2.6.28/fs/ocfs2/dlm/.tmp_dlmmaster.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>__st_spin_unlock_st__</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="unlockFunction">
+        <!--__st_spin_unlock_irq_st__(c2dev->qp_table.lock) in /home/xatrix/Desktop/linux-2.6.28/drivers/infiniband/hw/amso1100/.tmp_c2_qp.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>__st_spin_unlock_irq_st__</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="lockFunction">
+        <!--__st_bh_lock_sock_st__(sk) in /home/xatrix/Desktop/linux-2.6.28/net/bluetooth/.tmp_l2cap.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>__st_bh_lock_sock_st__</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="unlockFunction">
+        <!--__st_bh_unlock_sock_st__(sk) in /home/xatrix/Desktop/linux-2.6.28/net/bluetooth/.tmp_l2cap.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>__st_bh_unlock_sock_st__</id>
+            <var name="lock"/>l2cap_sock_close
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="lockFunction">
+        <!--lock_sock(sk) in /home/xatrix/Desktop/linux-2.6.28/net/bluetooth/.tmp_l2cap.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>lock_sock</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="lockFunction">
+        <!--lock_sock_nested(sk,1) in /home/xatrix/Desktop/linux-2.6.28/net/bluetooth/.tmp_l2cap.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>lock_sock_nested</id>
+            <var name="lock"/>
+            <ignore/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="unlockFunction">
+        <!--release_sock(sk) in
+/home/xatrix/Desktop/linux-2.6.28/net/bluetooth/.tmp_l2cap.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>release_sock</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="lockFunction">
+        <!--__st_sco_conn_lock_st__(conn) in /home/xatrix/Desktop/linux-2.6.28/net/bluetooth/.tmp_sco.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>__st_sco_conn_lock_st__</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+      </pattern>
+      <pattern name="unlockFunction">
+        <!--__st_sco_conn_unlock_st__(conn) in /home/xatrix/Desktop/linux-2.6.28/net/bluetooth/.tmp_sco.o.preproc-->
+        <nested>
+          <functionCall>
+            <id>__st_sco_conn_unlock_st__</id>
+            <var name="lock"/>
+          </functionCall>
+        </nested>
+    </pattern>
+<!-- NEW LOCKING PROCEDURES -->
+    <pattern name="lockFunction">
+      <!--lock_task_sighand(p,flags) in
+/home/xatrix/Desktop/linux-2.6.28/kernel/.tmp_sched.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>lock_task_sighand</id>
+          <var name="lock"/>
+          <ignore/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="unlockFunction">
+      <!--unlock_task_sighand(p,flags) in
+/home/xatrix/Desktop/linux-2.6.28/kernel/.tmp_sched.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>unlock_task_sighand</id>
+          <var name="lock"/>
+          <ignore/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="lockFunction">
+      <!--task_lock(tsk) in
+/home/xatrix/Desktop/linux-2.6.28/kernel/.tmp_cgroup.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>task_lock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="unlockFunction">
+      <!--task_unlock(tsk) in
+/home/xatrix/Desktop/linux-2.6.28/kernel/.tmp_cgroup.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>task_unlock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="lockFunction">
+      <!--anon_vma_lock(vma) in
+/home/xatrix/Desktop/linux-2.6.28/mm/.tmp_mmap.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>anon_vma_lock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="unlockFunction">
+      <!--anon_vma_unlock(vma) in
+/home/xatrix/Desktop/linux-2.6.28/mm/.tmp_mmap.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>anon_vma_unlock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="lockFunction">
+      <!--cfi_spin_lock(chip->mutex) in
+/home/xatrix/linux-2.4.31-ifx-danube/linux-2.4.31/drivers/mtd/chips/cfi_cmdset_0002.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>cfi_spin_lock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="unlockFunction">
+      <!--cfi_spin_unlock(chip->mutex) in
+/home/xatrix/linux-2.4.31-ifx-danube/linux-2.4.31/drivers/mtd/chips/cfi_cmdset_0002.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>cfi_spin_unlock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="lockFunction">
+      <!--lock_fat(inode->i_sb) in
+/home/xatrix/linux-2.4.31-ifx-danube/linux-2.4.31/fs/fat/cache.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>lock_fat</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="unlockFunction">
+      <!--unlock_fat(inode->i_sb) in
+/home/xatrix/linux-2.4.31-ifx-danube/linux-2.4.31/fs/fat/cache.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>unlock_fat</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="lockFunction">
+      <!--write_seqlock(xtime_lock) in
+/home/xatrix/Desktop/linux-2.6.28/kernel/.tmp_time.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>write_seqlock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="unlockFunction">
+      <!--write_sequnlock(xtime_lock) in
+/home/xatrix/Desktop/linux-2.6.28/kernel/.tmp_time.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>write_sequnlock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="lockFunction">
+      <!--fh_lock_nested(dirfhp,I_MUTEX_PARENT) in
+/home/xatrix/Desktop/linux-2.6.28/fs/nfsd/.tmp_nfsproc.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>fh_lock_nested</id>
+          <var name="lock"/>
+          <ignore/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="unlockFunction">
+      <!--fh_unlock(dirfhp) in /home/xatrix/Desktop/linux-2.6.28/fs/nfsd/.tmp_nf
+sproc.o.preproc-->
+      <nested>
+        <functionCall>
+          <id>fh_unlock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    <pattern name="lockFunction">
+      <!--fh_lock(fhp) in /home/xatrix/Desktop/linux-2.6.28/fs/nfsd/.tmp_vfs.o.p
+reproc-->
+      <nested>
+        <functionCall>
+          <id>fh_lock</id>
+          <var name="lock"/>
+        </functionCall>
+      </nested>
+    </pattern>
+    </patterns>
+</threadChecker>
+
