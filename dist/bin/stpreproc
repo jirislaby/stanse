@@ -32,6 +32,7 @@ my @kuntouchables = (
 	"likely", "unlikely",
 	"put_user", "get_user",
 	"put_cpu", "get_cpu",
+	"BUG", "BUG_ON",
 	"GFP_KERNEL"
 );
 

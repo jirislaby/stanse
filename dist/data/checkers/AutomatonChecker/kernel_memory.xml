@@ -165,7 +165,7 @@
     <pattern name="kill" constructive="false">
         <assignExpression>
             <ignore/>
-            <var name="A"/>
+            <var name="A" match="id" />
         </assignExpression>
     </pattern>
     <pattern name="kill" constructive="false">
@@ -173,7 +173,7 @@
             <ignore/>
 	    <castExpression>
 		<ignore/>
-		<var name="A"/>
+		<var name="A" match="id"/>
 	    </castExpression>
         </assignExpression>
     </pattern>
@@ -223,6 +223,14 @@
     <pattern name="kill" constructive="false">
 	<functionCall>
 	    <id>hid_set_drvdata</id>
+	    <ignore/>
+	    <var name="A"/>
+	</functionCall>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
+	<functionCall>
+	    <id>i2c_set_clientdata</id>
 	    <ignore/>
 	    <var name="A"/>
 	</functionCall>
@@ -314,6 +322,16 @@
                 <ignore />
             </arrayAccess>
         </nested>
+    </pattern>
+
+    <!-- BUG_ON(A) -->
+    <pattern name="isnotnull" constructive="false">
+	<functionCall>
+	    <id>__st_BUG_ON_st__</id>
+	    <prefixExpression op="!">
+		<var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+	    </prefixExpression>
+	</functionCall>
     </pattern>
 
     <!-- assert(A) -->
