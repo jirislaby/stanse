@@ -84,6 +84,9 @@ public final class CUnit extends Unit {
 	StanseTreeAdaptor adaptor = new StanseTreeAdaptor();
 	GNUCaLexer lex;
 
+	/* do it here, so that we have at least empty list, not null */
+	CFGHs = new LinkedList<CFGHandle>();
+
 	preprocess();
 
 	try {
@@ -122,10 +125,9 @@ public final class CUnit extends Unit {
 
 	CFGEmitter cfgEmitter = new CFGEmitter(nodes);
 	try {
-            CFGHs = new LinkedList<CFGHandle>();
-            CFGs = cfgEmitter.translationUnit();
+	    CFGs = cfgEmitter.translationUnit();
 	    for (CFG cfg: CFGs)
-                CFGHs.add(new CFGHandle(this, cfg));
+		CFGHs.add(new CFGHandle(this, cfg));
 	} catch (RecognitionException e) {
 	    throw new ParserException("CFGEmitter", e);
 	}
