@@ -27,7 +27,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     @Override
     public boolean visit(final List<CFGNode> path,
                          final java.util.Stack<CFGNode> cfgContext) {
-        if (getErrorTracesList().size() >= 20
+        if (getErrorTracesList().size() >= 20 || path.size() > 100
                 || isLimitOfRejectedMeasureExceeded())
             return false;
 
