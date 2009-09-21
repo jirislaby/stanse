@@ -27,7 +27,8 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     @Override
     public boolean visit(final List<CFGNode> path,
                          final java.util.Stack<CFGNode> cfgContext) {
-        if (getErrorTracesList().size() >= 20)
+        if (getErrorTracesList().size() >= 20
+                || isLimitOfRejectedMeasureExceeded())
             return false;
 
         final CFGNode node = path.iterator().next();
@@ -45,29 +46,39 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
 
         if (!getRule().checkForError(
                 AutomatonStateCFGcontextAlgo.filterStatesByContext(
-                            location.getDeliveredAutomataStates(), cfgContext)))
+                          location.getDeliveredAutomataStates(), cfgContext))) {
+            incrementNumRejectedMeasure(path.size());
             return false;
+        }
 
         if (!getRule().checkForError(
                 AutomatonStateCFGcontextAlgo.filterStatesByContext(
                            location.getProcessedAutomataStates(),cfgContext))) {
-            if (!isFalsePositive(path,cfgContext))
+            if (!isFalsePositive(path,cfgContext)) {
                 getErrorTracesList().add(buildErrorTrace(
                         getRule().getErrorBeginMessage(),
                         getRule().getErrorPropagMessage(),
                         getRule().getErrorEndMessage(),
                         path,cfgContext));
+                resetNumRejectedMeasure();
+            }
+            else
+                incrementNumRejectedMeasure(path.size());
             return false;
         }
 
         if (cfgContext.isEmpty() &&
                 getInternals().getNavigator().isStartNode(node)) {
-            if (!isFalsePositive(path,cfgContext))
+            if (!isFalsePositive(path,cfgContext)) {
                 getErrorTracesList().add(buildErrorTrace(
                         getRule().getErrorEntryMessage(),
                         getRule().getErrorPropagMessage(),
                         getRule().getErrorEndMessage(),
                         path,cfgContext));
+                resetNumRejectedMeasure();
+            }
+            else
+                incrementNumRejectedMeasure(path.size());
             return false;
         }
 
@@ -101,6 +112,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         this.internals = internals;
         errorTracesList = new Vector<CheckerErrorTrace>();
         this.detectors = detectors;
+        numRejectedMeasure = 0;
     }
 
     Vector<CheckerErrorTrace> getErrorTracesList() {
@@ -170,6 +182,19 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                 getNodeToCFGdictionary().get(node));
     }
 
+    private boolean isLimitOfRejectedMeasureExceeded() {
+        return numRejectedMeasure > 1000;
+    }
+
+    private void incrementNumRejectedMeasure(final int pathLen) {
+        numRejectedMeasure += pathLen;
+    }
+
+    private void resetNumRejectedMeasure() {
+        numRejectedMeasure = 0;
+    }
+
+
     private int getNodeLine(final CFGNode node) {
 	// TODO: following lines can be removed, when there are no CFGNodes
 	// without XML element and each XML element has 'bl' attribute.
@@ -189,4 +214,5 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     private final LazyInternalStructures internals;
     private final Vector<CheckerErrorTrace> errorTracesList;
     private final java.util.List<FalsePositivesDetector> detectors;
+    private int numRejectedMeasure;
 }
