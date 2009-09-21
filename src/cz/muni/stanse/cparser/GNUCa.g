@@ -299,7 +299,7 @@ initDeclaratorList
 	;
 
 initDeclarator		// (6.7)
-	:	declarator simpleAsmExpr? ( '=' initializer )?  -> ^(INIT_DECLARATOR declarator initializer?)
+	:	d=declarator simpleAsmExpr? ( '=' initializer )? -> ^(INIT_DECLARATOR[$d.start] $d initializer?)
 	;
 
 storageClassSpecifier	// (6.7.1)
@@ -409,7 +409,7 @@ functionSpecifier
 	;
 
 declarator
-	:	pointer? directDeclarator -> ^(DECLARATOR pointer? directDeclarator)
+	:	pointer? dd=directDeclarator -> ^(DECLARATOR[$dd.start] pointer? $dd)
 	;
 
 directDeclarator
