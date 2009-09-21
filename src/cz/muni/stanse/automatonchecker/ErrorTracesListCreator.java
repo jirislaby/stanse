@@ -103,7 +103,8 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                                                          nodeLocationDictionary,
                     final CFGNode startNode,
                     final LazyInternalStructures internals,
-                    final java.util.List<FalsePositivesDetector> detectors) {
+                    final java.util.List<FalsePositivesDetector> detectors,
+                    final AutomatonCheckerLogger monitor) {
         super();
         this.rule = rule;
         this.transferor = transferor;
@@ -112,6 +113,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         this.internals = internals;
         errorTracesList = new Vector<CheckerErrorTrace>();
         this.detectors = detectors;
+        this.monitor = monitor;
         numRejectedMeasure = 0;
     }
 
@@ -188,12 +190,18 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
 
     private void incrementNumRejectedMeasure(final int pathLen) {
         numRejectedMeasure += pathLen;
+        if (isLimitOfRejectedMeasureExceeded())
+            getMonitor().note("*** FAILED: budget limit for error traces " +
+                              "search exceeded. Search was early terminated!");
     }
 
     private void resetNumRejectedMeasure() {
         numRejectedMeasure = 0;
     }
 
+    public AutomatonCheckerLogger getMonitor() {
+        return monitor;
+    }
 
     private int getNodeLine(final CFGNode node) {
 	// TODO: following lines can be removed, when there are no CFGNodes
@@ -214,5 +222,6 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     private final LazyInternalStructures internals;
     private final Vector<CheckerErrorTrace> errorTracesList;
     private final java.util.List<FalsePositivesDetector> detectors;
+    private final AutomatonCheckerLogger monitor;
     private int numRejectedMeasure;
 }

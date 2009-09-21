@@ -102,7 +102,7 @@ final class CheckerErrorBuilder {
                             (new ErrorTracesListCreator(rule,transferor,
                                             edgeLocationDictionary,
                                             location.getCFGreferenceNode(),
-                                            internals,detectors)),
+                                            internals,detectors,monitor)),
                             cfgContext).getErrorTracesList();
 
                     // Next condition eliminates cyclic dependances of two
