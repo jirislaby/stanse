@@ -52,16 +52,21 @@ public class ThreadChecker extends Checker {
         List<String> startFunctions;
         Vector<String> functionNames = new Vector<String>();
 
+        settings.setInternals(internals);
+
         Collection<Unit> units = internals.getUnits();
 
         settings.clearData();
-        for(Unit unit : units) {
-            logger.info("===============");
-            logger.info("Analysing file: "+unit.getName());
-            logger.info("===============");
-            settings.addAllCFGs(unit);
-            Utils.showGraph(unit);
-        }
+//        for(Unit unit : units) {
+//            logger.info("===============");
+//            logger.info("Analysing file: "+unit.getName());
+//            logger.info("===============");
+//            settings.addAllCFGs(unit);
+//            Utils.showGraph(unit);
+//        }
+        
+        settings.addAllCFGs();
+
 
         //Parser somehow creates empty unit - prevent throwing expcetion
         if(units.size()==1 && internals.getCFGHandles().isEmpty()) {
@@ -69,6 +74,7 @@ public class ThreadChecker extends Checker {
         }
 
         startFunctions = settings.getStartFunctions();
+
 
         this.analyseFunctions(startFunctions);
         graphs = this.generateDependencyGraphs();
@@ -82,6 +88,8 @@ public class ThreadChecker extends Checker {
 
         for (final CheckerError err : errors)
             errReciver.receive(err);
+
+        settings.setInternals(null);
     }
     
     /**

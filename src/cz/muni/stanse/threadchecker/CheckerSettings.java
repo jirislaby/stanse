@@ -147,15 +147,20 @@ public class CheckerSettings {
      * Function picks all CFGs from unit and stores them by addCFG function
      * @param unit Unit object representing C file with functions
      */
-    public void addAllCFGs(Unit unit) {
-        //Creator is not null - user want generate configuration
-        if(this.configurationCreator != null) {
-            try {
-                this.configurationCreator.findFunctions(unit);
-            } catch (DocumentException ex) {
-                logger.error(ex);
-            }
+    //public void addAllCFGs(Unit unit) {
+    public void addAllCFGs() {
+        for(CFGHandle hcfg : internals.getCFGHandles()) {
+            addCFG(hcfg);
+            //unitsByCFG.put(hcfg,hcfg.getUnit());
         }
+//        //Creator is not null - user want generate configuration
+//        if(this.configurationCreator != null) {
+//            try {
+//                this.configurationCreator.findFunctions(unit);
+//            } catch (DocumentException ex) {
+//                logger.error(ex);
+//            }
+//        }
     }
 
     /**
