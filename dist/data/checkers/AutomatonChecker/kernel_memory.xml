@@ -178,9 +178,21 @@
         </assignExpression>
     </pattern>
 
+    <!-- return &id->member; -->
     <pattern name="kill" constructive="false">
         <returnStatement>
-            <var name="A"/>
+	    <addrExpression>
+		<arrowExpression>
+		    <var name="A" match="id"/>
+		    <ignore/>
+		</arrowExpression>
+	    </addrExpression>
+        </returnStatement>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
+        <returnStatement>
+            <var name="A" match="id" />
         </returnStatement>
     </pattern>
 
@@ -426,6 +438,33 @@
 			<ignore />
 			<intConst>0</intConst>
 		    </castExpression>
+		</binaryExpression>
+            </prefixExpression>
+        </assert>
+    </pattern>
+
+    <!-- assert((T*)0 == A) -->
+    <pattern name="isnull" constructive="false">
+        <assert>
+                <binaryExpression op="==">
+                    <castExpression>
+                        <ignore />
+                        <intConst>0</intConst>
+                    </castExpression>
+                    <var name="A" />
+                </binaryExpression>
+        </assert>
+    </pattern>
+    <!-- assert(!((T*)0 == A)) -->
+    <pattern name="isnotnull" constructive="false">
+        <assert>
+            <prefixExpression op="!">
+		<binaryExpression op="==">
+		    <castExpression>
+			<ignore />
+			<intConst>0</intConst>
+		    </castExpression>
+		    <var name="A" />
 		</binaryExpression>
             </prefixExpression>
         </assert>

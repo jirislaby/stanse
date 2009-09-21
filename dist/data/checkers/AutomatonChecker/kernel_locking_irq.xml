@@ -89,19 +89,23 @@
 
     <pattern name="lock">
         <assert>
-	    <functionCall>
-		<id>__st_mutex_lock_interruptible_st__</id>
-		<var name="A" />
-	    </functionCall>
+	    <prefixExpression op="!">
+		<functionCall>
+		    <id>__st_mutex_lock_interruptible_st__</id>
+		    <var name="A" />
+		</functionCall>
+	    </prefixExpression>
         </assert>
     </pattern>
 
     <pattern name="lock">
         <assert>
-	    <functionCall>
-		<id>__st_mutex_lock_killable_st__</id>
-		<var name="A" />
-	    </functionCall>
+	    <prefixExpression op="!">
+		<functionCall>
+		    <id>__st_mutex_lock_killable_st__</id>
+		    <var name="A" />
+		</functionCall>
+	    </prefixExpression>
         </assert>
     </pattern>
 
