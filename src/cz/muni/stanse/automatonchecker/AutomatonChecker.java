@@ -146,6 +146,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
             if (location.hasUnprocessedAutomataStates())
                 progressQueue.add(location);
         }
+        final long startFixPointComputationTime = System.currentTimeMillis();
         while (!progressQueue.isEmpty()) {
             final PatternLocation currentLocation = progressQueue.remove();
             if (!currentLocation.hasUnprocessedAutomataStates())
@@ -159,6 +160,17 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                 if (currentLocation.getLocationForCallNotPassedStates() != null)
                     progressQueue.add(
                            currentLocation.getLocationForCallNotPassedStates());
+            }
+            final long FixPointComputationTime =
+                    System.currentTimeMillis() - startFixPointComputationTime;
+            if (nodeLocationDictionary.size() > 500 &&
+                FixPointComputationTime > 10000) {
+                monitor.pushTab();
+                monitor.note("*** FAILED: fix-point computation FAILED, " +
+                             "because of timeout. Location set is extremely " +
+                             "large: " + nodeLocationDictionary.size());
+                monitor.popTab();
+                return;
             }
         }
 
