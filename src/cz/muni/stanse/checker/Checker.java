@@ -22,7 +22,7 @@ public abstract class Checker {
      */
     public abstract String getName();
 
-    public abstract void
+    public abstract CheckingResult
     check(final LazyInternalStructures internals,
           final CheckerErrorReceiver errReciver,
           final CheckerProgressMonitor monitor) throws CheckerException;

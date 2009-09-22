@@ -5,6 +5,8 @@ import cz.muni.stanse.statistics.EvaluationStatistic;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesException;
 import cz.muni.stanse.configuration.source_enumeration.FileListEnumerator;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
+import cz.muni.stanse.checker.CheckingResult;
+import cz.muni.stanse.checker.CheckingFailed;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
@@ -85,10 +87,13 @@ public final class Configuration {
                         statistic.internalsEnd();
                         statistic.checkerStart(checkerCfg.getChecker()
                                                          .getName());
-                        checkerCfg.getChecker()
-                                  .check(internals,receiver,getMonitor());
-                        statistic.checkerEnd();
+                        final CheckingResult result =
+                            checkerCfg.getChecker()
+                                      .check(internals,receiver,getMonitor());
+                        statistic.checkerEnd(result);
                     } catch (final CheckerException e) {
+                        statistic.checkerEnd(
+                                    new CheckingFailed(e.getMessage()));
                         ClassLogger.error(Configuration.class,
                             "evalueate() failed :: when running configuration "+
                             checkerCfg.getCheckerClassName() + "arguments " +
@@ -147,11 +152,13 @@ public final class Configuration {
                                        .getLazySourceIntraproceduralInternals();
                 statistic.internalsEnd();
                 statistic.checkerStart(checkerCfg.getChecker().getName());
-                checkerCfg.getChecker()
-                          .check(internals,receiver,
-                                 new MonitorForThread(++threadID,monitor));
-                statistic.checkerEnd();
+                final CheckingResult result =
+                    checkerCfg.getChecker()
+                              .check(internals,receiver,
+                                     new MonitorForThread(++threadID,monitor));
+                statistic.checkerEnd(result);
             } catch (final CheckerException e) {
+                statistic.checkerEnd(new CheckingFailed(e.getMessage()));
                 ClassLogger.error(Configuration.class,
                     "evalueateWait() failed :: when running configuration "+
                     checkerCfg.getCheckerClassName() + "arguments " +

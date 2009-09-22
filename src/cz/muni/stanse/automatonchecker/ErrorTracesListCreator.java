@@ -114,11 +114,16 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         errorTracesList = new Vector<CheckerErrorTrace>();
         this.detectors = detectors;
         this.monitor = monitor;
+        failMsg = null;
         numRejectedMeasure = 0;
     }
 
     Vector<CheckerErrorTrace> getErrorTracesList() {
         return errorTracesList;
+    }
+
+    String getFailMessage() {
+        return failMsg;
     }
 
     // private section
@@ -190,9 +195,11 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
 
     private void incrementNumRejectedMeasure(final int pathLen) {
         numRejectedMeasure += pathLen;
-        if (isLimitOfRejectedMeasureExceeded())
-            getMonitor().note("*** FAILED: budget limit for error traces " +
-                              "search exceeded. Search was early terminated!");
+        if (isLimitOfRejectedMeasureExceeded()) {
+            setFailMessage("*** FAILED: budget limit for error traces " +
+                           "search exceeded. Search was early terminated!");
+            getMonitor().note(getFailMessage());
+        }
     }
 
     private void resetNumRejectedMeasure() {
@@ -201,6 +208,10 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
 
     public AutomatonCheckerLogger getMonitor() {
         return monitor;
+    }
+
+    private void setFailMessage(final String msg) {
+        failMsg = msg;
     }
 
     private int getNodeLine(final CFGNode node) {
@@ -223,5 +234,6 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     private final Vector<CheckerErrorTrace> errorTracesList;
     private final java.util.List<FalsePositivesDetector> detectors;
     private final AutomatonCheckerLogger monitor;
+    private String failMsg;
     private int numRejectedMeasure;
 }

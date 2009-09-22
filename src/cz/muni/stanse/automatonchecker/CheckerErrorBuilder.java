@@ -16,6 +16,9 @@ import cz.muni.stanse.codestructures.traversal.CFGTraversal;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
+import cz.muni.stanse.checker.CheckingResult;
+import cz.muni.stanse.checker.CheckingSuccess;
+import cz.muni.stanse.checker.CheckingFailed;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.Map;
@@ -48,7 +51,7 @@ final class CheckerErrorBuilder {
      * @return List of checker-errors recognized from automata states at
      *         PatternLocations.
      */
-    static void
+    static CheckingResult
     buildErrorList(final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        edgeLocationDictionary,
                    final LazyInternalStructures internals,
@@ -56,21 +59,30 @@ final class CheckerErrorBuilder {
                    final CheckerErrorReceiver errReciver,
                    final AutomatonCheckerLogger monitor,
                    final String automatonName) {
+        CheckingResult result = new CheckingSuccess();
         int numErrors = 0;
         for (Pair<PatternLocation,PatternLocation> locationsPair :
                                                 edgeLocationDictionary.values())
-            if (locationsPair.getFirst() != null)
-                numErrors += buildErrorsInLocation(locationsPair.getFirst(),
-                                      edgeLocationDictionary,internals,
-                                      detectors,errReciver,monitor,
-                                      automatonName);
+            if (locationsPair.getFirst() != null) {
+                final Pair<Integer,CheckingResult> locBuildResult =
+                    buildErrorsInLocation(locationsPair.getFirst(),
+                                          edgeLocationDictionary,internals,
+                                          detectors,errReciver,monitor,
+                                          automatonName);
+                numErrors += locBuildResult.getFirst();
+                if (result instanceof CheckingSuccess)
+                    result = locBuildResult.getSecond();
+            }
         if (numErrors > 0)
             monitor.note("*** " + numErrors + " error(s) found");
+
+        return result;
     }
 
     // private section
 
-    private static int buildErrorsInLocation(final PatternLocation location,
+    private static Pair<Integer,CheckingResult>
+    buildErrorsInLocation(final PatternLocation location,
             final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        edgeLocationDictionary,
             final LazyInternalStructures internals,
@@ -91,6 +103,7 @@ final class CheckerErrorBuilder {
                 location.getDeliveredAutomataStates().size() > 100)
             location.reduceStateSets();
 
+        CheckingResult result = new CheckingSuccess();
         int numErrors = 0;
         for (final ErrorRule rule : location.getErrorRules())
             for (final java.util.Stack<CFGNode> cfgContext :
@@ -100,14 +113,19 @@ final class CheckerErrorBuilder {
                             filterStatesByContext(
                                           location.getProcessedAutomataStates(),
                                           cfgContext))) {
+                    final ErrorTracesListCreator creator =
+                        new ErrorTracesListCreator(rule,transferor,
+                                            edgeLocationDictionary,
+                                            location.getCFGreferenceNode(),
+                                            internals,detectors,monitor);
                     final List<CheckerErrorTrace> traces =
                         CFGTraversal.traverseCFGPathsBackwardInterprocedural(
                             callNavigator,location.getCFGreferenceNode(),
-                            (new ErrorTracesListCreator(rule,transferor,
-                                            edgeLocationDictionary,
-                                            location.getCFGreferenceNode(),
-                                            internals,detectors,monitor)),
-                            cfgContext).getErrorTracesList();
+                            creator,cfgContext).getErrorTracesList();
+
+                    if (result instanceof CheckingSuccess &&
+                        creator.getFailMessage() != null)
+                        result = new CheckingFailed(creator.getFailMessage());
 
                     // Next condition eliminates cyclic dependances of two
                     // error locations (diferent). These locations have same
@@ -135,7 +153,7 @@ final class CheckerErrorBuilder {
                     monitor.note("*** error found: " + shortDesc);
                 }
 
-        return numErrors;
+        return Pair.make(numErrors,result);
     }
 
     private CheckerErrorBuilder() {

@@ -15,6 +15,9 @@ import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
+import cz.muni.stanse.checker.CheckingResult;
+import cz.muni.stanse.checker.CheckingSuccess;
+import cz.muni.stanse.checker.CheckingFailed;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.ClassLogger;
@@ -105,10 +108,11 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * @see cz.muni.stanse.checker.Checker#check(java.util.List)
      */
     @Override
-    public void check(final LazyInternalStructures internals,
-                      final CheckerErrorReceiver errReciver,
-                      final CheckerProgressMonitor monitor)
-                      throws XMLAutomatonSyntaxErrorException {
+    public CheckingResult check(final LazyInternalStructures internals,
+                                final CheckerErrorReceiver errReciver,
+                                final CheckerProgressMonitor monitor)
+                                throws XMLAutomatonSyntaxErrorException {
+        CheckingResult result = new CheckingSuccess();
         final AutomatonCheckerLogger automatonMonitor =
                 new AutomatonCheckerLogger(monitor);
         automatonMonitor.note("Checker: " + getName());
@@ -117,17 +121,19 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         final XMLAutomatonDefinition XMLdefinition =
             parseXMLAutomatondefinition(loadXMLdefinition());
         if (XMLdefinition != null)
-            check(XMLdefinition,internals,errReciver,automatonMonitor);
+            result = check(XMLdefinition,internals,errReciver,automatonMonitor);
         automatonMonitor.phaseBreak("checking done in ");
+        return result;
     }
 
     // private section
 
-    private void check(final XMLAutomatonDefinition xmlAutomatonDefinition,
-                       final LazyInternalStructures internals,
-                       final CheckerErrorReceiver errReciver,
-                       final AutomatonCheckerLogger monitor)
-                                       throws XMLAutomatonSyntaxErrorException {
+    private CheckingResult
+    check(final XMLAutomatonDefinition xmlAutomatonDefinition,
+          final LazyInternalStructures internals,
+          final CheckerErrorReceiver errReciver,
+          final AutomatonCheckerLogger monitor)
+          throws XMLAutomatonSyntaxErrorException {
         monitor.phaseLog("building pattern locations");
         final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
             nodeLocationDictionary = PatternLocationBuilder
@@ -166,11 +172,13 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
             if (nodeLocationDictionary.size() > 500 &&
                 FixPointComputationTime > 10000) {
                 monitor.pushTab();
-                monitor.note("*** FAILED: fix-point computation FAILED, " +
-                             "because of timeout. Location set is extremely " +
-                             "large: " + nodeLocationDictionary.size());
+                final String errMsg =
+                    "*** FAILED: fix-point computation FAILED, " +
+                    "because of timeout. Location set is extremely " +
+                    "large: " + nodeLocationDictionary.size();
+                monitor.note(errMsg);
                 monitor.popTab();
-                return;
+                return new CheckingFailed(errMsg);
             }
         }
 
@@ -182,10 +190,13 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
         monitor.phaseLog("building error traces");
         monitor.pushTab();
-        CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,internals,
-                                           detectors,errReciver,monitor,
-                                           getName());
+        final CheckingResult result =
+            CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,internals,
+                                               detectors,errReciver,monitor,
+                                               getName());
         monitor.popTab();
+
+        return result;
     }
 
     private File getXmlFile() {

@@ -1,5 +1,7 @@
 package cz.muni.stanse.statistics;
 
+import cz.muni.stanse.checker.CheckingResult;
+
 public final class DummyEvaluationStatistic implements EvaluationStatistic {
 
     // public section
@@ -22,7 +24,7 @@ public final class DummyEvaluationStatistic implements EvaluationStatistic {
     public void checkerStart(final String checkerName) {
     }
     @Override
-    public void checkerEnd() {
+    public void checkerEnd(final CheckingResult result) {
     }
 
 }

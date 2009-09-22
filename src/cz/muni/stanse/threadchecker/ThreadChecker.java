@@ -2,6 +2,8 @@ package cz.muni.stanse.threadchecker;
 
 import cz.muni.stanse.threadchecker.debug.Utils;
 import cz.muni.stanse.threadchecker.graph.DependencyCycleDetector;
+import cz.muni.stanse.checker.CheckingResult;
+import cz.muni.stanse.checker.CheckingSuccess;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
@@ -41,7 +43,7 @@ public class ThreadChecker extends Checker {
      * @throws cz.muni.stanse.checker.CheckerException
      */
     @Override
-    public void check(
+    public CheckingResult check(
                         final LazyInternalStructures internals,
                         final CheckerErrorReceiver errReciver,
                         final CheckerProgressMonitor monitor)
@@ -70,7 +72,7 @@ public class ThreadChecker extends Checker {
 
         //Parser somehow creates empty unit - prevent throwing expcetion
         if(units.size()==1 && internals.getCFGHandles().isEmpty()) {
-            return;
+            return new CheckingSuccess();
         }
 
         startFunctions = settings.getStartFunctions();
@@ -90,6 +92,8 @@ public class ThreadChecker extends Checker {
             errReciver.receive(err);
 
         settings.setInternals(null);
+
+        return new CheckingSuccess();
     }
     
     /**

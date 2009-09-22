@@ -8,7 +8,10 @@
 
 package cz.muni.stanse.statistics;
 
+import cz.muni.stanse.checker.CheckingResult;
+import cz.muni.stanse.checker.CheckingFailed;
 import cz.muni.stanse.utils.Triple;
+import cz.muni.stanse.utils.Pair;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +33,8 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
 
         checker = makeEmptyRecord();
         checkers = new Vector<Triple<String,Double,Double>>();
+
+        checkerFailures = new Vector<Pair<String,String>>();
     }
 
     @Override
@@ -63,8 +68,11 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
         start(checkerName,checker);
     }
     @Override
-    synchronized public void checkerEnd() {
+    synchronized public void checkerEnd(final CheckingResult result) {
         assert(isValid(checker));
+        if (result instanceof CheckingFailed)
+            checkerFailures.add(Pair.make(checker.getFirst(),
+                                          ((CheckingFailed)result).what()));
         end(checkers,checker);
         checker = makeEmptyRecord();
     }
@@ -81,11 +89,16 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
         return internals;
     }
 
+    synchronized public Vector<Pair<String, String>> getCheckerFailures() {
+        return checkerFailures;
+    }
+
     public List<Element> xmlDump() {
 	List<Element> result = new LinkedList<Element>();
 	result.add(xmlDump("files", getFiles(), "file"));
 	result.add(xmlDump("internals", getInternals(), "internal"));
 	result.add(xmlDump("checkers", getCheckers(), "checker"));
+        result.add(xmlDump("checkfails","fail",getCheckerFailures()));
         return result;
     }
 
@@ -137,6 +150,18 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
         return result;
     }
 
+    private static Element
+    xmlDump(final String elName, final String type,
+            final Vector<Pair<String,String>> container) {
+        final Element result = DocumentFactory.getInstance()
+                                              .createElement(elName);
+        for (final Pair<String,String> data: container) {
+            final Element item = result.addElement(type);
+            item.addElement("checker").addText(data.getFirst());
+            item.addElement("what").addText(data.getSecond());
+        }
+        return result;
+    }
 
     private Triple<String,Double,Double> file;
     private final Vector<Triple<String,Double,Double>> files;
@@ -146,4 +171,6 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
 
     private Triple<String,Double,Double> checker;
     private final Vector<Triple<String,Double,Double>> checkers;
+
+    private final Vector<Pair<String,String>> checkerFailures;
 }
