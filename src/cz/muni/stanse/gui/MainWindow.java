@@ -1,9 +1,11 @@
 package cz.muni.stanse.gui;
 
 import cz.muni.stanse.configuration.Configuration;
+import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.Stanse;
 
 import java.util.List;
+import java.util.Collection;
 
 @SuppressWarnings("serial")
 public final class MainWindow extends javax.swing.JFrame {
@@ -21,6 +23,11 @@ public final class MainWindow extends javax.swing.JFrame {
 
     public static void setLookAndFeel(final String type) {
         lookAndFeelType = type.toUpperCase();
+    }
+
+    public void addErrorMessages(final Collection<CheckerError> errors) {
+        getErrorsTreeManager().addAll(errors);
+        getErrorsTreeManager().present();
     }
 
     // package-private section

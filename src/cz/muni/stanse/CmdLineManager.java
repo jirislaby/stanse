@@ -104,9 +104,13 @@ final class CmdLineManager {
                     .ofType(Integer.class);
 
         gui =
-              parser.acceptsAll(asList("g", "gui"), "Starts GUI")
+              parser.acceptsAll(asList("g", "gui"),
+                                "Starts GUI. GUI may be run in these styles: " +
+                                "DEFAULT (equal to METAL style), SYSTEM (" +
+                                "system dependant widgets), METAL - (system " +
+                                "independet widgets)")
                     .withOptionalArg()
-                    .describedAs("name")
+                    .describedAs("GUI style name (DEFAULT, SYSTEM, METAL)")
                     .ofType(String.class);
 
         statsBuild =
@@ -116,6 +120,14 @@ final class CmdLineManager {
                                            "must be provided as an argument")
                     .withRequiredArg()
                     .describedAs("file")
+                    .ofType(String.class);
+        statsGuiTracing =
+              parser.accepts("stats-err-guitracing",
+                             "Loads statistical database file and parses all " +
+                             "its error messages and deliveres them into " +
+                             "Stanse's GUI to enable easy error-tracing.")
+                    .withRequiredArg()
+                    .describedAs("XMLdatabaseFile")
                     .ofType(String.class);
         statsSort =
               parser.accepts("stats-err-sort",
@@ -137,7 +149,7 @@ final class CmdLineManager {
                     .withRequiredArg()
                     .describedAs("XMLdatabaseFile:" +
                                  "outputXMLfile:SortKeyword1:" +
-                                 "SortKeyword2 ...]")
+                                 "SortKeyword2 ...")
                     .ofType(String.class);
 
         options = parser.parse(args);
@@ -234,7 +246,9 @@ final class CmdLineManager {
     }
 
     boolean statsMode() {
-        return getOptions().has(statsBuild) || getOptions().has(statsSort);
+        return getOptions().has(statsBuild) ||
+               getOptions().has(statsSort)  ||
+               getOptions().has(statsGuiTracing);
     }
 
     String statsBuildFile() {
@@ -243,11 +257,16 @@ final class CmdLineManager {
     }
 
     String getStatsDatabase() {
-        if (!getOptions().has(statsSort))
-            return null;
-        String[] cc = getOptions().valueOf(statsSort).split(":");
+        assert(statsMode());
+        final OptionSpec<String> option = getStatsDatabaseOption();
+        assert(option != null);
+        String[] cc = getOptions().valueOf(option).split(":");
         final String database = cc[0];
         return database;
+    }
+
+    boolean doStatsGuiTracing() {
+        return getOptions().has(statsGuiTracing);
     }
 
     String statsOrderingFile() {
@@ -287,6 +306,12 @@ final class CmdLineManager {
         return parser;
     }
 
+    private OptionSpec<String> getStatsDatabaseOption() {
+        if (getOptions().has(statsSort)) return statsSort;
+        if (getOptions().has(statsGuiTracing)) return statsGuiTracing;
+        return null;
+    }
+    
     private final OptionParser parser;
     private final OptionSpec<Void> help;
     private final OptionSpec<Void> version;
@@ -304,6 +329,7 @@ final class CmdLineManager {
     private final OptionSpec<Integer> debugLevel;
     private final OptionSpec<String> gui;
     private final OptionSpec<String> statsBuild;
+    private final OptionSpec<String> statsGuiTracing;
     private final OptionSpec<String> statsSort;
     private final OptionSet options;
     private final int numArgs;

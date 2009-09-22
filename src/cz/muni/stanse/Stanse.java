@@ -219,6 +219,11 @@ public final class Stanse {
             return;
         }
 
+        if (cmdLineManager.doStatsGuiTracing()) {
+            cz.muni.stanse.statistics.CheckerErrorsGuiTracing.run(database);
+            return;
+        }
+
         final String orderingFile = cmdLineManager.statsOrderingFile();
         if (orderingFile != null) {
             cz.muni.stanse.statistics.CheckerErrorsSorter.run(
