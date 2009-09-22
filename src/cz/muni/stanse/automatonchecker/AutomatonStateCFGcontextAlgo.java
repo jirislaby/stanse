@@ -43,15 +43,14 @@ final class AutomatonStateCFGcontextAlgo {
         return result;
     }
 
-    // private section
-
-    private static boolean
-    firstIsSubcontextOfSecond(final Stack<CFGNode> contextFirst,
-                              final Stack<CFGNode> contextSecond) {
+    static boolean firstIsSubcontextOfSecond(final Stack<CFGNode> contextFirst,
+                                            final Stack<CFGNode> contextSecond){
         return (contextFirst.size() <= contextSecond.size()) &&
                 contextFirst.subList(0,contextFirst.size()).equals(
                     contextSecond.subList(0,contextFirst.size()));
     }
+
+    // private section
 
     private static HashSet<AutomatonState>
     filterUniqueStates(final HashSet<AutomatonState> states,

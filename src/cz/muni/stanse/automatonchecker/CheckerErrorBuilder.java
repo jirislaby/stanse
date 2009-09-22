@@ -87,6 +87,10 @@ final class CheckerErrorBuilder {
         final CallSiteCFGNavigator callNavigator =
             new CallSiteCFGNavigator(internals.getNavigator(),callDetector);
 
+        if (location.getProcessedAutomataStates().size() > 100 ||
+                location.getDeliveredAutomataStates().size() > 100)
+            location.reduceStateSets();
+
         int numErrors = 0;
         for (final ErrorRule rule : location.getErrorRules())
             for (final java.util.Stack<CFGNode> cfgContext :

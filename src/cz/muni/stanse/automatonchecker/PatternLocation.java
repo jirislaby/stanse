@@ -102,7 +102,8 @@ final class PatternLocation {
         do {
             final AutomatonState currentState =
                 getUnprocessedAutomataStates().remove();
-            if (!getProcessedAutomataStates().contains(currentState)) {
+            //if (!getProcessedAutomataStates().contains(currentState)) {
+            if (!wasProcessed(currentState)) {
                 getProcessedAutomataStates().add(currentState);
                 transformAutomataStateToSuccessors(currentState);
                 successorsWereAffected = true;
@@ -111,7 +112,29 @@ final class PatternLocation {
         return successorsWereAffected;
     }
 
+    void reduceStateSets() {
+        reduceStateSet(getProcessedAutomataStates());
+        reduceStateSet(getDeliveredAutomataStates());
+    }
+
     // private section
+
+    private boolean wasProcessed(final AutomatonState state) {
+        if (getProcessedAutomataStates().contains(state))
+            return true;
+        final java.util.Stack<CFGNode> stateContext =
+                AutomatonStateCFGcontextAlgo.getContext(state);
+        for (final AutomatonState processedOne : getProcessedAutomataStates())
+            if (processedOne.getSymbol().equals(state.getSymbol())) {
+                final java.util.Stack<CFGNode> processedOneContext =
+                    AutomatonStateCFGcontextAlgo.getContext(
+                        processedOne.getContext());
+                AutomatonStateCFGcontextAlgo.firstIsSubcontextOfSecond(
+                        stateContext,processedOneContext);
+                return true;
+            }
+        return false;
+    }
 
     private void transformAutomataStateToSuccessors(final AutomatonState state){
         final LinkedList<AutomatonState> transformedStates =
@@ -152,6 +175,33 @@ final class PatternLocation {
         else if (getLocationForCallNotPassedStates() != null)
             getLocationForCallNotPassedStates().getUnprocessedAutomataStates()
                                                .add(state);
+    }
+
+    private static void reduceStateSet(final HashSet<AutomatonState> set) {
+        final java.util.Vector<AutomatonState> stateVec =
+            new java.util.Vector<AutomatonState>();
+        final java.util.Vector<java.util.Stack<CFGNode>> contextVec =
+            new java.util.Vector<java.util.Stack<CFGNode>>();
+        for (final AutomatonState state : set) {
+            stateVec.add(state);
+            contextVec.add(AutomatonStateCFGcontextAlgo
+                                .getContext(state.getContext()));
+        }
+        assert(stateVec.size() == contextVec.size());
+
+        for (int i = 0, n = stateVec.size(); i < n; ++i) {
+            final AutomatonState stateI = stateVec.get(i);
+            for (int j = i+1; j < n; ++j) {
+                final AutomatonState stateJ = stateVec.get(j);
+                if (!stateI.getSymbol().equals(stateJ.getSymbol()))
+                    continue;
+                if (AutomatonStateCFGcontextAlgo.firstIsSubcontextOfSecond(
+                        contextVec.get(i),contextVec.get(j))) {
+                    set.remove(stateI);
+                    break;
+                }
+            }
+        }
     }
 
     private LinkedList<AutomatonState> getUnprocessedAutomataStates() {
