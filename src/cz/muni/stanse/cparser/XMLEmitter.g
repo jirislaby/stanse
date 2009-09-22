@@ -229,6 +229,7 @@ scope Symbols;
 		$e.add($declarator.e);
 		addAllElements($e, ds);
 		$e.add($compoundStatement.e);
+		$e.addAttribute("el", Integer.toString($compoundStatement.start.getChild(0).getLine()));
 	}
 	;
 
@@ -374,7 +375,7 @@ scope Symbols;
 	$Symbols::variables = new LinkedList<String>();
 	$Symbols::variablesOld = new LinkedList<String>();
 }
-	: ^(COMPOUND_STATEMENT (d=declaration {els.add($d.e);}|fd=functionDefinition{els.add($fd.e);}|st=statement{els.add($st.e);})*) {
+	: ^(COMPOUND_STATEMENT CS_END (d=declaration {els.add($d.e);}|fd=functionDefinition{els.add($fd.e);}|st=statement{els.add($st.e);})*) {
 		$e = newElement("compoundStatement", $compoundStatement.start);
 		addAllElements($e, els);
 		if (els.size() == 0)

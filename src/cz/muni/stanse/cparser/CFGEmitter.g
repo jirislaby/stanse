@@ -184,7 +184,8 @@ scope Function;
 		$g.setSymbols($Function::symbols);
 		CFGNode endNode = new CFGNode(xmlFactory.createElement("exit").
 				addAttribute("bl", Integer.toString(
-					$functionDefinition.start.getLine())));
+				$compoundStatement.start.getChild(0).
+				getLine())));
 		$g.setEndNode(endNode);
 		for (CFGBreakNode n: $Function::rets)
 			n.addBreakEdge(endNode);
@@ -290,7 +291,7 @@ compoundStatement returns [CFGPart g]
 			$Function::unreachables.add(cfg1);
 	}
 }
-	: ^(COMPOUND_STATEMENT (declaration {
+	: ^(COMPOUND_STATEMENT CS_END (declaration {
 			if (!$declaration.g.isEmpty())
 				cfg.append($declaration.g);
 		} | functionDefinition |

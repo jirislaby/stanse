@@ -119,6 +119,7 @@ tokens{
 	CONDITIONAL_EXPRESSION;
 	LABEL;
 	COMPOUND_STATEMENT;
+	CS_END;
 	ALIGNOF='alignof';
 	FUNCTION_CALL;
 	STR_LITERAL;
@@ -712,8 +713,8 @@ labeledStatement
 compoundStatement
 scope Symbols; // blocks are scopes
 @init { $Symbols::types = new HashSet(); }
-	:	'{' blockItem* '}' -> ^(COMPOUND_STATEMENT blockItem*)
-	|	'{' labelDeclaration+ blockItem* '}' -> ^(COMPOUND_STATEMENT blockItem*)	// GNU // TODO labels AST
+	:	'{' blockItem* end='}' -> ^(COMPOUND_STATEMENT CS_END[$end] blockItem*)
+	|	'{' labelDeclaration+ blockItem* end='}' -> ^(COMPOUND_STATEMENT CS_END[$end] blockItem*)	// GNU // TODO labels AST
 	;
 
 blockItem
