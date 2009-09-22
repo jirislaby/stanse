@@ -248,6 +248,18 @@
     </pattern>
 
     <pattern name="kill" constructive="false">
+	<nested>
+	    <functionCall>
+		<id>ide_pci_init_two</id>
+		<ignore/>
+		<ignore/>
+		<ignore/>
+		<var name="A"/>
+	    </functionCall>
+	</nested>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
         <functionCall>
             <id>list_add</id>
 	    <addrExpression>
