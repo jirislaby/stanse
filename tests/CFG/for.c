@@ -1,17 +1,25 @@
 void a()
 {
-/*	for (;;)
-		f1();
+	for (;0;)
+		f0();
+	for (;;)
+		if (f1())
+			break;
 	for (0;;)
-		f2();
+		if (f2())
+			break;
 	for (;1;)
-		f3();
+		if (f3())
+			break;
 	for (;;2)
-		f4();
+		if (f4())
+			break;
 	for (0; 1;)
-		f5();
+		if (f5())
+			break;
 	for (0;; 2)
-		f6();*/
+		if (f6())
+			break;
 	for (; x; 2)
 		f7();
 	for (0; x; 2) {

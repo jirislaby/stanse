@@ -729,7 +729,7 @@ labelDeclaration
 	;
 
 expressionStatement
-	:	expression? ';' -> ^(EXPRESSION_STATEMENT expression?)
+	:	expression? sc=';' -> ^(EXPRESSION_STATEMENT[$sc] expression?)
 	;
 
 selectionStatement

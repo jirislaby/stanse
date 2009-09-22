@@ -62,6 +62,13 @@ import org.dom4j.Element;
 		els.add(e);
 		return e;
 	}
+	private Element newEmptyStatement(CommonTree ct) {
+		Element e = xmlFactory.createElement("emptyStatement");
+		e.addAttribute("bl", Integer.toString(ct.getLine()));
+		e.addAttribute("bc", Integer.toString(
+					ct.getCharPositionInLine()));
+		return e;
+	}
 	private void setAttributes(StanseTree start, Element e) {
 		e.addAttribute("bl", Integer.toString(start.getLine())).
 		addAttribute("bc", Integer.toString(start.getCharPositionInLine()));
@@ -379,7 +386,7 @@ scope Symbols;
 		$e = newElement("compoundStatement", $compoundStatement.start);
 		addAllElements($e, els);
 		if (els.size() == 0)
-			$e.addElement("emptyStatement");
+			$e.add(newEmptyStatement($compoundStatement.start));
 		$compoundStatement.start.setElement($e);
 	}
 	;
@@ -619,7 +626,7 @@ statement returns [Element e]
 }
 	: labeledStatement	{ $e=$labeledStatement.e; }
 	| compoundStatement	{ $e=$compoundStatement.e; }
-	| expressionStatement	{ $e=newElement("expressionStatement");$e.add($expressionStatement.e != null ? $expressionStatement.e : newElement("emptyStatement")); }
+	| expressionStatement	{ $e=newElement("expressionStatement");$e.add($expressionStatement.e != null ? $expressionStatement.e : newEmptyStatement($expressionStatement.start)); }
 	| selectionStatement	{ $e=$selectionStatement.e; }
 	| iterationStatement	{ $e=$iterationStatement.e; }
 	| jumpStatement		{ $e=$jumpStatement.e; }

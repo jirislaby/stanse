@@ -68,13 +68,11 @@ import cz.muni.stanse.utils.Pair;
 	}
 	private CFGNode ifThenElse(boolean nnValid, int nn,
 			Element cond, CFGNode _then, CFGNode _else) {
-		if (cond == null || cond.getName().equals("intConst")) {
-			Element c = cond;
-			if (c == null) /* 'for' empty test */
-				c = emptyStatement;
-			CFGNode node = nnValid ? new CFGNode(nn, c) :
-				new CFGNode(c);
-			node.addEdge(cond == null ||
+		if (cond.getName().equals("emptyStatement") ||
+				cond.getName().equals("intConst")) {
+			CFGNode node = nnValid ? new CFGNode(nn, cond) :
+				new CFGNode(cond);
+			node.addEdge(cond.getName().equals("emptyStatement") ||
 					Integer.decode(cond.getText()) != 0 ?
 				_then : _else);
 			return node;
@@ -147,6 +145,13 @@ import cz.muni.stanse.utils.Pair;
 			parent.addEdge(breakNode);
 		else
 			branch.addEdge(breakNode, defaultLabel);
+	}
+	private Element newEmptyStatement(CommonTree ct) {
+		Element e = xmlFactory.createElement("emptyStatement");
+		e.addAttribute("bl", Integer.toString(ct.getLine()));
+		e.addAttribute("bc", Integer.toString(
+					ct.getCharPositionInLine()));
+		return e;
 	}
 }
 
@@ -588,8 +593,8 @@ scope IterSwitch;
 				statementCFG.getStartNode(), breakNode);
 		statementType = $statement.start.getType();
 	}
-	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) {
-		n1 = new CFGNode($e1.g == null ? emptyStatement :
+	| ^(f='for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) {
+		n1 = new CFGNode($e1.g == null ? newEmptyStatement($f) :
 				$e1.start.getElement());
 		breakNode = new CFGJoinNode();
 		$g.setStartNode(n1);
@@ -598,12 +603,14 @@ scope IterSwitch;
 	} ^(E3 e3=expression?) statement) {
 		statementCFG = $statement.g;
 		n2 = ifThenElse(nodeNumber,
-				$e2.g == null ? null : $e2.start.getElement(),
+				$e2.g == null ? newEmptyStatement($f) :
+				$e2.start.getElement(),
 				statementCFG.getStartNode(),
 				breakNode);
 		n1.addEdge(n2);
 
-		contNode = new CFGNode($e3.g == null ? emptyStatement :
+		contNode = new CFGNode($e3.g == null ?
+				newEmptyStatement($f) :
 				$e3.start.getElement());
 		contNode.addEdge(n2);
 
