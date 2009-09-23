@@ -118,9 +118,10 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
 
     private static void end(final Vector<Triple<String,Double,Double>>container,
                             final Triple<String,Double,Double> data) {
+        final double space = getCurrSpaceMB() - data.getThird();
         container.add(Triple.make(data.getFirst(),
                                   getCurrTimeSEC() - data.getSecond(),
-                                  getCurrSpaceMB() - data.getThird()));
+                                  space < 0.0 ? 0.0 : space));
     }
 
     private static boolean isValid(final Triple<String,Double,Double> data) {
@@ -133,7 +134,7 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
 
     private static double getCurrSpaceMB() {
         return (Runtime.getRuntime().totalMemory() -
-                Runtime.getRuntime().freeMemory()) / (1024*1024);
+                Runtime.getRuntime().freeMemory()) / (double)(1024*1024);
     }
 
     private static void clearSpace() {

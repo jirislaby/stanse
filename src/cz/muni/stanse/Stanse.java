@@ -46,7 +46,7 @@ public final class Stanse {
 	    return;
 	}
 
-	getInstance().setVerbosityLevel(cmdLineManager.getVerbosityLevel());
+    getInstance().setVerbosityLevel(cmdLineManager.getVerbosityLevel());
 
 	buildConfiguration(cmdLineManager);
 	setOutputDirectory(cmdLineManager);
@@ -235,6 +235,12 @@ public final class Stanse {
             cz.muni.stanse.statistics.CheckerErrorsSorter.run(
                     database,cmdLineManager.getStatsOrdering(),orderingFile);
             return;
+        }
+
+        if (cmdLineManager.doStatsPerformance()) {
+            cz.muni.stanse.statistics.PerformanceDataBuilder.run(database,
+                cmdLineManager.getStatsPerformanceOutputFile(),
+                cmdLineManager.getStatsPerformanceOutputFormat());
         }
     }
 
