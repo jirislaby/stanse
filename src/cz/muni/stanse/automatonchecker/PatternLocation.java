@@ -102,8 +102,7 @@ final class PatternLocation {
         do {
             final AutomatonState currentState =
                 getUnprocessedAutomataStates().remove();
-            //if (!getProcessedAutomataStates().contains(currentState)) {
-            if (!wasProcessed(currentState)) {
+            if (!getProcessedAutomataStates().contains(currentState)) {
                 getProcessedAutomataStates().add(currentState);
                 transformAutomataStateToSuccessors(currentState);
                 successorsWereAffected = true;
