@@ -125,9 +125,13 @@ final class CmdLineManager {
               parser.accepts("stats-err-guitracing",
                              "Loads statistical database file and parses all " +
                              "its error messages and deliveres them into " +
-                             "Stanse's GUI to enable easy error-tracing.")
+                             "Stanse's GUI to enable easy error-tracing. It " +
+                             "is also possible to specify relocation of " +
+                             "source code files by specifying original and " +
+                             "current location (directory) of souces.")
                     .withRequiredArg()
-                    .describedAs("XMLdatabaseFile")
+                    .describedAs("XMLdatabaseFile[:Original-sources-dir:" +
+                                 "Current-sources-dir]")
                     .ofType(String.class);
         statsSort =
               parser.accepts("stats-err-sort",
@@ -267,6 +271,24 @@ final class CmdLineManager {
 
     boolean doStatsGuiTracing() {
         return getOptions().has(statsGuiTracing);
+    }
+
+    String statsGuiTracingOrigSrcDir() {
+        assert(getOptions().has(statsGuiTracing));
+        String[] cc = getOptions().valueOf(statsGuiTracing).split(":");
+        if (cc.length == 1)
+            return null;
+        assert(cc.length == 3);
+        return cc[1];
+    }
+
+    String statsGuiTracingCurrSrcDir() {
+        assert(getOptions().has(statsGuiTracing));
+        String[] cc = getOptions().valueOf(statsGuiTracing).split(":");
+        if (cc.length == 1)
+            return null;
+        assert(cc.length == 3);
+        return cc[2];
     }
 
     String statsOrderingFile() {

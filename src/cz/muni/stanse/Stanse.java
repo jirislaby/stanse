@@ -220,7 +220,13 @@ public final class Stanse {
         }
 
         if (cmdLineManager.doStatsGuiTracing()) {
-            cz.muni.stanse.statistics.CheckerErrorsGuiTracing.run(database);
+            if (cmdLineManager.statsGuiTracingOrigSrcDir() == null)
+                cz.muni.stanse.statistics.CheckerErrorsGuiTracing.run(database);
+            else
+                cz.muni.stanse.statistics.CheckerErrorsGuiTracing.run(
+                        database,
+                        Pair.make(cmdLineManager.statsGuiTracingOrigSrcDir(),
+                                  cmdLineManager.statsGuiTracingCurrSrcDir()));
             return;
         }
 
