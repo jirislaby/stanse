@@ -112,6 +112,7 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
                               final Triple<String,Double,Double> data) {
         data.setFirst(fileName);
         data.setSecond(getCurrTimeSEC());
+        clearSpace();
         data.setThird(getCurrSpaceMB());
     }
 
@@ -133,6 +134,19 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
     private static double getCurrSpaceMB() {
         return (Runtime.getRuntime().totalMemory() -
                 Runtime.getRuntime().freeMemory()) / (1024*1024);
+    }
+
+    private static void clearSpace() {
+        Runtime.getRuntime().runFinalization();
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().gc();
     }
 
     private static Element
