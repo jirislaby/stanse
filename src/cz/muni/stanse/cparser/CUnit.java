@@ -76,7 +76,6 @@ public final class CUnit extends Unit {
 	file += ".preproc";
 	this.jobEntry = jobEntry;
 	this.fileName = new File(file);
-	this.fileName.deleteOnExit();
     }
 
     public void parse() throws ParserException {
