@@ -3,14 +3,14 @@ Performance statistics
 
 
 (1/4) Files procession profile:
-      (a) Time:
+      (a) Time(s):
               Count  : 5746
               Sum    : 2977.1449971199036
               Min    : 0.06299996376037598
               Max    : 9.56499981880188
               Average: 0.5181247819561267
               Median : 0.4509999752044678
-      (b) Space:
+      (b) Space(MB):
               Count  : 5746
               Sum    : 475644.0
               Min    : 0.0
@@ -18,14 +18,14 @@ Performance statistics
               Average: 82.77828054298642
               Median : 58.0
 (2/4) Precaching LazyInternals before checker  start checking profile:
-      (a) Time:
+      (a) Time(s):
               Count  : 22984
               Sum    : 2252.0890033245087
               Min    : 0.0
               Max    : 7.4730000495910645
               Average: 0.09798507671965317
               Median : 0.0
-      (b) Space:
+      (b) Space(MB):
               Count  : 22984
               Sum    : 202592.0
               Min    : 0.0
@@ -33,14 +33,14 @@ Performance statistics
               Average: 8.81447963800905
               Median : 0.0
 (3/4) Checkers summary working profile:
-      (a) Time:
+      (a) Time(s):
               Count  : 22984
               Sum    : 724.2599904537201
               Min    : 9.999275207519531E-4
               Max    : 3.687999963760376
               Average: 0.031511485835960674
               Median : 0.014999866485595703
-      (b) Space:
+      (b) Space(MB):
               Count  : 22984
               Sum    : 454946.0
               Min    : 0.0
@@ -48,7 +48,7 @@ Performance statistics
               Average: 19.79403063000348
               Median : 15.0
 (4/4) Per checker working profile:
-      (a) Time:
+      (a) Time(s):
               AutomatonChecker of /usr/share/stanse/checkers/AutomatonChecker/kernel_atomic.xml
                   Count  : 5746
                   Sum    : 252.79199409484863
@@ -77,7 +77,7 @@ Performance statistics
                   Max    : 3.132999897003174
                   Average: 0.02324469052994247
                   Median : 0.012000083923339844
-      (b) Space:
+      (b) Space(MB):
               AutomatonChecker of /usr/share/stanse/checkers/AutomatonChecker/kernel_atomic.xml
                   Count  : 5746
                   Sum    : 137592.0
