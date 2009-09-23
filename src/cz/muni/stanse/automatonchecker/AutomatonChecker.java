@@ -172,7 +172,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 	    /* 60 s is hard limit, 10 s when there are many locations */
             if (FixPointComputationTime > 60000 ||
 			(FixPointComputationTime > 10000 &&
-				nodeLocationDictionary.size() > 500) {
+				nodeLocationDictionary.size() > 500)) {
                 monitor.pushTab();
                 final String errMsg =
                     "*** FAILED: fix-point computation FAILED, " +
