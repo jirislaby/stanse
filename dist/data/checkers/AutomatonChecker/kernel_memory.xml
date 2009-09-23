@@ -154,6 +154,19 @@
         </functionCall>
     </pattern>
 
+    <pattern name="free" constructive="false">
+        <functionCall>
+            <id>kref_put</id>
+	    <addrExpression>
+		<arrowExpression>
+		    <var name="A"/>
+		    <ignore/>
+		</arrowExpression>
+	    </addrExpression>
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
     <pattern name="noreturn">
         <functionCall>
             <id>panic</id>
@@ -243,6 +256,17 @@
 		<ignore/>
 		<var name="A"/>
 		<ignore/>
+	    </functionCall>
+	</nested>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
+	<nested>
+	    <functionCall>
+		<id>ide_pci_init_one</id>
+		<ignore/>
+		<ignore/>
+		<var name="A"/>
 	    </functionCall>
 	</nested>
     </pattern>
