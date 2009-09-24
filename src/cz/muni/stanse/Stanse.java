@@ -242,6 +242,12 @@ public final class Stanse {
                 cmdLineManager.getStatsPerformanceOutputFile(),
                 cmdLineManager.getStatsPerformanceOutputFormat());
         }
+
+        if (cmdLineManager.doStatsReports()) {
+            cz.muni.stanse.statistics.ErrorMessagesStatsBuilder.run(database,
+                cmdLineManager.getStatsReportsOutputFile(),
+                cmdLineManager.getStatsReportsOutputFormat());
+        }
     }
 
     private static void startUI(final CmdLineManager cmdLineManager) {

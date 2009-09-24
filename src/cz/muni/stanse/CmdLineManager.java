@@ -161,7 +161,19 @@ final class CmdLineManager {
                              "searched in the data to collect all performace " +
                              "information. Collected performance data are " +
                              "then written into specified output file, in " +
-                             "dpecified output format. Valid formats are: " +
+                             "specified output format. Valid formats are: " +
+                             "simple-text (human-readable simple text file)")
+                    .withRequiredArg()
+                    .describedAs("XMLdatabaseFile:" +
+                                 "outputFile:OutputFormat")
+                    .ofType(String.class);
+        statsReports =
+              parser.accepts("stats-reports",
+                             "Loads statistical database file and then it " +
+                             "searched in the data to collect all reports " +
+                             "related information. Collected data are " +
+                             "then written into specified output file, in " +
+                             "specified output format. Valid formats are: " +
                              "simple-text (human-readable simple text file)")
                     .withRequiredArg()
                     .describedAs("XMLdatabaseFile:" +
@@ -265,7 +277,8 @@ final class CmdLineManager {
         return getOptions().has(statsBuild)         ||
                getOptions().has(statsSort)          ||
                getOptions().has(statsGuiTracing)    ||
-               getOptions().has(statsPerformance)   ;
+               getOptions().has(statsPerformance)   ||
+               getOptions().has(statsReports)       ;
     }
 
     String statsBuildFile() {
@@ -340,6 +353,24 @@ final class CmdLineManager {
         return cc[2];
     }
 
+    boolean doStatsReports() {
+        return getOptions().has(statsReports);
+    }
+
+    String getStatsReportsOutputFile() {
+        assert(getOptions().has(statsReports));
+        String[] cc = getOptions().valueOf(statsReports).split(":");
+        assert(cc.length == 3);
+        return cc[1];
+    }
+
+    String getStatsReportsOutputFormat() {
+        assert(getOptions().has(statsReports));
+        String[] cc = getOptions().valueOf(statsReports).split(":");
+        assert(cc.length == 3);
+        return cc[2];
+    }
+
     Pair<String,String> getUIdesc() {
 	if (!getOptions().has(gui))
 	    return Pair.make("TUI","");
@@ -363,6 +394,7 @@ final class CmdLineManager {
         if (getOptions().has(statsSort)) return statsSort;
         if (getOptions().has(statsGuiTracing)) return statsGuiTracing;
         if (getOptions().has(statsPerformance)) return statsPerformance;
+        if (getOptions().has(statsReports)) return statsReports;
         return null;
     }
     
@@ -386,6 +418,7 @@ final class CmdLineManager {
     private final OptionSpec<String> statsGuiTracing;
     private final OptionSpec<String> statsSort;
     private final OptionSpec<String> statsPerformance;
+    private final OptionSpec<String> statsReports;
     private final OptionSet options;
     private final int numArgs;
 }

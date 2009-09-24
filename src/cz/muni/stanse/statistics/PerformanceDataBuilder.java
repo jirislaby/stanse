@@ -132,6 +132,7 @@ final class PerformanceData {
     private static PerfRecord buildPerfData(final List elements) {
         final Vector<Double> data = getSortedPropertyVector(elements);
         final int n = data.size();
+        assert(n > 0);
         double sum = 0.0;
         for (int i = 0; i < n; ++i)
             sum += data.get(i);
