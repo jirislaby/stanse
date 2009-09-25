@@ -1,0 +1,46 @@
+#!/usr/bin/perl -w
+use strict;
+use XML::XPath;
+use DBI;
+
+die "wrong commandline. should be $0 dest.db src.xml [string to crop from " .
+	"paths]" if @ARGV < 2;
+
+my $out = $ARGV[0];
+my $in = $ARGV[1];
+my $crop = @ARGV > 2 ? $ARGV[2] : "";
+
+my $dbh = DBI->connect("dbi:SQLite:dbname=$out","","", {AutoCommit => 0}) ||
+	die "connect to db error: " . DBI::errstr;
+
+my $xp = XML::XPath->new(filename => "$in") || die "can't open $in";
+
+$dbh->do("create table errors(id INTEGER PRIMARY KEY, checker STRING, " .
+		"file STRING, line INTEGER, errorXML BLOB)");
+
+
+my $errors = $xp->findnodes("/database/errors/error");
+
+my $data = $dbh->prepare("insert into errors(checker, file, line, errorXML) " .
+		"values (?, ?, ?, ?)");
+
+my $croplen = length $crop;
+
+foreach my $error ($errors->get_nodelist) {
+	my ($loc) = $error->findnodes("traces/trace[1]/locations/location[1]");
+	my $unit = $loc->findvalue("unit");
+	if (substr($unit, 0, $croplen) eq $crop) {
+		$unit = substr($unit, $croplen);
+	}
+	$data->execute($error->findvalue("checker_name"),
+			$unit, $loc->findvalue("line"),
+			XML::XPath::XMLParser::as_string($error));
+}
+
+$data->finish;
+
+$dbh->commit;
+
+$dbh->disconnect;
+
+0;
