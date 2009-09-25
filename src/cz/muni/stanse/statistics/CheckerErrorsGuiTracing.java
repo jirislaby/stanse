@@ -6,47 +6,74 @@ import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.gui.MainWindow;
 import cz.muni.stanse.utils.Pair;
 
+import java.util.Vector;
+import java.util.List;
+import java.util.Set;
+
 import org.dom4j.Document;
 import org.dom4j.Element;
-import java.util.Vector;
 
 public final class CheckerErrorsGuiTracing {
 
     // public section
 
-    public static void run(final Document database) {
-        run(database,Pair.make("",""));
+    public static void run(final Document database, final String outFile) {
+        run(database,Pair.make("",""),outFile);
     }
 
     public static void run(final Document database,
-                           final Pair<String,String> relocation) {
+                           final Pair<String,String> relocation,
+                           final String outFile) {
         System.out.print("Checker errors GUI tracing\n"+
                          "~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 
-        System.out.println("(1/3) Building checker errors...");
-        final Vector<CheckerError> errors = buildMessages(database,relocation);
+        System.out.println("(1/7) Collecting report nodes...");
+        final List errElems = database.selectNodes("database/errors/error");
         System.out.println("      Done.");
 
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                System.out.println("(2/3) Starting GUI in default style...");
-                MainWindow.setLookAndFeel("DEFAULT");
-                MainWindow.getInstance().setVisible(true);
-                System.out.println("      Done.");
+        System.out.println("(2/7) Building checker errors...");
+        final Vector<CheckerError> errors = buildMessages(errElems,relocation);
+        System.out.println("      Done.");
 
-                System.out.println("(3/3) Delivering errors to GUI...");
-                MainWindow.getInstance().addErrorMessages(errors);
-                System.out.println("      Done.");
-            }
-        });
+        assert(errElems.size() == errors.size());
+
+        System.out.println("(3/7) Starting GUI in default style...");
+        MainWindow.setLookAndFeel("DEFAULT");
+
+        final MainWindow mainWindow = MainWindow.getInstance();
+
+        mainWindow.setVisible(true);
+        System.out.println("      Done.");
+
+        System.out.println("(4/7) Delivering reports to GUI...");
+        mainWindow.addErrorMessages(errors);
+        System.out.println("      Done.");
+
+        System.out.println("(5/7) Waiting till user resolves reports...");
+        waitTillGUIEnds();
+        System.out.println("      Done.");
+
+        System.out.println("(6/7) Updating reports with resolution states...");
+        updateReports(errElems,errors,mainWindow.getBugs(),
+                      mainWindow.getFalsePositives());
+        System.out.println("      Done.");
+
+        System.out.println("(7/7) Writting reports into output file...");
+        DocumentToFileWriter.writeErrorReports(errElems,outFile);
+        System.out.println("      Done.");
     }
 
     // private section
 
-    private static Vector<CheckerError> buildMessages(final Document database,
+    private static void waitTillGUIEnds() {
+        while (MainWindow.isRunning()) {
+        }
+    }
+
+    private static Vector<CheckerError> buildMessages(final List elements,
                                          final Pair<String,String> relocation) {
         final Vector<CheckerError> errors = new Vector<CheckerError>();
-        for (final Object obj : database.selectNodes("database/errors/error"))
+        for (final Object obj : elements)
             if (obj instanceof Element)
                 errors.add(buildError((Element)obj,relocation));
         return errors;
@@ -80,10 +107,6 @@ public final class CheckerErrorsGuiTracing {
 
     private static CheckerErrorTraceLocation
     buildLocation(final Element locElem, final Pair<String,String> relocation) {
-        final String replacedUnit =locElem.selectSingleNode("unit")
-                                          .getText()
-                                          .replaceFirst(relocation.getFirst(),
-                                                        relocation.getSecond());
         return new CheckerErrorTraceLocation(
                         locElem.selectSingleNode("unit")
                                .getText()
@@ -92,6 +115,17 @@ public final class CheckerErrorsGuiTracing {
                         new Integer(locElem.selectSingleNode("line")
                                            .getText()).intValue(),
                         locElem.selectSingleNode("description").getText());
+    }
+
+    private static void
+    updateReports(final List elements, final Vector<CheckerError> errors,
+                  final Set<CheckerError> bugs, final Set<CheckerError> falses){
+        assert(elements.size() == errors.size());
+        for (int i = 0; i < elements.size(); ++i)
+            if (bugs.contains(errors.get(i)))
+                ((Element)elements.get(i)).addElement("real-bug");
+            else if (falses.contains(errors.get(i)))
+                ((Element)elements.get(i)).addElement("false-positive");
     }
 
     private CheckerErrorsGuiTracing() {

@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.DocumentHelper;
 
 public final class CheckerErrorsSorter {
 
@@ -110,7 +109,7 @@ public final class CheckerErrorsSorter {
         if (ordering.isEmpty()) {
             final String outFile = outDir + "/data.xml";
             System.out.print("      Storing data into '" + outFile + "'...");
-            writeToXML(elements,outFile);
+            DocumentToFileWriter.writeErrorReports(elements,outFile);
             System.out.println("Done.");
             return;
         }
@@ -156,20 +155,6 @@ public final class CheckerErrorsSorter {
         for (final Pair<String,Vector<Element>> item : split)
             processPhases(item.getSecond(),subOrdering,
                           outDir + "/" + (++dirCounter));
-    }
-
-    private static void writeToXML(final Vector<Element> elements,
-                                   final String outFile) {
-        final Document doc = DocumentHelper.createDocument();
-        final Element db = doc.addElement("database");
-        db.addElement("files");
-        db.addElement("internals");
-        db.addElement("checkers");
-        db.addElement("checkfails");
-        final Element errElem = db.addElement("errors");
-        for (final Element elem : elements)
-            errElem.add(elem.createCopy());
-        DocumentToFileWriter.write(doc,outFile);
     }
 
     private CheckerErrorsSorter() {
