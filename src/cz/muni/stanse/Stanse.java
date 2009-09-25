@@ -230,10 +230,10 @@ public final class Stanse {
             return;
         }
 
-        final String orderingFile = cmdLineManager.statsOrderingFile();
-        if (orderingFile != null) {
+        final String orderingDir = cmdLineManager.statsOrderingRootDir();
+        if (orderingDir != null) {
             cz.muni.stanse.statistics.CheckerErrorsSorter.run(
-                    database,cmdLineManager.getStatsOrdering(),orderingFile);
+                    database,cmdLineManager.getStatsOrdering(),orderingDir);
             return;
         }
 

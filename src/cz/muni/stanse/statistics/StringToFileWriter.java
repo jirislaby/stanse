@@ -5,6 +5,9 @@ public final class StringToFileWriter {
     // public section
 
     public static boolean write(final String data, final String fileName) {
+        final java.io.File pathName = new java.io.File(fileName);
+        if (pathName.getParentFile() != null)
+            pathName.getParentFile().mkdirs();
         try {
             final java.io.BufferedWriter file =
                 new java.io.BufferedWriter(new java.io.FileWriter(fileName));

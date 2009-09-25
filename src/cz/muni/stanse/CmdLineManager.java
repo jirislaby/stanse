@@ -138,21 +138,16 @@ final class CmdLineManager {
                              "Loads statistical database file and then it " +
                              "will sort error messages by lexicografical " +
                              "order defined by these keywords: " +
-                             "trace_end_desc " +
-                                "(description of error occurence location), " +
-                             "trace_begin_desc " +
-                                "(description of error cause location), "+
-                             "loc_unit " +
-                                "(unit of location), " +
-                             "loc_line " +
-                                "(line number of location), " +
-                             "checker_name " +
-                                "(checker name), " +
-                             "importance " +
-                                "(importance), ")
+                             "checker_name (checker name), " +
+                             "description (short description of report), " +
+                             "unit (unit of error report), " +
+                             "importance (importance). Output consists of " +
+                             "directory tree with information files (.txt) " +
+                             "and data files (.xml). Root of this directory " +
+                             "structure is passed as the second argument here.")
                     .withRequiredArg()
                     .describedAs("XMLdatabaseFile:" +
-                                 "outputXMLfile:SortKeyword1:" +
+                                 "outputDirectory:SortKeyword1:" +
                                  "SortKeyword2 ...")
                     .ofType(String.class);
         statsPerformance =
@@ -317,7 +312,7 @@ final class CmdLineManager {
         return cc[2];
     }
 
-    String statsOrderingFile() {
+    String statsOrderingRootDir() {
         if (!getOptions().has(statsSort))
             return null;
         String[] cc = getOptions().valueOf(statsSort).split(":");
