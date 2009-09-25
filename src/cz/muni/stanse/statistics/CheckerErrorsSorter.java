@@ -81,9 +81,7 @@ public final class CheckerErrorsSorter {
         return result;
     }
 
-    // private section
-
-    private static Vector<Pair<String,Vector<Element>>>
+    public static Vector<Pair<String,Vector<Element>>>
     splitByLastOf(final String childName, final List errElements) {
         final HashMap<String,Vector<Element>> namesDict =
                 new HashMap<String,Vector<Element>>();
@@ -103,6 +101,8 @@ public final class CheckerErrorsSorter {
             result.add(Pair.make(name,namesDict.get(name)));
         return result;
     }
+
+    // private section
 
     private static void processPhases(final Vector<Element> elements,
                                       final Vector<String> ordering,
