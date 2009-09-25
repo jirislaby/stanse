@@ -753,7 +753,7 @@ jumpStatement
 	;
 
 asmStatement	// GNU
-	:	('asm'|'__asm'|'__asm__') typeQualifier? '(' asmArgument ')' ';' -> ^(ASM) // TODO
+	:	(a='asm'|a='__asm'|a='__asm__') typeQualifier? '(' asmArgument ')' ';' -> ^(ASM[$a]) // TODO
 	;
 
 asmArgument	// GNU
