@@ -25,7 +25,7 @@ final class ActionCheckForBugs extends javax.swing.AbstractAction {
             new CheckerErrorReceiver() {
                 @Override
                 public void receive(final CheckerError error) {
-                    getErrorsTreeManager().add(error);
+                    getErrorsTreeManager().addUnchecked(error);
                     getErrorsTreeManager().present();
                 }
                 @Override

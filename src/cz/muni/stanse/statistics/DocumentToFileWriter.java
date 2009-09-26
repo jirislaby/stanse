@@ -31,21 +31,39 @@ public final class DocumentToFileWriter {
         return true;
     }
 
-    public static void writeErrorReports(final Collection<Element> elements,
+    public static void writeErrorReports(final Collection<Element> files,
+                                         final Collection<Element> internals,
+                                         final Collection<Element> checkers,
+                                         final Collection<Element> checkfails,
+                                         final Collection<Element> errors,
                                          final String outFile) {
         final Document doc = DocumentHelper.createDocument();
         final Element db = doc.addElement("database");
-        db.addElement("files");
-        db.addElement("internals");
-        db.addElement("checkers");
-        db.addElement("checkfails");
-        final Element errElem = db.addElement("errors");
-        for (final Element elem : elements)
-            errElem.add(elem.createCopy());
+
+        buildDatabaseSection(db,"files",files);
+        buildDatabaseSection(db,"internals",internals);
+        buildDatabaseSection(db,"checkers",checkers);
+        buildDatabaseSection(db,"checkfails",checkfails);
+        buildDatabaseSection(db,"errors",errors);
+
         write(doc,outFile);
     }
 
+    public static void writeErrorReports(final Collection<Element> errors,
+                                         final String outFile) {
+        writeErrorReports(null,null,null,null,errors,outFile);
+    }
+
     // private section
+
+    private static void
+    buildDatabaseSection(final Element db, final String secName,
+                         final Collection<Element> content) {
+        final Element secElem = db.addElement(secName);
+        if (content != null)
+            for (final Element elem : content)
+                secElem.add(elem.createCopy());
+    }
 
     private DocumentToFileWriter() {
     }

@@ -5,10 +5,10 @@ import cz.muni.stanse.checker.CheckerErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.gui.MainWindow;
 import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.utils.Triple;
 
 import java.util.Vector;
 import java.util.List;
-import java.util.Set;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -27,17 +27,25 @@ public final class CheckerErrorsGuiTracing {
         System.out.print("Checker errors GUI tracing\n"+
                          "~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 
-        System.out.println("(1/7) Collecting report nodes...");
+        System.out.println("(1/8) Collecting report nodes...");
         final List errElems = database.selectNodes("database/errors/error");
         System.out.println("      Done.");
 
-        System.out.println("(2/7) Building checker errors...");
-        final Vector<CheckerError> errors = buildMessages(errElems,relocation);
+        System.out.println("(2/8) Splitting reports into categories...");
+        final Triple<Vector<Element>,Vector<Element>,Vector<Element>>
+            categories = CheckerErrorsSorter.splitByResolved(errElems);
         System.out.println("      Done.");
 
-        assert(errElems.size() == errors.size());
+        System.out.println("(3/8) Building checker errors...");
+        final Vector<CheckerError> origBugs =
+                buildMessages(categories.getFirst(),relocation);
+        final Vector<CheckerError> origFalses =
+                buildMessages(categories.getSecond(),relocation);
+        final Vector<CheckerError> origUnchecked =
+                buildMessages(categories.getThird(),relocation);
+        System.out.println("      Done.");
 
-        System.out.println("(3/7) Starting GUI in default style...");
+        System.out.println("(4/8) Starting GUI in default style...");
         MainWindow.setLookAndFeel("DEFAULT");
 
         final MainWindow mainWindow = MainWindow.getInstance();
@@ -45,21 +53,40 @@ public final class CheckerErrorsGuiTracing {
         mainWindow.setVisible(true);
         System.out.println("      Done.");
 
-        System.out.println("(4/7) Delivering reports to GUI...");
-        mainWindow.addErrorMessages(errors);
+        System.out.println("(5/8) Delivering reports to GUI...");
+        mainWindow.addBugs(origBugs);
+        mainWindow.addFalsePositives(origFalses);
+        mainWindow.addUnchecked(origUnchecked);
+        mainWindow.refreshErrorsTree();
         System.out.println("      Done.");
 
-        System.out.println("(5/7) Waiting till user resolves reports...");
+        System.out.println("(6/8) Waiting till user resolves reports...");
         waitTillGUIEnds();
         System.out.println("      Done.");
 
-        System.out.println("(6/7) Updating reports with resolution states...");
-        updateReports(errElems,errors,mainWindow.getBugs(),
-                      mainWindow.getFalsePositives());
+        System.out.println("(7/8) Collecting results from GUI...");
+        final Vector<Element> result = new Vector<Element>();
+        result.addAll(updateReports(
+                            StatisticalDatabaseBuilder
+                                    .toElements(mainWindow.getBugs()),
+                            "real-bug"));
+        result.addAll(updateReports(
+                            StatisticalDatabaseBuilder
+                                    .toElements(mainWindow.getFalsePositives()),
+                            "false-positive"));
+        result.addAll(StatisticalDatabaseBuilder
+                                    .toElements(mainWindow.getUnchecked()));
         System.out.println("      Done.");
 
-        System.out.println("(7/7) Writting reports into output file...");
-        DocumentToFileWriter.writeErrorReports(errElems,outFile);
+        System.out.println("(8/8) Writting reports into output file...");
+        DocumentToFileWriter.writeErrorReports(
+            database.selectNodes("database/files/file"),
+            database.selectNodes("database/internals/internal"),
+            database.selectNodes("database/checkers/checker"),
+            database.selectNodes("database/checkfails/fail"),
+            result,
+            outFile
+        );
         System.out.println("      Done.");
     }
 
@@ -117,15 +144,11 @@ public final class CheckerErrorsGuiTracing {
                         locElem.selectSingleNode("description").getText());
     }
 
-    private static void
-    updateReports(final List elements, final Vector<CheckerError> errors,
-                  final Set<CheckerError> bugs, final Set<CheckerError> falses){
-        assert(elements.size() == errors.size());
-        for (int i = 0; i < elements.size(); ++i)
-            if (bugs.contains(errors.get(i)))
-                ((Element)elements.get(i)).addElement("real-bug");
-            else if (falses.contains(errors.get(i)))
-                ((Element)elements.get(i)).addElement("false-positive");
+    private static Vector<Element>
+    updateReports(final Vector<Element> elements, final String flagName) {
+        for (final Element elem : elements)
+            elem.addElement(flagName);
+        return elements;
     }
 
     private CheckerErrorsGuiTracing() {

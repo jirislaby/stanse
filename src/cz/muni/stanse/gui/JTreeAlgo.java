@@ -14,22 +14,18 @@ final class JTreeAlgo {
         getModel(tree).reload();
     }
 
+    static void repaint(final JTree tree) {
+        tree.repaint();
+    }
+
     static void present(final JTree tree, final DefaultMutableTreeNode node) {
         getModel(tree).reload(node.getParent());
-//        getModel(tree).nodeChanged(node.getParent());
-//        getModel(tree).nodeStructureChanged(node);
-//        int[] aa = {getModel(tree).getIndexOfChild(node.getParent(),node)};
-//        Object oo = getModel(tree).getChild(node.getParent(),aa[0]);
-//        getModel(tree).nodesWereInserted(node.getParent(),aa);
-//        getModel(tree).fireTreeStructureChanged();
     }
 
     static <T> DefaultMutableTreeNode add(final JTree tree, final T data) {
         final DefaultMutableTreeNode newNode =
                       new DefaultMutableTreeNode(data);
         getRoot(tree).add(newNode);
-//getModel(tree).insertNodeInto(newNode,getRoot(tree),getRoot(tree).getChildCount());
-//getModel(tree).nodeChanged(newNode);
         return newNode;
     }
 
@@ -39,15 +35,11 @@ final class JTreeAlgo {
         final DefaultMutableTreeNode newNode =
                       new DefaultMutableTreeNode(data);
         parent.add(newNode);
-//getModel(tree).insertNodeInto(newNode,parent,parent.getChildCount());
-//getModel(tree).nodeChanged(newNode);
         return newNode;
     }
 
     static void remove(final JTree tree, final DefaultMutableTreeNode node) {
-//final DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode)node.getParent();
         getModel(tree).removeNodeFromParent(node);
-//getModel(tree).nodeChanged(parentNode);
     }
 
     static DefaultMutableTreeNode getSelection(final JTree tree) {

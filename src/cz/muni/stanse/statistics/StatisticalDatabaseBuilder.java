@@ -6,10 +6,12 @@ import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 
+import java.util.Vector;
+import java.util.Collection;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.Vector;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
@@ -68,6 +70,14 @@ public final class StatisticalDatabaseBuilder {
 
         System.out.println("Output written.\n\n\nSee results in " +
                            "file:\n    " + outputFile + "\n\n\n");
+    }
+
+    public static Vector<Element>
+    toElements(final Collection<CheckerError> errors){
+        final Vector<Element> result = new Vector<Element>();
+        for (final CheckerError error: errors)
+            result.add(error.xmlDump());
+        return result;
     }
 
     // private section

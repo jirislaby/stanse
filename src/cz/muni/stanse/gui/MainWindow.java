@@ -30,8 +30,19 @@ public final class MainWindow extends javax.swing.JFrame {
         lookAndFeelType = type.toUpperCase();
     }
 
-    public void addErrorMessages(final Collection<CheckerError> errors) {
-        getErrorsTreeManager().addAll(errors);
+    public void addBugs(final Collection<CheckerError> bugs) {
+        getErrorsTreeManager().addBugs(bugs);
+    }
+
+    public void addFalsePositives(final Collection<CheckerError> falses) {
+        getErrorsTreeManager().addFalsePositives(falses);
+    }
+
+    public void addUnchecked(final Collection<CheckerError> unchecked) {
+        getErrorsTreeManager().addUnchecked(unchecked);
+    }
+
+    public void refreshErrorsTree() {
         getErrorsTreeManager().present();
     }
 
@@ -41,6 +52,10 @@ public final class MainWindow extends javax.swing.JFrame {
 
     public Set<CheckerError> getFalsePositives() {
         return getErrorsTreeManager().getFalsePositives();
+    }
+
+    public Set<CheckerError> getUnchecked() {
+        return getErrorsTreeManager().getUnchecked();
     }
 
     // package-private section

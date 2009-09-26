@@ -20,6 +20,7 @@ final class ErrorsTreeManager {
         this.errorsTree = errorsTree;
         bugs = new HashSet<CheckerError>();
         falses = new HashSet<CheckerError>();
+        unchecked = new HashSet<CheckerError>();
 
         getErrorsTree().getSelectionModel().setSelectionMode(
                 javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -58,9 +59,8 @@ final class ErrorsTreeManager {
             public void actionPerformed(final java.awt.event.ActionEvent e) {
                 if (!JTreeAlgo.isSomethingSelected(getErrorsTree()))
                     return;
-                unmarkSelectedReport();
                 markSelectedReportAsBug();
-                getErrorsTree().repaint();
+                JTreeAlgo.repaint(getErrorsTree());
             }
         });
         markFalsePosButton.addActionListener(
@@ -69,9 +69,8 @@ final class ErrorsTreeManager {
                 public void actionPerformed(final java.awt.event.ActionEvent e){
                     if (!JTreeAlgo.isSomethingSelected(getErrorsTree()))
                         return;
-                    unmarkSelectedReport();
                     markSelectedReportAsFalsePositive();
-                    getErrorsTree().repaint();
+                    JTreeAlgo.repaint(getErrorsTree());
                 }
             }
         );
@@ -82,7 +81,7 @@ final class ErrorsTreeManager {
                     if (!JTreeAlgo.isSomethingSelected(getErrorsTree()))
                         return;
                     unmarkSelectedReport();
-                    getErrorsTree().repaint();
+                    JTreeAlgo.repaint(getErrorsTree());
                 }
             }
         );
@@ -96,17 +95,24 @@ final class ErrorsTreeManager {
         JTreeAlgo.present(getErrorsTree());
     }
 
-    synchronized void addAll(final Collection<CheckerError> collection) {
-        for (final CheckerError error : collection)
-            add(error);
+    synchronized void addBugs(final Collection<CheckerError> bugs) {
+        addAll(bugs);
+        this.bugs.addAll(bugs);
     }
 
-    synchronized void add(final CheckerError error) {
-        final DefaultMutableTreeNode errorNode =
-                JTreeAlgo.add(getErrorsTree(),error);
-        for (final CheckerErrorTrace trace : error.getTraces())
-            add(errorNode,trace);
-//JTreeAlgo.present(getErrorsTree(),errorNode);
+    synchronized void addFalsePositives(final Collection<CheckerError> falses) {
+        addAll(falses);
+        this.falses.addAll(falses);
+    }
+
+    synchronized void addUnchecked(final Collection<CheckerError> unchecked) {
+        addAll(unchecked);
+        this.unchecked.addAll(unchecked);
+    }
+
+    synchronized void addUnchecked(final CheckerError unchecked) {
+        add(unchecked);
+        this.unchecked.add(unchecked);
     }
 
     public HashSet<CheckerError> getBugs() {
@@ -117,7 +123,23 @@ final class ErrorsTreeManager {
         return falses;
     }
 
+    public HashSet<CheckerError> getUnchecked() {
+        return unchecked;
+    }
+
     // private section
+
+    private void addAll(final Collection<CheckerError> collection) {
+        for (final CheckerError error : collection)
+            add(error);
+    }
+
+    private void add(final CheckerError error) {
+        final DefaultMutableTreeNode errorNode =
+                JTreeAlgo.add(getErrorsTree(),error);
+        for (final CheckerErrorTrace trace : error.getTraces())
+            add(errorNode,trace);
+    }
 
     private void add(final DefaultMutableTreeNode parent,
                                       final CheckerErrorTrace trace) {
@@ -126,14 +148,11 @@ final class ErrorsTreeManager {
         for (final CheckerErrorTraceLocation location :
                    trace.getLocations())
             add(traceNode,location);
-//JTreeAlgo.present(getErrorsTree(),traceNode);
     }
 
     private void add(final DefaultMutableTreeNode parent,
                      final CheckerErrorTraceLocation location) {
-//final DefaultMutableTreeNode locationNode =
         JTreeAlgo.add(getErrorsTree(),parent,location);
-//JTreeAlgo.present(getErrorsTree(),locationNode);
     }
 
     private Object getSelectedData() {
@@ -222,6 +241,8 @@ final class ErrorsTreeManager {
         assert(JTreeAlgo.isSomethingSelected(getErrorsTree()));
         final CheckerError error = findCheckerErrorBySelectedNode();
         assert(error != null);
+        falses.remove(error);
+        unchecked.remove(error);
         bugs.add(error);
     }
 
@@ -229,6 +250,8 @@ final class ErrorsTreeManager {
         assert(JTreeAlgo.isSomethingSelected(getErrorsTree()));
         final CheckerError error = findCheckerErrorBySelectedNode();
         assert(error != null);
+        bugs.remove(error);
+        unchecked.remove(error);
         falses.add(error);
     }
 
@@ -238,9 +261,11 @@ final class ErrorsTreeManager {
         assert(error != null);
         bugs.remove(error);
         falses.remove(error);
+        unchecked.add(error);
     }
 
     private final javax.swing.JTree errorsTree;
     private final HashSet<CheckerError> bugs;
     private final HashSet<CheckerError> falses;
+    private final HashSet<CheckerError> unchecked;
 }
