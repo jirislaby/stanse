@@ -153,6 +153,25 @@ final class CmdLineManager {
                                  "outputDirectory:SortKeyword1:" +
                                  "SortKeyword2 ...")
                     .ofType(String.class);
+        statsMerge =
+              parser.accepts("stats-err-merge",
+                             "Loads statistical database file and all XML " +
+                             "file in specified directory. All these files " +
+                             "combined (merged) to form one output XML " +
+                             "database file. Merge is realized this way. " +
+                             "Content of sections 'files','internals', " +
+                             "'checkers' and 'checkfails' are simply copied" +
+                             "from original database file. The last section " +
+                             "'errors' is computed by simple concatenation " +
+                             "of contents of 'errors' sections in XML files " +
+                             "inside specified directory structure. Content " +
+                             "of 'errors' section in original database file " +
+                             "does not participate in this merge of 'errors' " +
+                             "sections.")
+                    .withRequiredArg()
+                    .describedAs("XMLdatabaseFile:" +
+                                 "outputDatabaseFile:RootOfDirectoryStructure")
+                    .ofType(String.class);
         statsPerformance =
               parser.accepts("stats-performance",
                              "Loads statistical database file and then it " +
@@ -275,6 +294,7 @@ final class CmdLineManager {
         return getOptions().has(statsBuild)         ||
                getOptions().has(statsSort)          ||
                getOptions().has(statsGuiTracing)    ||
+               getOptions().has(statsMerge)         ||
                getOptions().has(statsPerformance)   ||
                getOptions().has(statsReports)       ;
     }
@@ -340,6 +360,24 @@ final class CmdLineManager {
         return ordering;
     }
 
+    boolean doStatsMerge() {
+        return getOptions().has(statsMerge);
+    }
+
+    String getStatsMergeOutputFile() {
+        assert(getOptions().has(statsMerge));
+        String[] cc = getOptions().valueOf(statsMerge).split(":");
+        assert(cc.length == 3);
+        return cc[1];
+    }
+
+    String getStatsMergeDirsRoot() {
+        assert(getOptions().has(statsMerge));
+        String[] cc = getOptions().valueOf(statsMerge).split(":");
+        assert(cc.length == 3);
+        return cc[2];
+    }
+
     boolean doStatsPerformance() {
         return getOptions().has(statsPerformance);
     }
@@ -398,11 +436,12 @@ final class CmdLineManager {
     private OptionSpec<String> getStatsDatabaseOption() {
         if (getOptions().has(statsSort)) return statsSort;
         if (getOptions().has(statsGuiTracing)) return statsGuiTracing;
+        if (getOptions().has(statsMerge)) return statsMerge;
         if (getOptions().has(statsPerformance)) return statsPerformance;
         if (getOptions().has(statsReports)) return statsReports;
         return null;
     }
-    
+
     private final OptionParser parser;
     private final OptionSpec<Void> help;
     private final OptionSpec<Void> version;
@@ -422,6 +461,7 @@ final class CmdLineManager {
     private final OptionSpec<String> statsBuild;
     private final OptionSpec<String> statsGuiTracing;
     private final OptionSpec<String> statsSort;
+    private final OptionSpec<String> statsMerge;
     private final OptionSpec<String> statsPerformance;
     private final OptionSpec<String> statsReports;
     private final OptionSet options;

@@ -27,7 +27,7 @@ public final class CheckerErrorsSorter {
 
         System.out.println("(2/2) Sorting and writting results...");
         processPhases(errors,ordering,outDir);
-        System.out.println("      Done.");
+        System.out.print("      Done.\n\n\n");
     }
 
     public static Vector<Pair<String,Vector<Element>>>

@@ -9,8 +9,12 @@ public final class StatisticalDatabaseLoader {
     // public section
 
     public static Document run(final String xmlFile) {
+        return run(new java.io.File(xmlFile));
+    }
+
+    public static Document run(final java.io.File xmlFile) {
         try {
-            return (new SAXReader()).read(new java.io.File(xmlFile));
+            return (new SAXReader()).read(xmlFile);
         } catch (final DocumentException e) {
             System.out.println("Cannot load statistical XML database file:\n" +
                                xmlFile + "\n\n");

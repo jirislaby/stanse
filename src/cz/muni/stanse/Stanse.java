@@ -219,6 +219,13 @@ public final class Stanse {
             return;
         }
 
+        final String orderingDir = cmdLineManager.statsOrderingRootDir();
+        if (orderingDir != null) {
+            cz.muni.stanse.statistics.CheckerErrorsSorter.run(
+                    database,cmdLineManager.getStatsOrdering(),orderingDir);
+            return;
+        }
+
         if (cmdLineManager.doStatsGuiTracing()) {
             if (cmdLineManager.statsGuiTracingOrigSrcDir() == null)
                 cz.muni.stanse.statistics.CheckerErrorsGuiTracing.run(
@@ -232,10 +239,10 @@ public final class Stanse {
             return;
         }
 
-        final String orderingDir = cmdLineManager.statsOrderingRootDir();
-        if (orderingDir != null) {
-            cz.muni.stanse.statistics.CheckerErrorsSorter.run(
-                    database,cmdLineManager.getStatsOrdering(),orderingDir);
+        if (cmdLineManager.doStatsMerge()) {
+            cz.muni.stanse.statistics.MergeDocuments.run(
+                    database,cmdLineManager.getStatsMergeDirsRoot(),
+                    cmdLineManager.getStatsMergeOutputFile());
             return;
         }
 

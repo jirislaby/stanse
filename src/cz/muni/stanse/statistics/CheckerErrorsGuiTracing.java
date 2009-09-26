@@ -87,7 +87,7 @@ public final class CheckerErrorsGuiTracing {
             result,
             outFile
         );
-        System.out.println("      Done.");
+        System.out.print("      Done.\n\n\n");
     }
 
     // private section

@@ -168,7 +168,7 @@ public final class ErrorMessagesStatsBuilder {
                 null;
         assert(perfContent != null);
         StringToFileWriter.write(perfContent,outputFile);
-        System.out.println("      Done.");
+        System.out.print("      Done.\n\n\n");
     }
 
     // private section
