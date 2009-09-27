@@ -43,6 +43,9 @@ class FalsePositivesDetectorFactory {
     private static final Vector<FalsePositivesDetectorCreator> creators =
                                     new Vector<FalsePositivesDetectorCreator>();
     static {
+        register(new FPDMemoryAssignedFilterCreator());
+        register(new FPDMemoryReassignedFilterCreator());
+        /* should be last */
         register(new FPDSameLocationReportFilterCreator());
     }
 }
