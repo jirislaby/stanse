@@ -45,7 +45,7 @@
             end="dereferencing NULL pointer here." />
 
     <error  from="D[A]" by="deref[A]"
-            desc="dereferencing dangling pointer."
+            desc="dereferencing dangling pointer"
             level="0"
             entry="pointer does not point to valid memory at function entry."
             begin="pointer does not point to valid memory."
@@ -56,7 +56,7 @@
             desc="releasing already released memory"
             level="0"
             entry=""
-            begin="memory is released here -> pointer becames dangling."
+            begin="memory is released here -> pointer becomes dangling."
             propag="not affected ==> pointer is still dangling."
             end="pointer is dangling and releasing it here." />
 

@@ -21,6 +21,10 @@
     <transition from="IL[A]" by="lock[B]" to="ILL[A][B]" />
     <transition from="ILL[A][B]" by="unlock[B]" to="" />
 
+    <transition from="X[A]" by="plock[A]" to="P[A]" />
+    <transition from="U[A]" by="plock[A]" to="P[A]" />
+    <transition from="IU[A]" by="plock[A]" to="P[A]" />
+
     <error  from="U[A]" by="unlock[A]"
             desc="double unlock"
             level="0"
@@ -53,7 +57,7 @@
             propag="not affected ==> the lock is still locked."
             end="The lock is locked and here is an attempt to lock it twice." />
 
-    <error  from="L[*]" by=""
+    <error  from="L[*] -P[*]" by=""
             desc="leaving function in locked state"
             level="1"
             entry="The function called in unlocked state."
@@ -61,13 +65,67 @@
             propag="not affected ==> the lock is still locked."
             end="Leaving function in locked state." />
 
-    <error  from="IU[*]" by=""
+    <error  from="IU[*] -P[*]" by=""
             desc="leaving function in unlocked state"
             level="1"
             entry="The function called in locked state."
             begin="The lock is unlocked here."
             propag="not affected ==> the lock is still unlocked."
             end="Leaving function in unlocked state." />
+
+    <pattern name="plock">
+	<assignExpression>
+	    <ignore/>
+	    <functionCall>
+		<id>__st_mutex_trylock_st__</id>
+		<var name="A" />
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="plock">
+	<assignExpression>
+	    <ignore/>
+	    <functionCall>
+		<id>__st_mutex_lock_interruptible_st__</id>
+		<var name="A" />
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="plock">
+	<assignExpression>
+	    <ignore/>
+	    <functionCall>
+		<id>__st_mutex_lock_killable_st__</id>
+		<var name="A" />
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="plock">
+	<assignExpression>
+	    <ignore/>
+	    <functionCall>
+		<id>__st_spin_trylock_st__</id>
+		<var name="A" />
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+    <pattern name="plock">
+	<assignExpression>
+	    <ignore/>
+	    <functionCall>
+		<id>__st_spin_trylock_irqsave_st__</id>
+		<var name="A" />
+		<ignore/>
+	    </functionCall>
+	</assignExpression>
+    </pattern>
+
+
+
 
     <pattern name="lock">
         <functionCall>
