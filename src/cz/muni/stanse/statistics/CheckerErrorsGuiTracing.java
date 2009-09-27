@@ -94,6 +94,9 @@ public final class CheckerErrorsGuiTracing {
 
     private static void waitTillGUIEnds() {
         while (MainWindow.isRunning()) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) { }
         }
     }
 
