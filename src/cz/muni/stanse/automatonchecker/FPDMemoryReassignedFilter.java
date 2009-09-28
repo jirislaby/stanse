@@ -6,6 +6,8 @@ import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Element;
@@ -27,22 +29,35 @@ final class FPDMemoryReassignedFilter extends FalsePositivesDetector {
                             final ErrorRule rule) {
         String desc = rule.getErrorDescription();
         if (!desc.equals("dereferencing NULL pointer") &&
-                !desc.equals("dereferencing dangling pointer"))
+                !desc.equals("dereferencing dangling pointer") &&
+                !desc.equals("releasing already released memory"))
             return false;
         Iterator<CFGNode> nodeI = path.listIterator();
-        Element e = nodeI.next().getElement();
-        boolean call = e.getName().equals("functionCall");
-        if (!e.getName().equals("assignExpression") && !call)
+        Element nEl = nodeI.next().getElement();
+        List<Element> left = null;
+        String nElName = nEl.getName();
+        int idx = -1;
+        if (nElName.equals("functionCall")) {
+            if (nEl.nodeCount() != 2) /* name and id */
+                return false;
+            idx = 1;
+        } else if (nElName.equals("assignExpression")) {
+            idx = 0;
+        } else if (nElName.equals("assert")) {
+            left = nEl.selectNodes(".//id");
+        } else
             return false;
-        if (call && e.nodeCount() != 2) /* name and id */
-            return false;
-        Element left = (Element)e.elements().get(call ? 1 : 0); // leftside
+        if (left == null) {
+            left = new LinkedList<Element>();
+            left.add((Element)nEl.elements().get(idx)); // leftside
+        }
         while (nodeI.hasNext())
             for (Object fno: nodeI.next().getElement().
                     selectNodes("..//assignExpression")) {
                 Element left1 = (Element)((Element)fno).elements().get(0);
-                if (XMLAlgo.equalElements(left, left1))
-                    return true;
+                for (Element e: left)
+                    if (XMLAlgo.equalElements(e, left1))
+                        return true;
             }
         return false;
     }
