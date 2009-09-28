@@ -61,7 +61,7 @@
             end="pointer is dangling and releasing it here." />
 
     <error  from="N[A] -V[A] -X[A] -D[A]" by="isnull[A]"
-            desc="unnecessary check (checking for NULL)."
+            desc="unnecessary check (checking for NULL)"
             level="4"
             entry="pointer is NULL at function entry."
             begin="pointer is NULL here."
@@ -69,7 +69,7 @@
             end="pointer always points to NULL here, but checking for it." />
 
     <error  from="V[A] -N[A] -X[A] -D[A]" by="isnotnull[A]"
-            desc="unnecessary check (checking for not NULL)."
+            desc="unnecessary check (checking for not NULL)"
             level="4"
             entry="pointer is not NULL at function entry."
             begin="pointer is not NULL here."
@@ -305,6 +305,31 @@
         </functionCall>
     </pattern>
 
+    <pattern name="kill" constructive="false">
+        <functionCall>
+            <id>queue_work</id>
+	    <ignore/>
+	    <addrExpression>
+		<arrowExpression>
+		    <var name="A"/>
+		    <ignore/>
+		</arrowExpression>
+	    </addrExpression>
+        </functionCall>
+    </pattern>
+
+    <pattern name="kill" constructive="false">
+        <functionCall>
+            <id>schedule_work</id>
+	    <addrExpression>
+		<arrowExpression>
+		    <var name="A"/>
+		    <ignore/>
+		</arrowExpression>
+	    </addrExpression>
+        </functionCall>
+    </pattern>
+
     <pattern name="deref" constructive="false">
         <nested exclude0="sizeofExpression">
             <derefExpression>
@@ -436,6 +461,71 @@
 		    <prefixExpression op="!">
 			<var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
 		    </prefixExpression>
+		</binaryExpression>
+	    </prefixExpression>
+        </assert>
+    </pattern>
+
+    <!-- assert(A == (T*)0 || *) -->
+    <pattern name="isnull" constructive="false">
+        <assert>
+	    <binaryExpression op="||">
+		<binaryExpression op="==">
+		    <var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+		    <castExpression>
+			<ignore />
+			<intConst>0</intConst>
+		    </castExpression>
+		</binaryExpression>
+		<ignore/>
+	    </binaryExpression>
+        </assert>
+    </pattern>
+    <!-- assert(!(A == (T*)0 || *)) well, this is not accurate -->
+    <pattern name="isnotnull" constructive="false">
+        <assert>
+	    <prefixExpression op="!">
+		<binaryExpression op="||">
+		    <binaryExpression op="==">
+			<var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+			<castExpression>
+			    <ignore />
+			    <intConst>0</intConst>
+			</castExpression>
+		    </binaryExpression>
+		    <ignore/>
+		</binaryExpression>
+	    </prefixExpression>
+        </assert>
+    </pattern>
+    <!-- assert(* || A == (T*)0) -->
+    <pattern name="isnull" constructive="false">
+        <assert>
+	    <binaryExpression op="||">
+		<ignore/>
+		<binaryExpression op="==">
+		    <var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+		    <castExpression>
+			<ignore />
+			<intConst>0</intConst>
+		    </castExpression>
+		</binaryExpression>
+	    </binaryExpression>
+        </assert>
+    </pattern>
+    <!-- assert(!(* || A == (T*)0) -->
+    <pattern name="isnotnull" constructive="false">
+        <assert>
+	    <prefixExpression op="!">
+		<binaryExpression op="||">
+		    <ignore/>
+		    <binaryExpression op="==">
+			<var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+			<castExpression>
+			    <ignore />
+			    <intConst>0</intConst>
+			</castExpression>
+		    </binaryExpression>
 		</binaryExpression>
 	    </prefixExpression>
         </assert>
