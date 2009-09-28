@@ -8,7 +8,6 @@ package cz.muni.stanse.codestructures;
 
 import org.dom4j.Element;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
