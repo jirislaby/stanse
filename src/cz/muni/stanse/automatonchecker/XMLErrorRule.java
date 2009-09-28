@@ -28,17 +28,17 @@ final class XMLErrorRule {
                                        throws XMLAutomatonSyntaxErrorException {
         description = XMLelement.attribute("desc").getValue().
                                     replaceAll("[ \t]+", " ");
-        errorLevel = Integer.decode(XMLelement.attribute("level").getValue());
-        entryMessage = XMLelement.attribute("entry").getValue().
+        errorLevel = Integer.decode(XMLelement.attributeValue("level"));
+        entryMessage = XMLelement.attributeValue("entry").
                                     replaceAll("[ \t]+"," ");
-        beginMessage = XMLelement.attribute("begin").getValue().
+        beginMessage = XMLelement.attributeValue("begin").
                                     replaceAll("[ \t]+"," ");
-        propagMessage = XMLelement.attribute("propag").getValue().
+        propagMessage = XMLelement.attributeValue("propag").
                                     replaceAll("[ \t]+"," ");
-        endMessage = XMLelement.attribute("end").getValue().
+        endMessage = XMLelement.attributeValue("end").
                                     replaceAll("[ \t]+"," ");
 
-        final String byString = XMLelement.attribute("by").getValue();
+        final String byString = XMLelement.attributeValue("by");
         final Triple<String,Vector<String>,Character> bySymbol =
             (byString.isEmpty()) ?
                     new Triple<String,Vector<String>,Character>
@@ -54,7 +54,7 @@ final class XMLErrorRule {
 
         final LinkedList<Triple<String,Vector<String>,Character> > fromList =
             XMLRuleStringParser.parseRuleString(
-                XMLelement.attribute("from").getValue());
+                XMLelement.attributeValue("from"));
         checkList(fromList);
         checkVars(1,-1,fromList);
 
