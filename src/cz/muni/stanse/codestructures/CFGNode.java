@@ -65,8 +65,9 @@ public class CFGNode {
     }
 
     public final int getLine() {
-        return (getElement() != null && getElement().attribute("bl") != null) ?
-                    new Integer(getElement().attribute("bl").getValue()) : 1;
+	if (getElement() == null || getElement().attribute("bl") == null)
+	    return 1;
+        return Integer.parseInt(getElement().attributeValue("bl"));
     }
 
     /**
