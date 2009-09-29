@@ -11,6 +11,7 @@ final class FPDSameLocationReportFilter extends FalsePositivesDetector {
 
     FPDSameLocationReportFilter() {
         errLocNodes = new HashSet<Pair<CFGNode,String>>();
+        errStartLocNodes = new HashSet<CFGNode>();
     }
 
     @Override
@@ -20,13 +21,16 @@ final class FPDSameLocationReportFilter extends FalsePositivesDetector {
         assert(!path.isEmpty());
         final Pair<CFGNode,String> errLocID =
                 Pair.make(path.get(path.size() - 1), rule.getErrorEndMessage());
-        if (errLocNodes.contains(errLocID))
+        if (errLocNodes.contains(errLocID) ||
+                errStartLocNodes.contains(path.get(0)))
             return getFalsePositiveImportance();
         errLocNodes.add(errLocID);
+        errStartLocNodes.add(path.get(0));
         return getBugImportance(0);
     }
 
     private final HashSet<Pair<CFGNode,String>> errLocNodes;
+    private final HashSet<CFGNode> errStartLocNodes;
 }
 
 final class FPDSameLocationReportFilterCreator
