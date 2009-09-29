@@ -24,14 +24,14 @@ import org.dom4j.Element;
  */
 final class FPDMemoryReassignedFilter extends FalsePositivesDetector {
     @Override
-    boolean isFalsePositive(final java.util.List<CFGNode> path,
-                            final java.util.Stack<CFGNode> cfgContext,
-                            final ErrorRule rule) {
+    int getTraceImpotance(final java.util.List<CFGNode> path,
+                          final java.util.Stack<CFGNode> cfgContext,
+                          final ErrorRule rule) {
         String desc = rule.getErrorDescription();
         if (!desc.equals("dereferencing NULL pointer") &&
                 !desc.equals("dereferencing dangling pointer") &&
                 !desc.equals("releasing already released memory"))
-            return false;
+            return getBugImportance(0);
         Iterator<CFGNode> nodeI = path.listIterator();
         Element nEl = nodeI.next().getElement();
         List<Element> left = null;
@@ -39,14 +39,14 @@ final class FPDMemoryReassignedFilter extends FalsePositivesDetector {
         int idx = -1;
         if (nElName.equals("functionCall")) {
             if (nEl.nodeCount() != 2) /* name and id */
-                return false;
+                return getBugImportance(0);
             idx = 1;
         } else if (nElName.equals("assignExpression")) {
             idx = 0;
         } else if (nElName.equals("assert")) {
             left = nEl.selectNodes(".//id");
         } else
-            return false;
+            return getBugImportance(0);
         if (left == null) {
             left = new LinkedList<Element>();
             left.add((Element)nEl.elements().get(idx)); // leftside
@@ -57,9 +57,9 @@ final class FPDMemoryReassignedFilter extends FalsePositivesDetector {
                 Element left1 = (Element)((Element)fno).elements().get(0);
                 for (Element e: left)
                     if (XMLAlgo.equalElements(e, left1))
-                        return true;
+                        return getFalsePositiveImportance();
             }
-        return false;
+        return getBugImportance(0);
     }
 }
 final class FPDMemoryReassignedFilterCreator

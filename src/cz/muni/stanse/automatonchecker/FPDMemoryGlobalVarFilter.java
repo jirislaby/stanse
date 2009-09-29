@@ -22,23 +22,23 @@ final class FPDMemoryGlobalVarFilter extends FalsePositivesDetector {
     }
 
     @Override
-    boolean isFalsePositive(final java.util.List<CFGNode> path,
+    int getTraceImpotance(final java.util.List<CFGNode> path,
                             final java.util.Stack<CFGNode> cfgContext,
                             final ErrorRule rule) {
         if (!rule.getErrorDescription().equals(
 		"memory leak - leaving function without releasing memory"))
-            return false;
+            return getBugImportance(0);
 	CFGNode start = path.get(0);
         Element ass = start.getElement();
         if (!ass.getName().equals("assignExpression"))
-            return false;
+            return getBugImportance(0);
         Element left = (Element)ass.elements().get(0); // leftside
 	if (!left.getName().equals("id"))
-	    return false;
+	    return getBugImportance(0);
 	CFGHandle cfg = lis.getNodeToCFGdictionary().get(start);
 	if (!cfg.isSymbolLocal(left.getText()))
-	    return false; // rule.lowerImportance(3);
-        return false;
+	    return getBugImportance(0); // rule.lowerImportance(3);
+        return getBugImportance(0);
     }
 }
 final class FPDMemoryGlobalVarFilterCreator

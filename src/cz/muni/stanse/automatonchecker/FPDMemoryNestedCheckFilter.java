@@ -21,20 +21,20 @@ final class FPDMemoryNestedCheckFilter extends FalsePositivesDetector {
     }
 
     @Override
-    boolean isFalsePositive(final java.util.List<CFGNode> path,
+    int getTraceImpotance(final java.util.List<CFGNode> path,
                             final java.util.Stack<CFGNode> cfgContext,
                             final ErrorRule rule) {
         String desc = rule.getErrorDescription();
         if (!desc.equals("unnecessary check (checking for NULL)") &&
                 !desc.equals("unnecessary check (checking for not NULL)"))
-            return false;
+            return getBugImportance(0);
         CFGNode start = path.get(0);
         CFGNode end = path.get(path.size()-1);
 	Map<CFGNode, CFGHandle> dict = lis.getNodeToCFGdictionary();
 	if (!dict.get(start).getFunctionName().equals(
 		dict.get(end).getFunctionName()))
-	    return true;
-        return false;
+        return getFalsePositiveImportance();
+        return getBugImportance(0);
     }
 }
 final class FPDMemoryNestedCheckFilterCreator

@@ -14,16 +14,16 @@ final class FPDSameLocationReportFilter extends FalsePositivesDetector {
     }
 
     @Override
-    boolean isFalsePositive(final java.util.List<CFGNode> path,
-                            final java.util.Stack<CFGNode> cfgContext,
-                            final ErrorRule rule) {
+    int getTraceImpotance(final java.util.List<CFGNode> path,
+                          final java.util.Stack<CFGNode> cfgContext,
+                          final ErrorRule rule) {
         assert(!path.isEmpty());
         final Pair<CFGNode,String> errLocID =
                 Pair.make(path.get(path.size() - 1), rule.getErrorEndMessage());
         if (errLocNodes.contains(errLocID))
-            return true;
+            return getFalsePositiveImportance();
         errLocNodes.add(errLocID);
-        return false;
+        return getBugImportance(0);
     }
 
     private final HashSet<Pair<CFGNode,String>> errLocNodes;

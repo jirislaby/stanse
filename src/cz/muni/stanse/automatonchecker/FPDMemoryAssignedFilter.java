@@ -12,15 +12,15 @@ import org.dom4j.Element;
 
 final class FPDMemoryAssignedFilter extends FalsePositivesDetector {
     @Override
-    boolean isFalsePositive(final java.util.List<CFGNode> path,
-                            final java.util.Stack<CFGNode> cfgContext,
-                            final ErrorRule rule) {
+    int getTraceImpotance(final java.util.List<CFGNode> path,
+                          final java.util.Stack<CFGNode> cfgContext,
+                          final ErrorRule rule) {
         if (!rule.getErrorDescription().equals(
                 "memory leak - leaving function without releasing memory"))
-            return false;
+            return getBugImportance(0);
         Element e = path.get(0).getElement();
         if (!e.getName().equals("assignExpression"))
-            return false;
+            return getBugImportance(0);
         Element left = (Element)e.elements().get(0); // leftside
         for (CFGNode node: path)
             for (Object fno: node.getElement().selectNodes("..//functionCall")) {
@@ -28,9 +28,9 @@ final class FPDMemoryAssignedFilter extends FalsePositivesDetector {
                 params.next(); // skip name
                 while (params.hasNext())
                     if (XMLAlgo.equalElements(left, params.next()))
-                        return true;
+                        return getFalsePositiveImportance();
             }
-        return false;
+        return getBugImportance(0);
     }
 }
 final class FPDMemoryAssignedFilterCreator

@@ -54,12 +54,15 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         if (!getRule().checkForError(
                 AutomatonStateCFGcontextAlgo.filterStatesByContext(
                            location.getProcessedAutomataStates(),cfgContext))) {
-            if (!isFalsePositive(path,cfgContext)) {
+            final int importance = getTraceImportance(path,cfgContext);
+            if (importance !=
+                    FalsePositivesDetector.getFalsePositiveImportance()) {
                 getErrorTracesList().add(buildErrorTrace(
                         getRule().getErrorBeginMessage(),
                         getRule().getErrorPropagMessage(),
                         getRule().getErrorEndMessage(),
                         path,cfgContext));
+                updateTotalImportance(importance);
                 resetNumRejectedMeasure();
             }
             else
@@ -69,12 +72,15 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
 
         if (cfgContext.isEmpty() &&
                 getInternals().getNavigator().isStartNode(node)) {
-            if (!isFalsePositive(path,cfgContext)) {
+            final int importance = getTraceImportance(path,cfgContext);
+            if (importance !=
+                    FalsePositivesDetector.getFalsePositiveImportance()) {
                 getErrorTracesList().add(buildErrorTrace(
                         getRule().getErrorEntryMessage(),
                         getRule().getErrorPropagMessage(),
                         getRule().getErrorEndMessage(),
                         path,cfgContext));
+                updateTotalImportance(importance);
                 resetNumRejectedMeasure();
             }
             else
@@ -114,6 +120,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         errorTracesList = new Vector<CheckerErrorTrace>();
         this.detectors = detectors;
         this.monitor = monitor;
+        totalImportance = FalsePositivesDetector.getBugDefaultImportance();
         failMsg = null;
         numRejectedMeasure = 0;
     }
@@ -122,18 +129,29 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         return errorTracesList;
     }
 
+    int getTotalImportance() {
+        return totalImportance;
+    }
+
     String getFailMessage() {
         return failMsg;
     }
 
     // private section
 
-    private boolean isFalsePositive(final List<CFGNode> path,
-                                    final java.util.Stack<CFGNode> cfgContext) {
-        for (final FalsePositivesDetector detector : detectors)
-            if (detector.isFalsePositive(path,cfgContext,getRule()))
-                return true;
-        return false;
+    private int getTraceImportance(final List<CFGNode> path,
+                                   final java.util.Stack<CFGNode> cfgContext) {
+        int importance = FalsePositivesDetector.getBugDefaultImportance();
+        for (final FalsePositivesDetector detector : detectors) {
+            final int currImportance =
+                    detector.getTraceImpotance(path,cfgContext,getRule());
+            if (currImportance ==
+                    FalsePositivesDetector.getFalsePositiveImportance())
+                return currImportance;
+            importance = importance < currImportance ?
+                            importance : currImportance;
+        }
+        return importance;
     }
 
     private CheckerErrorTrace buildErrorTrace(final String beginMsg,
@@ -189,6 +207,13 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                 getNodeToCFGdictionary().get(node));
     }
 
+    private void updateTotalImportance(final int traceImportance) {
+        assert(traceImportance !=
+                    FalsePositivesDetector.getBugDefaultImportance());
+        totalImportance = totalImportance < traceImportance ?
+                                totalImportance : traceImportance ;
+    }
+
     private boolean isLimitOfRejectedMeasureExceeded() {
         return numRejectedMeasure > 1000;
     }
@@ -234,6 +259,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     private final Vector<CheckerErrorTrace> errorTracesList;
     private final java.util.List<FalsePositivesDetector> detectors;
     private final AutomatonCheckerLogger monitor;
+    private int totalImportance;
     private String failMsg;
     private int numRejectedMeasure;
 }

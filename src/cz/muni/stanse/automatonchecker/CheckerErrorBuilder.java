@@ -147,7 +147,9 @@ final class CheckerErrorBuilder {
                             + shortDesc
                             + " [traces: " + traces.size() + "]";
                     errReciver.receive(
-                       new CheckerError(shortDesc,fullDesc,rule.getErrorLevel(),
+                       new CheckerError(shortDesc,fullDesc,
+                                        rule.getErrorLevel() +
+                                            creator.getTotalImportance(),
                                         automatonName,traces));
                     ++numErrors;
                     monitor.note("*** error found: " + shortDesc);
