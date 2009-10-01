@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <automaton>
-    <description name="lock/unlock/islocked automaton checker"
-                 desc="Handles locking problem (lock/unlock matching),
+    <description name="lock/unlock/islocked automanton checker"
+                 desc="Handles locking problem (lock/unlock matching)
                        checks for redundant islocked() calls, detects
                        cross-locking problem (lock(a)..lock(b)..unlock(a))
                        and detects leaving function in locked state." />
 
-    <start state="U" />
-    <transition from="U[A]" by="lock[A]" to="L[A]" />
-    <transition from="L[A]" by="lock[B]" to="L[A]" />
-    <transition from="L[A]" by="lock[B]" to="LL[A][B]" />
-    <transition from="L[A]" by="unlock[A]" to="U[A]" />
-    <transition from="LL[A][B]" by="unlock[B]" to="" />
+
+    <start state="X" />
+    <transition from="X[A]"     by="lock[A]"        to="L[A]"     />
+    <transition from="U[A]"     by="lock[A]"        to="L[A]"     />
+    <transition from="L[A]"     by="lock[B]"        to="L[A]"     />
+    <transition from="L[A]"     by="lock[B]"        to="LL[A][B]" />
+    <transition from="X[A]"     by="unlock[A]"      to="U[A]"     />
+    <transition from="L[A]"     by="unlock[A]"      to="U[A]"     />
+    <transition from="LL[A][B]" by="unlock[B]"      to=""         />
+    <transition from="X[A]"     by="islocked[A]"    to="L[A]"     />
+    <transition from="U[A]"     by="islocked[A]"    to=""         />
+    <transition from="X[A]"     by="isnotlocked[A]" to="U[A]"     />
+    <transition from="L[A]"     by="isnotlocked[A]" to=""         />
+    <transition from="LL[A][B]" by="isnotlocked[A]" to=""         />
+    <transition from="LL[A][B]" by="isnotlocked[B]" to=""         />
+
 
     <error  from="U[A]" by="unlock[A]"
             desc="double unlock"
@@ -38,16 +48,7 @@
             end="The locked order lock(A) lock(B), but now unlocking A (e.i. before
                  B) ==> cross locking." />
 
-    <error  from="U[A] -L[A]" by="islocked[A]"
-            desc="unnecessary check - always unlocked"
-            level="4"
-            entry="The function called in unlocked state and never called in lock state."
-            begin="The lock in unlocked here and cannot be in locked state here."
-            propag="not affected ==> the lock is still in unlocked and never in locked state."
-            end="The lock is checked for locking state, but here the lock always is
-                 in unlocked state and never in locked state ==> unnecessary check." />
-
-    <error  from="-U[A] L[A]" by="islocked[A]"
+    <error  from="L[A] -U[A] -X[A]" by="islocked[A]"
             desc="unnecessary check - always locked"
             level="4"
             entry="The function called in locked state and never called in unlock state."
@@ -55,6 +56,15 @@
             propag="not affected ==> the lock is still locked and never in unlocked state."
             end="The lock is checked for locking state, but the lock here is always
                  in locked state and never in unlocked state ==> unnecessary check." />
+
+    <error  from="U[A] -L[A] -X[A]" by="isnotlocked[A]"
+            desc="unnecessary check - always unlocked"
+            level="4"
+            entry="The function called in unlocked state and never called in lock state."
+            begin="The lock in unlocked here and cannot be in locked state here."
+            propag="not affected ==> the lock is still in unlocked and never in locked state."
+            end="The lock is checked for locking state, but here the lock always is
+                 in unlocked state and never in locked state ==> unnecessary check." />
 
     <error  from="L[*]" by=""
             desc="leaving function in locked state"
@@ -78,21 +88,6 @@
         </functionCall>
     </pattern>
 
-    <pattern name="lock">
-        <functionCall>
-            <id>lock_kernel</id>
-        </functionCall>
-    </pattern>
-<!--
-    <pattern name="lock">
-        <assert>
-	    <functionCall>
-		<id>trylock</id>
-		<var name="A" />
-	    </functionCall>
-        </assert>
-    </pattern>
--->
     <pattern name="unlock">
         <functionCall>
             <id>unlock</id>
@@ -106,140 +101,119 @@
         </functionCall>
     </pattern>
 
-    <pattern name="unlock">
-        <functionCall>
-            <id>unlock_kernel</id>
-        </functionCall>
-    </pattern>
-
-
-
-    <pattern name="islocked">
-        <nested>
-            <functionCall>
-                <id>islocked</id>
-            </functionCall>
-        </nested>
-    </pattern>
-
-    <pattern name="islocked">
-        <nested>
-            <functionCall>
-                <id>islocked</id>
-                <var name="A" />
-            </functionCall>
-        </nested>
-    </pattern>
-
-    <pattern name="islocked">
-        <nested>
-            <functionCall>
-                <id>locked_kernel</id>
-            </functionCall>
-        </nested>
-    </pattern>
-
     <!-- Matches condition of form:
-        if (A) {
-            assert(A);
+        if (islocked(A)) {
+            assert(!(islocked(A) == 0)); // ~ parttern 'islocked'
+        } else {
+            assert(islocked(A) == 0); // ~ parttern 'isnotlocked'
         }
     -->
-    <pattern name="lock">
+    <pattern name="islocked" constructive="false">
         <assert>
-	    <functionCall>
-		<id>trylock</id>
-		<var name="A" />
-	    </functionCall>
+            <prefixExpressionLogicalNot>
+                <binaryExpressionEquality>
+                    <functionCall>
+                        <id>islocked</id>
+                    </functionCall>
+                    <intConst>0</intConst>
+                </binaryExpressionEquality>
+            </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-
-    <!-- Matches condition of form:
-        if (!A) {
-            assert(!!A);
-        }
-    -->
-    <pattern name="lock">
+    <pattern name="islocked" constructive="false">
         <assert>
-	    <prefixExpression op="!">
-		<prefixExpression op="!">
-		    <functionCall>
-			<id>trylock</id>
-			<var name="A" />
-		    </functionCall>
-		</prefixExpression>
-	    </prefixExpression>
+            <prefixExpressionLogicalNot>
+                <binaryExpressionEquality>
+                    <functionCall>
+                        <id>islocked</id>
+                        <var name="A" />
+                    </functionCall>
+                    <intConst>0</intConst>
+                </binaryExpressionEquality>
+            </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-
-    <!-- Matches condition of form:
-        if (A == 0) {
-            assert(A == 0);
-        }
-    -->
-    <pattern name="lock">
+    <pattern name="isnotlocked" constructive="false">
         <assert>
-            <binaryExpression op="==">
-		<functionCall>
-		    <id>trylock</id>
-		    <var name="A" />
-		</functionCall>
+            <binaryExpressionEquality>
+                <functionCall>
+                    <id>islocked</id>
+                </functionCall>
                 <intConst>0</intConst>
-            </binaryExpression>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
+    <pattern name="isnotlocked" constructive="false">
+        <assert>
+            <binaryExpressionEquality>
+                <functionCall>
+                    <id>islocked</id>
+                    <var name="A" />
+                </functionCall>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
         </assert>
     </pattern>
 
     <!-- Matches condition of form:
-        if (A != 0) {
-            assert(!(A != 0));
+        if (!islocked(A)) {
+            assert(!(!islocked(A) == 0)); // ~ parttern 'isnotlocked'
+        } else {
+            assert(!islocked(A) == 0); // ~ parttern 'islocked'
         }
     -->
-    <pattern name="lock">
+    <pattern name="isnotlocked" constructive="false">
         <assert>
-            <prefixExpression op="!">
-		<binaryExpression op="!=">
-		    <functionCall>
-			<id>trylock</id>
-			<var name="A" />
-		    </functionCall>
-		    <intConst>0</intConst>
-		</binaryExpression>
-            </prefixExpression>
+            <prefixExpressionLogicalNot>
+                <binaryExpressionEquality>
+                    <prefixExpressionLogicalNot>
+                        <functionCall>
+                            <id>islocked</id>
+                        </functionCall>
+                    </prefixExpressionLogicalNot>
+                    <intConst>0</intConst>
+                </binaryExpressionEquality>
+            </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-
-    <!-- Matches condition of form:
-        if (0 == A) {
-            assert(0 == A);
-        }
-    -->
-    <pattern name="lock">
+    <pattern name="isnotlocked" constructive="false">
         <assert>
-	    <binaryExpression op="==">
-		<intConst>0</intConst>
-		<functionCall>
-		    <id>trylock</id>
-		    <var name="A" />
-		</functionCall>
-	    </binaryExpression>
+            <prefixExpressionLogicalNot>
+                <binaryExpressionEquality>
+                    <prefixExpressionLogicalNot>
+                        <functionCall>
+                            <id>islocked</id>
+                            <var name="A" />
+                        </functionCall>
+                    </prefixExpressionLogicalNot>
+                    <intConst>0</intConst>
+                </binaryExpressionEquality>
+            </prefixExpressionLogicalNot>
         </assert>
     </pattern>
-
-    <!-- Matches condition of form:
-        if (0 != A) {
-            assert(!(0 != A));
-        }
-    -->
-    <pattern name="lock">
+    <pattern name="islocked" constructive="false">
         <assert>
-            <prefixExpression op="!">
-		<binaryExpression op="!=">
-		    <intConst>0</intConst>
-		    <functionCall>
-			<id>trylock</id>
-			<var name="A" />
-		    </functionCall>
-		</binaryExpression>
-            </prefixExpression>
+            <binaryExpressionEquality>
+                <prefixExpressionLogicalNot>
+                    <functionCall>
+                        <id>islocked</id>
+                    </functionCall>
+                </prefixExpressionLogicalNot>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
+        </assert>
+    </pattern>
+    <pattern name="islocked" constructive="false">
+        <assert>
+            <binaryExpressionEquality>
+                <prefixExpressionLogicalNot>
+                    <functionCall>
+                        <id>islocked</id>
+                        <var name="A" />
+                    </functionCall>
+                </prefixExpressionLogicalNot>
+                <intConst>0</intConst>
+            </binaryExpressionEquality>
         </assert>
     </pattern>
 

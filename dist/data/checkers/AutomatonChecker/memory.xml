@@ -5,128 +5,76 @@
                        null/dangling pointer dereference, double free, and
                        memory leaks." />
 
-    <start state="U" />
-    <transition from="U[A]" by="malloc[A]" to="I[A]" />
-    <transition from="N[A]" by="malloc[A]" to="I[A]" />
-    <transition from="D[A]" by="malloc[A]" to="I[A]" />
-    <transition from="U[A]" by="null[A]" to="N[A]" />
-    <transition from="D[A]" by="null[A]" to="N[A]" />
-    <transition from="I[A]" by="null[A]" to="N[A]" />
-    <transition from="I[A]" by="notnull[A]" to="V[A]" />
-    <transition from="V[A]" by="free[A]" to="D[A]" />
-    <transition from="I[A]" by="free[A]" to="D[A]" />
+    <start state="X" />
+    <transition from="X[A]"     by="malloc[A]"    to="V[A]" />
+    <transition from="X[A]"     by="malloc[A]"    to="N[A]" />
+    <transition from="D[A]"     by="malloc[A]"    to="V[A]" />
+    <transition from="D[A]"     by="malloc[A]"    to="N[A]" />
+    <transition from="V[A]"     by="malloc[A]"    to="VV[A]"/>
+    <transition from="V[A]"     by="malloc[A]"    to="VN[A]"/>
+    <transition from="N[A]"     by="malloc[A]"    to="V[A]" />
+    <transition from="N[A]"     by="malloc[A]"    to="N[A]" />
+    <transition from="X[A]"     by="free[A]"      to="D[A]" />
+    <transition from="V[A]"     by="free[A]"      to="D[A]" />
+    <transition from="VV[A]"    by="free[A]"      to="V[A]" />
+    <transition from="VN[A]"    by="free[A]"      to="V[A]" />
+    <transition from="X[A]"     by="deref[A]"     to="V[A]" />
+    <transition from="X[A]"     by="isnull[A]"    to="N[A]" />
+    <transition from="D[A]"     by="isnull[A]"    to=""     />
+    <transition from="V[A]"     by="isnull[A]"    to=""     />
+    <transition from="VV[A]"    by="isnull[A]"    to="V[A]" />
+    <transition from="X[A]"     by="isnotnull[A]" to="V[A]" />
+    <transition from="N[A]"     by="isnotnull[A]" to=""     />
+    <transition from="VN[A]"    by="isnotnull[A]" to="V[A]" />
 
-    <error  from="U[A]" by="free[A]"
-            desc="releasing of unallocated memory."
+    <error  from="N[A]" by="deref[A]"
+            desc="Dereferencing NULL pointer"
             level="0"
-            entry="pointer is not initialized at function entry."
-            begin="pointer is not initialized."
-            propag="not affected ==> pointer is still not initialized."
-            end="pointer is not initialized, but is released here." />
+            entry="pointer is NULL at function entry."
+            begin="pointer is NULL."
+            propag="not affected ==> pointer is still NULL."
+            end="dereferencing NULL pointer here." />
 
-    <error  from="I[A]" by="free[A]"
-            desc="releasing unallocated memory."
+    <error  from="D[A]" by="deref[A]"
+            desc="Dereferencing dangling pointer."
             level="0"
-            entry="pointer is not initialized at function entry."
+            entry="pointer does not point to valid memory at function entry."
             begin="pointer does not point to valid memory."
             propag="not affected ==> pointer still does not point to valid memory."
-            end="pointer is not initialized, but is released here." />
+            end="dereferencing dangling pointer here." />
 
-    <error  from="N[A]" by="free[A]"
-            desc="releasing unallocated memory."
-            level="0"
-            entry=""
-            begin="pointer points to NULL."
-            propag="not affected ==> pointer still points to NULL."
-            end="pointer points to NULL, but is released here." />
-
-    <error  from="D[A]" by="free[A]"
-            desc="releasing already released memory"
+    <error  from="D[A] -V[A]" by="free[A]"
+            desc="Releasing already released memory"
             level="0"
             entry=""
             begin="memory is released here -> pointer becames dangling."
             propag="not affected ==> pointer is still dangling."
             end="pointer is dangling and releasing it here." />
 
-    <error  from="I[A]" by="malloc[A]"
-            desc="memory leak"
-            level="0"
-            entry=""
-            begin="pointer is pointing to the valid memory."
-            propag="not affected ==> still pointing to valid memory."
-            end="the only reference to valid memory is lost here." />
-
-    <error  from="V[A]" by="malloc[A]"
-            desc="memory leak"
-            level="0"
-            entry=""
-            begin="pointer is pointing to the valid memory."
-            propag="not affected ==> still pointing to valid memory."
-            end="the only reference to valid memory is lost here." />
-
-    <error  from="U[A]" by="deref[A]"
-            desc="dereferencing invalid pointer"
-            level="0"
-            entry="pointer is invalid at function entry."
-            begin="pointer is invalid here."
-            propag="not affected ==> pointer is still invalid."
-            end="dereferencing invalid pointer here." />
-
-    <error  from="I[A]" by="deref[A]"
-            desc="dereferencing invalid pointer"
-            level="0"
-            entry="pointer does not point to valid memory at function entry."
-            begin="pointer does not point to valid memory."
-            propag="not affected ==> pointer still does not point to valid memory."
-            end="dereferencing invalid pointer here." />
-
-    <error  from="N[A]" by="deref[A]"
-            desc="dereferencing invalid pointer"
-            level="0"
-            entry="pointer does not point to valid memory at function entry."
-            begin="pointer does not point to valid memory."
-            propag="not affected ==> pointer still does not point to valid memory."
-            end="dereferencing invalid pointer here." />
-
-    <error  from="D[A]" by="deref[A]"
-            desc="dereferencing invalid pointer"
-            level="0"
-            entry="pointer does not point to valid memory at function entry."
-            begin="pointer does not point to valid memory."
-            propag="not affected ==> pointer still does not point to valid memory."
-            end="dereferencing invalid pointer here." />
-
-    <error  from="N[A]" by="null[A]"
+    <error  from="N[A] -V[A] -X[A] -D[A]" by="isnull[A]"
             desc="unnecessary check (checking for NULL)."
-            level="0"
+            level="4"
             entry="pointer is NULL at function entry."
             begin="pointer is NULL here."
             propag="not affected ==> pointer is still NULL."
             end="pointer always points to NULL here, but checking for it." />
 
-    <error  from="V[A]" by="null[A]"
-            desc="unnecessary check (checking for NULL)."
-            level="0"
-            entry="pointer is valid at function entry."
-            begin="pointer is valid here."
-            propag="not affected ==> pointer is still valid."
-            end="pointer always points valid memory here, but checking for it." />
+    <error  from="V[A] -N[A] -X[A] -D[A]" by="isnotnull[A]"
+            desc="Unnecessary check (checking for not NULL)."
+            level="4"
+            entry="pointer is not NULL at function entry."
+            begin="pointer is not NULL here."
+            propag="not affected ==> pointer is still not NULL."
+            end="pointer always points to valid memory here, but checking for not NULL." />
 
     <error  from="V[*]" by=""
-            desc="leaving function without releasing memory - memory leak"
-            level="0"
+            desc="Memory leak - leaving function without releasing memory"
+            level="2"
             entry=""
             begin="pointer points to valid memory."
             propag="not affected ==> pointer still points to valid memory."
             end="Leaving function and only reference to valid memory is lost here." />
 
-    <error  from="I[*]" by=""
-            desc="leaving function without releasing memory - memory leak"
-            level="0"
-            entry=""
-            begin="pointer points to valid memory."
-            propag="not affected ==> pointer still points to valid memory."
-            end="Leaving function and only reference to valid memory is lost here." />
 
     <pattern name="malloc">
         <assignExpression>
@@ -151,305 +99,59 @@
         </assignExpression>
     </pattern>
 
-    <pattern name="free">
+    <pattern name="free" constructive="false">
         <functionCall>
             <id>free</id>
-            <var name="A"/>
+            <var name="A" />
         </functionCall>
     </pattern>
 
-    <pattern name="deref">
+    <pattern name="deref" constructive="false">
         <nested exclude0="sizeofExpression">
             <derefExpression>
-                <var name="A" constructive="false" />
+                <var name="A" />
             </derefExpression>
         </nested>
     </pattern>
 
-    <pattern name="deref">
+    <pattern name="deref" constructive="false">
+        <nested exclude0="sizeofExpression">
+            <dotExpression>
+                <var name="A" />
+                <ignore />
+            </dotExpression>
+        </nested>
+    </pattern>
+
+    <pattern name="deref" constructive="false">
         <nested exclude0="sizeofExpression">
             <arrowExpression>
-                <var name="A" constructive="false" />
+                <var name="A" />
                 <ignore />
             </arrowExpression>
         </nested>
     </pattern>
 
-    <pattern name="deref">
+    <pattern name="deref" constructive="false">
         <nested exclude0="sizeofExpression">
             <arrayAccess>
-                <var name="A" constructive="false" />
+                <var name="A" />
                 <ignore />
             </arrayAccess>
         </nested>
     </pattern>
 
-    <!-- Matches condition of form:
-        if (A) {
-	    assert(A);
-        } else {
-	    assert(!A);
-        }
-    -->
-    <pattern name="notnull">
+    <pattern name="isnotnull" constructive="false">
         <assert>
-	    <var name="A" constructive="false" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
-        </assert>
-    </pattern>
-    <pattern name="null">
-        <assert>
-	    <prefixExpression op="!">
-		<var name="A" constructive="false" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
-	    </prefixExpression>
+            <var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
         </assert>
     </pattern>
 
-    <!-- Matches condition of form:
-        if (!A) {
-	    assert(!A); // done above
-        } else {
-	    assert(!!A);
-        }
-    -->
-    <pattern name="notnull">
+    <pattern name="isnull" constructive="false">
         <assert>
-	    <prefixExpression op="!">
-		<prefixExpression op="!">
-                    <var name="A" constructive="false" />
-		</prefixExpression>
-	    </prefixExpression>
-        </assert>
-    </pattern>
-
-    <!-- Matches condition of form:
-        if (A == 0) {
-	    assert(A == 0);
-        } else {
-	    assert(!(A == 0));
-        }
-    -->
-    <pattern name="null">
-        <assert>
-	    <binaryExpression op="==">
-		<var name="A" constructive="false" />
-		<intConst>0</intConst>
-	    </binaryExpression>
-        </assert>
-    </pattern>
-    <pattern name="notnull">
-        <assert>
-	    <prefixExpression op="!">
-		<binaryExpression op="==">
-                    <var name="A" constructive="false" />
-                    <intConst>0</intConst>
-		</binaryExpression>
-	    </prefixExpression>
-        </assert>
-    </pattern>
-
-    <!-- Matches condition of form:
-        if (A == (T*)0) {
-	    assert(A == (T*)0);
-        } else {
-	    assert(!(A == (T*)0));
-        }
-    -->
-    <pattern name="null">
-        <assert>
-	    <binaryExpression op="==">
-		<var name="A" constructive="false" />
-		<castExpression>
-		    <ignore />
-		    <intConst>0</intConst>
-		</castExpression>
-	    </binaryExpression>
-        </assert>
-    </pattern>
-    <pattern name="notnull">
-        <assert>
-	    <prefixExpression op="!">
-		<binaryExpression op="==">
-		    <var name="A" constructive="false" />
-		    <castExpression>
-			<ignore />
-			<intConst>0</intConst>
-		    </castExpression>
-		</binaryExpression>
-	    </prefixExpression>
-        </assert>
-    </pattern>
-
-    <!-- Matches condition of form:
-        if (A != 0) {
-	    assert(A != 0);
-        } else {
-	    assert(!(A != 0));
-        }
-    -->
-    <pattern name="notnull">
-        <assert>
-	    <binaryExpression op="!=">
-		<var name="A" constructive="false" />
-		<intConst>0</intConst>
-	    </binaryExpression>
-        </assert>
-    </pattern>
-    <pattern name="null">
-        <assert>
-	    <prefixExpression op="!">
-		<binaryExpression op="!=">
-		    <var name="A" constructive="false" />
-		    <intConst>0</intConst>
-		</binaryExpression>
-	    </prefixExpression>
-        </assert>
-    </pattern>
-
-    <!-- Matches condition of form:
-        if (A != (T*)0) {
-	    assert(A != (T*)0);
-        } else {
-	    assert(!(A != (T*)0));
-        }
-    -->
-    <pattern name="notnull">
-        <assert>
-	    <binaryExpression op="!=">
-		<var name="A" constructive="false" />
-		<castExpression>
-		    <ignore />
-		    <intConst>0</intConst>
-		</castExpression>
-	    </binaryExpression>
-        </assert>
-    </pattern>
-    <pattern name="null">
-        <assert>
-	    <prefixExpression op="!">
-		<binaryExpression op="!=">
-		    <var name="A" constructive="false" />
-		    <castExpression>
-			<ignore />
-			<intConst>0</intConst>
-		    </castExpression>
-		</binaryExpression>
-	    </prefixExpression>
-        </assert>
-    </pattern>
-
-    <!-- Matches condition of form:
-        if (0 == A) {
-	    assert(0 == A);
-        } else {
-	    assert(!(0 == A));
-        }
-    -->
-    <pattern name="null">
-        <assert>
-	    <binaryExpression op="==">
-		<intConst>0</intConst>
-		<var name="A" constructive="false" />
-	    </binaryExpression>
-        </assert>
-    </pattern>
-    <pattern name="notnull">
-        <assert>
-	    <prefixExpression op="!">
-		<binaryExpression op="==">
-		    <intConst>0</intConst>
-		    <var name="A" constructive="false" />
-		</binaryExpression>
-	    </prefixExpression>
-        </assert>
-    </pattern>
-
-    <!-- Matches condition of form:
-        if ((T*)0 == A) {
-	    assert((T*)0 == A);
-        } else {
-	    assert(!((T*)0 == A));
-        }
-    -->
-    <pattern name="null">
-        <assert>
-	    <binaryExpressionEquality>
-		<castExpression>
-		    <ignore />
-		    <intConst>0</intConst>
-		</castExpression>
-		<var name="A" constructive="false" />
-	    </binaryExpressionEquality>
-        </assert>
-    </pattern>
-    <pattern name="notnull">
-        <assert>
-	    <prefixExpression op="!">
-		<binaryExpressionEquality>
-		    <castExpression>
-			<ignore />
-			<intConst>0</intConst>
-		    </castExpression>
-		    <var name="A" constructive="false" />
-		</binaryExpressionEquality>
-	    </prefixExpression>
-        </assert>
-    </pattern>
-
-    <!-- Matches condition of form:
-        if (0 != A) {
-	    assert(0 != A);
-        } else {
-	    assert(!(0 != A));
-        }
-    -->
-    <pattern name="notnull">
-        <assert>
-	    <binaryExpression op="!=">
-		<intConst>0</intConst>
-		<var name="A" constructive="false" />
-	    </binaryExpression>
-        </assert>
-    </pattern>
-    <pattern name="null">
-        <assert>
-	    <prefixExpression op="!">
-		<binaryExpression op="!=">
-		    <intConst>0</intConst>
-		    <var name="A" constructive="false" />
-		</binaryExpression>
-	    </prefixExpression>
-        </assert>
-    </pattern>
-
-    <!-- Matches condition of form:
-        if ((T*)0 != A) {
-	    assert((T*)0 != A);
-        } else {
-	    assert(!((T*)0 != A));
-        }
-    -->
-    <pattern name="notnull">
-        <assert>
-	    <binaryExpression op="!=">
-		<castExpression>
-		    <ignore />
-		    <intConst>0</intConst>
-		</castExpression>
-		<var name="A" constructive="false" />
-	    </binaryExpression>
-        </assert>
-    </pattern>
-    <pattern name="null">
-        <assert>
-	    <prefixExpression op="!">
-		<binaryExpression op="!=">
-		    <castExpression>
-			<ignore />
-			<intConst>0</intConst>
-		    </castExpression>
-		    <var name="A" constructive="false" />
-		</binaryExpression>
-	    </prefixExpression>
+            <prefixExpression op="!">
+                <var name="A" match="{id}{arrowExpression}{arrayAccess}{dotExpression}" />
+            </prefixExpression>
         </assert>
     </pattern>
 
