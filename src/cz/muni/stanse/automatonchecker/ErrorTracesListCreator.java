@@ -168,8 +168,11 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                                             getNodeLine(path.get(0)),beginMsg));
         if (path.size() > 1)
             for (CFGNode item : path.subList(1,path.size() - 1))
-                trace.add(new CheckerErrorTraceLocation(getNodeUnitName(item),
-                                                   getNodeLine(item),innerMsg));
+                if (!item.getElement().getName().equals("assert"))
+                    trace.add(new CheckerErrorTraceLocation(
+                                        getNodeUnitName(item),
+                                        getNodeLine(item),
+                                        innerMsg));
         trace.add(new CheckerErrorTraceLocation(
                         getNodeUnitName(path.get(path.size() - 1)),
                         getNodeLine(path.get(path.size() - 1)),endMsg));
