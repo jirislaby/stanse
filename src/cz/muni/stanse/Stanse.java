@@ -276,11 +276,6 @@ public final class Stanse {
     }
 
     private static void startTUI(final String style) {
-	// TODO: TUI is not properly implemented. Current implementation
-	//       simply executes checking procedure.
-	System.out.println("WARNING: TUI is not properly implemented. Current" +
-			   " implementation simply executes checking "+
-			   "procedure.\n");
 	System.out.println("Checking for bugs:");
 	final java.util.Vector<CheckerError> errors =
 		new java.util.Vector<CheckerError>();
