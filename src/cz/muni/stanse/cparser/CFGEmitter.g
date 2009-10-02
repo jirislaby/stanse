@@ -33,14 +33,11 @@ package cz.muni.stanse.cparser;
 
 import cz.muni.stanse.codestructures.*;
 
-import java.io.IOException;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
@@ -48,8 +45,11 @@ import org.dom4j.Element;
 import cz.muni.stanse.utils.Pair;
 }
 @members {
-	private Element defaultLabel, falseLabel, emptyStatement;
-	private DocumentFactory xmlFactory = DocumentFactory.getInstance();
+	static Element defaultLabel = CFGEvaluator.defaultLabel;
+	static Element falseLabel = CFGEvaluator.falseLabel;
+
+	private static DocumentFactory xmlFactory =
+		DocumentFactory.getInstance();
 
 	private CFGPart createCFG(Element e) {
 		CFGPart cfg = new CFGPart();
@@ -59,70 +59,6 @@ import cz.muni.stanse.utils.Pair;
 		return cfg;
 	}
 
-	private CFGNode ifThenElse(Element cond, CFGNode _then, CFGNode _else) {
-		return ifThenElse(false, 0, cond, _then, _else);
-	}
-	private CFGNode ifThenElse(int nodeNumber, Element cond, CFGNode _then,
-			CFGNode _else) {
-		return ifThenElse(true, nodeNumber, cond, _then, _else);
-	}
-	private CFGNode ifThenElse(boolean nnValid, int nn,
-			Element cond, CFGNode _then, CFGNode _else) {
-		if (cond.getName().equals("emptyStatement") ||
-				cond.getName().equals("intConst")) {
-			CFGNode node = nnValid ? new CFGNode(nn, cond) :
-				new CFGNode(cond);
-			node.addEdge(cond.getName().equals("emptyStatement") ||
-					Integer.decode(cond.getText()) != 0 ?
-				_then : _else);
-			return node;
-		} else {
-			/* fork */
-			CFGBranchNode branch = nnValid ?
-				new CFGBranchNode(nn, cond) :
-				new CFGBranchNode(cond);
-			/* true */
-			addAssert(branch, defaultLabel, _then, cond, false,
-					_then.getElement());
-			/* false */
-			addAssert(branch, falseLabel, _else, cond, true,
-					_else.getElement());
-			return branch;
-		}
-	}
-
-	private CFGNode addAssert(CFGNode n1, Element label, CFGNode n2,
-			Element cond, boolean neg, Element lineElem) {
-		Element ae = xmlFactory.createElement("assert");
-
-		if (lineElem == null || lineElem.attribute("bl") == null)
-			lineElem = n1.getElement();
-		assert(lineElem != null);
-		String bl = lineElem.attributeValue("bl");
-		assert(bl != null);
-
-		ae.addAttribute("bl", bl);
-		if (cond.getParent() != null)
-			cond = cond.createCopy();
-		else if (cond.attribute("bl") == null)
-			cond.addAttribute("bl", bl);
-		if (neg)
-			ae.addElement("prefixExpression").
-				addAttribute("op", "!").
-				addAttribute("bl", bl).
-				add(cond);
-		else
-			ae.add(cond);
-		CFGNode an = new CFGNode(ae);
-		if (n1 instanceof CFGBranchNode) {
-			CFGBranchNode n1b = (CFGBranchNode)n1;
-			n1b.addEdge(an, label);
-		} else
-			n1.addEdge(an);
-		if (n2 != null)
-			an.addEdge(n2);
-		return an;
-	}
 	private void addSwitchDefaultAssert(CFGBranchNode branch,
 			CFGNode breakNode, Element lineElem) {
 		CFGNode parent = branch;
@@ -138,8 +74,8 @@ import cz.muni.stanse.utils.Pair;
 				addAttribute("op", "==");
 			cond.add(branch.getElement().createCopy());
 			cond.add(caseLabel.createCopy());
-			parent = addAssert(parent, defaultLabel, null, cond,
-					true, lineElem);
+			parent = CFGEvaluator.addAssert(parent, defaultLabel,
+					null, cond, true, lineElem);
 		}
 		if (pin)
 			parent.addEdge(breakNode);
@@ -153,15 +89,18 @@ import cz.muni.stanse.utils.Pair;
 					ct.getCharPositionInLine()));
 		return e;
 	}
+	private CFGNode ifThenElse(Integer nn, Element cond, CFGNode _then,
+			CFGNode _else) {
+		return CFGEvaluator.ifThenElse(nn, cond, _then, _else);
+	}
+	private CFGNode ifThenElse(Element cond, CFGNode _then, CFGNode _else) {
+		return CFGEvaluator.ifThenElse(null, cond, _then, _else);
+	}
 }
 
 translationUnit returns [List<CFG> g]
 @init {
 	$g = new LinkedList<CFG>();
-	emptyStatement = xmlFactory.createElement("emptyStatement");
-	defaultLabel = xmlFactory.createElement("default");
-	falseLabel = xmlFactory.createElement("intConst");
-	falseLabel.setText("0");
 }
 	: ^(TRANSLATION_UNIT (externalDeclaration {
 		if ($externalDeclaration.g != null)
@@ -529,8 +468,9 @@ scope IterSwitch;
 					addAttribute("op", "==");
 				cond.add(n.getElement().createCopy());
 				cond.add(caseLabel.createCopy());
-				addAssert(n, caseLabel, pair.getSecond(),
-						cond, false, caseLabel);
+				CFGEvaluator.addAssert(n, caseLabel,
+						pair.getSecond(), cond, false,
+						caseLabel);
 			}
 		}
 		/* add default if not present */
