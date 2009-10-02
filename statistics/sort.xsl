@@ -12,6 +12,7 @@
 		<xsl:for-each select="errors/error">
 			<xsl:sort select="checker_name"/>
 			<xsl:sort select="short_desc"/>
+			<xsl:sort select="importance"/>
 			<xsl:sort select="traces/trace[1]/locations/location[1]/unit"/>
 			<xsl:copy-of select="." />
 		</xsl:for-each>
