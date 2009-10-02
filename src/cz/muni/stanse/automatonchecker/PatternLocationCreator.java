@@ -44,7 +44,7 @@ final class PatternLocationCreator extends CFGvisitor {
                     createCommonPatternLocation(node,matchings);
             getNodeLocationDictionary().put(node,Pair.make(newLocation,
                                                            newLocation));
-            if (matchings.getFirst().getFirst().isSonstructive())
+            if (matchings.getFirst().getFirst().isConstructive())
                 getAutomataIDs().add(matchings.getFirst().getSecond());
         }
         else if (getNavigator().isCallNode(node)) {

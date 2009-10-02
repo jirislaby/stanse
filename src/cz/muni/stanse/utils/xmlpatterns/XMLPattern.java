@@ -51,7 +51,7 @@ public final class XMLPattern {
     }
 
     boolean isEqualWith(XMLPattern other) {
-        return isSonstructive() == other.isSonstructive() &&
+        return isConstructive() == other.isConstructive() &&
                getName().equals(other.getName()) &&
                getPatternXMLelement().equals(other.getPatternXMLelement());
     }
@@ -60,7 +60,7 @@ public final class XMLPattern {
         return name;
     }
 
-    public boolean isSonstructive() {
+    public boolean isConstructive() {
         return constructive;
     }
 
