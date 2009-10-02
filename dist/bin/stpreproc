@@ -26,6 +26,7 @@ my @kuntouchables = (
 		"spin_unlock_irq",
 	"spin_lock_irqsave", "spin_trylock_irqsave", "spin_lock_irqsave_nested",
 		"spin_unlock_irqrestore",
+	"wait_event_lock_irq",
 	"local_irq_save", "local_irq_restore",
 	"local_irq_disable", "local_irq_enable",
 	"preempt_disable", "preempt_enable",
