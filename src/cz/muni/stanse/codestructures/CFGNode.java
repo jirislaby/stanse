@@ -177,6 +177,6 @@ public class CFGNode {
 
     @Override
     public String toString() {
-	return new Integer(number).toString();
+	return Integer.toString(number);
     }
 }
