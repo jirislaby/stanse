@@ -122,8 +122,6 @@ class ExprEvaluator {
 
     protected Triple<CFGNode,CFGNode,CFGNode> eval(Element cond) {
 	Triple<CFGNode,CFGNode,CFGNode> ret, l, r;
-	cz.muni.stanse.utils.xmlpatterns.XMLAlgo.outputXML(cond);
-	System.out.println("\n----createAssertsRecursive");
 	if (cond.getName().equals("binaryExpression") &&
 		    cond.attributeValue("op").equals("&&")) {
 	    l = eval((Element)cond.elements().get(0));
