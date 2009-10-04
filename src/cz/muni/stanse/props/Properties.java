@@ -25,22 +25,22 @@ import java.io.OutputStream;
  * @author stastny
  */
 public class Properties {
-    
+
     private static java.util.Properties properties = null;
-    
+
     // Path to the properties XML file
     private static final String FILENAME = "properties.xml";
-    
+
     /** Only static methods are supported */
     private Properties() {
     }
-    
+
     /**
      * Loads the properties XML file and parses it.
      * @param forceReload Force XML file reloading
      */
     private static void loadProperties(boolean forceReload) {
-        if(properties == null || forceReload) {
+        if (properties == null || forceReload) {
             properties = new java.util.Properties();
             File propertiesXml = new File(FILENAME);
             InputStream is = null;
@@ -54,14 +54,14 @@ public class Properties {
             }
         }
     }
-    
+
     /**
      * Same as loadProperties(false)
      */
     private static void loadProperties() {
         loadProperties(false);
     }
-    
+
     /**
      * Stores the properties in the XML file
      */
@@ -85,8 +85,7 @@ public class Properties {
             }
         }
     }
-    
-    
+
     /**
      * Gets a property. The properties XML file is loaded automatically.
      * @param key Desired key
@@ -96,7 +95,7 @@ public class Properties {
         loadProperties();
         return properties.getProperty(key);
     }
-    
+
     /**
      * Gets a property. The properties XML file is loaded automatically
      * @param key Desired key
@@ -106,7 +105,7 @@ public class Properties {
         loadProperties();
         return properties.getProperty(key, defaultValue);
     }
-    
+
     /**
      * Sets a property pair. 
      * This method has package friendly access and is only ment for testing or setting a new property pair.
@@ -121,13 +120,11 @@ public class Properties {
         
         return ret;
     }
-    
+
     public enum VerbosityLevel {
         SILENT,
         LOW,
         MIDDLE,
         HIGH
-    
     }
-    
 }

@@ -1,19 +1,24 @@
 package cz.muni.stanse.statistics;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public final class StringToFileWriter {
 
     // public section
 
     public static boolean write(final String data, final String fileName) {
-        final java.io.File pathName = new java.io.File(fileName);
+        final File pathName = new File(fileName);
         if (pathName.getParentFile() != null)
             pathName.getParentFile().mkdirs();
         try {
-            final java.io.BufferedWriter file =
-                new java.io.BufferedWriter(new java.io.FileWriter(fileName));
+            final BufferedWriter file = new BufferedWriter(
+		    new FileWriter(fileName));
             file.write(data);
             file.close();
-        } catch (java.io.IOException exception) {
+        } catch (IOException exception) {
             exception.printStackTrace();
             return false;
         }
