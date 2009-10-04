@@ -25,29 +25,23 @@ public class CFGEvaluator {
 
     static CFGNode ifThenElse(Integer nn, Element cond, CFGNode _then,
 	    CFGNode _else) {
+	CFGNode branch = nn != null ? new CFGNode(nn, cond) : new CFGNode(cond);
 	Integer constVal = CFGEvaluator.getExprValue(cond);
 	if (constVal != null) {
-	    CFGNode node = nn != null ? new CFGNode(nn, cond) :
-		new CFGNode(cond);
-	    node.addEdge(constVal != 0 ? _then : _else);
-	    return node;
+	    branch.addEdge(constVal != 0 ? _then : _else);
+	    return branch;
 	}
-	/* fork */
-	CFGNode branch = nn != null ?
-	    new CFGNode(nn, cond) :
-	    new CFGNode(cond);
-/*	    new CFGBranchNode(nn, cond) :
-	    new CFGBranchNode(cond);*/
-	/* true */
+	/* true *
 	CFGNode ta = CFGEvaluator.createAssert(cond, _then.getElement().
 		attributeValue("bl"), false);
 	String bl = (_else instanceof CFGJoinNode ? cond :
 			_else.getElement()).attributeValue("bl");
-	/* false */
+	/* false *
 	CFGNode fa = CFGEvaluator.createAssert(cond, bl, true);
 	ta.addEdge(_then);
-	fa.addEdge(_else);
-	CFGEvaluator.evaluateExpr(cond, branch, ta, fa, _then.getElement());
+	fa.addEdge(_else);*/
+	CFGEvaluator.evaluateExpr(cond, branch, _then, _else,
+		_then.getElement());
 	return branch;
     }
 
@@ -98,7 +92,6 @@ class ExprEvaluator {
     private static DocumentFactory xmlFactory = DocumentFactory.getInstance();
     private Element trueLineElem;
     private CFGNode _then, _else, parent;
-    private int depth;
 
     protected ExprEvaluator(Element trueLineElem, CFGNode parent, CFGNode _then,
 	    CFGNode _else) {
