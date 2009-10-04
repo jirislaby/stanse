@@ -16,33 +16,15 @@ public class CFGEvaluator {
 	falseLabel.setText("0");
     }
 
-    static void evaluateExpr(Element cond, CFGNode parent, CFGNode _then,
-		    CFGNode _else, final Element trueLineElem) {
-	ExprEvaluator ee = new ExprEvaluator(trueLineElem, parent, _then,
-		_else);
-	ee.evalConnect(cond);
+    static CFGNode evaluateExprConnect(Element cond, CFGNode _then,
+	    CFGNode _else) {
+	ExprEvaluator ee = new ExprEvaluator(cond);
+	return ExprEvaluator.connect(ee.eval(cond), _then, _else);
     }
 
-    static CFGNode ifThenElse(Integer nn, Element cond, CFGNode _then,
-	    CFGNode _else) {
-	CFGNode branch = nn != null ? new CFGNode(nn, cond) : new CFGNode(cond);
-	Integer constVal = CFGEvaluator.getExprValue(cond);
-	if (constVal != null) {
-	    branch.addEdge(constVal != 0 ? _then : _else);
-	    return branch;
-	}
-	/* true *
-	CFGNode ta = CFGEvaluator.createAssert(cond, _then.getElement().
-		attributeValue("bl"), false);
-	String bl = (_else instanceof CFGJoinNode ? cond :
-			_else.getElement()).attributeValue("bl");
-	/* false *
-	CFGNode fa = CFGEvaluator.createAssert(cond, bl, true);
-	ta.addEdge(_then);
-	fa.addEdge(_else);*/
-	CFGEvaluator.evaluateExpr(cond, branch, _then, _else,
-		_then.getElement());
-	return branch;
+    static Triple<CFGNode,CFGNode,CFGNode> evaluateExpr(Element cond) {
+	ExprEvaluator ee = new ExprEvaluator(cond);
+	return ee.eval(cond);
     }
 
     static private CFGNode createAssert(Element cond, String bl, boolean neg) {
@@ -90,27 +72,22 @@ public class CFGEvaluator {
 
 class ExprEvaluator {
     private static DocumentFactory xmlFactory = DocumentFactory.getInstance();
-    private Element trueLineElem;
-    private CFGNode _then, _else, parent;
+    private Element lineElem;
 
-    protected ExprEvaluator(Element trueLineElem, CFGNode parent, CFGNode _then,
-	    CFGNode _else) {
-	this.trueLineElem = trueLineElem;
-	this._then = _then;
-	this._else = _else;
-	this.parent = parent;
+    protected ExprEvaluator(Element lineElem) {
+	this.lineElem = lineElem;
     }
 
-    static protected void addEdge(CFGNode from, CFGNode to) {
+    protected static void addEdge(CFGNode from, CFGNode to) {
 	if (from != null)
 	    from.addEdge(to);
     }
 
-    protected void evalConnect(Element cond) {
-	Triple<CFGNode,CFGNode,CFGNode> tree = eval(cond);
-	parent.addEdge(tree.getFirst());
+    public static CFGNode connect(Triple<CFGNode,CFGNode,CFGNode> tree,
+	    CFGNode _then, CFGNode _else) {
 	addEdge(tree.getSecond(), _then);
 	addEdge(tree.getThird(), _else);
+	return tree.getFirst();
     }
 
     protected Triple<CFGNode,CFGNode,CFGNode> eval(Element cond) {
@@ -136,26 +113,22 @@ class ExprEvaluator {
 	    ret = Triple.<CFGNode,CFGNode,CFGNode>make(l.getFirst(), t,
 		    r.getThird());
 	} else {
-	    Element ass = xmlFactory.createElement("evaluatedExpression").
-		    addAttribute("bl", trueLineElem.attributeValue("bl"));
-	    ass.add(cond.createCopy());
 	    Integer constVal = CFGEvaluator.getExprValue(cond);
 	    if (constVal != null) {
-		CFGNode node = new CFGNode(ass);
+		CFGNode node = new CFGNode(cond);
 		if (constVal != 0)
-		    ret = Triple.<CFGNode,CFGNode,CFGNode>make(node, node, null);
+		    ret = Triple.<CFGNode,CFGNode,CFGNode>make(node, node,
+			    null);
 		else
-		    ret = Triple.<CFGNode,CFGNode,CFGNode>make(node, null, node);
+		    ret = Triple.<CFGNode,CFGNode,CFGNode>make(node, null,
+			    node);
 	    } else {
-		CFGBranchNode branch = new CFGBranchNode(ass);
+		CFGBranchNode branch = new CFGBranchNode(cond);
 		CFGNode t, f;
 		t = CFGEvaluator.addAssert(branch, CFGEmitter.defaultLabel,
-			null, cond, false, trueLineElem);
+			null, cond, false, lineElem);
 		f = CFGEvaluator.addAssert(branch, CFGEmitter.falseLabel, null,
-			cond, true, _else instanceof CFGJoinNode ?
-			    trueLineElem : _else.getElement());
-		t.getElement().addAttribute("evaluated", "1");
-		f.getElement().addAttribute("evaluated", "1");
+			cond, true, lineElem);
 		ret = Triple.<CFGNode,CFGNode,CFGNode>make(branch, t, f);
 	    }
 	}

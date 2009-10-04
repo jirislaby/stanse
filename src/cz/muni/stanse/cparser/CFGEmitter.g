@@ -43,6 +43,7 @@ import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 
 import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.utils.Triple;
 }
 @members {
 	static Element defaultLabel = CFGEvaluator.defaultLabel;
@@ -88,13 +89,6 @@ import cz.muni.stanse.utils.Pair;
 		e.addAttribute("bc", Integer.toString(
 					ct.getCharPositionInLine()));
 		return e;
-	}
-	private CFGNode ifThenElse(Integer nn, Element cond, CFGNode _then,
-			CFGNode _else) {
-		return CFGEvaluator.ifThenElse(nn, cond, _then, _else);
-	}
-	private CFGNode ifThenElse(Element cond, CFGNode _then, CFGNode _else) {
-		return CFGEvaluator.ifThenElse(null, cond, _then, _else);
 	}
 }
 
@@ -415,17 +409,17 @@ selectionStatement returns [CFGPart g]
 selectionStatementIf returns [CFGPart g]
 @init {
 	CFGNode s1Last;
-	int nodeNumber;
+	Triple<CFGNode,CFGNode,CFGNode> evalExpr;
 }
 	: ^('if' expression {
-		nodeNumber = CFGNodeNumber.getNext();
+		evalExpr = CFGEvaluator.evaluateExpr(
+			$expression.start.getElement());
 	} s1=statement {
 		s1Last = $Function::lastStatement;
 	} s2=statement?) {
 		$g = new CFGPart();
 		CFGNode n1, n2 = new CFGJoinNode();
-		n1 = ifThenElse(nodeNumber, $expression.start.getElement(),
-				$s1.g.getStartNode(),
+		n1 = ExprEvaluator.connect(evalExpr, $s1.g.getStartNode(),
 				s2 == null ? n2 : $s2.g.getStartNode());
 		$g.setStartNode(n1);
 		$g.setEndNode(n2);
@@ -496,7 +490,7 @@ scope IterSwitch;
 	CFGNode n1, n2;
 	CFGPart statementCFG = null;
 	int statementType = 0;
-	int nodeNumber;
+	Triple<CFGNode,CFGNode,CFGNode> evalExpr;
 }
 @after {
 	/* backpatch */
@@ -510,12 +504,12 @@ scope IterSwitch;
 		statementCFG.getEndNode().addEdge(contNode);
 }
 	: ^('while' expression { /* to preserve sequential numbers */
-		nodeNumber = CFGNodeNumber.getNext();
+		evalExpr = CFGEvaluator.evaluateExpr(
+			$expression.start.getElement());
 	} statement) {
 		statementCFG = $statement.g;
 		breakNode = new CFGJoinNode();
-		contNode = ifThenElse(nodeNumber,
-				$expression.start.getElement(),
+		contNode = ExprEvaluator.connect(evalExpr,
 				statementCFG.getStartNode(), breakNode);
 		$g.setStartNode(contNode);
 		$g.setEndNode(breakNode);
@@ -529,7 +523,8 @@ scope IterSwitch;
 		breakNode = new CFGJoinNode();
 		$g.setStartNode(statementCFG.getStartNode());
 		$g.setEndNode(breakNode);
-		contNode = ifThenElse($expression.start.getElement(),
+		contNode = CFGEvaluator.evaluateExprConnect(
+				$expression.start.getElement(),
 				statementCFG.getStartNode(), breakNode);
 		statementType = $statement.start.getType();
 	}
@@ -539,14 +534,12 @@ scope IterSwitch;
 		breakNode = new CFGJoinNode();
 		$g.setStartNode(n1);
 		$g.setEndNode(breakNode);
-		nodeNumber = CFGNodeNumber.getNext();
+		evalExpr = CFGEvaluator.evaluateExpr($e2.g == null ?
+			newEmptyStatement($f) : $e2.start.getElement());
 	} ^(E3 e3=expression?) statement) {
 		statementCFG = $statement.g;
-		n2 = ifThenElse(nodeNumber,
-				$e2.g == null ? newEmptyStatement($f) :
-				$e2.start.getElement(),
-				statementCFG.getStartNode(),
-				breakNode);
+		n2 = ExprEvaluator.connect(evalExpr,
+				statementCFG.getStartNode(), breakNode);
 		n1.addEdge(n2);
 
 		contNode = new CFGNode($e3.g == null ?
@@ -593,7 +586,7 @@ asmStatement returns [CFGPart g]
 expression returns [CFGPart g]
 @init {
 	CFGNode trueNode = null;
-	int nodeNumber;
+	Triple<CFGNode,CFGNode,CFGNode> evalExpr;
 	$g = null;
 }
 @after {
@@ -602,15 +595,16 @@ expression returns [CFGPart g]
 }
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) { /*$g = $e2.g; do nothing so far XXX to be fixed */  }
 	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression) {
-		nodeNumber = CFGNodeNumber.getNext();
+		evalExpr = CFGEvaluator.evaluateExpr(
+			$e1.start.getElement());
 	} ^(E2 e2=expression?) {
 		if (e2 == null)
 			trueNode = new CFGNode($e1.start.getElement());
 	} ^(E3 e3=expression)) {
 		$g = new CFGPart();
-		CFGNode n1 = ifThenElse(nodeNumber, $e1.start.getElement(),
-				trueNode == null ? $e2.g.getStartNode() : trueNode,
-				$e3.g.getStartNode());
+		CFGNode n1 = ExprEvaluator.connect(evalExpr,
+				trueNode == null ? $e2.g.getStartNode() :
+				trueNode, $e3.g.getStartNode());
 		CFGNode n2 = new CFGJoinNode();
 		$g.setStartNode(n1);
 		$g.setEndNode(n2);
