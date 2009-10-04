@@ -39,16 +39,6 @@ public class CFGNode {
     }
 
     /**
-     * Creates a new instance of CFGNode
-     * @param number node number
-     * @param e element to assign to this node
-     */
-    public CFGNode(int number, Element e) {
-	this.number = number;
-	element = e;
-    }
-
-    /**
      * Get unique node number
      * @return unique node number
      */
