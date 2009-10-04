@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.dom4j.Element;
+
 /**
  * @brief
  *
@@ -40,12 +42,11 @@ public final class XMLPatternVariablesAssignment {
     }
 
     public XMLPatternVariablesAssignment() {
-        varsAssignments = new HashMap<String,org.dom4j.Element>(); 
+        varsAssignments = new HashMap<String,Element>();
     }
 
-    public org.dom4j.Element put(final String varName,
-                          final org.dom4j.Element XMLelement) {
-        return getVarsAssignments().put(varName,XMLelement);
+    public Element put(final String varName, final Element XMLelement) {
+        return getVarsAssignments().put(varName, XMLelement);
     }
 
     public boolean isEqualWith(final XMLPatternVariablesAssignment other) {
@@ -62,15 +63,15 @@ public final class XMLPatternVariablesAssignment {
         return true;
     }
 
-    public Map<String,org.dom4j.Element> getVarsMap() {
+    public Map<String,Element> getVarsMap() {
         return Collections.unmodifiableMap(getVarsAssignments());
     }
 
     // private section
 
-    private HashMap<String,org.dom4j.Element> getVarsAssignments() {
+    private HashMap<String,Element> getVarsAssignments() {
         return varsAssignments;
     }
 
-    private final HashMap<String,org.dom4j.Element> varsAssignments;
+    private final HashMap<String,Element> varsAssignments;
 }

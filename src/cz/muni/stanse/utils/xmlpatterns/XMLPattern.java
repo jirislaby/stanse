@@ -26,12 +26,9 @@ public final class XMLPattern {
 
     public XMLPattern(final Element XMLelement) {
         patternXMLelement = XMLelement;
-        name = patternXMLelement.attribute("name").getValue();
-        final org.dom4j.Attribute constructiveAttr =
-            patternXMLelement.attribute("constructive");
-        constructive = (constructiveAttr == null) ? true :
-                            (constructiveAttr.getText().equals("false") ?
-                                    false : true);
+        name = patternXMLelement.attributeValue("name");
+        final String conAttr = patternXMLelement.attributeValue("constructive");
+        constructive = (conAttr == null) ? true : !conAttr.equals("false");
     }
 
     @Override
@@ -79,12 +76,11 @@ public final class XMLPattern {
     private static boolean matchingElements(final Element XMLpivot,
                            final Element XMLelement,
                            final XMLPatternVariablesAssignment varsAssignment) {
-        if (XMLpivot.getName().equals("nested"))
-        {
+        if (XMLpivot.getName().equals("nested")) {
             final String elementName = XMLelement.getName();
-            for (final Iterator j = XMLpivot.attributeIterator(); j.hasNext(); )
-                if (elementName.equals(
-                        ((org.dom4j.Attribute)j.next()).getValue()))
+            for (final Iterator<Attribute> j = XMLpivot.attributeIterator();
+			j.hasNext(); )
+                if (elementName.equals(j.next().getValue()))
                     return false;
             return onNested(XMLpivot,XMLelement,varsAssignment);
         }
@@ -110,13 +106,13 @@ public final class XMLPattern {
             !XMLpivot.getText().equals(XMLelement.getText()))
             return false;
 
-        final Iterator i = XMLpivot.elementIterator();
-        final Iterator j = XMLelement.elementIterator();
-        for ( ; i.hasNext() && j.hasNext(); ) {
-            final Element pivotNext = (Element)i.next();
+        final Iterator<Element> i = XMLpivot.elementIterator();
+        final Iterator<Element> j = XMLelement.elementIterator();
+	while (i.hasNext() && j.hasNext()) {
+            final Element pivotNext = i.next();
             if (pivotNext.getName().equals("any"))
                 return true;
-            if (!matchingElements(pivotNext,(Element)j.next(),varsAssignment))
+            if (!matchingElements(pivotNext, j.next(), varsAssignment))
                 return false;
         }
         if (i.hasNext() || j.hasNext())
@@ -129,11 +125,12 @@ public final class XMLPattern {
                            final Element XMLelement,
                            final XMLPatternVariablesAssignment varsAssignment) {
         if (matchingElements((Element)XMLpivot.elementIterator().next(),
-                             XMLelement,varsAssignment))
+		XMLelement, varsAssignment))
             return true;
         
-        for (final Iterator j = XMLelement.elementIterator() ; j.hasNext(); )
-            if (matchingElements(XMLpivot,(Element)j.next(),varsAssignment))
+        for (final Iterator<Element> j = XMLelement.elementIterator();
+		j.hasNext(); )
+            if (matchingElements(XMLpivot, j.next(), varsAssignment))
                 return true;
 
         return false;
@@ -143,14 +140,11 @@ public final class XMLPattern {
         return (Element)patternXMLelement.elementIterator().next();
     }
     
-    private static boolean matchingAttributes(final List pivotATTRs,
+    private static boolean matchingAttributes(final List<Attribute> pivotATTRs,
                                               final Element XMLelement) {
-        for (final Object obj : pivotATTRs) {
-            assert(obj instanceof Attribute);
-            final Attribute pivotAttr = (Attribute)obj;
-            final Attribute elemAttr=XMLelement.attribute(pivotAttr.getName());
-            if (elemAttr == null || !matchingAttribute(pivotAttr.getValue(),
-                                                       elemAttr.getValue()))
+        for (final Attribute pivotAttr: pivotATTRs) {
+            final String elem = XMLelement.attributeValue(pivotAttr.getName());
+            if (elem == null || !matchingAttribute(pivotAttr.getValue(), elem))
                 return false;
         }
         return true;
