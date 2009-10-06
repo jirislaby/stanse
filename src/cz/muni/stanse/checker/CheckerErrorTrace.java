@@ -7,7 +7,12 @@
  */
 package cz.muni.stanse.checker;
 
+import cz.muni.stanse.Stanse;
+import cz.muni.stanse.codestructures.CFGNode;
+
+import cz.muni.stanse.codestructures.LazyInternalStructures;
 import java.util.List;
+import java.util.Vector;
 import java.util.Collections;
 
 import org.dom4j.DocumentFactory;
@@ -26,6 +31,14 @@ public final class CheckerErrorTrace {
                              final String description){
         this.locations = locations;
         this.description = description;
+    }
+
+    public CheckerErrorTrace(final List<CFGNode> trace, final String startMsg,
+                             final String innerMsg, final String endMsg,
+                             final LazyInternalStructures internals) {
+        this.locations = buildLocations(trace,startMsg,innerMsg,endMsg,
+                                        internals);
+        this.description = "the only trace";
     }
 
     @Override
@@ -93,6 +106,34 @@ public final class CheckerErrorTrace {
     }
 
     // private section
+
+    private static Vector<CheckerErrorTraceLocation>
+    buildLocations(final List<CFGNode> trace, final String startMsg,
+                   final String innerMsg, final String endMsg,
+                   final LazyInternalStructures internals) {
+        final Vector<CheckerErrorTraceLocation> result =
+                new Vector<CheckerErrorTraceLocation>();
+
+        assert(!trace.isEmpty());
+        result.add(new CheckerErrorTraceLocation(
+                                getNodeUnitName(trace.get(0),internals),
+                                trace.get(0).getLine(),startMsg));
+        for (CFGNode node : trace.subList(1,trace.size() - 1))
+            if (!node.getElement().getName().equals("assert"))
+                result.add(new CheckerErrorTraceLocation(
+                                 getNodeUnitName(node,internals),node.getLine(),
+                                 innerMsg));
+        result.add(new CheckerErrorTraceLocation(
+                           getNodeUnitName(trace.get(trace.size()-1),internals),
+                           trace.get(trace.size()-1).getLine(),endMsg));
+        return result;
+    }
+
+    private static String getNodeUnitName(final CFGNode node,
+                                       final LazyInternalStructures internals) {
+        return Stanse.getUnitManager().getUnitName(
+                    internals.getNodeToCFGdictionary().get(node));
+    }
 
     private final List<CheckerErrorTraceLocation> locations;
     private final String description;

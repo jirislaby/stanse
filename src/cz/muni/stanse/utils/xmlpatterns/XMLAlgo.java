@@ -11,6 +11,9 @@ import java.io.OutputStream;
 
 import java.util.Iterator;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
 
@@ -67,6 +70,19 @@ public final class XMLAlgo {
      */
     public static void outputXML(Node n) {
 	outputXML(n, System.err);
+    }
+
+    public static Document toDocument(final String xml) {
+        try {
+            return DocumentHelper.parseText(xml);
+        } catch (final DocumentException e) {
+            return null;
+        }
+    }
+
+    public static Element toElement(final String xml) {
+        final Document doc = toDocument(xml);
+        return doc != null ? (Element)doc.getRootElement().detach() : null;
     }
 
     private XMLAlgo() {

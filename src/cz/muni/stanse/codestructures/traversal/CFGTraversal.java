@@ -170,6 +170,26 @@ public final class CFGTraversal {
     }
 
     public static <T extends CFGPathVisitor>
+    T traverseFunctionForward(final CFG cfg, final T visitor) {
+        final LinkedList<CFGNode> path = new LinkedList<CFGNode>();
+        path.add(cfg.getStartNode());
+        traverseCFGPaths(cfg,path,
+                         new ForwardCFGNodeFollowers(),
+                         visitor,new HashSet<Pair<CFGNode,CFGNode>>());
+        return visitor;
+    }
+
+    public static <T extends CFGPathVisitor>
+    T traverseFunctionBackward(final CFG cfg, final T visitor) {
+        final LinkedList<CFGNode> path = new LinkedList<CFGNode>();
+        path.add(cfg.getEndNode());
+        traverseCFGPaths(cfg,path,
+                         new BackwardCFGNodeFollowers(),
+                         visitor,new HashSet<Pair<CFGNode,CFGNode>>());
+        return visitor;
+    }
+
+    public static <T extends CFGPathVisitor>
     T traverseCFGPathsForward(final CFG cfg,
                               final CFGNode startNode,final T visitor) {
         final LinkedList<CFGNode> path = new LinkedList<CFGNode>();
@@ -243,7 +263,7 @@ public final class CFGTraversal {
             if (visitedNodes.contains(currentNode))
                 continue;
             visitedNodes.add(currentNode);
-            if (!visitor.visit(currentNode,currentNode.getElement()))
+            if (!visitor.visitInternal(currentNode,currentNode.getElement()))
                 continue;
             for (CFGNode currentNodeFollower : nodeFollowers.get(currentNode))
                 nodesToVisit.insert(currentNodeFollower);
@@ -256,8 +276,8 @@ public final class CFGTraversal {
                             final CFGNodeFollowers nodeFollowers,
                             final CFGPathVisitor visitor,
                             final HashSet<Pair<CFGNode,CFGNode>> visitedEdges) {
-        if (!visitor.visit(Collections.unmodifiableList(path),
-                           new Stack<CFGNode>()))
+        if (!visitor.visitInternal(Collections.unmodifiableList(path),
+                                   new Stack<CFGNode>()))
             return;
 
         for (CFGNode currentNodeFollower : nodeFollowers.get(path.getFirst())) {
@@ -296,7 +316,8 @@ public final class CFGTraversal {
                 }
             }
         }
-        else if (!visitor.visit(Collections.unmodifiableList(path),callStack))
+        else if (!visitor.visitInternal(Collections.unmodifiableList(path),
+                                        callStack))
             return;
         if (nodeFollowers.isReturnNode(path.get(0)) && !callStack.isEmpty()) {
             final Pair<CFGNode,CFGNode> edge = Pair.make(path.getFirst(),

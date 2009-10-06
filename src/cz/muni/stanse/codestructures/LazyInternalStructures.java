@@ -7,6 +7,7 @@ import cz.muni.stanse.codestructures.builders.StartFunctionsSetBuilder;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -36,6 +37,22 @@ public abstract class LazyInternalStructures {
         if (startFunctions == null)
             setStartFunctions();
         return startFunctions;
+    }
+
+    public Set<CFG> getFunctionsOfName(final String name) {
+        final HashSet<CFG> result = new HashSet<CFG>();
+        for (final Unit unit : getUnits()) {
+            final CFG cfg = unit.getCFG(name);
+            if (cfg != null)
+                result.add(cfg);
+        }
+        return result;
+    }
+
+    public CFG getFunctionMain() {
+        final Set<CFG> mains = getFunctionsOfName("main");
+        assert(mains.size() == 1);
+        return mains.iterator().next();
     }
 
     public DefaultDirectedGraph<CFGHandle, DefaultEdge> getCallGraph() {

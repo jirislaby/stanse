@@ -8,8 +8,12 @@
  */
 package cz.muni.stanse.checker;
 
+import cz.muni.stanse.codestructures.CFGNode;
+import cz.muni.stanse.codestructures.LazyInternalStructures;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
 
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
@@ -37,6 +41,20 @@ public final class CheckerError implements Comparable<CheckerError> {
         this.importance = importance;
         this.checkerName = checkerName;
         this.traces = traces;
+    }
+
+    public CheckerError(final String shortDesc, final String fullDesc,
+                        final int importance, final String checkerName,
+                        final List<CFGNode> trace, final String startMsg,
+                        final String innerMsg, final String endMsg,
+                        final LazyInternalStructures internals) {
+        this.shortDesc = shortDesc;
+        this.fullDesc = fullDesc;
+        this.importance = importance;
+        this.checkerName = checkerName;
+        this.traces = new Vector();
+        traces.add(new CheckerErrorTrace(trace,startMsg,innerMsg,endMsg,
+                                         internals));
     }
 
     @Override

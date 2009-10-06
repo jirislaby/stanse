@@ -24,6 +24,15 @@ public final class XMLPattern {
 
     // public section
 
+    public XMLPattern(final String xml) {
+        this(XMLAlgo.toElement(xml));
+    }
+
+    public XMLPattern(final String patternName, final String xml) {
+        this(XMLAlgo.toElement("<pattern name=\"" + patternName + "\">" +
+                               xml + "</pattern>"));
+    }
+
     public XMLPattern(final Element XMLelement) {
         patternXMLelement = XMLelement;
         name = patternXMLelement.attributeValue("name");
