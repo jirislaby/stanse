@@ -69,9 +69,11 @@ if (defined $cg->param('OK') || defined $cg->param('FP')) {
 	my $isOK = defined $cg->param('OK');
 	if ($db1) {
 		my $q = $db1->prepare('INSERT INTO reports(ip, db, errid, ' .
-				'type, unique_entry) VALUES (?,?,?,?,?)');
+				'type, unique_entry, stamp) VALUES ' .
+				q|(?,?,?,?,?,datetime('now'))|);
 		if ($q->execute($cg->remote_addr, $datafile, $id,
-				$isOK ? -1 : 1, $cg->remote_addr . "-" . $id)) {
+				$isOK ? -1 : 1, $cg->remote_addr . "-" .
+				$datafile . "-" .$id)) {
 			print qq(<p style="color: red;">marked as ), $isOK ?
 				"OK" : "false positive", "</p>\n";
 		} else {

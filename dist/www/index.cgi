@@ -16,7 +16,7 @@ print $cg->start_html(-dtd=>"yes", -lang=>"cs", -title=>"Stanse results",
 my $datafile = $cg->param('db');
 if (!defined $datafile || !exists $OKfiles{$datafile}) {
 	print "<p>Select database:</p>\n";
-	foreach (keys %OKfiles) {
+	foreach (sort keys %OKfiles) {
 		print qq(<div><a href="?db=$_">$OKfiles{$_}</a></div>\n);
 	}
 	goto end;
@@ -37,7 +37,7 @@ print '<p>See <a href="http://stanse.fi.muni.cz/">Stanse homepage</a> for ' .
 print qq|<p>$count errors (false positives including) found in <strong>$OKfiles{$datafile}</strong> kernel:</p>|;
 print qq|<div style="font-size: 75%;"><em>The number before pipe is importance.</em></div>|;
 
-my $errors = $dbh->prepare("SELECT * FROM errors ORDER BY checker,importance desc,file,line");
+my $errors = $dbh->prepare("SELECT * FROM errors ORDER BY checker,importance,error,file,line");
 
 $errors->execute();
 
@@ -49,7 +49,7 @@ while ($_ = $errors->fetchrow_hashref) {
 	for (my $a = 3 - length $$_{importance}; $a > 0; $a--) {
 		print "&nbsp;";
 	}
-	print qq($$_{importance}| <a href="error.cgi?db=$datafile&id=$$_{id}">$$_{file} line $$_{line}</a></div>\n);
+	print qq($$_{importance}| $$_{error} <a href="error.cgi?db=$datafile&id=$$_{id}">$$_{file} line $$_{line}</a></div>\n);
 	$checker = $$_{checker};
 }
 

@@ -16,14 +16,14 @@ my $dbh = DBI->connect("dbi:SQLite:dbname=$out","","", {AutoCommit => 0}) ||
 my $xp = XML::XPath->new(filename => "$in") || die "can't open $in";
 
 $dbh->do("create table errors(id INTEGER PRIMARY KEY, checker STRING, " .
-		"importance INTEGER, file STRING, line INTEGER, " .
-		"errorXML BLOB)");
+		"importance INTEGER, error STRING, file STRING, " .
+		"line INTEGER, errorXML BLOB)");
 
 
 my $errors = $xp->findnodes("/database/errors/error");
 
-my $data = $dbh->prepare("insert into errors(checker, importance, file, " .
-		"line, errorXML) values (?, ?, ?, ?, ?)");
+my $data = $dbh->prepare("insert into errors(checker, importance, error, " .
+		"file, line, errorXML) values (?, ?, ?, ?, ?, ?)");
 
 my $croplen = length $crop;
 
@@ -35,6 +35,7 @@ foreach my $error ($errors->get_nodelist) {
 	}
 	$data->execute($error->findvalue("checker_name"),
 			$error->findvalue("importance"),
+			$error->findvalue("short_desc"),
 			$unit, $loc->findvalue("line"),
 			XML::XPath::XMLParser::as_string($error));
 }
