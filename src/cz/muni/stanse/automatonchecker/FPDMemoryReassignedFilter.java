@@ -27,11 +27,6 @@ final class FPDMemoryReassignedFilter extends FalsePositivesDetector {
     int getTraceImpotance(final java.util.List<CFGNode> path,
                           final java.util.Stack<CFGNode> cfgContext,
                           final ErrorRule rule) {
-        String desc = rule.getErrorDescription();
-        if (!desc.equals("dereferencing NULL pointer") &&
-                !desc.equals("dereferencing dangling pointer") &&
-                !desc.equals("releasing already released memory"))
-            return getBugImportance(0);
         Iterator<CFGNode> nodeI = path.listIterator();
         Element nEl = nodeI.next().getElement();
         List<Element> left = null;
