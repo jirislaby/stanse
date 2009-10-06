@@ -127,7 +127,17 @@ print "<div><strong>This one is:</strong></div>\n",
 	qq|<div style="margin-top: 1em;"><strong>File contents (this file is |,
 	"distributed under the terms specified in the original ",
 	"file):</strong></div>\n<pre>\n";
-open SRC, "src-$datafile/$$err{file}";
+
+my $input = "src-$datafile/$$err{file}";
+
+if (! -f $input && -f $input . ".lzma") {
+	$input = "lzcat $input.lzma|";
+}
+
+if (!open SRC, $input) {
+	print qq(<p style="color: red;">Can't read source file</p>);
+	goto end;
+}
 my $line = 1;
 while (<SRC>) {
 	printf qq(<a name="l%d">%5d</a>|), $line, $line;
@@ -144,6 +154,7 @@ while (<SRC>) {
 	$line++;
 }
 close SRC;
+end:
 print qq(</pre>\n);
 
 $dbh->disconnect;
