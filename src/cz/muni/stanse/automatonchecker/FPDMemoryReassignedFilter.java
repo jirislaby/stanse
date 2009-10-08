@@ -64,7 +64,7 @@ final class FPDMemoryReassignedFilterCreator
     boolean isApplicable(final XMLAutomatonDefinition definition,
                          boolean isInterprocediral) {
         return definition.getAutomatonName().equals(
-                "pointer analysis automaton checker");
+                "Linux kernel pointer analysis automaton checker");
     }
 
     @Override

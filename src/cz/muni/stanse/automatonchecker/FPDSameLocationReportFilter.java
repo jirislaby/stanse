@@ -39,7 +39,7 @@ final class FPDSameLocationReportFilterCreator
     @Override
     boolean isApplicable(final XMLAutomatonDefinition definition,
                          boolean isInterprocediral) {
-        return true;
+        return definition.getAutomatonName().startsWith("Linux kernel");
     }
 
     @Override
