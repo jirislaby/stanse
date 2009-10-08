@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <automaton>
-    <description name="correct pairing automaton checker"
+    <description name="Linux kernel correct pairing automaton checker"
                  desc="Handles correct pairing of expressions. I.e. if
 		       everything what was 'gotten' is also 'put'. (e.g.
 		       get_cpu() vs. put_cpu()." />

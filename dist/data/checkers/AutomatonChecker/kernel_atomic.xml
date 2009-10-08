@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <automaton>
-    <description name="atomic automaton checker"
+    <description name="Linux kernel atomic automaton checker"
                  desc="Handles sleeping while atomic, e.g. msleep inside
 			spin_lock block. Supports up to 5 levels of
 			make-atomic operations nesting" />

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <automaton>
-    <description name="pointer analysis automaton checker"
+    <description name="Linux kernel pointer analysis automaton checker"
                  desc="Handles common problems when using pointer such as
                        null/dangling pointer dereference, double free, and
                        memory leaks." />
