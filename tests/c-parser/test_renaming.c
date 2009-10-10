@@ -5,6 +5,8 @@ struct {
 	int st_a;
 } st;
 
+void amain(int amain);
+
 void amain(int amain)
 {
 	int a;
