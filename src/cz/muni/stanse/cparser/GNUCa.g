@@ -258,7 +258,7 @@ simpleAsmExpr	// GNU
 asmStringLiteral // GNU
 	:	sTRING_LITERAL
 	;
-
+/*
 functionDefinition						// (6.9.1)
 scope Symbols; // put parameters and locals into same scope for now
 @init { $Symbols::types = new HashSet(); }
@@ -275,7 +275,7 @@ scope Symbols; // // put parameters and locals into same scope for now
 	:	declarationSpecifiers declarator declaration* compoundStatement
 		-> ^(FUNCTION_DEFINITION declarationSpecifiers declarator declaration* compoundStatement)
 	;
-
+*/
 
 // A.2.2 Declarations
 
