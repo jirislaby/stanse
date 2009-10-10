@@ -31,7 +31,7 @@ public class Function implements Cloneable {
         FunctionState data = new FunctionState();
         CFGNode node = cfg.getStartNode();
         data.getBackTrack().addLast(new BackTrack(node.getNumber(),
-                        node.getLine(),"start of function", functionName));
+                        node.getLine(),"start of function", fileName));
         this.states.add(data);
     }
 
