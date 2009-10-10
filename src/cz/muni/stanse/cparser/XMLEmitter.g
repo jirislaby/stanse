@@ -189,10 +189,9 @@ import org.dom4j.Element;
 			return;
 		}
 		/* forward decl already pushed one */
-		if ($Symbols.size() == 1 && $Symbols::variables.contains(new_)) {
-			System.err.println("not adding " + old + ":" + new_);
+		if ($Symbols.size() == 1 && $Symbols::variables.contains(new_))
 			return;
-		}
+
 		$Symbols::variablesOld.add(old);
 		$Symbols::variables.add(new_);
 
