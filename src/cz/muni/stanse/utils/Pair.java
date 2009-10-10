@@ -64,6 +64,11 @@ public final class Pair<A,B> {
                 false : isEqualWith((Pair<A,B>)obj);
     }
 
+    static private <A> boolean arePartsEqual(A one, A two) {
+	return (one == null && two == null) || (one != null && two != null &&
+		one.equals(two));
+    }
+
     /**
      * @brief
      *
@@ -73,10 +78,8 @@ public final class Pair<A,B> {
      * @see
      */
     public boolean isEqualWith(final Pair<A,B> other) {
-        return ((first == null && other.first == null) ||
-                    first.equals(other.first)) &&
-               ((second == null && other.second == null) ||
-                    second.equals(other.second));
+        return arePartsEqual(first, other.first) &&
+		arePartsEqual(second, other.second);
     }
 
     /**

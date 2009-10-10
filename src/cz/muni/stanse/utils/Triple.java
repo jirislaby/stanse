@@ -93,6 +93,11 @@ public final class Triple<A,B,C> {
                 false : isEqualWith((Triple<A,B,C>)obj);
     }
 
+    static private <A> boolean arePartsEqual(A one, A two) {
+	return (one == null && two == null) || (one != null && two != null &&
+		one.equals(two));
+    }
+
     /**
      * @brief
      *
@@ -102,12 +107,9 @@ public final class Triple<A,B,C> {
      * @see
      */
     public boolean isEqualWith(final Triple<A,B,C> other) {
-        return ((first == null && other.first == null) ||
-                    first.equals(other.first)) &&
-               ((second == null && other.second == null) ||
-                    second.equals(other.second)) &&
-               ((third == null && other.third == null) ||
-                    third.equals(other.third));
+        return arePartsEqual(first, other.first) &&
+		arePartsEqual(second, other.second) &&
+		arePartsEqual(third, other.third);
     }
 
     public static <A,B,C> Triple<A,B,C> make(final A a, final B b, final C c) {

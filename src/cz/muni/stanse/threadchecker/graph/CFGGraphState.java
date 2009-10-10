@@ -104,10 +104,10 @@ public class CFGGraphState {
                 return branchNodes;
             } else {
                 counter++;
-                wrongNodes.put(actualNode, new Integer(counter));
+                wrongNodes.put(actualNode, Integer.valueOf(counter));
             }
         } else {
-            wrongNodes.put(actualNode, new Integer(0));
+            wrongNodes.put(actualNode, Integer.valueOf(0));
         }
         
         for (CFGNode node : waitList) {

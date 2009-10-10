@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 public class ThreadInfo {
     private static int actualId=0;
     private final int id;
-    private boolean isFinished=false;
     private final String functionName;
     private Function function;
     private Set<DependencyGraph> dependencyGraphs;

@@ -9,7 +9,7 @@ import java.util.Map;
  *
  * @author Jan Kučera
  */
-public class UnlockSet {
+public class UnlockSet implements Cloneable {
     private Map<String,Lock> locks = new HashMap<String,Lock>(0);
 
     public boolean isEmpty() {

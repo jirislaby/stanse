@@ -270,12 +270,18 @@ final class CmdLineManager {
 
     void printInfo(final java.io.OutputStream sink) {
         if (numArgs == 0 || getOptions().has(help))
-            try { getParser().printHelpOn(sink); }
-            catch (final java.io.IOException e) {}
+            try {
+		getParser().printHelpOn(sink);
+	    } catch (final java.io.IOException e) {
+		System.err.println("Can't print help");
+	    }
         if (getOptions().has(version))
-            try { new java.io.DataOutputStream(sink).writeChars(
+            try {
+		new java.io.DataOutputStream(sink).writeChars(
                           Stanse.class.getPackage().getImplementationVersion());
-            } catch (final java.io.IOException e) {}
+            } catch (final java.io.IOException e) {
+		System.err.println("Can't print version");
+	    }
     }
 
     boolean dumpAST() {

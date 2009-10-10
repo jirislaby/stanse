@@ -11,13 +11,11 @@ import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
-import cz.muni.stanse.Stanse;
 import cz.muni.stanse.utils.Make;
 import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.msgformat.ColumnMessageFormater;
 
 import java.util.List;
-import java.io.File;
 
 public final class Configuration {
 

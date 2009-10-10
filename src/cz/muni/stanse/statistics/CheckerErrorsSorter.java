@@ -4,8 +4,9 @@ import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.Triple;
 
 import java.util.HashMap;
-import java.util.Vector;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -96,8 +97,8 @@ public final class CheckerErrorsSorter {
 
         final Vector<Pair<String,Vector<Element>>> result =
                 new Vector<Pair<String,Vector<Element>>>();
-        for (final String name : namesDict.keySet())
-            result.add(Pair.make(name,namesDict.get(name)));
+        for (final Map.Entry<String,Vector<Element>> e: namesDict.entrySet())
+            result.add(Pair.make(e.getKey(), e.getValue()));
         return result;
     }
 

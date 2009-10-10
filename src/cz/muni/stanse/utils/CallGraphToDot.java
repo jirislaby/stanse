@@ -10,17 +10,18 @@ public class CallGraphToDot {
 
     public static String
             run(DefaultDirectedGraph<CFGHandle, DefaultEdge> graph) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
-        result += "digraph stronglyConnected {\n";
+        result.append("digraph stronglyConnected {\n");
         for(final CFGHandle cfgh: graph.vertexSet())
-            result += "\"" + cfgh.toString() + "\"\n";
-        for(DefaultEdge edge : graph.edgeSet())
-            result += "\"" + graph.getEdgeSource(edge) + "\" -> \"" +
-                             graph.getEdgeTarget(edge) + "\";\n";
-        result += "}";
+            result.append('"').append(cfgh.toString()).append("\"\n");
+        for(DefaultEdge edge: graph.edgeSet())
+            result.append('"').append(graph.getEdgeSource(edge)).
+		append("\" -> \"").append(graph.getEdgeTarget(edge)).
+		append("\";\n");
+        result.append('}');
 
-        return result;
+        return result.toString();
     }
 
     // private section

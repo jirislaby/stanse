@@ -13,7 +13,7 @@ import java.util.Stack;
  *
  * @author Jan Kučera
  */
-public class LockStack {
+public class LockStack implements Cloneable {
     private Map<String,Lock> lockMap = new HashMap(0);
     private Stack<Lock> locks = new Stack<Lock>();
 

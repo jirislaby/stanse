@@ -129,11 +129,11 @@ public final class CheckerError implements Comparable<CheckerError> {
     }
 
     public String getShortDesc() {
-        return new String(shortDesc);
+        return shortDesc;
     }
 
     public String getFullDesc() {
-        return new String(fullDesc);
+        return fullDesc;
     }
 
     public int getImportance() {

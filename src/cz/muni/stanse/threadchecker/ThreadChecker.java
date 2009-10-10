@@ -52,7 +52,6 @@ public class ThreadChecker extends Checker {
         CheckerError error;
         Set<DependencyGraph> graphs = null;
         List<String> startFunctions;
-        Vector<String> functionNames = new Vector<String>();
 
         settings.setInternals(internals);
 

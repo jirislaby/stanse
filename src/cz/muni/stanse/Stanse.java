@@ -175,13 +175,14 @@ public final class Stanse {
 	final String outDirName = cmdLineManager.getOutputDir();
 	if (outDirName == null)
 	    return;
-	java.io.File outDir = new java.io.File(outDirName);
+	File outDir = new File(outDirName);
 	if (!outDir.exists()) {
 	    System.out.print("Output directory: '" + outDirName +
 			     "' does not exist.\n\tCreating it...");
-	    outDir.mkdir();
-	    System.out.println(outDir.exists() ?
-				    "Done.":"Failed! Output won't be written.");
+	    if (outDir.mkdirs())
+		System.out.println("Done.");
+	    else
+		System.out.println("Failed! Output won't be written.");
 	}
 	getInstance().setOutputDirectory(outDirName);
     }

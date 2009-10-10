@@ -673,8 +673,8 @@ constant
 	;
 
 offsetofMemberDesignator
-	: id1=IDENTIFIER
-		( ('.' id2=IDENTIFIER)
+	: IDENTIFIER
+		( ('.' IDENTIFIER)
 		| ('[' expression ']')
 		)*
 	;

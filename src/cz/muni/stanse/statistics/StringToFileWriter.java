@@ -12,7 +12,10 @@ public final class StringToFileWriter {
     public static boolean write(final String data, final String fileName) {
         final File pathName = new File(fileName);
         if (pathName.getParentFile() != null)
-            pathName.getParentFile().mkdirs();
+            if (!pathName.getParentFile().mkdirs()) {
+		System.err.println("Can't create directory structure");
+		return false;
+	    }
         try {
             final BufferedWriter file = new BufferedWriter(
 		    new FileWriter(fileName));

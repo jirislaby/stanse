@@ -81,7 +81,6 @@ public class DependencyCycleDetector {
                 inspector = new StrongConnectivityInspector
                                 <ResourceVertex,AbstractDependencyRule>(graph);
         Set<Cycle> result = new HashSet<Cycle>();
-        Set<Set<ResourceVertex>> cycles = new HashSet<Set<ResourceVertex>>();
         List<Set<ResourceVertex>> components
                                             = inspector.stronglyConnectedSets();
 

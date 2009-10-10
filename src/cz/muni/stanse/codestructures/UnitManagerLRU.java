@@ -15,7 +15,6 @@ import org.dom4j.Document;
  * LRU implementation of UnitManager
  */
 public final class UnitManagerLRU implements UnitManager {
-    private Collection<Unit> units;
     private LinkedList<Unit> LRU = new LinkedList<Unit>();
     private int water = 10;
     private int elements = 0;

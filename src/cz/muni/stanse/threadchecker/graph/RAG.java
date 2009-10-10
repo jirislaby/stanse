@@ -233,15 +233,13 @@ public class RAG {
      * @return
      */
     public String toDot() {
-        String result = "digraph CFG {";
-        for(Vertex vertex : vertexes.values()) {
-            result += vertex.toDot()+"\n";
-        }
-        for(Edge edge : graph.edgeSet()) {
-            result += edge.toDot()+"\n";
-        }
-        result += "}";
-        return result;
+        StringBuilder result = new StringBuilder("digraph CFG {");
+        for (Vertex vertex : vertexes.values())
+            result.append(vertex.toDot()).append('\n');
+        for (Edge edge : graph.edgeSet())
+            result.append(edge.toDot()).append('\n');
+        result.append('}');
+        return result.toString();
     }
 
     /**
@@ -377,25 +375,28 @@ public class RAG {
      * @throws cz.muni.stanse.threadchecker.exceptions.CycleException
      */
     private String createThreadDescription(Vertex process)
-                                                        throws CycleException{
-            String description;
-            Set<Edge> outgoingEdges;
-            Edge requestEdge;
+	    throws CycleException {
+	StringBuilder description = new StringBuilder();
+	Set<Edge> outgoingEdges;
+	Edge requestEdge;
 
-            description =" Thread "+process.getName()+" holds [";
-            //Collect all incomming edges (assignment)
-            //--> mark all locks which thread helds
-            for(Edge incomingEdge : this.graph.incomingEdgesOf(process)) {
-                description += incomingEdge.getResource().getName()+" ";
-            }
-            description += "] and requires [";
+	description.append(" Thread ").append(process.getName()).
+		append(" holds [");
+	//Collect all incomming edges (assignment)
+	//--> mark all locks which thread helds
+	for (Edge incomingEdge: graph.incomingEdgesOf(process))
+	    description.append(incomingEdge.getResource().getName()).
+		append(' ');
 
-            outgoingEdges = this.graph.outgoingEdgesOf(process);
-            if(outgoingEdges.size() > 1) {
-                throw new CycleException("RAG has more outgoing edges");
-            }
-            requestEdge = outgoingEdges.iterator().next();
-            description += requestEdge.getResource().getName()+"]\n";
-            return description;
+	description.append("] and requires [");
+
+	outgoingEdges = graph.outgoingEdgesOf(process);
+	if(outgoingEdges.size() > 1) {
+	    throw new CycleException("RAG has more outgoing edges");
+	}
+	requestEdge = outgoingEdges.iterator().next();
+	description.append(requestEdge.getResource().getName()).
+		append("]\n");
+	return description.toString();
     }
 }

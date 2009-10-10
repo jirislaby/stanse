@@ -7,7 +7,7 @@ import cz.muni.stanse.threadchecker.graph.ResourceVertex;
  *
  * @author Jan Kučera
  */
-public class JoinNode {
+public class JoinNode implements Cloneable {
     private ResourceVertex vertex;
     private LockStack lockStack;
     private UnlockSet unlockSet;

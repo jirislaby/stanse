@@ -26,7 +26,8 @@ public final class MakefileSourceEnumerator extends
             final String batchFile = createBatchFile(getReferenceFile(),
                                                      getArguments());
             result = new BatchFileEnumerator(batchFile).getSourceCodeFiles();
-            new File(batchFile).delete();
+            if (!new File(batchFile).delete())
+		    System.err.println("Can't delete " + batchFile);
         }
         return result;
     }

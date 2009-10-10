@@ -167,7 +167,7 @@ public class CheckerSettings {
      * @param cfg
      */
     private void addCFG(CFGHandle cfg) {
-        if(cfgs.containsKey(cfg)) {
+        if(cfgs.containsKey(cfg.getFunctionName())) {
             throw new IllegalArgumentException("CFG "+cfg.getFunctionName()
                     +"already in!");
         }

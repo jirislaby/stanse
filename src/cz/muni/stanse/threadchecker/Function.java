@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
  * @author Jan Kučera
  */
 public class Function implements Cloneable {
-//    private final CFG cfg;
     private CFGNode actualNode;
     private String functionName;
     private String fileName;

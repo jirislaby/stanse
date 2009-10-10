@@ -5,10 +5,12 @@ import cz.muni.stanse.utils.Triple;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import java.util.Vector;
-import java.util.List;
-import java.util.HashMap;
+
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 final class PerfRecord {
 
@@ -109,13 +111,11 @@ final class PerformanceData {
 
         final Vector<Triple<String,PerfRecord,PerfRecord>> result =
             new Vector<Triple<String,PerfRecord,PerfRecord>>();
-        for (final String checkerName : perCheckerElemDict.keySet())
-            result.add(
-                Triple.make(checkerName,
-                            buildPerfData(perCheckerElemDict.get(checkerName)
-                                                            .getFirst()),
-                            buildPerfData(perCheckerElemDict.get(checkerName)
-                                                            .getSecond())));
+        for (final Map.Entry<String,Pair<Vector<Element>,Vector<Element>>> e:
+		perCheckerElemDict.entrySet())
+            result.add(Triple.make(e.getKey(),
+                            buildPerfData(e.getValue().getFirst()),
+                            buildPerfData(e.getValue().getSecond())));
         return result;
     }
 

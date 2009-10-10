@@ -226,20 +226,18 @@ public class CFGTransit {
             return ;
         }
         CFGNode actualNode = function.getActualNode();
-        String result = "Actual:"+actualNode.getNumber()+"["+function+"]";
-        result += "\nVisited:[";
-        for (Iterator<CFGNode> it = graphState.getVisitedNodes().iterator();
-                                                                it.hasNext();) {
-            CFGNode node = it.next();
-            result+=node.getNumber()+",";
-        }
-        result+="]\nIn queue:[";
+        StringBuilder result = new StringBuilder("Actual:");
+	result.append(actualNode.getNumber()).
+		append('[').append(function).append("]\nVisited:[");
+        for (CFGNode node: graphState.getVisitedNodes())
+            result.append(node.getNumber()).append(',');
+        result.append("]\nIn queue:[");
 
-        for (Function state : queue) {
-            result+=state.getActualNode().getNumber()+",";
-        }
-        result+="]";
-        logger.debug(result);
+        for (Function state: queue)
+            result.append(state.getActualNode().getNumber()).append(',');
+	result.append(']');
+
+        logger.debug(result.toString());
     }
 
     /**

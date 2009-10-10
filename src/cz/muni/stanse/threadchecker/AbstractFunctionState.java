@@ -185,32 +185,30 @@ public class AbstractFunctionState {
 
     @Override
     public String toString() {
-        String result = "|";
-        if(this.getLockStack().size()>0) {
-            result +="LockSet:[";
-            for(Lock lock : this.getLockStack().getLocks()) {
-                   result += lock+",";
-            }
-            result += "] ";
+        StringBuilder result = new StringBuilder("|");
+        if (getLockStack().size() > 0) {
+            result.append("LockSet:[");
+            for (Lock lock: this.getLockStack().getLocks())
+                   result.append(lock).append(',');
+            result.append("] ");
         }
-        if(this.getUnlockSet().size()>0) {
-            result +="UnlockSet:[";
-            for(Lock unlock : this.getUnlockSet().getLocks()) {
-                   result += unlock+",";
-            }
-            result += "] ";
+        if (getUnlockSet().size() > 0) {
+            result.append("UnlockSet:[");
+            for (Lock unlock: this.getUnlockSet().getLocks())
+                   result.append(unlock).append(',');
+            result.append("] ");
         }
-        if(this.getRules().size()>0) {
-            result += "Rules:"+this.getRules();
+        if (getRules().size() > 0) {
+            result.append("Rules:").append(getRules());
         }
-        if(this.getJoins().size()>0) {
-            result +=" Joins:[";
-            for(JoinNode node : this.getJoins()) {
-                result += node+",";
-            }
-            result +="] ";
+        if (getJoins().size() > 0) {
+            result.append(" Joins:[");
+            for (JoinNode node: getJoins())
+                result.append(node).append(',');
+            result.append("] ");
         }
-        return result+"|";
+	result.append('|');
+        return result.toString();
     }
 
     /**

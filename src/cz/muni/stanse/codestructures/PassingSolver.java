@@ -1,7 +1,9 @@
 package cz.muni.stanse.codestructures;
 
 import cz.muni.stanse.utils.Pair;
+
 import java.util.LinkedList;
+import java.util.List;
 
 import org.dom4j.Element;
 
@@ -10,10 +12,10 @@ public final class PassingSolver {
     // public section
 
     public static String makeArgument(final Element elem) {
-        String result = parseElement(elem);
-        for (Object obj : elem.elements())
-            result += (' ' + makeArgument((Element)obj));
-        return result;
+        StringBuilder result = new StringBuilder(parseElement(elem));
+        for (Element e: (List<Element>)elem.elements())
+            result.append(' ').append(makeArgument(e));
+        return result.toString();
     }
 
     public static String

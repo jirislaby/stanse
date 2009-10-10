@@ -11,7 +11,8 @@ import java.util.LinkedList;
  * Class representing one edge in dependencyGraph
  * @author Jan Kučera
  */
-public class DependencyRule extends AbstractDependencyRule {
+public class DependencyRule extends AbstractDependencyRule
+	implements Cloneable {
     private LockStack lockStack;
     private UnlockSet unlockSet;
     private ThreadInfo thread;
