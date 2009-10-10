@@ -1,6 +1,10 @@
 package cz.muni.stanse.threadchecker.debug;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class GraphViz
 {
@@ -40,22 +44,19 @@ public class GraphViz
     * @param dot_source Source of the graph to be drawn.
     * @return A byte array containing the image of the graph.
     */
-   public byte[] getGraph(String dot_source)
-   {
+   public byte[] getGraph(String dot_source) {
       File dot;
       byte[] img_stream = null;
 
-      try {
-         dot = writeDotSourceToFile(dot_source);
-         if (dot != null)
-         {
-            img_stream = get_img_stream(dot);
-            if (dot.delete() == false)
-               System.err.println("Warning: "+dot.getAbsolutePath()+" could not be deleted!");
-            return img_stream;
-         }
-         return null;
-      } catch (java.io.IOException ioe) { return null; }
+	dot = writeDotSourceToFile(dot_source);
+	if (dot != null) {
+	    img_stream = get_img_stream(dot);
+	    if (dot.delete() == false)
+	       System.err.println("Warning: " + dot.getAbsolutePath() +
+		       " could not be deleted!");
+	    return img_stream;
+	}
+	return null;
    }
 
    /**
@@ -82,7 +83,7 @@ public class GraphViz
          FileOutputStream fos = new FileOutputStream(to);
          fos.write(img);
          fos.close();
-      } catch (java.io.IOException ioe) { return -1; }
+      } catch (IOException ioe) { return -1; }
       return 1;
    }
 
@@ -92,13 +93,13 @@ public class GraphViz
     * @param dot Source of the graph (in dot language).
     * @return The image of the graph in .gif format.
     */
-   private byte[] get_img_stream(File dot)
-   {
+   private byte[] get_img_stream(File dot) {
       File img;
       byte[] img_stream = null;
 
       try {
-         img = File.createTempFile("graph_", ".png", new File(this.TEMP_DIR));
+         img = File.createTempFile("graph_", ".png",
+		 new File(GraphViz.TEMP_DIR));
          String temp = img.getAbsolutePath();
 
          Runtime rt = Runtime.getRuntime();
@@ -114,13 +115,12 @@ public class GraphViz
 
          if (img.delete() == false)
             System.err.println("Warning: "+img.getAbsolutePath()+" could not be deleted!");
-      }
-      catch (java.io.IOException ioe) {
-         System.err.println("Error:    in I/O processing of tempfile in dir "+this.TEMP_DIR+"\n");
+      } catch (IOException ioe) {
+         System.err.println("Error:    in I/O processing of tempfile in dir " +
+		 GraphViz.TEMP_DIR+"\n");
          System.err.println("       or in calling external command");
          ioe.printStackTrace();
-      }
-      catch (java.lang.InterruptedException ie) {
+      } catch (java.lang.InterruptedException ie) {
          System.err.println("Error: the execution of the external program was interrupted");
          ie.printStackTrace();
       }
@@ -134,16 +134,16 @@ public class GraphViz
     * @param str Source of the graph (in dot language).
     * @return The file (as a File object) that contains the source of the graph.
     */
-   private File writeDotSourceToFile(String str) throws java.io.IOException
+   private File writeDotSourceToFile(String str)
    {
       File temp;
       try {
-         temp = File.createTempFile("graph_", ".dot.tmp", new File(this.TEMP_DIR));
+         temp = File.createTempFile("graph_", ".dot.tmp",
+		 new File(GraphViz.TEMP_DIR));
          FileWriter fout = new FileWriter(temp);
          fout.write(str);
          fout.close();
-      }
-      catch (Exception e) {
+      } catch (IOException e) {
          System.err.println("Error: I/O error while writing the dot source to temp file!");
          return null;
       }

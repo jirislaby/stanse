@@ -1,7 +1,6 @@
 package cz.muni.stanse.threadchecker;
 
 import cz.muni.stanse.Stanse;
-import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.props.Properties.VerbosityLevel;

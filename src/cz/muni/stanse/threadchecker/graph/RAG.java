@@ -7,7 +7,6 @@ import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.threadchecker.ThreadInfo;
 import cz.muni.stanse.threadchecker.exceptions.CycleException;
 import cz.muni.stanse.threadchecker.locks.Lock;
-import cz.muni.stanse.utils.Triple;
 import cz.muni.stanse.threadchecker.exceptions.RAGException;
 import cz.muni.stanse.threadchecker.locks.BackTrack;
 import java.util.HashMap;

@@ -11,7 +11,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Vector;
 import org.apache.log4j.Logger;
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.alg.StrongConnectivityInspector;
 import org.jgrapht.graph.ClassBasedEdgeFactory;

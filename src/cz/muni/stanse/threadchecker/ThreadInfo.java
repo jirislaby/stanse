@@ -1,6 +1,5 @@
 package cz.muni.stanse.threadchecker;
 
-import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
 import java.util.HashSet;

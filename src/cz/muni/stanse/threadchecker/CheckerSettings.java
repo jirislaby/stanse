@@ -4,7 +4,6 @@ package cz.muni.stanse.threadchecker;
 import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.threadchecker.config.ConfigurationCreator;
 import java.io.File;
