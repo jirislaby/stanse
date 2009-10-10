@@ -37,6 +37,9 @@ import org.dom4j.Element;
 	protected DocumentFactory xmlFactory = DocumentFactory.getInstance();
 	private int uniqCnt;
 	private boolean symbolsEnabled = true;
+	private boolean isFunParam = false;
+	private List<String> params = new LinkedList<String>();
+	private List<String> paramsOld = new LinkedList<String>();
 
 	/* configuration */
 	final private Boolean normalizeTypes = false;
@@ -146,9 +149,23 @@ import org.dom4j.Element;
 		return tss;
 	}
 
+	private void clearFunParams() {
+		params.clear();
+		paramsOld.clear();
+	}
+	private void processFunParams() {
+		$Symbols::variables.addAll(params);
+		$Symbols::variablesOld.addAll(paramsOld);
+	}
+
 	private String renameVariable(String old) {
 		if (!uniqueVariables)
 			return old;
+		if ($Symbols.size() == 1 && !isFunParam) { /* forward decls */
+			int idx = $Symbols[0]::variablesOld.lastIndexOf(old);
+			if (idx >= 0)
+				return $Symbols[0]::variables.get(idx);
+		}
 		String new_ = old;
 
 		while (true) {
@@ -163,16 +180,22 @@ import org.dom4j.Element;
 		return new_;
 	}
 
-	private void pushSymbol(String old, String new_, boolean upper) {
+	private void pushSymbol(String old, String new_) {
 		if (!uniqueVariables || !symbolsEnabled)
 			return;
-		if (upper) {
-			$Symbols[-1]::variablesOld.add(old);
-			$Symbols[-1]::variables.add(new_);
-		} else {
-			$Symbols::variablesOld.add(old);
-			$Symbols::variables.add(new_);
+		if (isFunParam) {
+			paramsOld.add(old);
+			params.add(new_);
+			return;
 		}
+		/* forward decl already pushed one */
+		if ($Symbols.size() == 1 && $Symbols::variables.contains(new_)) {
+			System.err.println("not adding " + old + ":" + new_);
+			return;
+		}
+		$Symbols::variablesOld.add(old);
+		$Symbols::variables.add(new_);
+
 		if (uniqueVariablesDebug) {
 			for (int a = 0; a < $Symbols.size() - 1; a++) {
 				System.out.print($Symbols[a]::variablesOld);
@@ -183,8 +206,8 @@ import org.dom4j.Element;
 				System.out.print($Symbols[a]::variables);
 				System.out.print(" ");
 			}
-			System.out.println($Symbols::variables + " added(" +
-					upper + "): " + new_);
+			System.out.println($Symbols::variables + " added: " +
+					new_);
 		}
 	}
 
@@ -218,25 +241,38 @@ externalDeclaration returns [Element e]
 @init {
 	$e = newElement("externalDeclaration", $externalDeclaration.start);
 }
+@after {
+	clearFunParams();
+}
 	: functionDefinition	{ $e.add($functionDefinition.e); }
 	| declaration		{ $e.add($declaration.e); }
 	;
 
 functionDefinition returns [Element e]
+@init {
+	$e = newElement("functionDefinition", $functionDefinition.start);
+	$functionDefinition.start.setElement($e);
+}
+	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator {
+		$e.add($declarationSpecifiers.e);
+		$e.add($declarator.e);
+	} functionDefinitionBody[$e])
+	;
+
+/* we need a scope even here */
+functionDefinitionBody[Element fd]
 scope Symbols;
 @init {
 	List<Element> ds = new LinkedList<Element>();
-	$e = newElement("functionDefinition", $functionDefinition.start);
-	$functionDefinition.start.setElement($e);
 	$Symbols::variables = new LinkedList<String>();
 	$Symbols::variablesOld = new LinkedList<String>();
+	processFunParams();
 }
-	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator (d=declaration {ds.add($d.e);})* compoundStatement) {
-		$e.add($declarationSpecifiers.e);
-		$e.add($declarator.e);
-		addAllElements($e, ds);
-		$e.add($compoundStatement.e);
-		$e.addAttribute("el", Integer.toString($compoundStatement.start.getChild(0).getLine()));
+	: (d=declaration {ds.add($d.e);})* compoundStatement {
+		addAllElements($fd, ds);
+		$fd.add($compoundStatement.e);
+		$fd.addAttribute("el", Integer.toString(
+			$compoundStatement.start.getChild(0).getLine()));
 	}
 	;
 
@@ -297,7 +333,7 @@ directDeclarator returns [List<Element> els]
 		if (!newName.equals($IDENTIFIER.text))
 			newListElement($els, "oldId").addText($IDENTIFIER.text);
 		newListElement($els, "id").addText(newName);
-		pushSymbol($IDENTIFIER.text, newName, false);
+		pushSymbol($IDENTIFIER.text, newName);
 	}
 	| declarator { newListElement($els, "declarator", $declarator.start).
 			add($declarator.e); }
@@ -320,12 +356,13 @@ directDeclarator1 returns [List<Element> els]
 		addElementCond(e, $expression.e);
 	}
 	| ^(FUNCTION_DECLARATOR (IDENTIFIER { /* we need to process the id before params */
-				String newName = renameVariable($IDENTIFIER.text);
-				if (!newName.equals($IDENTIFIER.text))
-					newListElement($els, "oldId").addText($IDENTIFIER.text);
-				newListElement($els, "id").addText(newName);
-				pushSymbol($IDENTIFIER.text, newName, false);
-			}|declarator) (pl=parameterTypeList|(i=identifier {l.add(i);})*)) {
+		String newName = renameVariable($IDENTIFIER.text);
+		if (!newName.equals($IDENTIFIER.text))
+			newListElement($els, "oldId").addText($IDENTIFIER.text);
+		newListElement($els, "id").addText(newName);
+		pushSymbol($IDENTIFIER.text, newName);
+	}|declarator) {isFunParam = true;} (pl=parameterTypeList|(i=identifier {l.add(i);})*)) {
+		isFunParam = false;
 		if ($IDENTIFIER == null)
 			$els.add($declarator.e);
 		Element e = newListElement($els, "functionDecl");
@@ -456,7 +493,7 @@ identifier returns [Element e]
 		if (!newName.equals($IDENTIFIER.text))
 			$e.addAttribute("oldId", $IDENTIFIER.text);
 		$e.addText(newName);
-		pushSymbol($IDENTIFIER.text, newName, false);
+		pushSymbol($IDENTIFIER.text, newName);
 	}
 	;
 
