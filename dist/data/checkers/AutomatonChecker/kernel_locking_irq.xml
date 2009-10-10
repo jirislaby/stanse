@@ -25,6 +25,20 @@
     <transition from="U[A]" by="plock[A]" to="P[A]" />
     <transition from="IU[A]" by="plock[A]" to="P[A]" />
 
+    <!-- depth of five for anonymous locks (cli/sti, BKL, ...) -->
+    <transition from="X[A]" by="anonlock[A]" to="AL[A]" />
+    <transition from="X[A]" by="anonunlock[A]" to="XXXXX[A]" />
+    <transition from="AU[A]" by="anonlock[A]" to="AL[A]" />
+    <transition from="AL[A]" by="anonlock[A]" to="ALL[A]" />
+    <transition from="ALL[A]" by="anonlock[A]" to="ALLL[A]" />
+    <transition from="ALLL[A]" by="anonlock[A]" to="ALLLL[A]" />
+    <transition from="ALLLL[A]" by="anonlock[A]" to="ALLLLL[A]" />
+    <transition from="ALLLLL[A]" by="anonunlock[A]" to="ALLLL[A]" />
+    <transition from="ALLLL[A]" by="anonunlock[A]" to="ALLL[A]" />
+    <transition from="ALLL[A]" by="anonunlock[A]" to="ALL[A]" />
+    <transition from="ALL[A]" by="anonunlock[A]" to="AL[A]" />
+    <transition from="AL[A]" by="anonunlock[A]" to="AU[A]" />
+
     <error  from="U[A]" by="unlock[A]"
             desc="double unlock"
             level="0"
@@ -72,6 +86,46 @@
             begin="The lock is unlocked here."
             propag="not affected ==> the lock is still unlocked."
             end="Leaving function in unlocked state." />
+
+    <error  from="AL[*]" by=""
+            desc="leaving function in locked state"
+            level="1"
+            entry="The function called in unlocked state."
+            begin="The lock is locked here."
+            propag="not affected ==> the lock is still locked."
+            end="Leaving function in locked state." />
+
+    <error  from="ALL[*]" by=""
+            desc="leaving function in locked state"
+            level="1"
+            entry="The function called in unlocked state."
+            begin="The lock is locked here."
+            propag="not affected ==> the lock is still locked."
+            end="Leaving function in locked state." />
+
+    <error  from="ALLL[*]" by=""
+            desc="leaving function in locked state"
+            level="1"
+            entry="The function called in unlocked state."
+            begin="The lock is locked here."
+            propag="not affected ==> the lock is still locked."
+            end="Leaving function in locked state." />
+
+    <error  from="ALLLL[*]" by=""
+            desc="leaving function in locked state"
+            level="1"
+            entry="The function called in unlocked state."
+            begin="The lock is locked here."
+            propag="not affected ==> the lock is still locked."
+            end="Leaving function in locked state." />
+
+    <error  from="ALLLLL[*]" by=""
+            desc="leaving function in locked state"
+            level="1"
+            entry="The function called in unlocked state."
+            begin="The lock is locked here."
+            propag="not affected ==> the lock is still locked."
+            end="Leaving function in locked state." />
 
     <pattern name="plock">
 	<assignExpression>
@@ -316,31 +370,6 @@
         </assert>
     </pattern>
 
-    <pattern name="lock">
-	<functionCall>
-	    <id>__st_local_irq_save_st__</id>
-	    <ignore/>
-	</functionCall>
-    </pattern>
-
-    <pattern name="lock">
-	<functionCall>
-	    <id>__st_local_irq_disable_st__</id>
-	</functionCall>
-    </pattern>
-
-    <pattern name="lock">
-        <functionCall>
-            <id>__st_lock_kernel_st__</id>
-        </functionCall>
-    </pattern>
-
-    <pattern name="lock">
-        <functionCall>
-            <id>__st_rcu_read_lock_st__</id>
-        </functionCall>
-    </pattern>
-
     <pattern name="unlock">
         <functionCall>
             <id>__st_mutex_unlock_st__</id>
@@ -377,26 +406,51 @@
         </functionCall>
     </pattern>
 
-    <pattern name="unlock">
+    <pattern name="anonlock">
+	<functionCall>
+	    <id>__st_local_irq_disable_st__</id>
+	</functionCall>
+    </pattern>
+
+    <pattern name="anonunlock">
         <functionCall>
             <id>__st_local_irq_enable_st__</id>
         </functionCall>
     </pattern>
 
-    <pattern name="unlock">
+    <pattern name="anonlock">
+	<functionCall>
+	    <id>__st_local_irq_save_st__</id>
+	    <ignore/>
+	</functionCall>
+    </pattern>
+
+    <pattern name="anonunlock">
         <functionCall>
             <id>__st_local_irq_restore_st__</id>
             <ignore/>
         </functionCall>
     </pattern>
 
-    <pattern name="unlock">
+    <pattern name="anonlock">
+        <functionCall>
+            <id>__st_lock_kernel_st__</id>
+        </functionCall>
+    </pattern>
+
+    <pattern name="anonunlock">
         <functionCall>
             <id>__st_unlock_kernel_st__</id>
         </functionCall>
     </pattern>
 
-    <pattern name="unlock">
+    <pattern name="anonlock">
+        <functionCall>
+            <id>__st_rcu_read_lock_st__</id>
+        </functionCall>
+    </pattern>
+
+    <pattern name="anonunlock">
         <functionCall>
             <id>__st_rcu_read_unlock_st__</id>
         </functionCall>
