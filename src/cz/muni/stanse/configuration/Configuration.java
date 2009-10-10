@@ -13,7 +13,7 @@ import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.utils.Make;
 import cz.muni.stanse.utils.ClassLogger;
-import cz.muni.stanse.utils.msgformat.ColumnMessageFormater;
+import cz.muni.stanse.utils.msgformat.ColumnMessageFormatter;
 
 import java.util.List;
 
@@ -330,16 +330,16 @@ public final class Configuration {
     private final class MonitorForThread implements CheckerProgressMonitor {
         MonitorForThread(int threadID, final CheckerProgressMonitor monitor) {
             super();
-            formater = new ColumnMessageFormater("<" + threadID + "> ",1);
+            formatter = new ColumnMessageFormatter("<" + threadID + "> ",1);
             this.monitor = monitor;
         }
 
         @Override
         public void write(final String s) {
-            monitor.write(formater.write(s + (s.endsWith("\n") ? "" : "\n")));
+            monitor.write(formatter.write(s + (s.endsWith("\n") ? "" : "\n")));
         }
 
-        private final ColumnMessageFormater formater;
+        private final ColumnMessageFormatter formatter;
         private final CheckerProgressMonitor monitor;
     }
 

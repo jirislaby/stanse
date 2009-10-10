@@ -1,8 +1,8 @@
 package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.checker.CheckerProgressMonitor;
-import cz.muni.stanse.utils.msgformat.ColumnMessageFormater;
-import cz.muni.stanse.utils.msgformat.TimedMessageSequenceFormater;
+import cz.muni.stanse.utils.msgformat.ColumnMessageFormatter;
+import cz.muni.stanse.utils.msgformat.TimedMessageSequenceFormatter;
 
 final class AutomatonCheckerLogger {
 
@@ -10,30 +10,30 @@ final class AutomatonCheckerLogger {
 
     AutomatonCheckerLogger(final CheckerProgressMonitor monitor) {
         this.monitor = monitor;
-        columnsFormater = new ColumnMessageFormater("  ");
-        timingFormater = new TimedMessageSequenceFormater(
-                                   columnsFormater.getTabPattern() + "done in ",
+        columnsFormatter = new ColumnMessageFormatter("  ");
+        timingFormatter = new TimedMessageSequenceFormatter(
+                                   columnsFormatter.getTabPattern() + "done in ",
                                    " seconds","...");
     }
 
     void phaseLog(final String s) {
-        note(getTimingFormater().write(s));
+        note(getTimingFormatter().write(s));
     }
 
     void phaseBreak(final String s) {
-        note(getTimingFormater().interrupt(s));
+        note(getTimingFormatter().interrupt(s));
     }
 
     void note(final String s) {
-        getMonitor().write(getColumnsFormater().write(s + "\n"));
+        getMonitor().write(getColumnsFormatter().write(s + "\n"));
     }
 
     void pushTab() {
-        getColumnsFormater().pushTab();
+        getColumnsFormatter().pushTab();
     }
 
     void popTab() {
-        getColumnsFormater().popTab();
+        getColumnsFormatter().popTab();
     }
 
     // package-private section
@@ -42,15 +42,15 @@ final class AutomatonCheckerLogger {
         return monitor;
     }
 
-    public ColumnMessageFormater getColumnsFormater() {
-        return columnsFormater;
+    public ColumnMessageFormatter getColumnsFormatter() {
+        return columnsFormatter;
     }
 
-    public TimedMessageSequenceFormater getTimingFormater() {
-        return timingFormater;
+    public TimedMessageSequenceFormatter getTimingFormatter() {
+        return timingFormatter;
     }
 
     private final CheckerProgressMonitor monitor;
-    private final ColumnMessageFormater columnsFormater;
-    private final TimedMessageSequenceFormater timingFormater;
+    private final ColumnMessageFormatter columnsFormatter;
+    private final TimedMessageSequenceFormatter timingFormatter;
 }

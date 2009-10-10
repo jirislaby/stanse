@@ -1,18 +1,18 @@
 package cz.muni.stanse.utils.msgformat;
 
-public class ColumnMessageFormater implements MessageFormater {
+public class ColumnMessageFormatter implements MessageFormatter {
 
     // public section
 
-    public ColumnMessageFormater() {
+    public ColumnMessageFormatter() {
         this("  ",0);
     }
 
-    public ColumnMessageFormater(final String tabPattern) {
+    public ColumnMessageFormatter(final String tabPattern) {
         this(tabPattern,0);
     }
 
-    public ColumnMessageFormater(final String tabPattern, int initTabs) {
+    public ColumnMessageFormatter(final String tabPattern, int initTabs) {
         super();
         assert(initTabs >= 0);
         this.tabPattern = tabPattern;

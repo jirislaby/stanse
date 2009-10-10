@@ -1,10 +1,10 @@
 package cz.muni.stanse.utils.msgformat;
 
-public class TimedMessageSequenceFormater implements MessageFormater {
+public class TimedMessageSequenceFormatter implements MessageFormatter {
 
     // public section
 
-    public TimedMessageSequenceFormater(final String prefix,
+    public TimedMessageSequenceFormatter(final String prefix,
                                         final String sufix,
                                         final String ellipsis) {
         startTime = System.currentTimeMillis();
