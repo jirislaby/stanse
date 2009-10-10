@@ -16,7 +16,6 @@ import cz.muni.stanse.utils.Triple;
 import cz.muni.stanse.codestructures.CFGsNavigator;
 import cz.muni.stanse.codestructures.ArgumentPassingManager;
 
-import cz.muni.stanse.codestructures.CFG;
 import java.util.Collection;
 import java.util.Set;
 import java.util.HashSet;
