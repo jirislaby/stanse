@@ -148,7 +148,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
             if (currImportance ==
                     FalsePositivesDetector.getFalsePositiveImportance())
                 return currImportance;
-            importance = importance < currImportance ?
+            importance = importance > currImportance ?
                             importance : currImportance;
         }
         return importance;
