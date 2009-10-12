@@ -21,10 +21,11 @@ public final class DirectorySourceEnumerator extends
         super(startDirectory);
         this.extensions = Make.linkedList(extension.toUpperCase());
         this.searchSubdirectories = searchSubdirectories;
-	System.err.println("\nUsing directory option. Note that this WON'T " +
-		"WORK WELL for C files which need\nspecial flags on the CC " +
-		"command line. Preferred way is to use --makefile\noption or " +
-		"generate a jobfile using stcc and use --jobfile.\n");
+	System.err.println("\n=== BEWARE ===\nRunning in directory mode. " +
+		"Note that this won't work well for C files which need\n" +
+		"special flags on the CC command line. Preferred way is to " +
+		"use --makefile\noption or generate a jobfile using stcc and " +
+		"use --jobfile.\n");
     }
 
     public boolean getSearchSubdirectories() {

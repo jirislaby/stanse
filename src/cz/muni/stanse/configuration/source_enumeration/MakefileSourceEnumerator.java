@@ -17,6 +17,10 @@ public final class MakefileSourceEnumerator extends
                                     final String arguments) {
         super(makeFile);
         this.arguments = arguments;
+	System.err.println("\n=== BEWARE ===\nRunning in makefile mode. " +
+		"Remember to perform 'make clean' prior to running\nStanse " +
+		"in this mode. Otherwise Stanse will be unable to determine " +
+		"all source\nfiles in the project. If any at all.\n");
     }
 
     @Override
