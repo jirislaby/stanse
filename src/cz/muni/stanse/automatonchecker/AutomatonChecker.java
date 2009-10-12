@@ -82,7 +82,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * in XML automata definition file. Each such matched location in the source
      * code is assigned an instance of PatternLocation class. Initial location
      * in the program is always introduced and is initialized with initial
-     * states of all autoamta to be run on the source code.
+     * states of all automata to be run on the source code.
      * 
      * The computation itself is simple distribution of automata states between
      * instances of PatternLocation class (locations are linked together with
@@ -93,7 +93,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * that location.
      * 
      * Error detection is the final phase of the procedure. All PatternLocations
-     * are crossed and checked for error states. Eeach PatternLocation has
+     * are crossed and checked for error states. Each PatternLocation has
      * assigned set of error transition rules which are applied to all processed
      * states in the location. If some error transition rule can be applied to
      * processed states, then it means the source code contains error. Each

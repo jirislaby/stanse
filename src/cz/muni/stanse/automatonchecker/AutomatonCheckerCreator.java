@@ -20,7 +20,7 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
 
     @Override
     public String getCheckerCreationInfo() {
-        return "   AutomatoChecker is a static checker which is able to " +
+        return "   AutomatonChecker is a static checker which is able to " +
                "detect locking problems, interrupts enabling/disabling " +
                "problems, unnecessary check optimizations and points-to " +
                "problems like null pointer dereference and memory leaks. \n" +
