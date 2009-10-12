@@ -1,3 +1,5 @@
 -   Dump AST do XML nefunguje spravne, protoze se dumpne
     originalni dokument a ne ten, ktery odpovida instumentovanemu
     CFG (elementum na CFGNodes).
+-   Vytahnout time-outy ven z AutomatonCheckeru do configuracnich
+    XMLek. Aby si dane XMLko mohlo ty time-outy urcit.
