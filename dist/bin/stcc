@@ -46,6 +46,10 @@ foreach (@ARGV) {
 	$output_next = 1;
 	next;
     }
+    if (length $_ > 2 && substr($_, 0, 2) eq '-o') {
+	$output = &quote_arg(substr($_, 2));
+	next;
+    }
 
     $flags .= $this_arg unless &cc_only_option ($_);
 }
