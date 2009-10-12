@@ -61,8 +61,13 @@ final class CheckerErrorBuilder {
                    final String automatonName) {
         CheckingResult result = new CheckingSuccess();
         int numErrors = 0;
+        final long startTracingTime = System.currentTimeMillis();
         for (Pair<PatternLocation,PatternLocation> locationsPair :
-                                                edgeLocationDictionary.values())
+                                               edgeLocationDictionary.values()){
+            final long tracingTime =
+                System.currentTimeMillis() - startTracingTime;
+            if (tracingTime > 60000)
+                return result;
             if (locationsPair.getFirst() != null) {
                 final Pair<Integer,CheckingResult> locBuildResult =
                     buildErrorsInLocation(locationsPair.getFirst(),
@@ -73,6 +78,7 @@ final class CheckerErrorBuilder {
                 if (result instanceof CheckingSuccess)
                     result = locBuildResult.getSecond();
             }
+        }
         if (numErrors > 0)
             monitor.note("*** " + numErrors + " error(s) found");
 
@@ -105,10 +111,15 @@ final class CheckerErrorBuilder {
 
         CheckingResult result = new CheckingSuccess();
         int numErrors = 0;
+        final long startLocationTracingTime = System.currentTimeMillis();
         for (final ErrorRule rule : location.getErrorRules())
             for (final java.util.Stack<CFGNode> cfgContext :
                                 AutomatonStateCFGcontextAlgo.getContexts(
-                                        location.getProcessedAutomataStates()))
+                                        location.getProcessedAutomataStates())){
+                final long locationTracingTime =
+                    System.currentTimeMillis() - startLocationTracingTime;
+                if (locationTracingTime > 10000)
+                    return Pair.make(numErrors,result);
                 if (rule.checkForError(AutomatonStateCFGcontextAlgo.
                             filterStatesByContext(
                                           location.getProcessedAutomataStates(),
@@ -154,7 +165,7 @@ final class CheckerErrorBuilder {
                     ++numErrors;
                     monitor.note("*** error found: " + shortDesc);
                 }
-
+            }
         return Pair.make(numErrors,result);
     }
 
