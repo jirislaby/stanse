@@ -210,7 +210,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     private void updateTotalImportance(final int traceImportance) {
         assert(traceImportance !=
                     FalsePositivesDetector.getBugDefaultImportance());
-        totalImportance = totalImportance < traceImportance ?
+        totalImportance = totalImportance > traceImportance ?
                                 totalImportance : traceImportance ;
     }
 
