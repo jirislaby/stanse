@@ -35,6 +35,8 @@ public final class PassingSolver {
 
     public static String
     pass(final String argument, final Pair<String,String> callMapping) {
+        if (argument.isEmpty() || callMapping.getFirst().isEmpty())
+            return null;
         if (argument.contains(callMapping.getFirst()))
             return simplify(argument.replace(callMapping.getFirst(),
                                              callMapping.getSecond()));
@@ -67,6 +69,7 @@ public final class PassingSolver {
         if (elem.getName().equals("id")) return elem.getText();
         if (elem.getName().equals("member")) return elem.getText();
         if (elem.getName().equals("intConst")) return elem.getText();
+        if (elem.getName().equals("stringConst")) return '"'+elem.getText()+'"';
         if (elem.getName().equals("addrExpression")) return "&";
         if (elem.getName().equals("derefExpression")) return "*";
         if (elem.getName().equals("dotExpression")) return ".";

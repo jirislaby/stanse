@@ -60,7 +60,7 @@ public final class XMLLinearizeASTElement {
 
     private static Element parseParameterName(final Element param,
                                               final int argID) {
-        final Element paramElem = (Element)param.selectSingleNode(".//id");
+        final Element paramElem = selectLastOf(param,".//id");
         if (paramElem != null)
             return paramElem;
         if (param.selectSingleNode(".//varArgs") != null)
@@ -83,6 +83,11 @@ public final class XMLLinearizeASTElement {
 
     private static <T> Vector<T> tail(final List<T> l) {
         return new Vector<T>(l.subList(1,l.size()));
+    }
+
+    private static Element selectLastOf(final Element elem, final String xPath){
+        final List elems = elem.selectNodes(xPath);
+        return elems.isEmpty() ? null : (Element)elems.get(elems.size() - 1);
     }
 
     private XMLLinearizeASTElement() {
