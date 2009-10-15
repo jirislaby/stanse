@@ -11,6 +11,7 @@ public abstract class CheckerCreator {
     public abstract String getCheckerName();
     public abstract String getCheckerCreationInfo();
     public abstract List<String> getDataFilesExtensions();
+    public abstract boolean checkArgumentList(final List<File> args);
     public abstract Checker createInterprocedural(final List<File> args)
 		throws CheckerException;
     public abstract Checker createIntraprocedural(final List<File> args)

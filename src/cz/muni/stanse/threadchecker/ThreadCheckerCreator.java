@@ -31,6 +31,12 @@ public final class ThreadCheckerCreator extends CheckerCreator {
     }
 
     @Override
+    public boolean checkArgumentList(final List<File> args) {
+        return args.size() == 1 &&
+               args.get(0).toString().toLowerCase().endsWith(".xml");
+    }
+
+    @Override
     public Checker createIntraprocedural(final List<File> args)
                                                        throws CheckerException {
         throw new CheckerException("ThreadChecker is interprocedural only.");

@@ -33,6 +33,11 @@ public final class CheckerFactory {
         return getCheckerCreator(checkerName).getDataFilesExtensions();
     }
 
+    public static boolean checkArgumentList(final String checkerName,
+                  final List<File> args) throws UnsupportedOperationException {
+        return getCheckerCreator(checkerName).checkArgumentList(args);
+    }
+
     public static Set<String> getRegisteredCheckers() {
         return Collections.unmodifiableSet(creatorsDictionary.keySet());
     }

@@ -34,6 +34,25 @@ final class CheckersConfurationManager {
         this.addDataButton = addDataButton;
         this.removeDataButton = removeDataButton;
 
+        getCheckersTree().setCellRenderer(
+        new javax.swing.tree.DefaultTreeCellRenderer() {
+            @Override
+            public java.awt.Component
+            getTreeCellRendererComponent(javax.swing.JTree pTree,
+                     Object pValue, boolean pIsSelected, boolean pIsExpanded,
+                     boolean pIsLeaf, int pRow, boolean pHasFocus) {
+                final java.awt.Color foreColour =
+                    checkCheckerArgumentsList((DefaultMutableTreeNode)pValue) ?
+                        java.awt.Color.black : java.awt.Color.red;
+                if (foreColour != null) {
+                    setTextSelectionColor(foreColour);
+                    setTextNonSelectionColor(foreColour);
+                }
+                super.getTreeCellRendererComponent(pTree, pValue, pIsSelected,
+                                         pIsExpanded, pIsLeaf, pRow, pHasFocus);
+                return this;
+            }
+        });
         fillTreeByCheckersConfiguration(MainWindow.getInstance()
                                                   .getConfiguration()
                                                   .getCheckerConfigurations());
@@ -90,11 +109,7 @@ final class CheckersConfurationManager {
 
     private CheckerConfiguration
     createCheckerConfiguration(final DefaultMutableTreeNode checkerTreeNode) {
-        final List<File> arguments = new LinkedList<File>();
-        for (Enumeration treeNodesEnumetration = checkerTreeNode.children();
-                treeNodesEnumetration.hasMoreElements(); )
-            arguments.add(new File((String)JTreeAlgo.getData(
-                (DefaultMutableTreeNode)treeNodesEnumetration.nextElement())));
+        final List<File> arguments = getCheckerNodeArguments(checkerTreeNode);
         final String treeID = (String)JTreeAlgo.getData(checkerTreeNode);
         return new CheckerConfiguration(parseCheckerNameFromTreeID(treeID),
                                         arguments,
@@ -203,6 +218,37 @@ final class CheckersConfurationManager {
     private static boolean
     parseInterproceduralFromTreeID(final String treeID) {
         return !treeID.contains("--intraprocedural");
+    }
+
+    private static List<File>
+    getCheckerNodeArguments(final DefaultMutableTreeNode checkerTreeNode) {
+        final List<File> arguments = new LinkedList<File>();
+        for (Enumeration treeNodesEnumetration = checkerTreeNode.children();
+                treeNodesEnumetration.hasMoreElements(); )
+            arguments.add(new File((String)JTreeAlgo.getData(
+                (DefaultMutableTreeNode)treeNodesEnumetration.nextElement())));
+        return arguments;
+    }
+
+    private boolean
+    checkCheckerArgumentsList(final DefaultMutableTreeNode node) {
+        final DefaultMutableTreeNode checkerNode=findCheckerNodeFromNode(node);
+        return checkerNode == null ? true :
+                CheckerFactory.checkArgumentList(
+                        parseCheckerNameFromTreeID(
+                            (String)JTreeAlgo.getData(checkerNode)),
+                        getCheckerNodeArguments(checkerNode));
+    }
+
+    private DefaultMutableTreeNode
+    findCheckerNodeFromNode(DefaultMutableTreeNode node) {
+        while (node != null) {
+            if (node.getParent() == JTreeAlgo.getRoot(getCheckersTree()))
+                return node;
+            assert(node.getParent() instanceof DefaultMutableTreeNode);
+            node = (DefaultMutableTreeNode)node.getParent();
+        }
+        return null;
     }
 
     private JTree getCheckersTree() {

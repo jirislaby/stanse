@@ -3,6 +3,7 @@ package cz.muni.stanse.gui;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 
 final class JTreeAlgo {
 
@@ -48,6 +49,11 @@ final class JTreeAlgo {
 
     static boolean isSomethingSelected(final JTree tree) {
         return getSelection(tree) != null;
+    }
+
+    static void selectNode(final JTree tree, final DefaultMutableTreeNode node){
+        tree.setSelectionPath(new TreePath(node.getPath()));
+        tree.scrollPathToVisible(new TreePath(node.getPath()));
     }
 
     static Object getData(final DefaultMutableTreeNode node) {

@@ -46,16 +46,26 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
     }
 
     @Override
+    public boolean checkArgumentList(final List<File> args) {
+        return args.size() == 1 &&
+               args.get(0).toString().toLowerCase().endsWith(".xml");
+    }
+
+    @Override
     public Checker createIntraprocedural(final List<File> args)
                                                        throws CheckerException {
-        checkArgumentList(args);
+        if (!checkArgumentList(args))
+            throw new CheckerException("Bad number of data arguments. " +
+			"AutomatonChecker accepts exactly one XML definition file.");
         return new AutomatonChecker(args.get(0));
     }
 
     @Override
     public Checker createInterprocedural(final List<File> args)
                                                        throws CheckerException {
-        checkArgumentList(args);
+        if (!checkArgumentList(args))
+            throw new CheckerException("Bad number of data arguments. " +
+			"AutomatonChecker accepts exactly one XML definition file.");
         return new AutomatonChecker(args.get(0));
     }
 
@@ -67,10 +77,4 @@ public final class AutomatonCheckerCreator extends CheckerCreator {
 
     // private section
 
-    private static void checkArgumentList(final List<File> args)
-		throws CheckerException {
-        if (args.size() != 1)
-            throw new CheckerException("Bad number of data arguments. " +
-			"AutomatonChecker accepts exactly one XML definition file.");
-    }
 }
