@@ -9,7 +9,8 @@ import java.util.List;
 final class ActiveOpenedFileEnumerator extends SourceCodeFilesEnumerator {
     @Override
     public List<String> getSourceCodeFiles() throws SourceCodeFilesException {
-        return Make.linkedList(MainWindow.getInstance().
-                                 getOpenedSourceFilesManager().getActiveFile());
+	String f = MainWindow.getInstance().getOpenedSourceFilesManager().
+		getActiveFile();
+        return f == null ? Make.<String>linkedList() : Make.linkedList(f);
     }
 }

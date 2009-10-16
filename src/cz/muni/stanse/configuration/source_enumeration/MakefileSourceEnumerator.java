@@ -1,6 +1,7 @@
 package cz.muni.stanse.configuration.source_enumeration;
 
 import cz.muni.stanse.Stanse;
+import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.Make;
 
 import java.io.File;
@@ -27,8 +28,13 @@ public final class MakefileSourceEnumerator extends
     public synchronized List<String> getSourceCodeFiles()
 	    throws SourceCodeFilesException {
 	if (files == null) {
-	    final File batchFile = createBatchFile(getReferenceFile(),
-						 getArguments());
+	    final File makefile = new File(getReferenceFile());
+	    if (!makefile.exists()) {
+		ClassLogger.error(this, "Cannot open makefile '" +
+				makefile.getAbsolutePath() + "'.");
+		return Make.<String>linkedList();
+	    }
+	    final File batchFile = createBatchFile(makefile, getArguments());
 	    files = new BatchFileEnumerator(batchFile.getAbsolutePath()).
 		    getSourceCodeFiles();
           if (!batchFile.delete())
@@ -44,13 +50,9 @@ public final class MakefileSourceEnumerator extends
 
     // private section
 
-    private static File createBatchFile(final String makeFile,
+    private static File createBatchFile(final File makefile,
                                           final String arguments)
                                           throws SourceCodeFilesException {
-	final File makefile = new File(makeFile);
-	if (!makefile.exists())
-	    throw new SourceCodeFilesException("Makefile '" +
-		    makefile.getAbsolutePath() + "' doesn't exist");
         final File batchFile;
 	try {
 	    batchFile = File.createTempFile("stanse_jobfile", null);

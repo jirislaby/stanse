@@ -3,6 +3,7 @@ package cz.muni.stanse.configuration.source_enumeration;
 import cz.muni.stanse.utils.ClassLogger;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -32,6 +33,10 @@ public final class BatchFileEnumerator
                     result.add(readLine);
             }
             reader.close();
+	} catch (final FileNotFoundException e) {
+	    ClassLogger.error(this, "Cannot open batch file '" +
+			    getReferenceFile() + "'.");
+	    /* jsut return empty list */
 	} catch (final IOException e) {
 	    ClassLogger.error(this, "Cannot read files in batch file '" +
 				    getReferenceFile() + "'. See exception " +

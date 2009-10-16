@@ -1,5 +1,6 @@
 package cz.muni.stanse.configuration.source_enumeration;
 
+import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.FileAlgo;
 import cz.muni.stanse.utils.Make;
 
@@ -34,8 +35,14 @@ public final class DirectorySourceEnumerator extends
 
     @Override
     public List<String> getSourceCodeFiles() throws SourceCodeFilesException {
-        return toStringList(
-                   FileAlgo.enumerateFiles(new File(getReferenceFile()),
+	File dir = new File(getReferenceFile());
+	if (!dir.exists() || !dir.isDirectory()) {
+	    ClassLogger.error(this, "Cannot use directory '" +
+			    dir.getAbsolutePath() + "'. It does not exist or " +
+			    "is not a directory.");
+	    return Make.<String>linkedList();
+	}
+        return toStringList(FileAlgo.enumerateFiles(dir,
                         new FileFilter() {
                         @Override public boolean accept(File file) {
                             return (file.isDirectory()) ?
