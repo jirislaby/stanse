@@ -277,7 +277,7 @@ public final class MainWindow extends javax.swing.JFrame {
         configureButton.setFocusable(false);
 
         checkButton.setAction(new ActionCheckForBugs());
-        checkButton.setText("!");
+        checkButton.setText("Run!");
         checkButton.setToolTipText("Check for bugs");
         checkButton.setFocusable(false);
 
@@ -315,7 +315,7 @@ public final class MainWindow extends javax.swing.JFrame {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, tracingHolderLayout.createSequentialGroup()
                         .add(gotoLastNodeButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 589, Short.MAX_VALUE)
-                        .add(checkButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(checkButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(configureButton)
                         .add(6, 6, 6))
