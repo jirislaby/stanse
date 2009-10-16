@@ -370,10 +370,126 @@
         </assert>
     </pattern>
 
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_read_lock_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_read_unlock_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_read_lock_bh_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_read_unlock_bh_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_read_lock_irq_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_read_unlock_irq_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_write_lock_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_write_unlock_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_write_lock_bh_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_write_unlock_bh_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_write_lock_irq_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_write_unlock_irq_st__</id>
+            <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_write_lock_irqsave_st__</id>
+            <var name="A" />
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_write_unlock_irqrestore_st__</id>
+            <var name="A" />
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
     <pattern name="unlock">
         <functionCall>
             <id>__st_mutex_unlock_st__</id>
             <var name="A" />
+        </functionCall>
+    </pattern>
+
+    <pattern name="lock">
+        <functionCall>
+            <id>__st_read_lock_irqsave_st__</id>
+            <var name="A" />
+	    <ignore/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="unlock">
+        <functionCall>
+            <id>__st_read_unlock_irqrestore_st__</id>
+            <var name="A" />
+	    <ignore/>
         </functionCall>
     </pattern>
 
