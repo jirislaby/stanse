@@ -24,19 +24,7 @@ public final class SourceConfiguration {
     public SourceConfiguration(final SourceCodeFilesEnumerator
                                sourceEnumerator) {
         this.sourceEnumerator = sourceEnumerator;
-	units = new LinkedList<Unit>();
-	List<String> files = null;
-	try {
-	    files = sourceEnumerator.getSourceCodeFiles();
-	} catch (SourceCodeFilesException e) {
-	    ClassLogger.error(SourceConfiguration.class,
-			      "Failed to get source files.", e);
-	}
-
-	if (files != null)
-	    for (String pathName: files)
-		units.add(new CUnit(pathName));
-
+        units = null;
         cfgToUnitDictionary = null;
         internals = null;
 	intraproceduralInternals = null;
@@ -62,7 +50,9 @@ public final class SourceConfiguration {
     // private section
 
     private List<Unit> getUnits() {
-	return Collections.unmodifiableList(units);
+        if (units == null)
+            setUnits();
+        return units;
     }
 
     private List<CFGHandle> getCFGHandles() {
@@ -85,6 +75,28 @@ public final class SourceConfiguration {
 
 	intraproceduralInternals =
 	    new LazyInternalStructuresIntra(getUnits(), getCFGHandles());
+    }
+
+    private synchronized void setUnits() {
+        if (units == null)
+            units = Collections.unmodifiableList(
+                                             buildUnits(getSourceEnumerator()));
+    }
+
+    private static List<Unit>
+    buildUnits(final SourceCodeFilesEnumerator sourceEnumerator) {
+        final List<Unit> result = new LinkedList<Unit>();
+        List <String> files;
+        try {
+            files = sourceEnumerator.getSourceCodeFiles();
+        } catch (SourceCodeFilesException e) {
+            ClassLogger.error(SourceConfiguration.class,
+                              "Failed to get source files.", e);
+            return Collections.unmodifiableList(result);
+        }
+        for (String pathName: files)
+            result.add(new CUnit(pathName));
+        return result;
     }
 
     private final SourceCodeFilesEnumerator sourceEnumerator;
