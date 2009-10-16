@@ -3,6 +3,7 @@ package cz.muni.stanse.configuration.source_enumeration;
 import cz.muni.stanse.Stanse;
 import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.Make;
+import cz.muni.stanse.utils.StreamAlgo;
 
 import java.io.File;
 import java.io.IOException;
@@ -74,22 +75,13 @@ public final class MakefileSourceEnumerator extends
 	    builder.directory(dir);
 	    environment.put("PWD", dir.getAbsolutePath());
 	    Process p = builder.start();
-	    p.waitFor();
-	    /*char b[] = new char[1600];
-	    InputStreamReader isr = new InputStreamReader(p.getErrorStream());
-	    OutputStreamWriter osw = new OutputStreamWriter(System.err);
-	    int len = isr.read(b);
-	    System.err.println("======err:");
-	    if (len > 0)
-		osw.write(b, 0, len);
-	    osw.flush();
-	    System.err.println("======out:");
-	    isr = new InputStreamReader(p.getInputStream());
-	    len = isr.read(b);
-	    if (len > 0)
-		osw.write(b, 0, len);
-	    osw.flush();
-	    System.err.println("======");*/
+	    if (p.waitFor() != 0) {
+		ClassLogger.error(MakefileSourceEnumerator.class,
+			"make failed. stderr follows:");
+		StreamAlgo.copy(p.getErrorStream(), System.err);
+		ClassLogger.error(MakefileSourceEnumerator.class,
+			"========== stderr end");
+	    }
 	} catch (IOException e) {
 	    throw new SourceCodeFilesException(e);
 	} catch (InterruptedException e) {

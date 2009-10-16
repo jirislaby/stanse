@@ -22,11 +22,13 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 import org.antlr.runtime.tree.RewriteCardinalityException;
 
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
-import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGHandle;
+import cz.muni.stanse.utils.ClassLogger;
+import cz.muni.stanse.utils.StreamAlgo;
 
 /**
  * Holds all the code-related data for C compilation units (files).
@@ -160,9 +162,17 @@ public final class CUnit extends Unit {
 
 	try {
 	    int retval = p.waitFor();
-	    if (retval != 0)
-		    throw new ParserException("preprocessor failed: " +
-				    Integer.toString(retval));
+	    if (retval != 0) {
+		ClassLogger.error(this, "preprocessor failed. stderr follows:");
+		try {
+		    StreamAlgo.copy(p.getErrorStream(), System.err);
+		} catch (IOException e) {
+		    ClassLogger.error(this, "Failed to dump stderr");
+		}
+		ClassLogger.error(this, "========== stderr end");
+		throw new ParserException("preprocessor failed: " +
+			Integer.toString(retval));
+	    }
 	} catch (InterruptedException e) {
 	    throw new ParserException("preprocessor", e);
 	}
