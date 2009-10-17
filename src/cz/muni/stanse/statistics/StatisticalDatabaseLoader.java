@@ -1,5 +1,7 @@
 package cz.muni.stanse.statistics;
 
+import cz.muni.stanse.utils.ClassLogger;
+
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
@@ -16,10 +18,8 @@ public final class StatisticalDatabaseLoader {
         try {
             return (new SAXReader()).read(xmlFile);
         } catch (final DocumentException e) {
-            System.out.println("Cannot load statistical XML database file:\n" +
-                               xmlFile + "\n\n");
-            System.out.println("Exception: " + e.getLocalizedMessage() +"\n\n");
-            e.printStackTrace();
+            ClassLogger.error("Cannot load statistical XML database file '" +
+                               xmlFile + "'", e);
             return null;
         }
     }

@@ -17,6 +17,10 @@ import cz.muni.stanse.codestructures.UnitManager;
 import cz.muni.stanse.codestructures.UnitManagerLRU;
 import cz.muni.stanse.gui.MainWindow;
 import cz.muni.stanse.props.Properties.VerbosityLevel;
+import cz.muni.stanse.statistics.CheckerErrorsGuiTracing;
+import cz.muni.stanse.statistics.ErrorMessagesStatsBuilder;
+import cz.muni.stanse.statistics.MergeDocuments;
+import cz.muni.stanse.statistics.PerformanceDataBuilder;
 import cz.muni.stanse.utils.ClassLocation;
 import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
@@ -217,14 +221,14 @@ public final class Stanse {
 
         final String databaseFile = cmdLineManager.getStatsDatabase();
         if (databaseFile == null || !new File(databaseFile).exists()) {
-            System.out.print("Error: cannot find statistical database " +
+            System.err.print("Error: cannot find statistical database " +
                              "XML file:\n   " + databaseFile + "\n\n\n");
             return;
         }
         final org.dom4j.Document database = cz.muni.stanse.statistics.
                 StatisticalDatabaseLoader.run(databaseFile);
         if (database == null) {
-            System.out.print("Error: parsing of content of database " +
+            System.err.print("Error: parsing of content of database " +
                              "XML file has FAILED. Parsed file was:\n   " +
                              databaseFile + "\n\n\n");
             return;
@@ -238,35 +242,53 @@ public final class Stanse {
         }
 
         if (cmdLineManager.doStatsGuiTracing()) {
-            if (cmdLineManager.statsGuiTracingOrigSrcDir() == null)
-                cz.muni.stanse.statistics.CheckerErrorsGuiTracing.run(
-                        database,cmdLineManager.statsGuiTracingOutputFile());
+	    String out = cmdLineManager.statsGuiTracingOutputFile();
+	    if (out == null) {
+		ClassLogger.error(Stanse.class, "wrong gui-tracing " +
+			"commandline");
+		return;
+	    }
+	    String origDir = cmdLineManager.statsGuiTracingOrigSrcDir();
+	    String newDir = cmdLineManager.statsGuiTracingCurrSrcDir();
+            if (origDir == null || newDir == null)
+                CheckerErrorsGuiTracing.run(database, out);
             else
-                cz.muni.stanse.statistics.CheckerErrorsGuiTracing.run(
-                        database,
-                        Pair.make(cmdLineManager.statsGuiTracingOrigSrcDir(),
-                                  cmdLineManager.statsGuiTracingCurrSrcDir()),
-                        cmdLineManager.statsGuiTracingOutputFile());
+                CheckerErrorsGuiTracing.run(database,
+			Pair.make(origDir, newDir), out);
             return;
         }
 
         if (cmdLineManager.doStatsMerge()) {
-            cz.muni.stanse.statistics.MergeDocuments.run(
-                    database,cmdLineManager.getStatsMergeDirsRoot(),
-                    cmdLineManager.getStatsMergeOutputFile());
+	    String root = cmdLineManager.getStatsMergeDirsRoot();
+	    String out = cmdLineManager.getStatsMergeOutputFile();
+	    if (root == null || out == null) {
+		ClassLogger.error(Stanse.class, "wrong stats-merge " +
+			"commandline");
+		return;
+	    }
+            MergeDocuments.run(database, root, out);
             return;
         }
 
         if (cmdLineManager.doStatsPerformance()) {
-            cz.muni.stanse.statistics.PerformanceDataBuilder.run(database,
-                cmdLineManager.getStatsPerformanceOutputFile(),
-                cmdLineManager.getStatsPerformanceOutputFormat());
+	    String outFile = cmdLineManager.getStatsPerformanceOutputFile();
+	    String outFormat = cmdLineManager.getStatsPerformanceOutputFormat();
+	    if (outFile == null || outFormat == null) {
+		ClassLogger.error(Stanse.class, "wrong performance " +
+			"commandline");
+	    } else
+		PerformanceDataBuilder.run(database,
+			outFile, outFormat);
         }
 
         if (cmdLineManager.doStatsReports()) {
-            cz.muni.stanse.statistics.ErrorMessagesStatsBuilder.run(database,
-                cmdLineManager.getStatsReportsOutputFile(),
-                cmdLineManager.getStatsReportsOutputFormat());
+	    String outFile = cmdLineManager.getStatsReportsOutputFile();
+	    String outFormat = cmdLineManager.getStatsReportsOutputFormat();
+	    if (outFile == null || outFormat == null) {
+		ClassLogger.error(Stanse.class, "wrong reports " +
+			"commandline");
+	    } else
+                ErrorMessagesStatsBuilder.run(database, outFile, outFormat);
         }
     }
 

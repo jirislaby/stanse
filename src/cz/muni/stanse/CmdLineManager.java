@@ -326,25 +326,24 @@ final class CmdLineManager {
     String statsGuiTracingOutputFile() {
         assert(getOptions().has(statsGuiTracing));
         String[] cc = getOptions().valueOf(statsGuiTracing).split(":");
-        assert(cc.length >= 2);
+        if (cc.length < 2)
+	    return null;
         return cc[1];
     }
 
     String statsGuiTracingOrigSrcDir() {
         assert(getOptions().has(statsGuiTracing));
         String[] cc = getOptions().valueOf(statsGuiTracing).split(":");
-        if (cc.length == 2)
+        if (cc.length != 4)
             return null;
-        assert(cc.length == 4);
         return cc[2];
     }
 
     String statsGuiTracingCurrSrcDir() {
         assert(getOptions().has(statsGuiTracing));
         String[] cc = getOptions().valueOf(statsGuiTracing).split(":");
-        if (cc.length == 2)
+        if (cc.length != 4)
             return null;
-        assert(cc.length == 4);
         return cc[3];
     }
 
@@ -352,6 +351,8 @@ final class CmdLineManager {
         if (!getOptions().has(statsSort))
             return null;
         String[] cc = getOptions().valueOf(statsSort).split(":");
+	if (cc.length < 2)
+	    return null;
         final String orderingFile = cc[1];
         return orderingFile;
     }
@@ -373,14 +374,16 @@ final class CmdLineManager {
     String getStatsMergeOutputFile() {
         assert(getOptions().has(statsMerge));
         String[] cc = getOptions().valueOf(statsMerge).split(":");
-        assert(cc.length == 3);
+        if (cc.length != 3)
+	    return null;
         return cc[1];
     }
 
     String getStatsMergeDirsRoot() {
         assert(getOptions().has(statsMerge));
         String[] cc = getOptions().valueOf(statsMerge).split(":");
-        assert(cc.length == 3);
+        if (cc.length != 3)
+	    return null;
         return cc[2];
     }
 
@@ -391,14 +394,16 @@ final class CmdLineManager {
     String getStatsPerformanceOutputFile() {
         assert(getOptions().has(statsPerformance));
         String[] cc = getOptions().valueOf(statsPerformance).split(":");
-        assert(cc.length == 3);
+        if (cc.length != 3)
+	    return null;
         return cc[1];
     }
 
     String getStatsPerformanceOutputFormat() {
         assert(getOptions().has(statsPerformance));
         String[] cc = getOptions().valueOf(statsPerformance).split(":");
-        assert(cc.length == 3);
+        if (cc.length != 3)
+	    return null;
         return cc[2];
     }
 
@@ -409,14 +414,16 @@ final class CmdLineManager {
     String getStatsReportsOutputFile() {
         assert(getOptions().has(statsReports));
         String[] cc = getOptions().valueOf(statsReports).split(":");
-        assert(cc.length == 3);
+        if (cc.length != 3)
+	    return null;
         return cc[1];
     }
 
     String getStatsReportsOutputFormat() {
         assert(getOptions().has(statsReports));
         String[] cc = getOptions().valueOf(statsReports).split(":");
-        assert(cc.length == 3);
+        if (cc.length != 3)
+	    return null;
         return cc[2];
     }
 
