@@ -18,6 +18,7 @@ import cz.muni.stanse.codestructures.UnitManagerLRU;
 import cz.muni.stanse.gui.MainWindow;
 import cz.muni.stanse.props.Properties.VerbosityLevel;
 import cz.muni.stanse.utils.ClassLocation;
+import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 import cz.muni.stanse.utils.Pair;
 
@@ -46,16 +47,16 @@ public final class Stanse {
 	    return;
 	}
 
-    getInstance().setVerbosityLevel(cmdLineManager.getVerbosityLevel());
+	getInstance().setVerbosityLevel(cmdLineManager.getVerbosityLevel());
 
 	buildConfiguration(cmdLineManager);
 	setOutputDirectory(cmdLineManager);
 	processDumping(cmdLineManager);
 
-    if (cmdLineManager.statsMode())
-        processStats(cmdLineManager);
-    else
-        startUI(cmdLineManager);
+	if (cmdLineManager.statsMode())
+	    processStats(cmdLineManager);
+	else
+	    startUI(cmdLineManager);
     }
 
     public static Stanse getInstance() {
@@ -262,9 +263,12 @@ public final class Stanse {
 
     private static void startUI(final CmdLineManager cmdLineManager) {
 	final Pair<String,String> UIdesc = cmdLineManager.getUIdesc();
-	if (UIdesc.getFirst().equals("GUI")) startGUI(UIdesc.getSecond());
-	else if (UIdesc.getFirst().equals("TUI")) startTUI(UIdesc.getSecond());
-	else { System.out.println("Warning: No user interface specified."); }
+	if (UIdesc.getFirst().equals("GUI"))
+	    startGUI(UIdesc.getSecond());
+	else if (UIdesc.getFirst().equals("TUI"))
+	    startTUI(UIdesc.getSecond());
+	else
+	    ClassLogger.error(Stanse.class, "no user interface specified.");
     }
 
     private static void startGUI(final String style) {
