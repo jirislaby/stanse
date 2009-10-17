@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Stack;
 import java.util.Collections;
 
-import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 
@@ -170,7 +169,7 @@ public final class CFGTraversal {
     }
 
     public static <T extends CFGPathVisitor>
-    T traverseFunctionForward(final CFG cfg, final T visitor) {
+    T traverseFunctionForward(final CFGHandle cfg, final T visitor) {
         final LinkedList<CFGNode> path = new LinkedList<CFGNode>();
         path.add(cfg.getStartNode());
         traverseCFGPaths(cfg,path,
@@ -180,7 +179,7 @@ public final class CFGTraversal {
     }
 
     public static <T extends CFGPathVisitor>
-    T traverseFunctionBackward(final CFG cfg, final T visitor) {
+    T traverseFunctionBackward(final CFGHandle cfg, final T visitor) {
         final LinkedList<CFGNode> path = new LinkedList<CFGNode>();
         path.add(cfg.getEndNode());
         traverseCFGPaths(cfg,path,
@@ -190,7 +189,7 @@ public final class CFGTraversal {
     }
 
     public static <T extends CFGPathVisitor>
-    T traverseCFGPathsForward(final CFG cfg,
+    T traverseCFGPathsForward(final CFGHandle cfg,
                               final CFGNode startNode,final T visitor) {
         final LinkedList<CFGNode> path = new LinkedList<CFGNode>();
         path.add(startNode);
@@ -201,7 +200,7 @@ public final class CFGTraversal {
     }
 
     public static <T extends CFGPathVisitor>
-    T traverseCFGPathsBackward(final CFG cfg,
+    T traverseCFGPathsBackward(final CFGHandle cfg,
                               final CFGNode startNode,final T visitor) {
         final LinkedList<CFGNode> path = new LinkedList<CFGNode>();
         path.add(startNode);
@@ -271,7 +270,7 @@ public final class CFGTraversal {
         while (!nodesToVisit.isEmpty());
     }
 
-    private static void traverseCFGPaths(final CFG cfg,
+    private static void traverseCFGPaths(final CFGHandle cfg,
                             final LinkedList<CFGNode> path,
                             final CFGNodeFollowers nodeFollowers,
                             final CFGPathVisitor visitor,
