@@ -18,6 +18,10 @@ public final class NodeToCFGdictionaryBuilder {
             for (final CFGNode node: cfg.getAllNodes())
                 result.put(node, cfg);
         }
+        for (final CFGHandle cfg: CFGs) {
+            for (final CFGNode node: cfg.getAllNodesReverse())
+                result.put(node, cfg);
+        }
         return result;
     }
 

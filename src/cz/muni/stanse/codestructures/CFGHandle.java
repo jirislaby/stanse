@@ -39,6 +39,10 @@ public class CFGHandle {
         return getCFG().getAllNodes();
     }
 
+    public Set<CFGNode> getAllNodesReverse() {
+        return getCFG().getAllNodesReverse();
+    }
+
     public CFGNode getStartNode() {
         return getCFG().getStartNode();
     }

@@ -111,7 +111,7 @@ public class CFGPart {
 	return nodesDone;
     }
 
-    private Set<CFGNode> getAllNodesReverse() {
+    public Set<CFGNode> getAllNodesReverse() {
 	Set<CFGNode> nodesToDo = new HashSet<CFGNode>();
 	Set<CFGNode> nodesDone = new LinkedHashSet<CFGNode>();
 
