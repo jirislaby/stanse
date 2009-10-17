@@ -63,9 +63,14 @@ final class ReachabilityChecker extends cz.muni.stanse.checker.Checker {
 		    continue;
 		if (!node.getPredecessors().isEmpty())
 		    continue;
+		int importance = 0;
 		monitor.write("An error found");
+		String e = node.getElement().getName();
+		if (e.equals("emptyStatement") ||
+			e.equals("breakStatement"))
+		    importance = 3;
 		errReceiver.receive(new CheckerError("Unreachable code",
-			"The code is unreachable by any path.", 0,
+			"The code is unreachable by any path.", importance,
 			ReachabilityCheckerCreator.getNameForCheckerFactory(),
 			Make.<CFGNode>linkedList(node, cfg.getEndNode()),
 			"This node is unreachable", "",
