@@ -64,8 +64,10 @@ public final class CheckerFactory {
                                            new HashMap<String,CheckerCreator>();
     static {
         registerCheckerCreator(
-            new cz.muni.stanse.automatonchecker.AutomatonCheckerCreator() );
+            new cz.muni.stanse.automatonchecker.AutomatonCheckerCreator());
         registerCheckerCreator(
-            new cz.muni.stanse.threadchecker.ThreadCheckerCreator() );
+            new cz.muni.stanse.threadchecker.ThreadCheckerCreator());
+        registerCheckerCreator(new cz.muni.stanse.reachabilitychecker.
+		ReachabilityCheckerCreator());
     }
 }
