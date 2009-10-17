@@ -28,6 +28,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import joptsimple.OptionException;
+
 /**
  * Class containing the main() method. Not supposed to be instantiated.
  * The main functionality is command-line parsing.
@@ -41,7 +43,14 @@ public final class Stanse {
     public static void main(String[] args) {
 	printStanseInfo();
 
-	final CmdLineManager cmdLineManager = new CmdLineManager(args);
+	CmdLineManager cmdLineManager;
+	try {
+	    cmdLineManager = new CmdLineManager(args);
+	} catch (OptionException e) {
+	    ClassLogger.error(Stanse.class, "can't parse commandline: " +
+		    e.getLocalizedMessage());
+	    return;
+	}
 	if (cmdLineManager.infoMode()) {
 	    cmdLineManager.printInfo(System.out);
 	    return;
