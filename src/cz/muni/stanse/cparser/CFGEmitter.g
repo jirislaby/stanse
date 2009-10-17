@@ -23,7 +23,7 @@ scope Function {
 	List<CFGBreakNode> rets;
 	List<Pair<String, CFGBreakNode>> gotos;
 	Map<String, CFGNode> labels;
-	List<CFGPart> unreachables;
+//	List<CFGPart> unreachables;
 	Set<String> symbols;
 	CFGNode lastStatement;
 }
@@ -113,7 +113,7 @@ scope Function;
 	$Function::rets = new LinkedList<CFGBreakNode>();
 	$Function::labels = new HashMap<String, CFGNode>();
 	$Function::gotos = new LinkedList<Pair<String, CFGBreakNode>>();
-	$Function::unreachables = new LinkedList<CFGPart>();
+//	$ Function::unreachables = new LinkedList<CFGPart>();
 	$Function::symbols = new HashSet<String>();
 }
 	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator declaration* compoundStatement) {
@@ -133,7 +133,7 @@ scope Function;
 				$Function::labels.get(gotoPair.getFirst());
 			gotoPair.getSecond().addBreakEdge(labelNode);
 		}
-		for (CFGPart cfg: $Function::unreachables) {
+/*		for (CFGPart cfg: $ Function::unreachables) {
 			CFGNode start = cfg.getStartNode();
 			if (start.getPredecessors().size() == 0 &&
 					!start.getElement().getName().
@@ -142,7 +142,7 @@ scope Function;
 				System.err.println(cfg.toStringGraph());
 				System.err.println("\n============");
 			}
-		}
+		}*/
 
 //		System.err.println($g.toStringGraph());
 //		System.err.println($g.toDot());
@@ -224,10 +224,10 @@ compoundStatement returns [CFGPart g]
 					getElement().node(0)));
 	$Function::lastStatement = cfg.getEndNode();
 
-	for (CFGPart cfg1: cfgs) {
+/*	for (CFGPart cfg1: cfgs) {
 		if (cfg1.getStartNode().getPredecessors().size() == 0)
-			$Function::unreachables.add(cfg1);
-	}
+			$ Function::unreachables.add(cfg1);
+	}*/
 }
 	: ^(COMPOUND_STATEMENT CS_END (declaration {
 			if (!$declaration.g.isEmpty())
