@@ -115,7 +115,8 @@ public abstract class Unit {
 			available = true;
 		    } catch (ParserException e) {
 			ClassLogger.error(this, "can't parse '" +
-					fileName.getPath() + "'!", e);
+					fileName.getPath() + "': " +
+					e.getLocalizedMessage());
 		    }
 	    }
     }
