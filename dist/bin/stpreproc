@@ -40,7 +40,9 @@ my @kuntouchables = (
 	"put_user", "get_user",
 	"put_cpu", "get_cpu",
 	"BUG", "BUG_ON",
-	"GFP_KERNEL"
+	"GFP_KERNEL",
+
+	"assert"
 );
 
 die "wrong commandline" if @ARGV != 1;
