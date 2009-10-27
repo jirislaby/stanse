@@ -33,6 +33,7 @@ public class CFGBreakNode extends CFGNode {
      *
      * @param to ignored parameter
      */
+    @Override
     public void addEdge(CFGNode to) {
 	/* nothing */
     }
@@ -47,14 +48,6 @@ public class CFGBreakNode extends CFGNode {
      */
     public void addBreakEdge(CFGNode to) {
 	super.addEdge(to);
-    }
-
-    @Override
-    public void replaceEdge(CFGNode oldTo, CFGNode newTo) {
-	int idx = indexOfSucc(oldTo);
-	removeSucc(idx);
-	addSucc(idx, newTo);
-	newTo.addPred(this);
     }
 
     @Override
