@@ -2,8 +2,8 @@
 <project basedir="." default="build" name="stanse" xmlns:cpptasks="antlib:net.sf.antcontrib.cpptasks">
     <property name="dist" value="dist"/>
     <property name="parser.location" value="src/cz/muni/stanse/cparser"/>
-    <property name="antlr.location" value="tools/antlr-3.1.1.jar"/>
-    <property name="antlr-runtime.location" value="${dist}/lib/antlr-3.1.1-runtime.jar"/>
+    <property name="antlr.location" value="tools/antlr-3.2.jar"/>
+    <property name="antlr-runtime.location" value="${dist}/lib/antlr-runtime-3.2.jar"/>
     <path id="project.classpath">
 	<pathelement location="build"/>
 	<pathelement location="${antlr-runtime.location}"/>
@@ -127,7 +127,7 @@
 	    <attribute name="Built-By" value="${user.name}"/>
 	    <attribute name="Main-Class" value="cz.muni.stanse.Stanse"/>
 	    <attribute name="Implementation-Version" value="Built on: ${TODAY}" />
-	    <attribute name="Class-Path" value="lib/antlr-3.1.1-runtime.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/jgrapht-jdk1.6.jar lib/jopt-simple-3.0.jar lib/log4j-1.2.14.jar lib/swing-layout-1.0.jar" />
+	    <attribute name="Class-Path" value="lib/antlr-runtime-3.2.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.1.jar lib/jgrapht-jdk1.6.jar lib/jopt-simple-3.0.jar lib/log4j-1.2.14.jar lib/swing-layout-1.0.jar" />
 	</manifest>
 	<jar destfile="${dist}/stanse.jar" basedir="build" manifest="manifest.mf" excludes="cparser-c/"/>
     </target>

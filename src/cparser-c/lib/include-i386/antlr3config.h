@@ -2,7 +2,7 @@
 /* antlr3config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define if ANTLR debugger not required */
-/* #undef ANTLR3_NODEBUGGER */
+#define ANTLR3_NODEBUGGER 1
 
 /* Define if 64 bit mode required */
 /* #undef ANTLR3_USE_64BIT */
@@ -92,38 +92,38 @@
 #define PACKAGE "libantlr3c"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "jimi@idle.ws"
+#define PACKAGE_BUGREPORT "jimi@temporal-wave.com"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "libantlr3c"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "libantlr3c 3.1.1"
+#define PACKAGE_STRING "libantlr3c 3.2"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "libantlr3c"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.1.1"
+#define PACKAGE_VERSION "3.2"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "3.1.1"
+#define VERSION "3.2"
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
    #define below would cause a syntax error. */
 /* #undef _UINT32_T */
 
 /* Define for Solaris 2.5.1 so the uint64_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
    #define below would cause a syntax error. */
 /* #undef _UINT64_T */
 
 /* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
    #define below would cause a syntax error. */
 /* #undef _UINT8_T */
 

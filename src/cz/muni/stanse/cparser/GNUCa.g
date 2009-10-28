@@ -183,8 +183,8 @@ scope Typedef {
 	}
 
 	@Override
-	protected void mismatch(IntStream input, int ttype, BitSet follow)
-			throws RecognitionException {
+    	protected Object recoverFromMismatchedToken(IntStream input, int ttype,
+			BitSet follow) throws RecognitionException {
 		throw new MismatchedTokenException(ttype, input);
 	}
 
