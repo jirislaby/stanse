@@ -89,10 +89,7 @@
 		<include name="GNUCaParser.o"/>
 		<include name="main.o"/>
 	    </fileset>
-	    <!-- this has to be the last one -->
-	    <fileset dir="src/cparser-c/lib/">
-		<include name="libantlr3c-${arch}.a"/>
-	    </fileset>
+	    <libset dir="src/cparser-c/lib/" libs="antlr3c-${arch}"/>
         </cpptasks:cc>
  <!--       <copy todir="${dist}" >
             <fileset dir="build/cparser-c">
