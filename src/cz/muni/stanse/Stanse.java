@@ -175,7 +175,7 @@ public final class Stanse {
     }
 
     private static void printStanseInfo() {
-	System.out.println("Stanse version \"1.0.2\"");
+	System.out.println("Stanse version \"1.0.3\"");
 	System.out.println("Copyright (c) 2008-2009 Masaryk University, Brno\n");
     }
 
