@@ -157,7 +157,8 @@ public final class CUnit extends Unit {
 		typedefs.add(line);
 	    reader.close();
 	} catch (IOException e) {
-	    throw new ParserException("preprocessor", e);
+	    throw new ParserException("preprocessor: " +
+		    e.getLocalizedMessage(), e);
 	}
 
 	try {
