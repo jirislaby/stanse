@@ -63,6 +63,8 @@ final class ReachabilityChecker extends cz.muni.stanse.checker.Checker {
 		    continue;
 		if (!node.getPredecessors().isEmpty())
 		    continue;
+		if (!node.getOptPredecessors().isEmpty())
+		    continue;
 		int importance = 0;
 		monitor.write("An error found");
 		String e = node.getElement().getName();

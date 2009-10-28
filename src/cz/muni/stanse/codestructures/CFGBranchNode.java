@@ -57,6 +57,12 @@ public class CFGBranchNode extends CFGNode {
     }
 
     @Override
+    public void addOptEdge(CFGNode to) {
+	throw new UnsupportedOperationException("can't add edge without a " +
+		"label");
+    }
+
+    @Override
     public void drop() {
 	labels.clear();
 	super.drop();

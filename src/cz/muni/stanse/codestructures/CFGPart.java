@@ -84,11 +84,7 @@ public class CFGPart {
 	setEndNode(n);
     }
 
-    /**
-     * Returns all nodes in this CFG
-     * @return list of all nodes
-     */
-    protected Set<CFGNode> getAllNodes() {
+    private Set<CFGNode> getAllNodes(boolean optimized) {
 	Set<CFGNode> nodesToDo = new HashSet<CFGNode>();
 	Set<CFGNode> nodesDone = new LinkedHashSet<CFGNode>();
 
@@ -103,12 +99,33 @@ public class CFGPart {
 	    for (CFGNode succ : node.getSuccessors())
 		if (!nodesDone.contains(succ))
 		    nodesToDo.add(succ);
+	    if (!optimized)
+		continue;
+	    for (CFGNode succ : node.getOptSuccessors())
+		if (!nodesDone.contains(succ))
+		    nodesToDo.add(succ);
 	}
 
 	/* endNode might be unavailable, add it unconditionally */
 	nodesDone.add(getEndNode());
 
 	return nodesDone;
+    }
+
+    /**
+     * Returns all nodes in this CFG
+     * @return list of all nodes
+     */
+    protected Set<CFGNode> getAllNodes() {
+	return getAllNodes(false);
+    }
+
+    /**
+     * Returns all nodes in this CFG including optimized ones
+     * @return list of all nodes
+     */
+    protected Set<CFGNode> getAllNodesOpt() {
+	return getAllNodes(true);
     }
 
     public Set<CFGNode> getAllNodesReverse() {
@@ -226,7 +243,7 @@ public class CFGPart {
     public String toDot() {
 	String eol = System.getProperty("line.separator");
 	StringBuilder sb = new StringBuilder("digraph CFG {");
-	Set<CFGNode> allNodes = getAllNodes();
+	Set<CFGNode> allNodes = getAllNodesOpt();
 
 	sb.append(eol);
 	sb.append("\tnode [shape=box];");
@@ -252,33 +269,39 @@ public class CFGPart {
 	    sb.append(eol);
 	}
 
-	for (CFGNode n: allNodes) {
-	    CFGBranchNode bn = null;
-	    if (n instanceof CFGBranchNode)
-		bn = (CFGBranchNode)n;
-	    int edge = 0;
-	    for (CFGNode succ: n.getSuccessors()) {
-		sb.append('\t');
-		sb.append(n.getNumber());
-		sb.append(" -> ");
-		sb.append(succ.getNumber());
-		if (bn != null) {
-		    sb.append(" [label=\"");
-		    Element label = bn.getEdgeLabel(edge);
-		    if (label.getName().equals("intConst"))
-			sb.append(label.getText());
-		    else
-			sb.append(label.getName());
-		    sb.append("\"]");
-		    edge++;
-		}
-		sb.append(";");
-		sb.append(eol);
-	    }
+	for (CFGNode from: allNodes) {
+	    buildArcs(sb, from, false, eol);
+	    buildArcs(sb, from, true, eol);
 	}
 
 	sb.append("}");
 
 	return sb.toString();
+    }
+
+    private void buildArcs(StringBuilder sb, CFGNode from, boolean optimized,
+	    String eol) {
+	int edge = 0;
+	CFGBranchNode bn = null;
+	if (from instanceof CFGBranchNode)
+	    bn = (CFGBranchNode)from;
+	for (CFGNode succ: optimized ? from.getOptSuccessors() :
+		from.getSuccessors()) {
+	    sb.append('\t').append(from.getNumber()).append(" -> ").
+		    append(succ.getNumber());
+	    if (bn != null) {
+		sb.append(" [label=\"");
+		Element label = bn.getEdgeLabel(edge);
+		if (label.getName().equals("intConst"))
+		    sb.append(label.getText());
+		else
+		    sb.append(label.getName());
+		sb.append("\"]");
+		edge++;
+	    }
+	    if (optimized)
+		sb.append(" [style=dashed]");
+	    sb.append(';').append(eol);
+	}
     }
 }

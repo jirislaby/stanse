@@ -78,15 +78,10 @@ class ExprEvaluator {
 	this.lineElem = lineElem;
     }
 
-    protected static void addEdge(CFGNode from, CFGNode to) {
-	if (from != null)
-	    from.addEdge(to);
-    }
-
     public static CFGNode connect(Triple<CFGNode,CFGNode,CFGNode> tree,
 	    CFGNode _then, CFGNode _else) {
-	addEdge(tree.getSecond(), _then);
-	addEdge(tree.getThird(), _else);
+	tree.getSecond().addEdge(_then);
+	tree.getThird().addEdge(_else);
 	return tree.getFirst();
     }
 
@@ -97,9 +92,9 @@ class ExprEvaluator {
 	    l = eval((Element)cond.elements().get(0));
 	    r = eval((Element)cond.elements().get(1));
 	    CFGJoinNode f = new CFGJoinNode();
-	    addEdge(l.getSecond(), r.getFirst());
-	    addEdge(l.getThird(), f);
-	    addEdge(r.getThird(), f);
+	    l.getSecond().addEdge(r.getFirst());
+	    l.getThird().addEdge(f);
+	    r.getThird().addEdge(f);
 	    ret = Triple.<CFGNode,CFGNode,CFGNode>make(l.getFirst(),
 		    r.getSecond(), f);
 	} else if (cond.getName().equals("binaryExpression") &&
@@ -107,20 +102,22 @@ class ExprEvaluator {
 	    l = eval((Element)cond.elements().get(0));
 	    r = eval((Element)cond.elements().get(1));
 	    CFGJoinNode t = new CFGJoinNode();
-	    addEdge(l.getSecond(), t); // l.true
-	    addEdge(l.getThird(), r.getFirst()); // l.false
-	    addEdge(r.getSecond(), t); // r.true
+	    l.getSecond().addEdge(t); // l.true
+	    l.getThird().addEdge(r.getFirst()); // l.false
+	    r.getSecond().addEdge(t); // r.true
 	    ret = Triple.<CFGNode,CFGNode,CFGNode>make(l.getFirst(), t,
 		    r.getThird());
 	} else {
 	    Integer constVal = CFGEvaluator.getExprValue(cond);
 	    if (constVal != null) {
 		CFGNode node = new CFGNode(cond);
+		CFGNode oNode = new CFGJoinNode();
+		node.addOptEdge(oNode);
 		if (constVal != 0)
 		    ret = Triple.<CFGNode,CFGNode,CFGNode>make(node, node,
-			    null);
+			    oNode);
 		else
-		    ret = Triple.<CFGNode,CFGNode,CFGNode>make(node, null,
+		    ret = Triple.<CFGNode,CFGNode,CFGNode>make(node, oNode,
 			    node);
 	    } else {
 		CFGBranchNode branch = new CFGBranchNode(cond);

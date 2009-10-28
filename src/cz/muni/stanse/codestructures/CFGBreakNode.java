@@ -39,6 +39,20 @@ public class CFGBreakNode extends CFGNode {
     }
 
     /**
+     * Overriden addEdge which does (intentionally) nothing
+     *
+     * We want to ignore all added edges, since we are a node which breaks
+     * code flow such as goto, break, return, etc.
+     *
+     * @param to ignored parameter
+     */
+    @Override
+    public void addOptEdge(CFGNode to) {
+	throw new UnsupportedOperationException("can't add opt edge from a " +
+		"break node");
+    }
+
+    /**
      * Real addEdge for CFGBreakNode
      *
      * Usually used when backpatching, when we know it's a break node and

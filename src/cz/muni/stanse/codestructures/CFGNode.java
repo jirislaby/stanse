@@ -21,6 +21,8 @@ public class CFGNode {
     private Element element;
     private List<CFGNode> preds = new ArrayList<CFGNode>();
     private List<CFGNode> succs = new ArrayList<CFGNode>();
+    private List<CFGNode> optPreds = new ArrayList<CFGNode>();
+    private List<CFGNode> optSuccs = new ArrayList<CFGNode>();
 
     /**
      * Creates a new instance of CFGNode
@@ -77,6 +79,22 @@ public class CFGNode {
     }
 
     /**
+     * Get all predecessors of the node
+     * @return (read only) set of this node's predecessors
+     */
+    public List<CFGNode> getOptPredecessors() {
+	return Collections.unmodifiableList(optPreds);
+    }
+
+    /**
+     * Get all successors of the node
+     * @return (read only) set of this node's successors
+     */
+    public List<CFGNode> getOptSuccessors() {
+	return Collections.unmodifiableList(optSuccs);
+    }
+
+    /**
      * Adds the node to the predecessors
      * @param pred new predecessor
      */
@@ -119,12 +137,63 @@ public class CFGNode {
     }
 
     /**
+     * Adds the node to the predecessors
+     * @param pred new predecessor
+     */
+    protected void addOptPred(CFGNode pred) {
+	optPreds.add(pred);
+    }
+
+    /**
+     * Adds the node to the successors
+     * @param succ new successor
+     */
+    protected void addOptSucc(CFGNode succ) {
+	optSuccs.add(succ);
+    }
+
+    /**
+     * Inserts the node to the successors at specified position
+     * @param index index at which the specified element is to be inserted
+     * @param succ new successor
+     */
+    protected void addOptSucc(int index, CFGNode succ) {
+	optSuccs.add(index, succ);
+    }
+
+    /**
+     * Removes the node from the successors
+     * @param index the index of the element to be removed
+     */
+    protected void removeOptSucc(int index) {
+	optSuccs.remove(index);
+    }
+
+    /**
+     * Returns index of the specified successor
+     * @param succ successor to get index for
+     * @return the index in the list
+     */
+    protected int indexOfOptSucc(CFGNode succ) {
+	return optSuccs.indexOf(succ);
+    }
+
+    /**
      * Adds an edge between two nodes
      * @param to which node to add the edge to
      */
     public void addEdge(CFGNode to) {
 	addSucc(to);
 	to.addPred(this);
+    }
+
+    /**
+     * Adds an optimized edge between two nodes (is in code, not in CFG)
+     * @param to which node to add the edge to
+     */
+    public void addOptEdge(CFGNode to) {
+	addOptSucc(to);
+	to.addOptPred(this);
     }
 
     /**
@@ -139,9 +208,23 @@ public class CFGNode {
 	newTo.addPred(this);
     }
 
+    /**
+     * Replaces an edge between two nodes with a new edge
+     * @param oldTo which node to replace
+     * @param newTo which node use as a replacement
+     */
+    public void replaceOptEdge(CFGNode oldTo, CFGNode newTo) {
+	int idx = indexOfOptSucc(oldTo);
+	removeOptSucc(idx);
+	addOptSucc(idx, newTo);
+	newTo.addOptPred(this);
+    }
+
     public void drop() {
 	preds.clear();
 	succs.clear();
+	optPreds.clear();
+	optSuccs.clear();
 	element.clearContent();
 	element = null;
     }
