@@ -17,6 +17,8 @@ import cz.muni.stanse.checker.CheckingSuccess;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.utils.Make;
 
+import org.dom4j.Element;
+
 /**
  * @brief Static checker which is able to detect unrechable code.
  *
@@ -65,19 +67,23 @@ final class ReachabilityChecker extends cz.muni.stanse.checker.Checker {
 		    continue;
 		if (!node.getOptPredecessors().isEmpty())
 		    continue;
+		Element nodeElem = node.getElement();
+		String elemName = nodeElem.getName();
+		if (elemName.equals("intConst") &&
+			nodeElem.getText().equals("0"))
+		    continue;
 		int importance = 0;
 		monitor.write("An error found");
-		String e = node.getElement().getName();
-		if (e.equals("emptyStatement") ||
-			e.equals("breakStatement"))
+		if (elemName.equals("emptyStatement") ||
+			elemName.equals("breakStatement") ||
+			elemName.equals("returnStatement"))
 		    importance = 3;
 		errReceiver.receive(new CheckerError("Unreachable code",
 			"The code is unreachable by any path.", importance,
 			ReachabilityCheckerCreator.getNameForCheckerFactory(),
-			Make.<CFGNode>linkedList(node, cfg.getEndNode()),
+			Make.<CFGNode>linkedList(node, node),
 			"This node is unreachable", "",
-			"This function leaves and some code was unreachable",
-			internals));
+			"This node is unreachable", internals));
 	    }
 	}
 	monitor.write("Reachability Checker finished");
