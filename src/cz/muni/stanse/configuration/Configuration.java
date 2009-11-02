@@ -91,7 +91,8 @@ public final class Configuration {
                         statistic.checkerEnd(result);
                     } catch (final CheckerException e) {
                         statistic.checkerEnd(
-                                    new CheckingFailed(e.getMessage()));
+                                    new CheckingFailed(e.getMessage(),
+                                                  getFailUnitName(checkerCfg)));
                         ClassLogger.error(Configuration.class,
                             "evalueate() failed :: when running configuration "+
                             checkerCfg.getCheckerClassName() + "arguments " +
@@ -156,7 +157,8 @@ public final class Configuration {
                                      new MonitorForThread(++threadID,monitor));
                 statistic.checkerEnd(result);
             } catch (final CheckerException e) {
-                statistic.checkerEnd(new CheckingFailed(e.getMessage()));
+                statistic.checkerEnd(new CheckingFailed(e.getMessage(),
+                                                  getFailUnitName(checkerCfg)));
                 ClassLogger.error(Configuration.class,
                     "evalueateWait() failed :: when running configuration "+
                     checkerCfg.getCheckerClassName() + "arguments " +
@@ -354,6 +356,17 @@ public final class Configuration {
         }
 
         private final MonitorForThread monitor;
+    }
+
+    private String
+    getFailUnitName(final CheckerConfiguration checkerCfg) {
+        final LazyInternalStructures internals =
+            checkerCfg.isInterprocedural()?
+               getSourceConfiguration().getLazySourceInternals() :
+               getSourceConfiguration().getLazySourceIntraproceduralInternals();
+        return (internals.getUnits().size() == 1) ?
+                    internals.getUnits().iterator().next().getName() :
+                    "<unknown>";
     }
 
     private final SourceConfiguration sourceConfiguration;

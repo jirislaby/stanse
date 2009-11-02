@@ -11,6 +11,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
@@ -180,7 +181,9 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                     "large: " + nodeLocationDictionary.size();
                 monitor.note(errMsg);
                 monitor.popTab();
-                return new CheckingFailed(errMsg);
+                getLocationUnitName(currentLocation,internals);
+                return new CheckingFailed(errMsg,
+                                getLocationUnitName(currentLocation,internals));
             }
         }
 
@@ -199,6 +202,17 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         monitor.popTab();
 
         return result;
+    }
+
+    private String getNodeUnitName(final CFGNode node,
+                                   final LazyInternalStructures internals) {
+        return Stanse.getUnitManager().getUnitName(
+                    internals.getNodeToCFGdictionary().get(node));
+    }
+
+    private String getLocationUnitName(final PatternLocation location,
+                                   final LazyInternalStructures internals) {
+        return getNodeUnitName(location.getCFGreferenceNode(),internals);
     }
 
     private File getXmlFile() {

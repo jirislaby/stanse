@@ -10,6 +10,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.codestructures.traversal.CFGTraversal;
@@ -136,7 +137,8 @@ final class CheckerErrorBuilder {
 
                     if (result instanceof CheckingSuccess &&
                         creator.getFailMessage() != null)
-                        result = new CheckingFailed(creator.getFailMessage());
+                        result = new CheckingFailed(creator.getFailMessage(),
+                                getLocationUnitName(location,internals));
 
                     // Next condition eliminates cyclic dependances of two
                     // error locations (diferent). These locations have same
@@ -168,6 +170,18 @@ final class CheckerErrorBuilder {
             }
         return Pair.make(numErrors,result);
     }
+
+    private static String getNodeUnitName(final CFGNode node,
+                                       final LazyInternalStructures internals) {
+        return Stanse.getUnitManager().getUnitName(
+                    internals.getNodeToCFGdictionary().get(node));
+    }
+
+    private static String getLocationUnitName(final PatternLocation location,
+                                       final LazyInternalStructures internals) {
+        return getNodeUnitName(location.getCFGreferenceNode(),internals);
+    }
+
 
     private CheckerErrorBuilder() {
     }

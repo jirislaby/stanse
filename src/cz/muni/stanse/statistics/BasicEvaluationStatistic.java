@@ -34,7 +34,7 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
         checker = makeEmptyRecord();
         checkers = new Vector<Triple<String,Double,Double>>();
 
-        checkerFailures = new Vector<Pair<String,String>>();
+        checkerFailures = new Vector<Triple<String,String,String>>();
     }
 
     @Override
@@ -71,8 +71,9 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
     synchronized public void checkerEnd(final CheckingResult result) {
         assert(isValid(checker));
         if (result instanceof CheckingFailed)
-            checkerFailures.add(Pair.make(checker.getFirst(),
-                                          ((CheckingFailed)result).what()));
+            checkerFailures.add(Triple.make(checker.getFirst(),
+                                            ((CheckingFailed)result).what(),
+                                            ((CheckingFailed)result).where()));
         end(checkers,checker);
         checker = makeEmptyRecord();
     }
@@ -89,7 +90,8 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
         return internals;
     }
 
-    synchronized public Vector<Pair<String, String>> getCheckerFailures() {
+    synchronized public Vector<Triple<String,String,String>>
+    getCheckerFailures() {
         return checkerFailures;
     }
 
@@ -153,13 +155,14 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
 
     private static Element
     xmlDump(final String elName, final String type,
-            final Vector<Pair<String,String>> container) {
+            final Vector<Triple<String,String,String>> container) {
         final Element result = DocumentFactory.getInstance()
                                               .createElement(elName);
-        for (final Pair<String,String> data: container) {
+        for (final Triple<String,String,String> data: container) {
             final Element item = result.addElement(type);
             item.addElement("checker").addText(data.getFirst());
             item.addElement("what").addText(data.getSecond());
+            item.addElement("where").addText(data.getThird());
         }
         return result;
     }
@@ -173,5 +176,5 @@ public final class BasicEvaluationStatistic implements EvaluationStatistic {
     private Triple<String,Double,Double> checker;
     private final Vector<Triple<String,Double,Double>> checkers;
 
-    private final Vector<Pair<String,String>> checkerFailures;
+    private final Vector<Triple<String,String,String>> checkerFailures;
 }
