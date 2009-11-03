@@ -163,16 +163,21 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                                         new Vector<CheckerErrorTraceLocation>();
         for (final CFGNode node : context)
             trace.add(new CheckerErrorTraceLocation(getNodeUnitName(node),
-                          getNodeLine(node),"<context>When called from here."));
+                          node.getLine(),node.getColumn(),
+                          "<context>When called from here."));
         trace.add(new CheckerErrorTraceLocation(getNodeUnitName(path.get(0)),
-                                            getNodeLine(path.get(0)),beginMsg));
+                                  path.get(0).getLine(),path.get(0).getColumn(),
+                                  beginMsg));
         if (path.size() > 1)
             for (CFGNode item : path.subList(1,path.size() - 1))
                 trace.add(new CheckerErrorTraceLocation(getNodeUnitName(item),
-                                                   getNodeLine(item),innerMsg));
+                                                item.getLine(),item.getColumn(),
+                                                innerMsg));
         trace.add(new CheckerErrorTraceLocation(
                         getNodeUnitName(path.get(path.size() - 1)),
-                        getNodeLine(path.get(path.size() - 1)),endMsg));
+                        path.get(path.size() - 1).getLine(),
+                        path.get(path.size() - 1).getColumn(),
+                        endMsg));
         return new CheckerErrorTrace(trace,
                        "error-trace [" + (getErrorTracesList().size()+1) + "]");
     }

@@ -52,7 +52,8 @@ public class CodeAnalyzer {
                 backTrackNode.setDescription(description);
             } else {
                 backTrackNode = new BackTrack(node.getNumber(),node.getLine(),
-                                           description,function.getFileName());
+                                              node.getColumn(),description,
+                                              function.getFileName());
                 data.getBackTrack().addLast(backTrackNode);
             }
         }
@@ -85,7 +86,8 @@ public class CodeAnalyzer {
                 backTrackNode.setDescription(description);
             } else {
                 backTrackNode = new BackTrack(node.getNumber(),node.getLine(),
-                                            description,function.getFileName());
+                                              node.getColumn(),description,
+                                              function.getFileName());
                 data.getBackTrack().addLast(backTrackNode);
             }
         }
@@ -154,8 +156,9 @@ public class CodeAnalyzer {
                     backTrackNode.setDescription(description);
                 } else {
                     backTrackNode = new BackTrack(node.getNumber(),
-                                                    node.getLine(),description,
-                                                          callee.getFileName());
+                                                  node.getLine(),
+                                                  node.getColumn(),description,
+                                                  callee.getFileName());
                     dataCaller.getBackTrack().addLast(backTrackNode);
                 }
 
@@ -167,8 +170,8 @@ public class CodeAnalyzer {
                 description = "return from "+callee.getName()
                             +" - already locked:"+dataCaller.getLockStack();
                 backTrackNode = new BackTrack(node.getNumber(),node.getLine(),
-                                                        description,
-                                                        callee.getFileName());
+                                              node.getColumn(),description,
+                                              callee.getFileName());
                 dataCaller.getBackTrack().addLast(backTrackNode);
 
             }
@@ -254,9 +257,10 @@ public class CodeAnalyzer {
                                             +thread.getFunctionName()+")");
             } else {
                 backTrackNode = new BackTrack(node.getNumber(),node.getLine(),
-                                                    "creating thread ("+
+                                              node.getColumn(),
+                                              "creating thread ("+
                                                    thread.getFunctionName()+")",
-                                                   function.getFileName());
+                                              function.getFileName());
                 data.getBackTrack().addLast(backTrackNode);
             }
         }

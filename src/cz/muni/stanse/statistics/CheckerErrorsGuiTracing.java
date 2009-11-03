@@ -144,6 +144,8 @@ public final class CheckerErrorsGuiTracing {
                                              relocation.getSecond()),
                         new Integer(locElem.selectSingleNode("line")
                                            .getText()).intValue(),
+                        new Integer(locElem.selectSingleNode("column")
+                                           .getText()).intValue(),
                         locElem.selectSingleNode("description").getText());
     }
 

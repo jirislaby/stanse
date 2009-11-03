@@ -30,7 +30,8 @@ public class Function implements Cloneable {
         FunctionState data = new FunctionState();
         CFGNode node = cfg.getStartNode();
         data.getBackTrack().addLast(new BackTrack(node.getNumber(),
-                        node.getLine(),"start of function", fileName));
+                        node.getLine(),node.getColumn(),"start of function",
+                        fileName));
         this.states.add(data);
     }
 
@@ -39,7 +40,7 @@ public class Function implements Cloneable {
         this.fileName = "no_filename";
         FunctionState data = new FunctionState();
 
-        data.getBackTrack().addLast(new BackTrack(0,0,"start of function",
+        data.getBackTrack().addLast(new BackTrack(0,0,0,"start of function",
                                                                 "no_filename"));
         this.states.add(data);
     }
@@ -48,7 +49,7 @@ public class Function implements Cloneable {
         this.functionName = functionName;
         this.fileName = fileName;
         FunctionState data = new FunctionState();
-        data.getBackTrack().addLast(new BackTrack(0,0,"start of function",
+        data.getBackTrack().addLast(new BackTrack(0,0,0,"start of function",
                                                                         null));
         this.states.add(data);
     }

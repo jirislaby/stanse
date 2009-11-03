@@ -9,13 +9,15 @@ package cz.muni.stanse.threadchecker.locks;
 public class BackTrack {
     private Integer CFGNodeID;
     private Integer line;
+    private Integer column;
     private String description;
     private String unitFilename;
 
-    public BackTrack(Integer CFGNodeID, Integer line, String description,
-                                                        String unitFilename) {
+    public BackTrack(Integer CFGNodeID, Integer line, Integer column,
+                     String description, String unitFilename) {
         this.CFGNodeID = CFGNodeID;
         this.line = line;
+        this.column = column;
         this.description = description;
         this.unitFilename = unitFilename;
     }
@@ -40,8 +42,16 @@ public class BackTrack {
         return line;
     }
 
+    public Integer getColumn() {
+        return column;
+    }
+
     public void setLine(Integer line) {
         this.line = line;
+    }
+
+    public void setColumn(final Integer column) {
+        this.column = column;
     }
 
     public String getUnitFilename() {

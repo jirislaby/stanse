@@ -290,7 +290,7 @@ public class RAG {
                 backTrackNode = it.next();
                 traceNode = new CheckerErrorTraceLocation(
                         backTrackNode.getUnitFilename(),backTrackNode.getLine(),
-                        backTrackNode.getDescription());
+                        backTrackNode.getColumn(),backTrackNode.getDescription());
                 trace.add(traceNode);
                 if(backTrackNode.getCFGNodeID().equals(nodeId)) {
                     //Is't last lock from this thread - end backTrack
@@ -341,6 +341,7 @@ public class RAG {
                 backTrackNode = it.next();
                 traceNode = new CheckerErrorTraceLocation(
                         backTrackNode.getUnitFilename(),backTrackNode.getLine(),
+                        backTrackNode.getColumn(),
                         backTrackNode.getDescription());
                 
                 if(traceNodes.contains(backTrackNode.getLine())) {

@@ -50,6 +50,23 @@ final class OpenedSourceFilesManager {
         sourceCodeText.getCaret().setSelectionVisible(true);
     }
 
+    void gotoColumnInSelectedLine(final int column) {
+        boolean useComuns = false;
+        if (useComuns) {
+            final JTextArea sourceCodeText = getShownTabTextArea();
+            try {
+                sourceCodeText.setCaretPosition(
+                        sourceCodeText.getLineStartOffset(
+                            sourceCodeText.getLineOfOffset(
+                                sourceCodeText.getCaretPosition() - 1)) +
+                        column - 1);
+            }
+            catch(final Exception e)
+            {}
+            sourceCodeText.getCaret().setVisible(true);
+        }
+    }
+
 
     String getActiveFile() {
         final int selectedIndex = getSourceCodeTabbedPane().getSelectedIndex();

@@ -117,15 +117,18 @@ public final class CheckerErrorTrace {
         assert(!trace.isEmpty());
         result.add(new CheckerErrorTraceLocation(
                                 getNodeUnitName(trace.get(0),internals),
-                                trace.get(0).getLine(),startMsg));
+                                trace.get(0).getLine(),trace.get(0).getColumn(),
+                                startMsg));
         for (CFGNode node : trace.subList(1,trace.size() - 1))
             if (!node.getElement().getName().equals("assert"))
                 result.add(new CheckerErrorTraceLocation(
                                  getNodeUnitName(node,internals),node.getLine(),
-                                 innerMsg));
+                                 node.getColumn(),innerMsg));
         result.add(new CheckerErrorTraceLocation(
                            getNodeUnitName(trace.get(trace.size()-1),internals),
-                           trace.get(trace.size()-1).getLine(),endMsg));
+                           trace.get(trace.size()-1).getLine(),
+                           trace.get(trace.size()-1).getColumn(),
+                           endMsg));
         return result;
     }
 

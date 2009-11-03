@@ -169,6 +169,8 @@ final class ErrorsTreeManager {
                           new java.io.File(location.getUnitName()));
         getOpenedSourceFilesManager().selectLineInShowedSourceFile(
                           location.getLineNumber());
+        getOpenedSourceFilesManager().gotoColumnInSelectedLine(
+                                      location.getColumnNumber());
         MainWindow.getInstance().getConsoleManager().clear();
         MainWindow.getInstance().getConsoleManager().appendText(
                                                      location.getDescription());

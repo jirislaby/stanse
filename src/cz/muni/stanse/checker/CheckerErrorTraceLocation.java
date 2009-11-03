@@ -14,9 +14,11 @@ import org.dom4j.Element;
 public final class CheckerErrorTraceLocation {
 
     public CheckerErrorTraceLocation(final String unitName,final int lineNumber,
+                                     final int columnNumber,
                                      final String description) {
         this.unitName = unitName;
         this.lineNumber = lineNumber;
+        this.columnNumber = columnNumber;
         this.description = description;
     }
 
@@ -46,6 +48,7 @@ public final class CheckerErrorTraceLocation {
 		    createElement("location");
 	result.addElement("unit").addText(getUnitName());
 	result.addElement("line").addText(Integer.toString(getLineNumber()));
+	result.addElement("column").addText(Integer.toString(getColumnNumber()));
 	result.addElement("description").addText(getDescription());
         return result;
     }
@@ -56,6 +59,10 @@ public final class CheckerErrorTraceLocation {
 
     public int getLineNumber() {
         return lineNumber;
+    }
+
+    public int getColumnNumber() {
+        return columnNumber;
     }
 
     public String getDescription() {
@@ -76,5 +83,6 @@ public final class CheckerErrorTraceLocation {
 
     private final String unitName;
     private final int lineNumber;
+    private final int columnNumber;
     private final String description;
 }
