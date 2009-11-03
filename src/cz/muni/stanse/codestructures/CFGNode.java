@@ -56,6 +56,12 @@ public class CFGNode {
 	return element;
     }
 
+    public final int getColumn() {
+	if (getElement() == null || getElement().attribute("bc") == null)
+	    return 1;
+        return Integer.parseInt(getElement().attributeValue("bc"));
+    }
+
     public final int getLine() {
 	if (getElement() == null || getElement().attribute("bl") == null)
 	    return 1;
