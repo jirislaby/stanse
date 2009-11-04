@@ -68,6 +68,21 @@ final class ReachabilityChecker extends cz.muni.stanse.checker.Checker {
 		if (!node.getOptPredecessors().isEmpty())
 		    continue;
 		Element nodeElem = node.getElement();
+
+		/* we don't do CFGs of statements inside expressions ({ .. }) */
+		Element parent = nodeElem;
+		boolean haveCompound = false;
+		while ((parent = parent.getParent()) != null) {
+		    String parentName = parent.getName();
+		    if (!haveCompound && parentName.equals("compoundStatement"))
+			haveCompound = true;
+		    else if (haveCompound &&
+			    parentName.equals("expressionStatement"))
+			break;
+		}
+		if (parent != null)
+		    continue;
+
 		String elemName = nodeElem.getName();
 		if (elemName.equals("intConst") &&
 			nodeElem.getText().equals("0"))
