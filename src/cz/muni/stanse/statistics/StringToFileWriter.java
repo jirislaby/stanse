@@ -12,7 +12,8 @@ public final class StringToFileWriter {
     public static boolean write(final String data, final String fileName) {
         final File pathName = new File(fileName);
         if (pathName.getParentFile() != null)
-            if (!pathName.getParentFile().mkdirs()) {
+            if (!pathName.getParentFile().exists() &&
+		    !pathName.getParentFile().mkdirs()) {
 		System.err.println("Can't create directory structure");
 		return false;
 	    }
