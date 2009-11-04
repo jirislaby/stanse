@@ -44,6 +44,7 @@ class FalsePositivesDetectorFactory {
                                     new Vector<FalsePositivesDetectorCreator>();
     static {
         register(new FPDMemoryAssignedFilterCreator());
+        register(new FPDNoreturnFunctionsCreator());
         register(new FPDMemoryReassignedFilterCreator());
 	register(new FPDMemoryNestedCheckFilterCreator());
 	register(new FPDMemoryGlobalVarFilterCreator());
