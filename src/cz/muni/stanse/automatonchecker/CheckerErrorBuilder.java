@@ -175,7 +175,8 @@ final class CheckerErrorBuilder {
         final String unitName = getLocationUnitName(location,internals);
         final int line = location.getCFGreferenceNode().getLine();
         final int column = location.getCFGreferenceNode().getColumn();
-        final String desc = rule.getErrorDescription();
+        final String desc =rule.getErrorDescription() +
+                           rule.getAutomatonID().getVarsAssignment().toString();
         locs.add(new CheckerErrorTraceLocation(unitName,line,column,desc));
         return new CheckerErrorTrace(locs,desc);
     }
