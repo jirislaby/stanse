@@ -6,17 +6,23 @@
                        cross-locking problem (lock(a)..lock(b)..unlock(a))
                        and detects leaving function in locked state." />
 
+    <!--
+	HL: had lock on some path
+	HU: had unlock on some path
+    -->
     <start state="X" />
     <transition from="X[A]" by="lock[A]" to="L[A]" />
     <transition from="U[A]" by="lock[A]" to="L[A]" />
     <transition from="L[A]" by="lock[B]" to="L[A]" />
     <transition from="L[A]" by="lock[B]" to="LL[A][B]" />
     <transition from="L[A]" by="unlock[A]" to="U[A]" />
+    <transition from="L[A]" by="unlock[A]" to="HU[A]" />
     <transition from="LL[A][B]" by="unlock[B]" to="" />
 
     <transition from="X[A]" by="unlock[A]" to="IU[A]" />
     <transition from="IL[A]" by="unlock[A]" to="IU[A]" />
     <transition from="IU[A]" by="lock[A]" to="IL[A]" />
+    <transition from="IU[A]" by="lock[A]" to="HL[A]" />
     <transition from="IL[A]" by="lock[B]" to="IL[A]" />
     <transition from="IL[A]" by="lock[B]" to="ILL[A][B]" />
     <transition from="ILL[A][B]" by="unlock[B]" to="" />
@@ -71,7 +77,7 @@
             propag="not affected ==> the lock is still locked."
             end="The lock is locked and here is an attempt to lock it twice." />
 
-    <error  from="L[*] -P[*]" by=""
+    <error  from="L[*] HU[*] -P[*]" by=""
             desc="leaving function in locked state"
             level="1"
             entry="The function called in unlocked state."
@@ -79,7 +85,7 @@
             propag="not affected ==> the lock is still locked."
             end="Leaving function in locked state." />
 
-    <error  from="IU[*] -P[*]" by=""
+    <error  from="IU[*] HL[*] -P[*]" by=""
             desc="leaving function in unlocked state"
             level="1"
             entry="The function called in locked state."
