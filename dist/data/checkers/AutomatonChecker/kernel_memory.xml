@@ -31,10 +31,10 @@
     <transition from="F[A]"     by="free[A]"      to="" />
     <transition from="X[A]"     by="deref[A]"     to="V[A]" />
     <transition from="X[A]"     by="isnull[A]"    to="N[A]" />
-    <transition from="D[A]"     by="isnull[A]"    to=""     />
-    <transition from="V[A]"     by="isnull[A]"    to=""     />
+    <transition from="D[A]"     by="isnull[A]"    to="MN[A]" />
+    <transition from="V[A]"     by="isnull[A]"    to="MN[A]" />
     <transition from="X[A]"     by="isnotnull[A]" to="V[A]" />
-    <transition from="N[A]"     by="isnotnull[A]" to=""     />
+    <transition from="N[A]"     by="isnotnull[A]" to="MNN[A]" />
 
     <error  from="N[A] -R[*]" by="deref[A]"
             desc="dereferencing NULL pointer"
@@ -60,7 +60,7 @@
             propag="not affected ==> pointer is still dangling."
             end="pointer is dangling and releasing it here." />
 
-    <error  from="N[A] -V[A] -X[A] -D[A]" by="isnull[A]"
+    <error  from="N[A] -V[A] -X[A] -D[A] -MN[A]" by="isnull[A]"
             desc="unnecessary check (checking for NULL)"
             level="4"
             entry="pointer is NULL at function entry."
@@ -68,7 +68,7 @@
             propag="not affected ==> pointer is still NULL."
             end="pointer always points to NULL here, but checking for it." />
 
-    <error  from="V[A] -N[A] -X[A] -D[A]" by="isnotnull[A]"
+    <error  from="V[A] -N[A] -X[A] -D[A] -MNN[A]" by="isnotnull[A]"
             desc="unnecessary check (checking for not NULL)"
             level="4"
             entry="pointer is not NULL at function entry."
