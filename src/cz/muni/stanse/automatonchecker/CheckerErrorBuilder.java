@@ -16,6 +16,7 @@ import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.codestructures.traversal.CFGTraversal;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorTrace;
+import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckingResult;
 import cz.muni.stanse.checker.CheckingSuccess;
@@ -24,6 +25,7 @@ import cz.muni.stanse.utils.Pair;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * @brief Provides static method buildErrorList which compute the checker-errors
@@ -140,15 +142,9 @@ final class CheckerErrorBuilder {
                         result = new CheckingFailed(creator.getFailMessage(),
                                 getLocationUnitName(location,internals));
 
-                    // Next condition eliminates cyclic dependances of two
-                    // error locations (diferent). These locations have same
-                    // error rule and theirs methods checkForError() returns
-                    // true (so  they are both error locations). But their
-                    // cyclic dependancy disables to find starting nodes of
-                    // theirs error traces -> both error traces returned will
-                    // be empty.
                     if (traces.isEmpty())
-                        continue;
+                        traces.add(builOneLocationTrace(location,rule,
+                                                        internals));
 
                     final String shortDesc = rule.getErrorDescription();
                     final String fullDesc
@@ -169,6 +165,19 @@ final class CheckerErrorBuilder {
                 }
             }
         return Pair.make(numErrors,result);
+    }
+
+    private static CheckerErrorTrace
+    builOneLocationTrace(final PatternLocation location, final ErrorRule rule,
+                         final LazyInternalStructures internals) {
+        final Vector<CheckerErrorTraceLocation> locs =
+            new Vector<CheckerErrorTraceLocation>();
+        final String unitName = getLocationUnitName(location,internals);
+        final int line = location.getCFGreferenceNode().getLine();
+        final int column = location.getCFGreferenceNode().getColumn();
+        final String desc = rule.getErrorDescription();
+        locs.add(new CheckerErrorTraceLocation(unitName,line,column,desc));
+        return new CheckerErrorTrace(locs,desc);
     }
 
     private static String getNodeUnitName(final CFGNode node,

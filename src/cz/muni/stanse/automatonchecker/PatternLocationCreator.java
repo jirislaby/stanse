@@ -12,6 +12,8 @@ import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.CFGsNavigator;
 import cz.muni.stanse.codestructures.traversal.CFGvisitor;
+import cz.muni.stanse.codestructures.PassingSolver;
+import cz.muni.stanse.codestructures.builders.XMLLinearizeASTElement;
 import cz.muni.stanse.utils.xmlpatterns.XMLPattern;
 import cz.muni.stanse.utils.xmlpatterns.XMLPatternVariablesAssignment;
 import cz.muni.stanse.utils.Pair;
@@ -20,6 +22,7 @@ import cz.muni.stanse.utils.Make;
 import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 
 final class PatternLocationCreator extends CFGvisitor {
 
@@ -32,10 +35,13 @@ final class PatternLocationCreator extends CFGvisitor {
         for (XMLPattern pattern : getXMLAutomatonDefinition().getXMLpatterns()){
             final Pair<Boolean,XMLPatternVariablesAssignment>
                 matchResult = pattern.matchesXMLElement(element);
-            if (matchResult.getFirst())
+            if (matchResult.getFirst()) {
+                final XMLPatternVariablesAssignment assign =
+                        matchResult.getSecond();
+                final boolean isGlobal = isGlobalAssignement(assign);
                 matchings.add(Pair.make(pattern,
-                                   new SimpleAutomatonID(matchResult
-                                                         .getSecond(),false)));
+                                       new SimpleAutomatonID(assign,isGlobal)));
+            }
         }
         assert(matchings.size() <= 1);
 
@@ -71,8 +77,9 @@ final class PatternLocationCreator extends CFGvisitor {
                                                           PatternLocation>>();
         automataIDs = new HashSet<SimpleAutomatonID>();
         this.navigator = navigator;
+        this.cfg = cfg;
 
-        createStartEndPatternLocations(cfg);
+        createStartEndPatternLocations();
     }
 
     HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
@@ -120,16 +127,37 @@ final class PatternLocationCreator extends CFGvisitor {
                                    Make.<ErrorRule>linkedList());
     }
 
-    private void createStartEndPatternLocations(final CFGHandle cfg) {
+    private void createStartEndPatternLocations() {
         final PatternLocation startLocation =
-                    createRuleLessPatternLocation(cfg.getStartNode());
-        getNodeLocationDictionary().put(cfg.getStartNode(),
+                    createRuleLessPatternLocation(getCfg().getStartNode());
+        getNodeLocationDictionary().put(getCfg().getStartNode(),
                                         Pair.make(startLocation,startLocation));
 
         final PatternLocation endLocation =
-                    createRuleLessPatternLocation(cfg.getEndNode());
-        getNodeLocationDictionary().put(cfg.getEndNode(),
+                    createRuleLessPatternLocation(getCfg().getEndNode());
+        getNodeLocationDictionary().put(getCfg().getEndNode(),
                                         Pair.make(endLocation,endLocation));
+    }
+
+    private boolean
+    isGlobalAssignement(final XMLPatternVariablesAssignment assignment) {
+        final SimpleAutomatonID id = new SimpleAutomatonID(assignment,false);
+
+        final Iterator<org.dom4j.Element> paramIter =
+           XMLLinearizeASTElement.functionDeclaration(getCfg().getElement())
+                                 .iterator();
+        for (paramIter.next(); paramIter.hasNext(); ) {
+            final String paramName = paramIter.next().getText();
+            for (final String var : id.getVarsAssignment())
+                if (var.contains(paramName))
+                    return false;
+        }
+        for (final String var : id.getVarsAssignment()) {
+            final String varName = PassingSolver.parseRootVariableName(var);
+            if (!getCfg().isSymbolLocal(varName))
+                return true;
+        }
+        return false;
     }
 
     private XMLAutomatonDefinition getXMLAutomatonDefinition() {
@@ -140,9 +168,14 @@ final class PatternLocationCreator extends CFGvisitor {
         return navigator;
     }
 
+    private CFGHandle getCfg() {
+        return cfg;
+    }
+
     private final XMLAutomatonDefinition automatonDefinition;
     private final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
                             nodeLocationDictionary;
     private final HashSet<SimpleAutomatonID> automataIDs;
     private final CFGsNavigator navigator;
+    private final CFGHandle cfg;
 }

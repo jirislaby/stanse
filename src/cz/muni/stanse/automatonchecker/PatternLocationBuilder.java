@@ -175,7 +175,7 @@ final class PatternLocationBuilder {
                                  new HashSet<SimpleAutomatonID>(),
                                  new HashSet<SimpleAutomatonID>());
         for (final SimpleAutomatonID id : IDs)
-            if (isParameterDependentID(id,cz.muni.stanse.codestructures.builders.
+           if (isParameterDependentID(id,cz.muni.stanse.codestructures.builders.
                     XMLLinearizeASTElement.functionDeclaration(cfg.getElement())
                                           .iterator()))
                 result.getThird().add(id);
@@ -186,7 +186,8 @@ final class PatternLocationBuilder {
                     result.getSecond().add(id);
             }
             else
-                result.getFirst().add(id);
+                result.getFirst().add(
+                        new SimpleAutomatonID(id.getVarsAssignment(),true));
         return result;
     }
 

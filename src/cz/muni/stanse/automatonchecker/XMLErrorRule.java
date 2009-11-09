@@ -129,12 +129,16 @@ final class XMLErrorRule {
              composedID.getSimpleAutomataIDs().size() != flags.size())
             return false;
 
-        for (int i = 0; i < flags.size(); ++i)
-            if (( flags.get(i) &&
-                !composedID.getSimpleAutomataIDs().get(i).equals(simpleID))||
-                (!flags.get(i) &&
-                composedID.getSimpleAutomataIDs().get(i).equals(simpleID))  )
+        for (int i = 0; i < flags.size(); ++i) {
+            final SimpleAutomatonID ithSimpleID =
+                    composedID.getSimpleAutomataIDs().get(i);
+            if (ithSimpleID.isGlobal() != simpleID.isGlobal())
                 return false;
+            final boolean ithFlag = flags.get(i);
+            if (( ithFlag && !ithSimpleID.equals(simpleID)) ||
+                (!ithFlag &&  ithSimpleID.equals(simpleID)) )
+                return false;
+        }
 
         return true;
     }
