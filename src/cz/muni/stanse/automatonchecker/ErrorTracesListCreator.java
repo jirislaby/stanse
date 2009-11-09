@@ -177,7 +177,8 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                         getNodeUnitName(path.get(path.size() - 1)),
                         path.get(path.size() - 1).getLine(),
                         path.get(path.size() - 1).getColumn(),
-                        endMsg));
+                        endMsg + getRule().getAutomatonID().getVarsAssignment()
+                                          .toString()));
         return new CheckerErrorTrace(trace,
                        "error-trace [" + (getErrorTracesList().size()+1) + "]");
     }
