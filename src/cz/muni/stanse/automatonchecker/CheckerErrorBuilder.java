@@ -142,9 +142,15 @@ final class CheckerErrorBuilder {
                         result = new CheckingFailed(creator.getFailMessage(),
                                 getLocationUnitName(location,internals));
 
+                    // Next condition eliminates cyclic dependances of two
+                    // error locations (diferent). These locations have same
+                    // error rule and theirs methods checkForError() returns
+                    // true (so  they are both error locations). But their
+                    // cyclic dependancy disables to find starting nodes of
+                    // theirs error traces -> both error traces returned will
+                    // be empty.
                     if (traces.isEmpty())
-                        traces.add(builOneLocationTrace(location,rule,
-                                                        internals));
+                        continue;
 
                     final String shortDesc = rule.getErrorDescription();
                     final String fullDesc
@@ -167,6 +173,7 @@ final class CheckerErrorBuilder {
         return Pair.make(numErrors,result);
     }
 
+    @Deprecated
     private static CheckerErrorTrace
     builOneLocationTrace(final PatternLocation location, final ErrorRule rule,
                          final LazyInternalStructures internals) {
