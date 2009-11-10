@@ -146,7 +146,7 @@ final class PatternLocationBuilder {
                                 locationsPair.getSecond(),
                                 nodeLocationDictionary.get(
                                         navigator.getCalleeStart(callNode))
-                                    .getSecond(),
+                                    .getFirst(),
                                 nodeLocationDictionary.get(
                                         navigator.getCalleeEnd(callNode))
                                     .getFirst());
