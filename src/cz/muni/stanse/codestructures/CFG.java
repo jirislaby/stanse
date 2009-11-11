@@ -75,10 +75,10 @@ public class CFG extends CFGPart {
     }
 
     protected Element getElement() {
-        return functionDefinition.getName().equals("functionDefinition") ?
-                    functionDefinition :
-                    (Element)functionDefinition.
-                                      selectSingleNode(".//functionDefinition");
+        if (!functionDefinition.getName().equals("functionDefinition"))
+	    throw new UnsupportedOperationException(
+		    "wrong element in functionDefinition");
+        return functionDefinition;
     }
 
     public void setSymbols(Set<String> symbols) {
