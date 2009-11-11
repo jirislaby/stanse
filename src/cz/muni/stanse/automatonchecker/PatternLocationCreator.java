@@ -11,9 +11,9 @@ package cz.muni.stanse.automatonchecker;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.CFGsNavigator;
-import cz.muni.stanse.codestructures.traversal.CFGvisitor;
 import cz.muni.stanse.codestructures.PassingSolver;
 import cz.muni.stanse.codestructures.builders.XMLLinearizeASTElement;
+import cz.muni.stanse.codestructures.traversal.CFGvisitor;
 import cz.muni.stanse.utils.xmlpatterns.XMLPattern;
 import cz.muni.stanse.utils.xmlpatterns.XMLPatternVariablesAssignment;
 import cz.muni.stanse.utils.Pair;
@@ -21,8 +21,10 @@ import cz.muni.stanse.utils.Make;
 
 import java.util.LinkedList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.HashSet;
+
+import org.dom4j.Element;
 
 final class PatternLocationCreator extends CFGvisitor {
 
@@ -143,7 +145,7 @@ final class PatternLocationCreator extends CFGvisitor {
     isGlobalAssignement(final XMLPatternVariablesAssignment assignment) {
         final SimpleAutomatonID id = new SimpleAutomatonID(assignment,false);
 
-        final Iterator<org.dom4j.Element> paramIter =
+        final Iterator<Element> paramIter =
            XMLLinearizeASTElement.functionDeclaration(getCfg().getElement())
                                  .iterator();
         for (paramIter.next(); paramIter.hasNext(); ) {
