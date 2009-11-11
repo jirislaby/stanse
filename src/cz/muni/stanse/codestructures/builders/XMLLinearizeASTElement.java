@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.dom4j.Element;
+import org.dom4j.DocumentFactory;
 
 public final class XMLLinearizeASTElement {
 
@@ -15,7 +16,9 @@ public final class XMLLinearizeASTElement {
         if (result != null)
             return result;
         result = assignFunctionCall(elem);
-        return (result != null) ? tail(result) : null;
+	if (result == null)
+	    return null;
+        return tail(result);
     }
 
     @SuppressWarnings("unchecked")
@@ -26,13 +29,13 @@ public final class XMLLinearizeASTElement {
 
     @SuppressWarnings("unchecked")
     public static Vector<Element> assignFunctionCall(final Element elem) {
-        return (elem.getName().equals("assignExpression") &&
-                elem.elements().size() == 2 &&
-                ((Element)elem.elements().get(1)).getName().
-                                                equals("functionCall")) ?
-                    cons((Element)elem.elements().get(0),
-                        ((Element)elem.elements().get(1)).elements()) :
-                    null;
+	if (!elem.getName().equals("assignExpression"))
+	    return null;
+	List<Element> children = elem.elements();
+        if (!children.get(1).getName().equals("functionCall"))
+	    return null;
+
+	return cons(children.get(0), children.get(1).elements());
     }
 
     public static Element functionRet(final Element elem) {
@@ -43,16 +46,22 @@ public final class XMLLinearizeASTElement {
 
     @SuppressWarnings("unchecked")
     public static Vector<Element> functionDeclaration(final Element elem) {
-        final Element fnDecl = elem.getName().equals("declarator") ? elem :
-                                (Element)elem.selectSingleNode(".//declarator");
+        Element fnDecl = (Element)elem.selectSingleNode(
+		"./declarator[1]");
         if (fnDecl == null)
             return null;
+	Element id;
+	while ((id = (Element)fnDecl.selectSingleNode("./id")) == null) {
+	    fnDecl = (Element)fnDecl.selectSingleNode("./declarator");
+	    if (fnDecl == null)
+		throw new NullPointerException("wrong functionDeclaration");
+	}
         final Vector<Element> result = new Vector<Element>();
-        result.add((Element)fnDecl.selectSingleNode(".//id"));
+        result.add(id);
         int argID = 0;
-        for (final Element param : (List<Element>)((Element)
-                       fnDecl.selectSingleNode(".//functionDecl")).elements())
-            result.add(parseParameterName(param,argID++));
+        for (final Element param:
+		    (List<Element>)fnDecl.selectNodes("./functionDecl/*"))
+            result.add(parseParameterName(param, argID++));
         return result;
     }
 
@@ -60,19 +69,21 @@ public final class XMLLinearizeASTElement {
 
     private static Element parseParameterName(final Element param,
                                               final int argID) {
-        final Element paramElem = selectLastOf(param,".//id");
+	/* K&R style */
+	if (param.getName().equals("id"))
+	    return param;
+        final Element paramElem =
+		(Element)param.selectSingleNode(".//id[last()]");
         if (paramElem != null)
             return paramElem;
-        if (param.selectSingleNode(".//varArgs") != null)
-            return createElement("id","$ellipsis");
-        return createElement("id","$arg" + argID);
+        if (param.selectSingleNode("./varArgs") != null)
+            return createElement("id", "$ellipsis");
+        return createElement("id", "$arg" + Integer.toString(argID));
     }
 
     private static Element createElement(final String type, final String data) {
-        final Element elem =
-            org.dom4j.DocumentFactory.getInstance().createElement(type);
-        elem.add(org.dom4j.DocumentFactory.getInstance().createText(data));
-        return elem;
+        final Element elem = DocumentFactory.getInstance().createElement(type);
+        return elem.addText(data);
     }
 
     private static <T> Vector<T> cons(final T v, final List<T> l) {
@@ -82,12 +93,7 @@ public final class XMLLinearizeASTElement {
     }
 
     private static <T> Vector<T> tail(final List<T> l) {
-        return new Vector<T>(l.subList(1,l.size()));
-    }
-
-    private static Element selectLastOf(final Element elem, final String xPath){
-        final List elems = elem.selectNodes(xPath);
-        return elems.isEmpty() ? null : (Element)elems.get(elems.size() - 1);
+        return new Vector<T>(l.subList(1, l.size()));
     }
 
     private XMLLinearizeASTElement() {
