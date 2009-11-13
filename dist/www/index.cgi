@@ -49,7 +49,8 @@ while ($_ = $errors->fetchrow_hashref) {
 	for (my $a = 3 - length $$_{importance}; $a > 0; $a--) {
 		print "&nbsp;";
 	}
-	print qq($$_{importance}| $$_{error} <a href="error.cgi?db=$datafile&id=$$_{id}">$$_{file} line $$_{line}</a></div>\n);
+	print qq($$_{importance}| $$_{error} <a href="error.cgi?db=$datafile&id=$$_{id}">$$_{file}</a> line ),
+		qq(<a href="error.cgi?db=$datafile&id=$$_{id}#l$$_{line}">$$_{line}</a></div>\n);
 	$checker = $$_{checker};
 }
 
