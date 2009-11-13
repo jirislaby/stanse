@@ -19,12 +19,18 @@ import cz.muni.stanse.utils.Make;
 
 import org.dom4j.Element;
 
+import java.util.regex.Pattern;
+
 /**
  * @brief Static checker which is able to detect unrechable code.
  *
  * @see cz.muni.stanse.checker.Checker
  */
 final class ReachabilityChecker extends cz.muni.stanse.checker.Checker {
+    private static Pattern exprCompoundPattern = Pattern.compile(
+	    "[eE]xpression.*\\bcompoundStatement\\b");
+    private static Pattern retCompoundPattern = Pattern.compile(
+	    "\\breturnStatement\\b.*\\bcompoundStatement\\b");
 
     // public section
 
@@ -60,27 +66,21 @@ final class ReachabilityChecker extends cz.muni.stanse.checker.Checker {
 	monitor.write("Starting Reachability Checker");
 	for (CFGHandle cfg: internals.getCFGHandles()) {
 	    CFGNode start = cfg.getStartNode();
+	    CFGNode end = cfg.getEndNode();
 	    for (CFGNode node: cfg.getAllNodesReverse()) {
-		if (node.equals(start))
+		if (node.equals(start) || node.equals(end))
 		    continue;
 		if (!node.getPredecessors().isEmpty())
 		    continue;
 		if (!node.getOptPredecessors().isEmpty())
 		    continue;
 		Element nodeElem = node.getElement();
+		String elemPath = nodeElem.getPath();
 
 		/* we don't do CFGs of statements inside expressions ({ .. }) */
-		Element parent = nodeElem;
-		boolean haveCompound = false;
-		while ((parent = parent.getParent()) != null) {
-		    String parentName = parent.getName();
-		    if (!haveCompound && parentName.equals("compoundStatement"))
-			haveCompound = true;
-		    else if (haveCompound &&
-			    parentName.equals("expressionStatement"))
-			break;
-		}
-		if (parent != null)
+		if (exprCompoundPattern.matcher(elemPath).find())
+		    continue;
+		if (retCompoundPattern.matcher(elemPath).find())
 		    continue;
 
 		String elemName = nodeElem.getName();
@@ -88,13 +88,26 @@ final class ReachabilityChecker extends cz.muni.stanse.checker.Checker {
 			nodeElem.getText().equals("0"))
 		    continue;
 		int importance = 0;
+		StringBuilder fullDesc = new StringBuilder("The code is " +
+			"unreachable by any path.");
 		monitor.write("An error found");
 		if (elemName.equals("emptyStatement") ||
 			elemName.equals("breakStatement") ||
-			elemName.equals("returnStatement"))
-		    importance = 3;
+			elemName.equals("returnStatement")) {
+		    importance += 3;
+		    fullDesc.append(" Superfluous semicolon, break or return " +
+			    "statement.");
+		}
+		Element parentElem = nodeElem.getParent();
+		if (parentElem != null &&
+			parentElem.getName().equals("forStatement") &&
+			nodeElem.equals(parentElem.elements().get(2))) {
+		    importance += 5;
+		    fullDesc.append(" The third 'for' expression is never " +
+			    "used.");
+		}
 		errReceiver.receive(new CheckerError("Unreachable code",
-			"The code is unreachable by any path.", importance,
+			fullDesc.toString(), importance,
 			ReachabilityCheckerCreator.getNameForCheckerFactory(),
 			Make.<CFGNode>linkedList(node, node),
 			"This node is unreachable", "",
