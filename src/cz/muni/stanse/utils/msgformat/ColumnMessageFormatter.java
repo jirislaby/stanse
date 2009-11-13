@@ -29,12 +29,12 @@ public class ColumnMessageFormatter implements MessageFormatter {
         String result;
         if (s.endsWith("\n")) {
             result = getBuffer() + s.substring(0,s.length() - 1)
-                                    .replaceAll("\n","\n" + getLinePrefix())
+                                    .replace("\n", "\n" + getLinePrefix())
                                  + "\n";
             setBuffer();
         }
         else
-            result = getBuffer() + s.replaceAll("\n","\n" + getLinePrefix());
+            result = getBuffer() + s.replace("\n", "\n" + getLinePrefix());
         return result;
     }
 

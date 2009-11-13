@@ -55,8 +55,8 @@ public final class TabbedStringStream {
     // private section
 
     private String escapeNewLines(final String s) {
-        return (s.length() < 2) ? s : s.substring(0,s.length()-1)
-                                       .replaceAll("\n","\n" + seek) +
+        return (s.length() < 2) ? s : s.substring(0, s.length()-1)
+                                       .replace("\n", "\n" + seek) +
                                       s.substring(s.length()-1,s.length());
     }
 
