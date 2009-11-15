@@ -85,14 +85,6 @@
             propag="not affected ==> the lock is still locked."
             end="Leaving function in locked state." />
 
-    <error  from="IU[*] -P[*]" by=""
-            desc="leaving function in unlocked state"
-            level="1"
-            entry="The function called in locked state."
-            begin="The lock is unlocked here."
-            propag="not affected ==> the lock is still unlocked."
-            end="Leaving function in unlocked state." />
-
     <error  from="AL[*]" by=""
             desc="leaving function in locked state"
             level="1"
