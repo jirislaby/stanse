@@ -8,17 +8,18 @@ import java.util.Map;
 import java.util.Set;
 
 final class FPDLockingElimHasUnlock extends FalsePositivesDetector {
-    public FPDLockingElimHasUnlock(LazyInternalStructures internals,
-            final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
-                                                       nodeLocationDictionary) {
-	lis = internals;
-    dict = nodeLocationDictionary;
+    public FPDLockingElimHasUnlock(final Map<CFGNode,
+	    Pair<PatternLocation,PatternLocation>> nodeLocationDictionary) {
+	dict = nodeLocationDictionary;
     }
 
     @Override
     int getTraceImpotance(final java.util.List<CFGNode> path,
                             final java.util.Stack<CFGNode> cfgContext,
                             final ErrorRule rule) {
+	if (!rule.getErrorDescription().startsWith("leaving function in"))
+	    return getBugImportance(0);
+
         final CFGNode endNode = path.get(path.size() - 1);
         final Pair<PatternLocation,PatternLocation> endLocPair =
                 dict.get(endNode);
@@ -26,7 +27,7 @@ final class FPDLockingElimHasUnlock extends FalsePositivesDetector {
             return getBugImportance(0);
         if (isHULocation(endLocPair.getFirst().getDeliveredAutomataStates()))
             return getBugImportance(0);
-        return getFalsePositiveImportance();
+        return getBugImportance(5);
     }
 
     private static boolean isHULocation(final Set<AutomatonState> states) {
@@ -49,7 +50,6 @@ final class FPDLockingElimHasUnlock extends FalsePositivesDetector {
         return false;
     }
 
-    private final LazyInternalStructures lis;
     private final Map<CFGNode,Pair<PatternLocation,PatternLocation>> dict;
 }
 
@@ -65,9 +65,9 @@ final class FPDLockingElimHasUnlockCreator
 
     @Override
     FalsePositivesDetector create(XMLAutomatonDefinition definition,
-        LazyInternalStructures internals,boolean isInterprocediral,
+        LazyInternalStructures internals, boolean isInterprocediral,
         final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        nodeLocationDictionary) {
-        return new FPDLockingElimHasUnlock(internals,nodeLocationDictionary);
+        return new FPDLockingElimHasUnlock(nodeLocationDictionary);
     }
 }
