@@ -59,9 +59,9 @@ public final class CheckerErrorsSorter {
         for (final Object obj : errElements)
             if (obj instanceof Element) {
                 final Element elem = (Element)obj;
-                if (elem.selectSingleNode(".//real-bug") != null)
+                if (elem.selectSingleNode("./real-bug") != null)
                     bugs.add(elem);
-                else if (elem.selectSingleNode(".//false-positive") != null)
+                else if (elem.selectSingleNode("./false-positive") != null)
                     falses.add(elem);
                 else
                     untouched.add(elem);
@@ -87,9 +87,8 @@ public final class CheckerErrorsSorter {
                 new HashMap<String,Vector<Element>>();
         for (final Object obj : errElements)
             if (obj instanceof Element) {
-                final List elems = ((Element)obj).selectNodes(".//"+childName);
-                final String name =
-                        ((Element)elems.get(elems.size() - 1)).getText();
+                final String name = ((Element)obj).selectSingleNode(".//" +
+			childName + "[last()]").getText();
                 if (!namesDict.containsKey(name))
                     namesDict.put(name,new Vector<Element>());
                 namesDict.get(name).add((Element)obj);
