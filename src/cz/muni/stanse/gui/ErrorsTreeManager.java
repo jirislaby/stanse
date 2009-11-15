@@ -205,7 +205,7 @@ final class ErrorsTreeManager {
         final CheckerError error = findCheckerErrorBy(node);
         assert(error != null);
         return isBug(error)         ? java.awt.Color.red    :
-               isFalsePos(error)    ? java.awt.Color.green  :
+               isFalsePos(error)    ? java.awt.Color.green.darker()  :
                                       java.awt.Color.black  ;
     }
 
