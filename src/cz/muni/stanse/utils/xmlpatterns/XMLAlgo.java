@@ -11,6 +11,7 @@ import java.io.OutputStream;
 
 import java.util.Iterator;
 
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -35,6 +36,15 @@ public final class XMLAlgo {
 	    return false;
 	if (!e1.getText().equals(e2.getText()))
 	    return false;
+
+    for (final Object attrObj : e1.attributes()) {
+        final Attribute attr = (Attribute)attrObj;
+        if (!attr.getName().equals("bl") &&
+            !attr.getName().equals("bc") &&
+            !attr.getValue().equals(e2.attributeValue(attr.getName())))
+            return false;
+    }
+
 
 	final Iterator i = e1.elementIterator();
 	final Iterator j = e2.elementIterator();

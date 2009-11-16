@@ -49,6 +49,7 @@ class FalsePositivesDetectorFactory {
 	register(new FPDMemoryNestedCheckFilterCreator());
 	register(new FPDMemoryGlobalVarFilterCreator());
         register(new FPDLockingElimHasUnlockCreator());
+        register(new FPDConditionalPathsMismatchCreator());
         /* should be last */
         register(new FPDSameLocationReportFilterCreator());
     }
