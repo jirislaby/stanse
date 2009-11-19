@@ -36,6 +36,7 @@ final class AutomatonStateTransferManager {
                                final SimpleAutomatonID id,
                                final CFGNode to) {
         if (isIdentityTransfer(from,to)) return id;
+        else if (id.isGlobal()) return id;
         else return transferImpl(from,id,to);
     }
 
@@ -85,10 +86,15 @@ final class AutomatonStateTransferManager {
         final LinkedList<SimpleAutomatonID> transformedIDs =
             new LinkedList<SimpleAutomatonID>();
         for (final SimpleAutomatonID simpleID : id.getSimpleAutomataIDs()) {
+            if (simpleID.isGlobal())
+                transformedIDs.add(simpleID);
             final SimpleAutomatonID transformedID =
                 transferImpl(from,simpleID,to);
-            if (transformedID == null)
+            if (transformedID == null) {
+                if (simpleID.isGlobal())
+                    continue;
                 return null;
+            }
             transformedIDs.add(transformedID);
         }
         return new ComposedAutomatonID(transformedIDs);
@@ -97,8 +103,6 @@ final class AutomatonStateTransferManager {
     private SimpleAutomatonID transferImpl(final CFGNode from,
                                final SimpleAutomatonID id,
                                final CFGNode to) {
-        if (id.isGlobal())
-            return id;
         final LinkedList<String> transformedVarsAssignments =
                 new LinkedList<String>();
         for (final String varsAssignment : id.getVarsAssignment()) {
