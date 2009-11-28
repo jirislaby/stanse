@@ -1,0 +1,28 @@
+---
+ src/cz/muni/stanse/Stanse.java |   15 +--------------
+ 1 file changed, 1 insertion(+), 14 deletions(-)
+
+--- a/src/cz/muni/stanse/Stanse.java
++++ b/src/cz/muni/stanse/Stanse.java
+@@ -340,20 +340,7 @@ public final class Stanse {
+     }
+ 
+     private static String buildRootDirectory() {
+-	String rootDirectory = System.getenv("STANSE_HOME");
+-	if (rootDirectory == null) {
+-	    System.err.println("STANSE_HOME not specified. Using the " +
+-				"location of stanse.jar.");
+-	    try {
+-		rootDirectory =
+-		    new File(ClassLocation.get("cz.muni.stanse.Stanse"))
+-			  .getParent();
+-	    } catch (final ClassNotFoundException e) {
+-		e.printStackTrace();
+-		rootDirectory = new File(".").getAbsolutePath();
+-	    }
+-	}
+-	return rootDirectory;
++	return new File(".").getAbsolutePath();
+     }
+ 
+     private static UnitManager unitManager = new UnitManagerLRU();

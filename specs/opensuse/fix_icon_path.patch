@@ -1,0 +1,15 @@
+---
+ src/cz/muni/stanse/gui/MainWindow.java |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/src/cz/muni/stanse/gui/MainWindow.java
++++ b/src/cz/muni/stanse/gui/MainWindow.java
+@@ -168,7 +168,7 @@ public final class MainWindow extends ja
+     }
+ 
+     private static String getIconPathName() {
+-        return Stanse.getInstance().getRootDirectory() + "/stanse_icon.png";
++        return "/usr/share/stanse/stanse_icon.png";
+     }
+ 
+     private final ErrorsTreeManager errorsTreeManager;

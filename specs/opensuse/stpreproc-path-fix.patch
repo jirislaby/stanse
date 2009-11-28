@@ -1,0 +1,23 @@
+---
+ src/cz/muni/stanse/cparser/CUnit.java |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+--- a/src/cz/muni/stanse/cparser/CUnit.java
++++ b/src/cz/muni/stanse/cparser/CUnit.java
+@@ -139,15 +139,7 @@ public final class CUnit extends Unit {
+ 	Process p;
+ 	String line;
+ 	
+-	// this is necessary
+-	// the environment is modified only AFTER the command is
+-	// executed!
+-	String command = Stanse.getInstance().getRootDirectory() + File.separator +
+-		"bin" + File.separator + "stpreproc";
+-	ProcessBuilder builder = new ProcessBuilder(command, jobEntry);
+-	Map<String, String> env = builder.environment();
+-	env.put("PATH", env.get("PATH") + File.pathSeparator +
+-		Stanse.getInstance().getRootDirectory() + File.separator + "bin");
++	ProcessBuilder builder = new ProcessBuilder("stpreproc", jobEntry);
+ 	try {
+ 	    p = builder.start();
+ 

@@ -1,0 +1,15 @@
+---
+ build.xml |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/build.xml
++++ b/build.xml
+@@ -89,7 +89,7 @@
+ 		<include name="GNUCaParser.o"/>
+ 		<include name="main.o"/>
+ 	    </fileset>
+-	    <libset dir="src/cparser-c/lib/" libs="antlr3c-${arch}"/>
++	    <libset libs="antlr3c"/>
+         </cpptasks:cc>
+  <!--       <copy todir="${dist}" >
+             <fileset dir="build/cparser-c">
