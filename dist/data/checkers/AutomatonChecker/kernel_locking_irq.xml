@@ -232,6 +232,20 @@
     <pattern name="lock">
         <assert>
 	    <prefixExpression op="!">
+		<binaryExpression op="&lt;">
+		    <functionCall>
+			<id>__st_mutex_lock_interruptible_st__</id>
+			<var name="A" />
+		    </functionCall>
+		    <intConst>0</intConst>
+		</binaryExpression>
+	    </prefixExpression>
+        </assert>
+    </pattern>
+
+    <pattern name="lock">
+        <assert>
+	    <prefixExpression op="!">
 		<functionCall>
 		    <id>__st_mutex_lock_killable_st__</id>
 		    <var name="A" />
@@ -368,42 +382,42 @@
         </assert>
     </pattern>
 
-    <pattern name="lock">
+    <pattern name="anonlock">
         <functionCall>
             <id>__st_read_lock_st__</id>
             <var name="A" />
         </functionCall>
     </pattern>
 
-    <pattern name="unlock">
+    <pattern name="anonunlock">
         <functionCall>
             <id>__st_read_unlock_st__</id>
             <var name="A" />
         </functionCall>
     </pattern>
 
-    <pattern name="lock">
+    <pattern name="anonlock">
         <functionCall>
             <id>__st_read_lock_bh_st__</id>
             <var name="A" />
         </functionCall>
     </pattern>
 
-    <pattern name="unlock">
+    <pattern name="anonunlock">
         <functionCall>
             <id>__st_read_unlock_bh_st__</id>
             <var name="A" />
         </functionCall>
     </pattern>
 
-    <pattern name="lock">
+    <pattern name="anonlock">
         <functionCall>
             <id>__st_read_lock_irq_st__</id>
             <var name="A" />
         </functionCall>
     </pattern>
 
-    <pattern name="unlock">
+    <pattern name="anonunlock">
         <functionCall>
             <id>__st_read_unlock_irq_st__</id>
             <var name="A" />
