@@ -107,7 +107,7 @@ public final class XMLLinearizeASTElement {
 	if (param.getName().equals("id"))
 	    return param;
         final Element paramElem =
-		(Element)param.selectSingleNode(".//id[last()]");
+		(Element)param.selectSingleNode("(.//id)[last()]");
         if (paramElem != null)
             return paramElem;
         if (param.selectSingleNode("./varArgs") != null)
