@@ -16,7 +16,7 @@ print $cg->start_html(-dtd=>"yes", -lang=>"cs", -title=>"Stanse results",
 my $datafile = $cg->param('db');
 if (!defined $datafile || !exists $OKfiles{$datafile}) {
 	print "<p>Select database:</p>\n";
-	foreach (sort keys %OKfiles) {
+	foreach (sort { $OKfiles{$a} cmp $OKfiles{$b} } keys %OKfiles) {
 		print qq(<div><a href="?db=$_">$OKfiles{$_}</a></div>\n);
 	}
 	goto end;
