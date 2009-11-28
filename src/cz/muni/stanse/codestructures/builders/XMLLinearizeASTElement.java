@@ -1,5 +1,6 @@
 package cz.muni.stanse.codestructures.builders;
 
+import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 import java.util.List;
 import java.util.Vector;
 
@@ -7,7 +8,15 @@ import org.dom4j.Element;
 import org.dom4j.DocumentFactory;
 
 public final class XMLLinearizeASTElement {
-
+    public final static Element voidParam;
+    static {
+	voidParam = DocumentFactory.getInstance().createElement("parameter");
+	voidParam.addElement("declarationSpecifiers").
+		addElement("typeSpecifier").
+		addElement("baseType").
+		addText("void");
+    }
+    
     // public section
 
     @SuppressWarnings("unchecked")
@@ -59,10 +68,35 @@ public final class XMLLinearizeASTElement {
         final Vector<Element> result = new Vector<Element>();
         result.add(id);
         int argID = 0;
-        for (final Element param:
-		    (List<Element>)fnDecl.selectNodes("./functionDecl/*"))
+	final List<Element> params =
+		(List<Element>)fnDecl.selectNodes("./functionDecl/*");
+
+	if (isVoidParam(params))
+	    return result;
+
+        for (final Element param: params)
             result.add(parseParameterName(param, argID++));
         return result;
+    }
+
+    /**
+     * Checks whether @params are the single void keyword (i.e. no params)
+     *
+     * Compares @params to:
+     * <parameter>
+     *  <declarationSpecifiers>
+     *   <typeSpecifier>
+     *     <baseType>void</baseType>
+     *   </typeSpecifier>
+     * 	</declarationSpecifiers>
+     * </parameter>
+     * and returns true if it matches.
+     */
+    private static boolean isVoidParam(final List<Element> params) {
+	if (params.size() != 1)
+	    return false;
+
+	return XMLAlgo.equalElements(params.get(0), voidParam);
     }
 
     // private section
