@@ -46,7 +46,12 @@ final class OpenedSourceFilesManager {
 			    "of the file. See exception trace for details:", e);
             return;
         }
-        sourceCodeText.select(start,end);
+	/*
+	 * do the set/move from end to start, so that we see the selection even
+	 * when jumping from the bottom up
+	 */
+	sourceCodeText.setCaretPosition(end);
+	sourceCodeText.moveCaretPosition(start);
         sourceCodeText.getCaret().setSelectionVisible(true);
     }
 
