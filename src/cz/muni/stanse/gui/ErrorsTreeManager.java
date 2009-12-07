@@ -28,7 +28,7 @@ final class ErrorsTreeManager {
         new javax.swing.event.TreeSelectionListener() {
             @Override public void valueChanged(
                                  final javax.swing.event.TreeSelectionEvent e) {
-                onSelectionChenged();
+                onSelectionChanged();
             }
         });
         errorsTree.setCellRenderer(new javax.swing.tree.DefaultTreeCellRenderer() {
@@ -159,7 +159,7 @@ final class ErrorsTreeManager {
         return JTreeAlgo.getData(JTreeAlgo.getSelection(getErrorsTree()));
     }
 
-    private void onSelectionChenged() {
+    private void onSelectionChanged() {
         if (!JTreeAlgo.isSomethingSelected(getErrorsTree()))
             return;
         onSelectionChangedForErrorTracingManager(getSelectedData());

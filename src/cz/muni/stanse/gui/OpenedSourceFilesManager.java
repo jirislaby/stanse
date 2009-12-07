@@ -51,18 +51,15 @@ final class OpenedSourceFilesManager {
     }
 
     void gotoColumnInSelectedLine(final int column) {
-        boolean useComuns = false;
-        if (useComuns) {
+        boolean useColumns = false;
+        if (useColumns) {
             final JTextArea sourceCodeText = getShownTabTextArea();
-            try {
-                sourceCodeText.setCaretPosition(
-                        sourceCodeText.getLineStartOffset(
-                            sourceCodeText.getLineOfOffset(
-                                sourceCodeText.getCaretPosition() - 1)) +
-                        column - 1);
-            }
-            catch(final Exception e)
-            {}
+	    try {
+		sourceCodeText.setCaretPosition(
+			sourceCodeText.getLineStartOffset(
+			sourceCodeText.getLineOfOffset(
+			sourceCodeText.getCaretPosition() - 1)) + column - 1);
+	    } catch (BadLocationException e) { }
             sourceCodeText.getCaret().setVisible(true);
         }
     }
