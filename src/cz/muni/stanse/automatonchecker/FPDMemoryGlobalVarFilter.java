@@ -37,7 +37,7 @@ final class FPDMemoryGlobalVarFilter extends FalsePositivesDetector {
 	    return getBugImportance(0);
 	CFGHandle cfg = lis.getNodeToCFGdictionary().get(start);
 	if (!cfg.isSymbolLocal(left.getText()))
-	    return getBugImportance(3);
+	    return getFalsePositiveImportance();
         return getBugImportance(0);
     }
 }
