@@ -26,7 +26,7 @@ public final class CheckerErrorsSorter {
             new Vector<Element>(database.selectNodes("database/errors/error"));
         System.out.println("      Done.");
 
-        System.out.println("(2/2) Sorting and writting results...");
+        System.out.println("(2/2) Sorting and writing results...");
         processPhases(errors,ordering,outDir);
         System.out.print("      Done.\n\n\n");
     }

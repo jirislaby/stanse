@@ -161,7 +161,7 @@ public final class ErrorMessagesStatsBuilder {
                 buildPerCheckerStats(errors,failures,overalls);
         System.out.println("      Done.");
 
-        System.out.println("(4/4) Writting results to output...");
+        System.out.println("(4/4) Writing results to output...");
         final String perfContent =
             outputFormat.equals("simple-text") ?
                 buildOutputSimpleText(overalls,perCheckers) :

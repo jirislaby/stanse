@@ -78,7 +78,7 @@ public final class CheckerErrorsGuiTracing {
                                     .toElements(mainWindow.getUnchecked()));
         System.out.println("      Done.");
 
-        System.out.println("(8/8) Writting reports into output file...");
+        System.out.println("(8/8) Writing reports into output file...");
         DocumentToFileWriter.writeErrorReports(
             database.selectNodes("database/files/file"),
             database.selectNodes("database/internals/internal"),

@@ -23,11 +23,11 @@ public final class MergeDocuments {
         final Vector<File> xmlFiles = collectXmlFilesFromDirStructure(dirsRoot);
         System.out.println("      Done.");
 
-        System.out.println("(2/3) Merging reports form collected files...");
+        System.out.println("(2/3) Merging reports from collected files...");
         final Vector<Element> result = mergeReportsFromFiles(xmlFiles);
         System.out.println("      Done.");
 
-        System.out.println("(3/3) Writting merge result into output file...");
+        System.out.println("(3/3) Writing merge result into output file...");
         DocumentToFileWriter.writeErrorReports(
             database.selectNodes("database/files/file"),
             database.selectNodes("database/internals/internal"),

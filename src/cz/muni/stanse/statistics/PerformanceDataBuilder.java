@@ -166,14 +166,14 @@ public final class PerformanceDataBuilder {
 
     public static void run(final Document database, final String outputFile,
                            final String outputFormat) {
-        System.out.print("Performace statistical data building\n"+
-                         "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+        System.out.print("Performance statistical data building\n"+
+                         "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 
         System.out.println("(1/2) Collecting data into internal structures...");
         final PerformanceData perfData = new PerformanceData(database);
         System.out.println("      Done.");
 
-        System.out.println("(2/2) Writting collected data into output...");
+        System.out.println("(2/2) Writing collected data into output...");
         final String perfContent =
             outputFormat.equals("simple-text") ?
                 buildOutputSimpleText(perfData) :
@@ -190,37 +190,37 @@ public final class PerformanceDataBuilder {
         stream.append("Performance statistics\n")
               .append("~~~~~~~~~~~~~~~~~~~~~~\n\n\n")
               .append("(1/4) Files procession profile:\n")
-              .append("      (a) Time(s):\n")
+              .append("      (a) Time (s):\n")
               .append(toSimpleText(perfData.getFilesPerfData().getFirst(),
                       "              "))
-              .append("      (b) Space(MB):\n")
+              .append("      (b) Space (MB):\n")
               .append(toSimpleText(perfData.getFilesPerfData().getSecond(),
                       "              "))
               .append("(2/4) Precaching LazyInternals before checker " +
-                                " start checking profile:\n")
-              .append("      (a) Time(s):\n")
+                                " starts checking a profile:\n")
+              .append("      (a) Time (s):\n")
               .append(toSimpleText(perfData.getPrecachesPerfData().getFirst(),
                       "              "))
-              .append("      (b) Space(MB):\n")
+              .append("      (b) Space (MB):\n")
               .append(toSimpleText(perfData.getPrecachesPerfData().getSecond(),
                       "              "))
               .append("(3/4) Checkers summary working profile:\n")
-              .append("      (a) Time(s):\n")
+              .append("      (a) Time (s):\n")
               .append(toSimpleText(perfData.getCheckersPerfData().getFirst(),
                       "              "))
-              .append("      (b) Space(MB):\n")
+              .append("      (b) Space (MB):\n")
               .append(toSimpleText(perfData.getCheckersPerfData().getSecond(),
                       "              "))
               .append("(4/4) Per checker working profile:\n")
               ;
 
-        stream.append("      (a) Time(s):\n");
+        stream.append("      (a) Time (s):\n");
         for (final Triple<String,PerfRecord,PerfRecord> rec :
                 perfData.getPerCheckersPerfData())
             stream.append("              ").append(rec.getFirst()).append('\n')
                   .append(toSimpleText(rec.getSecond(),"                  "))
                   ;
-        stream.append("      (b) Space(MB):\n");
+        stream.append("      (b) Space (MB):\n");
         for (final Triple<String,PerfRecord,PerfRecord> rec :
                 perfData.getPerCheckersPerfData())
             stream.append("              ").append(rec.getFirst()).append('\n')
