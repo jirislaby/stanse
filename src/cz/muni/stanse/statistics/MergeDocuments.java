@@ -23,7 +23,7 @@ public final class MergeDocuments {
         final Vector<File> xmlFiles = collectXmlFilesFromDirStructure(dirsRoot);
         System.out.println("      Done.");
 
-        System.out.println("(1/3) Merging reports form collected files...");
+        System.out.println("(2/3) Merging reports form collected files...");
         final Vector<Element> result = mergeReportsFromFiles(xmlFiles);
         System.out.println("      Done.");
 
