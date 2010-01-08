@@ -18,7 +18,8 @@ public final class DocumentToFileWriter {
 
     public static boolean write(final Document data, final String outFile) {
         final File pathName = new File(outFile);
-	if (!pathName.getParentFile().exists() &&
+	if (pathName.getParentFile() != null &&
+		!pathName.getParentFile().exists() &&
 		!pathName.getParentFile().mkdirs()) {
 	    System.err.println("Can't create directory structure");
 	    return false;
