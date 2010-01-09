@@ -27,6 +27,7 @@ L http://patchwork.kernel.org/patch/32978/ w83697ug
 L http://patchwork.kernel.org/patch/35479/ toshiba_acpi
 L http://patchwork.kernel.org/patch/49541/ vt_ioctl
 L http://patchwork.kernel.org/patch/50108/ kvm
+L http://lists.infradead.org/pipermail/linux-mtd-cvs/2009-December/006714.html cfi_cmdset_0002
 
 ATOM http://lkml.org/lkml/2009/6/19/189 qla3xxx
 ATOM http://lkml.org/lkml/2009/6/19/207 dvb_dmx_swfilter_packet
@@ -42,7 +43,11 @@ TTY http://patchwork.kernel.org/patch/48865/ mct_u232
 MEM http://lkml.org/lkml/2009/6/29/285 btrfs
 MEM http://lkml.org/lkml/2009/7/13/312 lpfc
 MEM http://lkml.org/lkml/2009/7/13/314 drm_debugfs drm_gem
+MEM http://lkml.org/lkml/2010/1/6/151 radeon_cp
 MEM http://lkml.indiana.edu/hypermail/linux/kernel/0909.2/03453.html aacraid qla2xxx cxgb3i lpfc scsi_lib
 MEM http://patchwork.kernel.org/patch/49538/ usblcd
 MEM http://patchwork.kernel.org/patch/49540/ mxser
 MEM http://patchwork.kernel.org/patch/50375/ qla2xxx
+
+RCH http://patchwork.kernel.org/patch/56386/ ath9k
+RCH http://lkml.org/lkml/2010/1/6/331 reiserfs
