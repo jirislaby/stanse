@@ -22,24 +22,54 @@ if (!defined $datafile || !exists $OKfiles{$datafile}) {
 	goto end;
 }
 
+my $filter = $cg->param('filter');
+if (defined $filter) {
+	$filter =~ s/%//g;
+	my $flen = length $filter;
+	if ($flen < 2) {
+		if ($flen > 0) {
+			print qq|<p style="color: red;">Filter must be at |,
+				qq|least 2 characters.</p>\n|;
+		}
+		$filter = undef;
+	}
+} else {
+	$filter = undef;
+}
+
+my $filter_name = undef;
+if (defined $filter) {
+	$filter_name = $filter;
+	$filter = '%' . $filter . '%';
+} else {
+	$filter = '%';
+}
+
 my $dbh = DBI->connect("dbi:SQLite:dbname=$datafile.db","","") ||
 	die "connect to db error: " . DBI::errstr;
 
-my $count = $dbh->prepare("SELECT count(id) FROM errors");
-$count->execute;
+my $count = $dbh->prepare("SELECT count(id) FROM errors WHERE file LIKE ?");
+$count->execute($filter);
 @_ = $count->fetchrow_array;
 $count->finish;
 $count = $_[0];
 
-print $cg->h2('Errors found by Stanse');
-print '<p>See <a href="http://stanse.fi.muni.cz/">Stanse homepage</a> for ' .
-	'more info.</p>';
-print qq|<p>$count errors (false positives including) found in <strong>$OKfiles{$datafile}</strong> kernel:</p>|;
-print qq|<div style="font-size: 75%;"><em>The number before pipe is importance.</em></div>|;
+print $cg->h2('Errors found by Stanse'), "\n";
+print qq|<p>See <a href="http://stanse.fi.muni.cz/">Stanse homepage</a> for |,
+	qq|more info.</p>\n|;
+print $cg->start_form(-action=>"", -method=>"GET");
+print "<div>", $cg->textfield(-name=>'filter', -size=>20),
+	$cg->submit('Filter files'), "</div>\n";
+print $cg->hidden('db', $datafile), "\n";
+print $cg->end_form, "\n";
+print qq|<p>$count errors (false positives including) found in <strong>$OKfiles{$datafile}</strong> kernel|;
+print qq| for filter '$filter_name'| if (defined $filter_name);
+print qq|:</p>\n|;
+print qq|<div style="font-size: 75%;"><em>The number before pipe is |,
+	qq|importance (the lower the better).</em></div>\n|;
 
-my $errors = $dbh->prepare("SELECT * FROM errors ORDER BY checker,importance,error,file,line");
-
-$errors->execute();
+my $errors = $dbh->prepare("SELECT * FROM errors WHERE file LIKE ? ORDER BY checker,importance,error,file,line");
+$errors->execute($filter);
 
 my $checker = "";
 
