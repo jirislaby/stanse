@@ -48,6 +48,8 @@ MEM http://lkml.indiana.edu/hypermail/linux/kernel/0909.2/03453.html aacraid qla
 MEM http://patchwork.kernel.org/patch/49538/ usblcd
 MEM http://patchwork.kernel.org/patch/49540/ mxser
 MEM http://patchwork.kernel.org/patch/50375/ qla2xxx
+MEM https://bugzilla.novell.com/show_bug.cgi?id=564733
+MEM https://bugzilla.novell.com/show_bug.cgi?id=564735
 
 RCH http://patchwork.kernel.org/patch/56386/ ath9k
 RCH http://lkml.org/lkml/2010/1/6/331 reiserfs
