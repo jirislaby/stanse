@@ -15,17 +15,18 @@ my $dbh = DBI->connect("dbi:SQLite:dbname=$out","","", {AutoCommit => 0}) ||
 
 my $xp = XML::XPath->new(filename => "$in") || die "can't open $in";
 
-$dbh->do("create table errors(id INTEGER PRIMARY KEY, checker STRING, " .
-		"importance INTEGER, error STRING, file STRING, " .
-		"line INTEGER, errorXML BLOB)");
+$dbh->do("CREATE TABLE errors(id INTEGER PRIMARY KEY, checker STRING, " .
+		"importance INTEGER, fp_bug INTEGER, error STRING, " .
+		"file STRING, line INTEGER, errorXML BLOB)");
 
 
 my $errors = $xp->findnodes("/database/errors/error");
 
-my $data = $dbh->prepare("insert into errors(checker, importance, error, " .
-		"file, line, errorXML) values (?, ?, ?, ?, ?, ?)");
+my $data = $dbh->prepare("INSERT INTO errors(checker, importance, fp_bug, " .
+		"error, file, line, errorXML) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
 my $croplen = length $crop;
+my $xp1 = XML::XPath->new();
 
 foreach my $error ($errors->get_nodelist) {
 	my ($loc) = $error->findnodes("traces/trace[1]/locations/location[1]");
@@ -33,8 +34,12 @@ foreach my $error ($errors->get_nodelist) {
 	if (substr($unit, 0, $croplen) eq $crop) {
 		$unit = substr($unit, $croplen);
 	}
+	my $fp_bug = 0;
+	$fp_bug++ if ($xp1->exists("real-bug", $error));
+	$fp_bug-- if ($xp1->exists("false-positive", $error));
 	$data->execute($error->findvalue("checker_name"),
 			$error->findvalue("importance"),
+			$fp_bug,
 			$error->findvalue("short_desc"),
 			$unit, $loc->findvalue("line"),
 			XML::XPath::XMLParser::as_string($error));
