@@ -109,7 +109,7 @@ final class OpenedSourceFilesManager {
     private JTextArea createTextAreaForSourceCodeFile() {
         final JTextArea textArea = new JTextArea();
         textArea.setFont(new java.awt.Font("Monospaced",
-                                           java.awt.Font.PLAIN,13));
+                                           java.awt.Font.PLAIN, 11));
         return textArea;
     }
 
