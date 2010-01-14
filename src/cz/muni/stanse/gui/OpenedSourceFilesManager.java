@@ -4,12 +4,14 @@ import cz.muni.stanse.utils.ClassLogger;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -42,8 +44,8 @@ final class OpenedSourceFilesManager {
             end = sourceCodeText.getLineEndOffset(line - 1);
         } catch (final BadLocationException e) {
             ClassLogger.error(this, "Cannot mark text in actual source " +
-			    "code file because line to be marked lies outside " +
-			    "of the file. See exception trace for details:", e);
+			    "code file because line to be marked lies " +
+			    "outside the file.");
             return;
         }
 	/*
@@ -122,6 +124,10 @@ final class OpenedSourceFilesManager {
             while ((readedLine = reader.readLine()) != null)
                 sourceCodeArea.append(readedLine + '\n');
             reader.close();
+	} catch (final FileNotFoundException e) {
+		JOptionPane.showMessageDialog(null, "Cannot open '" +
+			sourcefile.getPath() + "'\nFile not found!", "Error",
+			JOptionPane.ERROR_MESSAGE);
 	} catch (final IOException e) {
 	    ClassLogger.error(this, "Loading of source file '" + sourcefile +
 			    "' to Stanse has FAILED. See exception trace for " +
