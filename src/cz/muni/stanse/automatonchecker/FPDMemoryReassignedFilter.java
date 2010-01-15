@@ -2,6 +2,7 @@ package cz.muni.stanse.automatonchecker;
 
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
+import cz.muni.stanse.utils.Make;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 
@@ -9,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import org.dom4j.Element;
 
@@ -31,8 +33,13 @@ final class FPDMemoryReassignedFilter extends FalsePositivesDetector {
         Element nEl = nodeI.next().getElement();
         List<Element> left = null;
         String nElName = nEl.getName();
+	Vector<String> va = rule.getAutomatonID().getVarsAssignment();
         int idx = -1;
-        if (nElName.equals("functionCall")) {
+	if (rule.getErrorDescription().startsWith("unnecessary check") &&
+		va.size() == 1) {
+	    left = Make.linkedList(XMLAlgo.toElement("<id>" + va.get(0) +
+		    "</id>"));
+	} else if (nElName.equals("functionCall")) {
             if (nEl.nodeCount() != 2) /* name and id */
                 return getBugImportance(0);
             idx = 1;

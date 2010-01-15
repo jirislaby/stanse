@@ -27,7 +27,7 @@ final class FPDLockingElimHasUnlock extends FalsePositivesDetector {
             return getBugImportance(0);
         if (isHULocation(endLocPair.getFirst().getDeliveredAutomataStates()))
             return getBugImportance(0);
-        return getBugImportance(5);
+        return getFalsePositiveImportance();
     }
 
     private static boolean isHULocation(final Set<AutomatonState> states) {
