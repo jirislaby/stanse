@@ -14,7 +14,7 @@ final class FPDLockingElimHasUnlock extends FalsePositivesDetector {
     }
 
     @Override
-    int getTraceImpotance(final java.util.List<CFGNode> path,
+    int getTraceImportance(final java.util.List<CFGNode> path,
                             final java.util.Stack<CFGNode> cfgContext,
                             final ErrorRule rule) {
 	if (!rule.getErrorDescription().startsWith("leaving function in"))

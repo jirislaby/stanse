@@ -12,7 +12,7 @@ final class FPDNoreturnFunctions extends FalsePositivesDetector {
     /* this should be configurable from the outside */
     static final String[] noreturns = { "__st_BUG_st__", "panic" };
     @Override
-    int getTraceImpotance(final java.util.List<CFGNode> path,
+    int getTraceImportance(final java.util.List<CFGNode> path,
                           final java.util.Stack<CFGNode> cfgContext,
                           final ErrorRule rule) {
         for (CFGNode node: path)

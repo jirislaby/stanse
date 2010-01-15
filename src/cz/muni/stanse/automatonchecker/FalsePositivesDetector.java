@@ -17,8 +17,7 @@ abstract class FalsePositivesDetector {
         return 0;
     }
 
-    abstract int getTraceImpotance(final java.util.List<CFGNode> path,
-                                   final java.util.Stack<CFGNode> cfgContext,
-                                   final ErrorRule rule);
+    abstract int getTraceImportance(final java.util.List<CFGNode> path,
+	    final java.util.Stack<CFGNode> cfgContext, final ErrorRule rule);
 
 }

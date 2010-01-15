@@ -144,7 +144,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         int importance = FalsePositivesDetector.getBugDefaultImportance();
         for (final FalsePositivesDetector detector : detectors) {
             final int currImportance =
-                    detector.getTraceImpotance(path,cfgContext,getRule());
+                    detector.getTraceImportance(path,cfgContext,getRule());
             if (currImportance ==
                     FalsePositivesDetector.getFalsePositiveImportance())
                 return currImportance;

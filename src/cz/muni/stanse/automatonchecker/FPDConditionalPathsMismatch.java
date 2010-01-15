@@ -22,7 +22,7 @@ import org.dom4j.Element;
  */
 final class FPDConditionalPathsMismatch extends FalsePositivesDetector {
     @Override
-    int getTraceImpotance(final java.util.List<CFGNode> path,
+    int getTraceImportance(final java.util.List<CFGNode> path,
                             final java.util.Stack<CFGNode> cfgContext,
                             final ErrorRule rule) {
         final Element assertElem = getStartCondAssert(path.get(0));
