@@ -225,7 +225,7 @@ public final class CFGTraversal {
         path.add(startNode);
         traverseCFGPathsInterprocedural(path,
                           new ForwardCFGNodeFollowersInterprocedural(navigator),
-                          visitor,new HashSet<Pair<CFGNode,CFGNode>>(),stack);
+                          visitor,createVisitedStack(),stack);
         return visitor;
     }
 
@@ -244,11 +244,18 @@ public final class CFGTraversal {
         path.add(startNode);
         traverseCFGPathsInterprocedural(path,
                          new BackwardCFGNodeFollowersInterprocedural(navigator),
-                         visitor,new HashSet<Pair<CFGNode,CFGNode>>(),stack);
+                         visitor,createVisitedStack(),stack);
         return visitor;
     }
 
     // private section
+
+    private static Stack<HashSet<Pair<CFGNode,CFGNode>>> createVisitedStack() {
+        final Stack<HashSet<Pair<CFGNode,CFGNode>>> stack =
+                new Stack<HashSet<Pair<CFGNode,CFGNode>>>();
+        stack.push(new HashSet<Pair<CFGNode,CFGNode>>());
+        return stack;
+    }
 
     private static void traverseCFG(final CFGHandle cfg,
                            final CFGNode startNode,
@@ -296,11 +303,12 @@ public final class CFGTraversal {
     }
 
     private static void traverseCFGPathsInterprocedural(
-                            final LinkedList<CFGNode> path,
-                            final CFGNodeFollowersInterprocedural nodeFollowers,
-                            final CFGPathVisitor visitor,
-                            final HashSet<Pair<CFGNode,CFGNode>> visitedEdges,
-                            final Stack<CFGNode> callStack) {
+                    final LinkedList<CFGNode> path,
+                    final CFGNodeFollowersInterprocedural nodeFollowers,
+                    final CFGPathVisitor visitor,
+                    final Stack<HashSet<Pair<CFGNode,CFGNode>>> visitedStack,
+                    final Stack<CFGNode> callStack) {
+        final HashSet<Pair<CFGNode,CFGNode>> visitedEdges = visitedStack.peek();
         if (nodeFollowers.isCallNode(path.get(0))) {
             if (path.size() < 2 || !nodeFollowers.isReturnNode(path.get(1))) {
                 final Pair<CFGNode,CFGNode> edge = Pair.make(path.getFirst(),
@@ -308,9 +316,11 @@ public final class CFGTraversal {
                 if (visitedEdges.contains(edge))
                     return;
                 if (visitor.onCFGchange(path.getFirst(),edge.getSecond())) {
+                    visitedStack.push(
+                            new HashSet<Pair<CFGNode,CFGNode>>(visitedEdges));
                     callStack.push(edge.getFirst());
                     traverseCFGPathsInterproceduralByEdge(edge,path,
-                                  nodeFollowers,visitor,visitedEdges,callStack);
+                                  nodeFollowers,visitor,visitedStack,callStack);
                     return;
                 }
             }
@@ -324,9 +334,10 @@ public final class CFGTraversal {
             if (visitedEdges.contains(edge))
                 return;
             callStack.pop();
+            visitedStack.pop();
             visitor.onCFGchange(path.getFirst(),edge.getSecond());
             traverseCFGPathsInterproceduralByEdge(edge,path,nodeFollowers,
-                                                visitor,visitedEdges,callStack);
+                                                visitor,visitedStack,callStack);
             return;
         }
         for (CFGNode currentNodeFollower : nodeFollowers.get(path.getFirst())) {
@@ -335,22 +346,23 @@ public final class CFGTraversal {
             if (visitedEdges.contains(edge))
                 continue;
             traverseCFGPathsInterproceduralByEdge(edge,path,nodeFollowers,
-                                                visitor,visitedEdges,callStack);
+                                                visitor,visitedStack,callStack);
         }
     }
 
     private static void traverseCFGPathsInterproceduralByEdge(
-                            final Pair<CFGNode,CFGNode> edge,
-                            final LinkedList<CFGNode> path,
-                            final CFGNodeFollowersInterprocedural nodeFollowers,
-                            final CFGPathVisitor visitor,
-                            final HashSet<Pair<CFGNode,CFGNode>> visitedEdges,
-                            final Stack<CFGNode> callStack) {
+                    final Pair<CFGNode,CFGNode> edge,
+                    final LinkedList<CFGNode> path,
+                    final CFGNodeFollowersInterprocedural nodeFollowers,
+                    final CFGPathVisitor visitor,
+                    final Stack<HashSet<Pair<CFGNode,CFGNode>>> visitedStack,
+                    final Stack<CFGNode> callStack) {
+        final HashSet<Pair<CFGNode,CFGNode>> visitedEdges = visitedStack.peek();
         path.addFirst(edge.getSecond());
         visitedEdges.add(edge);
 
         traverseCFGPathsInterprocedural(path,nodeFollowers,visitor,
-                                        visitedEdges,callStack);
+                                        visitedStack,callStack);
         visitedEdges.remove(edge);
         path.removeFirst();
     }
