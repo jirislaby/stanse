@@ -53,14 +53,22 @@ final class FPDMemoryReassignedFilter extends FalsePositivesDetector {
             left = new LinkedList<Element>();
             left.add((Element)nEl.elements().get(idx)); // leftside
         }
-        while (nodeI.hasNext())
-            for (Object fno: nodeI.next().getElement().
-                    selectNodes("..//assignExpression")) {
-                Element left1 = (Element)((Element)fno).elements().get(0);
+	while (nodeI.hasNext()) {
+	    Element next = nodeI.next().getElement();
+	    if (next.getName().equals("assert"))
+		continue;
+
+	    List<Element> assignElements = new LinkedList<Element>(
+			    next.selectNodes(".//assignExpression"));
+	    if (next.getName().equals("assignExpression"))
+		    assignElements.add(next);
+	    for (Element fno: assignElements) {
+		Element left1 = (Element)fno.elements().get(0);
                 for (Element e: left)
                     if (XMLAlgo.equalElements(e, left1))
                         return getFalsePositiveImportance();
             }
+	}
         return getBugImportance(0);
     }
 }
