@@ -39,7 +39,7 @@ public final class CheckerErrorTraceLocation {
 
     @Override
     public String toString() {
-        return getDescription() + "[file: " + getUnitName() + " , line: " +
+        return getDescription() + " [file: " + getUnitName() + ", line: " +
                getLineNumber() + "]";
     }
 

@@ -80,7 +80,7 @@ public final class CheckerError implements Comparable<CheckerError> {
         return new java.io.File(errorLocation.getUnitName()).getAbsolutePath()
                   .replaceFirst(cz.muni.stanse.Stanse.getInstance()
                                                      .getRootDirectory()+'/',"")
-               + " [" + errorLocation.getLineNumber() + "] : "
+               + ", line " + errorLocation.getLineNumber() + ": "
                + getFullDesc();
     }
 
