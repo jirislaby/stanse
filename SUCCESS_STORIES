@@ -4,6 +4,7 @@ L http://lkml.org/lkml/2009/1/17/96 net_namespace
 L http://lkml.org/lkml/2009/3/11/343 pcm_oss mixart
 L http://lkml.org/lkml/2009/3/11/381 atm/cxacru misc/adutux misc/vstusb wusbcore/wa-xfer image/mdc800
 L http://lkml.org/lkml/2009/5/28/70 events_filter
+L http://lkml.org/lkml/2009/6/9/372 amd_iommu
 L http://lkml.org/lkml/2009/6/19/202 floppy
 L http://lkml.org/lkml/2009/6/19/203 ds1374
 L http://lkml.org/lkml/2009/6/19/273 em28xx radio-si470x saa7134 hdpvr
@@ -15,41 +16,48 @@ L http://lkml.org/lkml/2009/6/21/125 hisax
 L http://lkml.org/lkml/2009/6/21/126 mptsas
 L http://lkml.org/lkml/2009/6/21/127 md
 L http://lkml.org/lkml/2009/6/21/128 sm501
+L http://lkml.org/lkml/2009/6/29/283 w83697ug
 L http://lkml.org/lkml/2009/6/29/286 afs
 L http://lkml.org/lkml/2009/6/29/287 mpu401
 L http://lkml.org/lkml/2009/6/29/289 kvm
 L http://lkml.org/lkml/2009/7/1/48 ezx-pcap
 L http://lkml.org/lkml/2009/7/13/313 sst25l
+L http://lkml.org/lkml/2009/7/13/318 toshiba_acpi
 L http://lkml.org/lkml/2009/7/13/320 wl12xx
 L http://lkml.org/lkml/2009/7/13/321 phy_device
-L http://patchwork.kernel.org/patch/29024/ amd_iommu
-L http://patchwork.kernel.org/patch/32978/ w83697ug
-L http://patchwork.kernel.org/patch/35479/ toshiba_acpi
-L http://patchwork.kernel.org/patch/49541/ vt_ioctl
-L http://patchwork.kernel.org/patch/50108/ kvm
-L http://lists.infradead.org/pipermail/linux-mtd-cvs/2009-December/006714.html cfi_cmdset_0002
+L http://lkml.org/lkml/2009/9/23/216 vt_ioctl
+L http://lkml.org/lkml/2009/9/25/47 kvm
+L http://lkml.org/lkml/2009/12/10/147 cfi_cmdset_0002
 
 ATOM http://lkml.org/lkml/2009/6/19/189 qla3xxx
 ATOM http://lkml.org/lkml/2009/6/19/207 dvb_dmx_swfilter_packet
 
 IRQ http://lkml.org/lkml/2009/5/28/69 apic
-PCI http://patchwork.kernel.org/patch/46024/ amd64-agp
-PCI http://patchwork.kernel.org/patch/46201/ arch/x86/kernel/quirks.c
-PCI http://patchwork.kernel.org/patch/49539/ pata_via
+PCI http://lkml.org/lkml/2009/9/6/139 amd64-agp
+PCI http://lkml.org/lkml/2009/9/8/79 arch/x86/kernel/quirks.c
+PCI http://lkml.org/lkml/2009/9/23/212 pata_via
+PCI http://lkml.org/lkml/2010/1/20/148 hotplug/cpcihp
 TTY http://lkml.org/lkml/2009/7/14/326 nozomi
-TTY http://patchwork.kernel.org/patch/48851/ riscom8
-TTY http://patchwork.kernel.org/patch/48865/ mct_u232
+TTY http://lkml.org/lkml/2009/9/19/233 mct_u232
+TTY http://lkml.org/lkml/2009/9/19/240 riscom8
 
 MEM http://lkml.org/lkml/2009/6/29/285 btrfs
 MEM http://lkml.org/lkml/2009/7/13/312 lpfc
 MEM http://lkml.org/lkml/2009/7/13/314 drm_debugfs drm_gem
+MEM http://lkml.org/lkml/2009/9/23/211 usblcd
+MEM http://lkml.org/lkml/2009/9/23/215 mxser
+MEM http://lkml.org/lkml/2009/9/23/221 aacraid qla2xxx cxgb3i lpfc scsi_lib
+MEM http://lkml.org/lkml/2009/9/28/50 qla2xxx
 MEM http://lkml.org/lkml/2010/1/6/151 radeon_cp
-MEM http://lkml.indiana.edu/hypermail/linux/kernel/0909.2/03453.html aacraid qla2xxx cxgb3i lpfc scsi_lib
-MEM http://patchwork.kernel.org/patch/49538/ usblcd
-MEM http://patchwork.kernel.org/patch/49540/ mxser
-MEM http://patchwork.kernel.org/patch/50375/ qla2xxx
+MEM http://lkml.org/lkml/2010/1/6/152 dvb/siano video/tuner-core
+MEM http://lkml.org/lkml/2010/1/6/155 video/tuner-core pci/hotplug
+MEM http://lkml.org/lkml/2010/1/10/16 video/cx18
+MEM http://lkml.org/lkml/2010/1/10/25 ipv6
+MEM http://lkml.org/lkml/2010/1/10/28 irda
+MEM http://lkml.org/lkml/2010/1/10/31 synclink
 MEM https://bugzilla.novell.com/show_bug.cgi?id=564733
 MEM https://bugzilla.novell.com/show_bug.cgi?id=564735
 
 RCH http://patchwork.kernel.org/patch/56386/ ath9k
+RCH http://lkml.org/lkml/2010/1/6/325 dvb/zl10039
 RCH http://lkml.org/lkml/2010/1/6/331 reiserfs
