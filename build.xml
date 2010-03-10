@@ -4,6 +4,14 @@
     <property name="parser.location" value="src/cz/muni/stanse/cparser"/>
     <property name="antlr.location" value="tools/antlr-3.2.jar"/>
     <property name="antlr-runtime.location" value="${dist}/lib/antlr-runtime-3.2.jar"/>
+
+    <condition property="platform" value="windows">
+        <os family="windows" />
+    </condition>
+    <condition property="platform" value="linux">
+        <os family="unix" /> <!-- or better: name="linux"; someone with a linux box should test that -->
+    </condition>
+
     <path id="project.classpath">
 	<pathelement location="build"/>
 	<pathelement location="${antlr-runtime.location}"/>
@@ -70,7 +78,8 @@
     </target>
     <target name="cparser-c">
         <mkdir dir="build/cparser-c/"/>
-	<exec executable="./getarch.sh" outputproperty="arch"/>
+	<exec executable="./getarch.sh" outputproperty="arch" osfamily="unix"/>
+	<exec executable="./getarch.cmd" outputproperty="arch" osfamily="windows"/>
 	<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr"
 		target="src/cparser-c/GNUCa.g">
 	    <classpath path="${antlr.location}"/>
@@ -89,17 +98,15 @@
 		<include name="GNUCaParser.o"/>
 		<include name="main.o"/>
 	    </fileset>
-	    <libset dir="src/cparser-c/lib/" libs="antlr3c-${arch}"/>
+	    <libset dir="src/cparser-c/lib/" libs="antlr3c-${arch}-${platform}"/>
         </cpptasks:cc>
- <!--       <copy todir="${dist}" >
+        <copy todir="${dist}/bin" >
             <fileset dir="build/cparser-c">
                 <include name="stcparser-c"/>
+                <include name="stcparser-c.exe"/>
             </fileset>
-        </copy>-->
-    	<exec executable="cp">
-    		<arg value="build/cparser-c/stcparser-c"/>
-    		<arg value="${dist}/bin"/>
-   		</exec>
+        </copy>
+        <chmod file="${dist}/bin/stcparser-c" perm="ugo+rx" />
     </target>
     <target name="build" depends="init,cparser-c,parser">
         <echo message="${ant.project.name}: ${ant.file}"/>
