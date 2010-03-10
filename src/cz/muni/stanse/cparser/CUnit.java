@@ -144,7 +144,7 @@ public final class CUnit extends Unit {
 	// executed!
 	String command = Stanse.getInstance().getRootDirectory() + File.separator +
 		"bin" + File.separator + "stpreproc";
-	ProcessBuilder builder = new ProcessBuilder(command, jobEntry);
+	ProcessBuilder builder = new ProcessBuilder("perl", command, jobEntry);
 	Map<String, String> env = builder.environment();
 	env.put("PATH", env.get("PATH") + File.pathSeparator +
 		Stanse.getInstance().getRootDirectory() + File.separator + "bin");

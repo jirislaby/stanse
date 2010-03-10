@@ -1,0 +1,30 @@
+STANSE Windows-Specific Readme
+==============================
+
+
+This file describes additional steps neccessary to build and run Stanse on Windows.
+
+Refer to the README file for full build instructions and other requirements.
+
+
+
+GCC
+---
+The GCC C compiler is neccessary to build and run Stanse. Make sure GCC is in your PATH when building and running Stanse.
+The best available GCC port for Windows is called MingW (http://www.mingw.org). You can also download a stripped-down installationless version of MingW from our website.
+
+Both 32bit and 64bit compilation targets are supported. The compilation target is selected based on the version of JRE you use (64bit JRE will ask for a 64bit MingW). The getarch.cmd script controls which target will be built. You can modify it to produce 32bit executables even when 64bit JRE is used.
+
+
+
+Perl
+----
+Perl is essential to run Stanse. Make sure a Perl interpreter is in your PATH when running Stanse. There is a stripped-down installationless version of Perl for Windows available at our website. When using the stripped down version, you also have to specify the path to Perl libraries using the PERL5LIB environment variable (it has to point to (Perl_Directory)\usr\lib\perl5 directory).
+
+
+
+
+stanse.cmd
+----------
+A script called stanse.cmd is provided for your convenience to set up all the environment variables neccessary to build and run stanse. Open the script in Notepad and edit the variables to point to the right directories on your system. When you run this script, it will check if the directories are correctly set up. If so, it will set all environment variables so you can directly run "ant jar" to build Stanse and then "java -jar dist\stanse.jar -gui" to start the Stanse GUI.
+

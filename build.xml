@@ -79,7 +79,10 @@
     <target name="cparser-c">
         <mkdir dir="build/cparser-c/"/>
 	<exec executable="./getarch.sh" outputproperty="arch" osfamily="unix"/>
-	<exec executable="./getarch.cmd" outputproperty="arch" osfamily="windows"/>
+	<exec executable="cmd" outputproperty="arch" osfamily="windows">
+	    <arg value="/c" />
+	    <arg value="getarch.cmd" />
+	</exec>
 	<antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr"
 		target="src/cparser-c/GNUCa.g">
 	    <classpath path="${antlr.location}"/>
