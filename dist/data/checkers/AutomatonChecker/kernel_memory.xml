@@ -443,6 +443,24 @@
         </nested>
     </pattern>
 
+    <pattern name="deref" constructive="false">
+        <functionCall>
+	    <id>__st_memcpy_st__</id>
+	    <var name="A" />
+            <ignore />
+            <ignore />
+        </functionCall>
+    </pattern>
+
+    <pattern name="deref" constructive="false">
+        <functionCall>
+	    <id>__st_memset_st__</id>
+	    <var name="A" />
+            <ignore />
+            <ignore />
+        </functionCall>
+    </pattern>
+
     <!-- BUG_ON(A) -->
     <pattern name="isnotnull" constructive="false">
 	<functionCall>
