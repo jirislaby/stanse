@@ -69,5 +69,7 @@ public final class CheckerFactory {
             new cz.muni.stanse.threadchecker.ThreadCheckerCreator());
         registerCheckerCreator(new cz.muni.stanse.reachabilitychecker.
 		ReachabilityCheckerCreator());
+        registerCheckerCreator(
+                new cz.muni.stanse.pointeranalyzer.PointerAnalyzerCreator());
     }
 }
