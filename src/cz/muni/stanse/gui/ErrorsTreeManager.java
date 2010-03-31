@@ -1,23 +1,57 @@
 package cz.muni.stanse.gui;
 
-import cz.muni.stanse.checker.CheckerError;
-import cz.muni.stanse.checker.CheckerErrorTraceLocation;
-import cz.muni.stanse.checker.CheckerErrorTrace;
-
-import java.util.HashSet;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+
+import cz.muni.stanse.checker.CheckerError;
+import cz.muni.stanse.checker.CheckerErrorTrace;
+import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 
 final class ErrorsTreeManager {
 
     // package-private section
-
-    ErrorsTreeManager(final javax.swing.JTree errorsTree,
+	
+	/**
+	 * This comparator will compare CheckerError according to their importance
+	 * 
+	 * @author radim cebis
+	 */
+	private static class ErrorsComparator implements Comparator<DefaultMutableTreeNode> {
+		@Override
+		public int compare(DefaultMutableTreeNode first,
+				DefaultMutableTreeNode second) {
+			Object secondObj = second.getUserObject();
+			Object firstObj = first.getUserObject();
+			if(secondObj instanceof CheckerError && firstObj instanceof CheckerError) {
+				return ((CheckerError)secondObj).getImportance() - ((CheckerError)firstObj).getImportance();
+			} 
+			return 0;
+		}
+	}
+	
+	/**
+	 * This function will sort checker errors according to their importance
+	 * 
+	 * @author radim cebis
+	 */
+	@SuppressWarnings("unchecked")
+	public void sortErrors() {
+		if(errorsTree!=null && errorsTree.getModel()!=null && errorsTree.getModel().getRoot()!=null) {
+			((SortingTreeNode<DefaultMutableTreeNode>)(errorsTree.getModel().getRoot())).sort();
+			present();			
+		}		
+	}
+	
+	ErrorsTreeManager(final javax.swing.JTree errorsTree,
                       final javax.swing.JButton markBugButton,
                       final javax.swing.JButton markFalsePosButton,
                       final javax.swing.JButton unmarkReportButton) {
         this.errorsTree = errorsTree;
+        this.errorsTree.setModel(new DefaultTreeModel(new SortingTreeNode<DefaultMutableTreeNode>(new ErrorsComparator())));
         bugs = new HashSet<CheckerError>();
         falses = new HashSet<CheckerError>();
         unchecked = new HashSet<CheckerError>();
@@ -172,8 +206,18 @@ final class ErrorsTreeManager {
         getOpenedSourceFilesManager().gotoColumnInSelectedLine(
                                       location.getColumnNumber());
         MainWindow.getInstance().getConsoleManager().clear();
-        MainWindow.getInstance().getConsoleManager().appendText(
+        Object selected = getSelectedData(); 
+        if(selected instanceof CheckerError) {
+        	MainWindow.getInstance().getConsoleManager().appendText(
+                   ((CheckerError)selected).getFullDesc());
+        } else if(selected instanceof CheckerErrorTrace) {
+        	MainWindow.getInstance().getConsoleManager().appendText(
+        			((CheckerErrorTrace)selected).getDescription());
+        }
+        else {
+        	MainWindow.getInstance().getConsoleManager().appendText(
                                                      location.getDescription());
+        }
     }
 
     private void onSelectionChangedForErrorTracingManager(

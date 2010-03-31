@@ -38,7 +38,7 @@ public final class CheckerErrorTrace {
                              final LazyInternalStructures internals) {
         this.locations = buildLocations(trace,startMsg,innerMsg,endMsg,
                                         internals);
-        this.description = "the only trace";
+        this.description = "trace";
     }
 
     @Override
@@ -57,7 +57,7 @@ public final class CheckerErrorTrace {
 
     @Override
     public String toString() {
-        return "trace [locations: " + getLocations().size() + "]";
+        return description + " [locations: " + getLocations().size() + "]";
     }
 
     public String dump() {

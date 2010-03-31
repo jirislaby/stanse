@@ -1,5 +1,9 @@
 package cz.muni.stanse.gui;
 
+import java.lang.reflect.InvocationTargetException;
+
+import javax.swing.SwingUtilities;
+
 import cz.muni.stanse.configuration.Configuration;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
@@ -25,8 +29,22 @@ final class ActionCheckForBugs extends javax.swing.AbstractAction {
             new CheckerErrorReceiver() {
                 @Override
                 public void receive(final CheckerError error) {
-                    getErrorsTreeManager().addUnchecked(error);
-                    getErrorsTreeManager().present();
+                	// GUI MUST be updated in EDT
+                    try {
+						SwingUtilities.invokeAndWait(new Runnable() {						
+							@Override
+							public void run() {
+								getErrorsTreeManager().addUnchecked(error);
+						        getErrorsTreeManager().present();
+							}
+						});
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InvocationTargetException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
                 }
                 @Override
                 public void onEnd() {

@@ -202,6 +202,7 @@ public final class MainWindow extends javax.swing.JFrame {
         markBugButton = new javax.swing.JButton();
         markFalsePosButton = new javax.swing.JButton();
         unmarkReportButton = new javax.swing.JButton();
+        sortButton = new javax.swing.JButton();
         stanseMainMenuBar = new javax.swing.JMenuBar();
         stanseMainMenuFile = new javax.swing.JMenu();
         stanseMainMenuItemFile = new javax.swing.JMenuItem();
@@ -293,35 +294,41 @@ public final class MainWindow extends javax.swing.JFrame {
         unmarkReportButton.setToolTipText("Remove 'bug/not bug' mark from selected report. Selected report will return back to unresolved state.");
         unmarkReportButton.setFocusable(false);
 
+        sortButton.setAction(new ActionSort());
+        sortButton.setText("Sort");
+
         org.jdesktop.layout.GroupLayout tracingHolderLayout = new org.jdesktop.layout.GroupLayout(tracingHolder);
         tracingHolder.setLayout(tracingHolderLayout);
         tracingHolderLayout.setHorizontalGroup(
             tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(locationInfoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tracingHolderLayout.createSequentialGroup()
-                .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(tracingHolderLayout.createSequentialGroup()
-                        .add(gotoFirstNodeButton)
+                        .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(tracingHolderLayout.createSequentialGroup()
+                                .add(gotoFirstNodeButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(gotoPrevNodeButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(gotoNextNodeButton))
+                            .add(tracingHolderLayout.createSequentialGroup()
+                                .add(markBugButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(markFalsePosButton)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(gotoPrevNodeButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(gotoNextNodeButton))
-                    .add(tracingHolderLayout.createSequentialGroup()
-                        .add(markBugButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(markFalsePosButton)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, tracingHolderLayout.createSequentialGroup()
-                        .add(gotoLastNodeButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 589, Short.MAX_VALUE)
-                        .add(checkButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(configureButton)
-                        .add(6, 6, 6))
-                    .add(tracingHolderLayout.createSequentialGroup()
-                        .add(unmarkReportButton)
-                        .addContainerGap())))
+                        .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(gotoLastNodeButton)
+                            .add(unmarkReportButton))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 130, Short.MAX_VALUE)
+                        .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(tracingHolderLayout.createSequentialGroup()
+                                .add(checkButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(configureButton))
+                            .add(sortButton))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(locationInfoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE))
+                .addContainerGap())
         );
         tracingHolderLayout.setVerticalGroup(
             tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -330,19 +337,20 @@ public final class MainWindow extends javax.swing.JFrame {
                     .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(checkButton)
                         .add(configureButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tracingHolderLayout.createSequentialGroup()
+                        .add(gotoFirstNodeButton)
+                        .add(3, 3, 3)
+                        .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(markBugButton)
+                            .add(markFalsePosButton)
+                            .add(unmarkReportButton)
+                            .add(sortButton)))
                     .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(tracingHolderLayout.createSequentialGroup()
-                            .add(gotoFirstNodeButton)
-                            .add(3, 3, 3)
-                            .add(tracingHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(markBugButton)
-                                .add(markFalsePosButton)
-                                .add(unmarkReportButton)))
                         .add(gotoNextNodeButton)
                         .add(gotoPrevNodeButton)
                         .add(gotoLastNodeButton)))
                 .add(6, 6, 6)
-                .add(locationInfoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))
+                .add(locationInfoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE))
         );
 
         splitterErrorTreeAndTracing.setBottomComponent(tracingHolder);
@@ -437,13 +445,14 @@ public final class MainWindow extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(splitterSourcesAndErrors, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE)
+            .add(splitterSourcesAndErrors, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 709, Short.MAX_VALUE)
         );
 
         getAccessibleContext().setAccessibleDescription("Static checker for ISO C (and GNU C extension) programs");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton checkButton;
     private javax.swing.JButton configureButton;
@@ -462,6 +471,7 @@ public final class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton markBugButton;
     private javax.swing.JButton markFalsePosButton;
     private javax.swing.JTextArea ouputConsoleTextArea;
+    private javax.swing.JButton sortButton;
     private javax.swing.JTabbedPane sourceCodeTabbedPane;
     private javax.swing.JSplitPane splitterErrorTreeAndTracing;
     private javax.swing.JSplitPane splitterSourcesAndErrors;

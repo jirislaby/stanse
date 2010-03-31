@@ -81,7 +81,7 @@ public final class CheckerError implements Comparable<CheckerError> {
                   .replaceFirst(cz.muni.stanse.Stanse.getInstance()
                                                      .getRootDirectory()+'/',"")
                + ", line " + errorLocation.getLineNumber() + ": "
-               + getFullDesc();
+               + getShortDesc();
     }
 
     public String dump() {
