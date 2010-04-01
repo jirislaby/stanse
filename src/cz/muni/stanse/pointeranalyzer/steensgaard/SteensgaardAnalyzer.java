@@ -14,7 +14,7 @@ public final class SteensgaardAnalyzer {
     // where type of the equivalence class is FunctionPointerType
     // global variables have CFGHandle == null, local variables have CFGHandle == handle of function
     // parameters of function are local variables
-    // return value of functions is a local variable with name @
+    // return value of functions is a local variable with name "__retVal"
     TypeTable typeTable = new TypeTable();
 
     final String returnVariableName = "__retVal";
@@ -28,6 +28,8 @@ public final class SteensgaardAnalyzer {
 
         for (CFGHandle cfg: cfgs)
         {
+            //System.out.printf("*********** in function %s\n", cfg.getFunctionName());
+
             for (CFGNode node: cfg.getAllNodes())
             {
                 if (!node.getElement().getName().equals("exit"))
@@ -36,22 +38,19 @@ public final class SteensgaardAnalyzer {
         }
 
         typeTable.toDotFile();
-
     }
     
     private void addFunction(CFGHandle cfg)
     {
-        Element functionDefinition = cfg.getElement();
-        Element declarator = (Element)functionDefinition.selectSingleNode("declarator");
-        Element functionDecl = (Element)declarator.selectSingleNode("functionDecl");
+        Element functionDecl = cfg.getElement().element("declarator").element("functionDecl");
 
         // create a list of parameters
         EquivalenceClass[] parameters = new EquivalenceClass[functionDecl.elements().size()];
-        for (int i = 0; i < functionDecl.elements().size(); i++)
+        for (int i = 0; i < parameters.length; i++)
         {
             // get the class representation of the parameter (the call will create it if neccessary)
             EquivalenceClass param = typeTable.getTypeOf(cfg,
-                    ((Node)functionDecl.elements().get(i)).selectSingleNode("descendant::id").getText());
+                    ((Node)functionDecl.elements().get(i)).selectSingleNode("declarator/id").getText());
 
             parameters[i] = param;
         }
@@ -60,10 +59,10 @@ public final class SteensgaardAnalyzer {
         EquivalenceClass returnValue = typeTable.getTypeOf(cfg, returnVariableName);
 
         // create a class for the function
-        EquivalenceClass function = new EquivalenceClass(
+        EquivalenceClass function = new EquivalenceClass<LocationPointerType>(
                 new LocationPointerType(
-                    new EquivalenceClass("functiondummytau"),
-                    new EquivalenceClass(
+                    new EquivalenceClass<LocationPointerType>("functiondummytau"),
+                    new EquivalenceClass<FunctionPointerType>(
                         cfg.getFunctionName(),
                         new FunctionPointerType(parameters, returnValue))));
 
@@ -81,9 +80,9 @@ public final class SteensgaardAnalyzer {
         return lhsType;
     }
 
-    private EquivalenceClass getSymbolClass(CFGHandle cfg, String name)
+    private EquivalenceClass<LocationPointerType> getSymbolClass(CFGHandle cfg, String name)
     {
-        EquivalenceClass idClass;
+        EquivalenceClass<LocationPointerType> idClass;
 
         if (cfg.isSymbolLocal(name))
         {
@@ -99,22 +98,24 @@ public final class SteensgaardAnalyzer {
 
     public EvaluatedType handleId(CFGHandle cfg, Element id)
     {
-        EquivalenceClass idClass = getSymbolClass(cfg, id.getText());
+        EquivalenceClass<LocationPointerType> idClass = getSymbolClass(cfg, id.getText());
 
-        if (idClass.getType() instanceof LocationPointerType)
-        {
-            LocationPointerType pt = (LocationPointerType)idClass.getType();
-            return new EvaluatedType(pt.getTau(), pt.getLambda());
-        }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
+        return new EvaluatedType(idClass.getType().getTau(), idClass.getType().getLambda());
+        
     }
 
     public EvaluatedType handleIntConst(CFGHandle cfg, Element intConst)
     {
-        return new EvaluatedType(new EquivalenceClass("intConst.tau"), new EquivalenceClass("intConst.lambda"));
+        return new EvaluatedType(
+                new EquivalenceClass<LocationPointerType>("intConst.tau"),
+                new EquivalenceClass<FunctionPointerType>("intConst.lambda"));
+    }
+
+    public EvaluatedType handleStringConst(CFGHandle cfg, Element stringConst)
+    {
+        return new EvaluatedType(
+                new EquivalenceClass<LocationPointerType>("stringConst.tau"),
+                new EquivalenceClass<FunctionPointerType>("stringConst.lambda"));
     }
 
     public EvaluatedType handleAddrExpression(CFGHandle cfg, Element addrExpression)
@@ -133,9 +134,9 @@ public final class SteensgaardAnalyzer {
         assert addressedExpression.getName().equals("id");
 
         String name = addressedExpression.getText();
-        EquivalenceClass idClass = getSymbolClass(cfg, name);
+        EquivalenceClass<LocationPointerType> idClass = getSymbolClass(cfg, name);
 
-        return new EvaluatedType(idClass, new EquivalenceClass("addrExpressionDummyLambda"));
+        return new EvaluatedType(idClass, new EquivalenceClass<FunctionPointerType>("addrExpressionDummyLambda"));
     }
 
     public EvaluatedType handleArrayAccess(CFGHandle cfg, Element arrayAccess)
@@ -157,44 +158,45 @@ public final class SteensgaardAnalyzer {
     {
         EvaluatedType refFunction = handleExpression(cfg, (Element)functionCall.selectSingleNode("*[1]"));
 
-        EquivalenceClass function = refFunction.getLambda();
+        EquivalenceClass<FunctionPointerType> function = refFunction.getLambda();
 
         int paramCount = functionCall.nodeCount() - 1;
 
         // calling a function without any knowledge about the called function?
         if (function.getType() == null)
         {
-            EquivalenceClass params[] = new EquivalenceClass[paramCount];
+            EquivalenceClass<LocationPointerType> params[] = new EquivalenceClass[paramCount];
             for (int i = 0; i < params.length; i++) {
-                params[i] = new EquivalenceClass("unknownFunctionCallParam",
+                params[i] = new EquivalenceClass<LocationPointerType>("unknownFunctionCallParam",
                                 new LocationPointerType(
-                                    new EquivalenceClass("unknownFunctionCallParam.tau"),
-                                    new EquivalenceClass("unknownFunctionCallParam.lambda")));
+                                    new EquivalenceClass<LocationPointerType>("unknownFunctionCallParam.tau"),
+                                    new EquivalenceClass<FunctionPointerType>("unknownFunctionCallParam.lambda")));
             }
 
-            EquivalenceClass returnValue = new EquivalenceClass("unknownFunctionCallRetval",
-                    new LocationPointerType(
-                        new EquivalenceClass("unknownFunctionCallRetval.tau"),
-                        new EquivalenceClass("unknownFunctionCallRetval.lambda")));
+            EquivalenceClass<LocationPointerType> returnValue =
+                    new EquivalenceClass<LocationPointerType>("unknownFunctionCallRetval",
+                        new LocationPointerType(
+                            new EquivalenceClass<LocationPointerType>("unknownFunctionCallRetval.tau"),
+                            new EquivalenceClass<FunctionPointerType>("unknownFunctionCallRetval.lambda")));
 
             function.setType(new FunctionPointerType(params, returnValue));
         }
 
-        FunctionPointerType functionType = (FunctionPointerType)function.getType();
-        List<EquivalenceClass> parameterTypes = functionType.getParameterTypes();
+        FunctionPointerType functionType = function.getType();
+        List<EquivalenceClass<LocationPointerType>> parameterTypes = functionType.getParameterTypes();
 
         for (int i = 1; i < functionCall.elements().size(); i++)
         {
             EvaluatedType parameterVariable = new EvaluatedType(
-                ((LocationPointerType)parameterTypes.get(i - 1).getType()).getTau(),
-                ((LocationPointerType)parameterTypes.get(i - 1).getType()).getLambda());
+                parameterTypes.get(i - 1).getType().getTau(),
+                parameterTypes.get(i - 1).getType().getLambda());
 
             parameterVariable.join(handleExpression(cfg, (Element)functionCall.elements().get(i)));
         }
 
         return new EvaluatedType(
-            ((LocationPointerType)functionType.getReturnType().getType()).getTau(),
-            ((LocationPointerType)functionType.getReturnType().getType()).getLambda());
+            functionType.getReturnType().getType().getTau(),
+            functionType.getReturnType().getType().getLambda());
     }
 
     public EvaluatedType handlePostfixExpression(CFGHandle cfg, Element postfixExpression)
@@ -208,8 +210,28 @@ public final class SteensgaardAnalyzer {
         return accessedLocation.dereference();
     }
 
+    public EvaluatedType handleCommaExpression(CFGHandle cfg, Element commaExpression)
+    {
+        // evaluate the left side because it might have side effects
+        handleExpression(cfg, (Element)commaExpression.elements().get(0));
+
+        // evaluate the right side and return evaluated type
+        return handleExpression(cfg, (Element)commaExpression.elements().get(1));
+    }
+
+    public EvaluatedType handleConditionalExpression(CFGHandle cfg, Element conditionalExpression)
+    {
+        handleExpression(cfg, (Element)conditionalExpression.elements().get(0));
+
+        return handleAssignment(cfg,
+                (Element)conditionalExpression.elements().get(1),
+                (Element)conditionalExpression.elements().get(2));
+    }
+
     public EvaluatedType handleExpression(CFGHandle cfg, Element expr)
     {
+        //System.out.printf("eval: %s\n", expr.getName());
+        
         if (expr.getName().equals("initDeclarator")) {
             return handleAssignment(cfg,
                     (Element)expr.selectSingleNode("declarator/id"),
@@ -230,8 +252,12 @@ public final class SteensgaardAnalyzer {
             return handleArrayAccess(cfg, expr);
         }
 
-        if (expr.getName().equals("intConst")) {
+        if (expr.getName().equals("intConst") || expr.getName().equals("sizeofExpression")) {
             return handleIntConst(cfg, expr);
+        }
+
+        if (expr.getName().equals("stringConst")) {
+            return handleStringConst(cfg, expr);
         }
 
         if (expr.getName().equals("addrExpression")) {
@@ -271,6 +297,14 @@ public final class SteensgaardAnalyzer {
             return handleArrowExpression(cfg, expr);
         }
 
+        if (expr.getName().equals("commaExpression")) {
+            return handleCommaExpression(cfg, expr);
+        }
+
+        if (expr.getName().equals("conditionalExpression")) {
+            return handleConditionalExpression(cfg, expr);
+        }
+
 
         throw new UnsupportedOperationException(expr.getName());
     }
@@ -283,12 +317,11 @@ public final class SteensgaardAnalyzer {
         }
 
         FunctionPointerType containingFunction =
-                (FunctionPointerType)((LocationPointerType)typeTable.getTypeOf(
-                    cfg.getFunctionName()).getType()).getLambda().getType();
+                typeTable.getTypeOf(cfg.getFunctionName()).getType().getLambda().getType();
 
         EvaluatedType returnVariable = new EvaluatedType(
-                ((LocationPointerType)containingFunction.getReturnType().getType()).getTau(),
-                ((LocationPointerType)containingFunction.getReturnType().getType()).getLambda());
+                containingFunction.getReturnType().getType().getTau(),
+                containingFunction.getReturnType().getType().getLambda());
 
         returnVariable.join(handleExpression(cfg, (Element)returnStatement.selectSingleNode("*[1]")));
     }
@@ -304,8 +337,11 @@ public final class SteensgaardAnalyzer {
             return;
         }
 
+        if (statement.getName().equals("breakStatement")) {
+            return;
+        }
+
         if (statement.getName().equals("assert")) {
-            // TODO: wtf is this?
             return;
         }
 

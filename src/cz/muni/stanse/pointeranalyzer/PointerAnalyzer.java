@@ -50,7 +50,7 @@ public class PointerAnalyzer extends Checker {
     public static void main(String[] args)
     {
         TypeTable table = new TypeTable();
-        EquivalenceClass.addJoinListener(table);
+        //EquivalenceClass.addJoinListener(table);
 
         EquivalenceClass t1;
         EquivalenceClass t2;

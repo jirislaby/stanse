@@ -10,11 +10,13 @@ import java.util.List;
  */
 public final class FunctionPointerType implements PointerType {
 
-    private EquivalenceClass returnType;
+    private EquivalenceClass<LocationPointerType> returnType;
 
-    private EquivalenceClass[] parameterTypes;
+    private EquivalenceClass<LocationPointerType>[] parameterTypes;
 
-    public FunctionPointerType(EquivalenceClass[] parameterTypes, EquivalenceClass returnType)
+    public FunctionPointerType(
+            EquivalenceClass<LocationPointerType>[] parameterTypes,
+            EquivalenceClass<LocationPointerType> returnType)
     {
         this.returnType = returnType;
         this.parameterTypes = parameterTypes;
@@ -26,12 +28,12 @@ public final class FunctionPointerType implements PointerType {
         }
     }
 
-    public List<EquivalenceClass> getParameterTypes()
+    public List<EquivalenceClass<LocationPointerType>> getParameterTypes()
     {
         return Arrays.asList(parameterTypes);
     }
 
-    public EquivalenceClass getReturnType()
+    public EquivalenceClass<LocationPointerType> getReturnType()
     {
         return returnType;
     }

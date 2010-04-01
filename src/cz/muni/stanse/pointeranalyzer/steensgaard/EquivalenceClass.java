@@ -1,34 +1,28 @@
 package cz.muni.stanse.pointeranalyzer.steensgaard;
 
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  *
  * @author Michal Strehovsky
  */
-public final class EquivalenceClass {
+public final class EquivalenceClass<T extends PointerType> {
 
-    private PointerType type;
+    private T type;
 
     private String name;
 
-    private HashSet<EquivalenceClass> pendingJoins
-            = new HashSet<EquivalenceClass>();
+    private HashSet<EquivalenceClass<T>> pendingJoins
+            = new HashSet<EquivalenceClass<T>>();
 
     private HashSet<EquivalenceClassJoinListener> pointedFrom
             = new HashSet<EquivalenceClassJoinListener>();
 
-    static List<EquivalenceClassJoinListener> joinListener
-            = new LinkedList<EquivalenceClassJoinListener>();
+    // used during the joinWith operations to prevent loops
+    private HashSet<EquivalenceClass<T>> joiningWith
+            = new HashSet<EquivalenceClass<T>>();
 
-    public static void addJoinListener(EquivalenceClassJoinListener listener)
-    {
-        joinListener.add(listener);
-    }
-
-    public EquivalenceClass(String name, PointerType type)
+    public EquivalenceClass(String name, T type)
     {
         this.type = type;
         this.name = name;
@@ -39,7 +33,7 @@ public final class EquivalenceClass {
         this(name, null);
     }
 
-    public EquivalenceClass(PointerType type)
+    public EquivalenceClass(T type)
     {
         this("", type);
     }
@@ -54,22 +48,22 @@ public final class EquivalenceClass {
         return pointedFrom.add(p);
     }
 
-    public PointerType getType()
+    public T getType()
     {
         return type;
     }
 
-    public void setType(PointerType type)
+    public void setType(T type)
     {
         this.type = type;
 
-        for (EquivalenceClass x: this.pendingJoins)
+        for (EquivalenceClass<T> x: this.pendingJoins)
         {
             this.joinWith(x);
         }
     }
 
-    public void conditionalJoinWith(EquivalenceClass that)
+    public void conditionalJoinWith(EquivalenceClass<T> that)
     {
         if (that.type == null)
         {
@@ -81,8 +75,20 @@ public final class EquivalenceClass {
         }
     }
 
-    public void joinWith(EquivalenceClass that)
+    public void joinWith(EquivalenceClass<T> that)
     {
+        // do nothing if joining with itself
+        if (this == that) {
+            return;
+        }
+
+        // avoid recursive calls and loops
+        if (joiningWith.contains(that)) {
+            return;
+        } else {
+            joiningWith.add(that);
+        }
+
         if (this.type == null)
         {
             this.type = that.type;
@@ -103,7 +109,7 @@ public final class EquivalenceClass {
         {
             if (that.type == null)
             {
-                for (EquivalenceClass x: that.pendingJoins)
+                for (EquivalenceClass<T> x: that.pendingJoins)
                 {
                     this.joinWith(x);
                 }
@@ -119,16 +125,14 @@ public final class EquivalenceClass {
             p.notifyEquivalenceClassJoined(that, this);
         }
 
-        for (EquivalenceClassJoinListener l: joinListener)
-        {
-            l.notifyEquivalenceClassJoined(that, this);
-        }
-
-        java.lang.System.out.println("Joined " + that.toString() + " to " + this.toString());
+        //System.out.println("Joined " + that.toString() + " to " + this.toString());
 
         this.name = this.name + "|" + that.name;
 
         this.pointedFrom.addAll(that.pointedFrom);
+
+        // join process ended, so remove the anti-loop flag
+        joiningWith.remove(that);
     }
 
     @Override
@@ -137,21 +141,23 @@ public final class EquivalenceClass {
         return name;
     }
 
-    public static EquivalenceClass createRefBottomBottom(String name)
+    public static EquivalenceClass<LocationPointerType> createRefBottomBottom(String name)
     {
         // creates the type "ref(bottom, bottom)"
-        EquivalenceClass result =
-                new EquivalenceClass(name,
+        EquivalenceClass<LocationPointerType> result =
+                new EquivalenceClass<LocationPointerType>(name,
                     new LocationPointerType(
-                        new EquivalenceClass(name + ".tau",
-                            new LocationPointerType(new EquivalenceClass(name + ".tau.tau"), new EquivalenceClass(name + ".tau.lambda"))
-                        ), new EquivalenceClass(name + ".lambda"))
+                        new EquivalenceClass<LocationPointerType>(name + ".tau",
+                            new LocationPointerType(
+                                new EquivalenceClass<LocationPointerType>(name + ".tau.tau"),
+                                new EquivalenceClass<FunctionPointerType>(name + ".tau.lambda"))),
+                        new EquivalenceClass<FunctionPointerType>(name + ".lambda"))
                     );
 
         return result;
     }
 
-    public static EquivalenceClass createRefBottomBottom()
+    public static EquivalenceClass<LocationPointerType> createRefBottomBottom()
     {
         return createRefBottomBottom("");
     }

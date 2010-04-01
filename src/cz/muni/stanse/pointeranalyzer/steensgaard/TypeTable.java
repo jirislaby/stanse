@@ -17,70 +17,74 @@ import java.util.Set;
  */
 public final class TypeTable implements EquivalenceClassJoinListener {
     
-    private HashMap<CFGHandle, HashMap<String, EquivalenceClass>>
-            typeTable = new HashMap<CFGHandle, HashMap<String, EquivalenceClass>>();
+    private HashMap<CFGHandle, HashMap<String, EquivalenceClass<LocationPointerType>>>
+            typeTable = new HashMap<CFGHandle, HashMap<String, EquivalenceClass<LocationPointerType>>>();
     
-    private HashMap<EquivalenceClass, List<Pair<CFGHandle, String>>>
-            inverseTypeTable = new HashMap<EquivalenceClass, List<Pair<CFGHandle, String>>>();
+    private HashMap<EquivalenceClass<LocationPointerType>, List<Pair<CFGHandle, String>>>
+            inverseTypeTable = new HashMap<EquivalenceClass<LocationPointerType>, List<Pair<CFGHandle, String>>>();
 
-    private HashMap<String, EquivalenceClass> getContextOf(CFGHandle cfg)
+    private HashMap<String, EquivalenceClass<LocationPointerType>> getContextOf(CFGHandle cfg)
     {
-        HashMap<String, EquivalenceClass> context = typeTable.get(cfg);
+        // is the function context already present in the type table?
+        HashMap<String, EquivalenceClass<LocationPointerType>> context = typeTable.get(cfg);
         if (context == null)
         {
-            context = new HashMap<String, EquivalenceClass>();
+            // first request for this function context, so create it
+            context = new HashMap<String, EquivalenceClass<LocationPointerType>>();
             typeTable.put(cfg, context);
         }
 
         return context;
     }
 
-    public TypeTable()
+    public EquivalenceClass<LocationPointerType> getTypeOf(CFGHandle cfg, String name)
     {
-        EquivalenceClass.addJoinListener(this);
-    }
+        HashMap<String, EquivalenceClass<LocationPointerType>> context = getContextOf(cfg);
 
-    public EquivalenceClass getTypeOf(CFGHandle cfg, String name)
-    {
-        HashMap<String, EquivalenceClass> context = getContextOf(cfg);
-        
-        EquivalenceClass result = context.get(name);
+        // find the equivalence class for the symbol in the type table
+        EquivalenceClass<LocationPointerType> result = context.get(name);
         if (result == null)
         {
             // symbol not yet in the table, so create an equivalence class for it
             result = EquivalenceClass.createRefBottomBottom(name);
             context.put(name, result);
 
-            // add entry to the inverse table
+            // add an entry to the inverse table
             List<Pair<CFGHandle, String>> backList = new ArrayList<Pair<CFGHandle, String>>();
             backList.add(new Pair<CFGHandle, String>(cfg, name));
             inverseTypeTable.put(result, backList);
+
+            result.notifyPointedFrom(this);
         }
         
         return result;
     }
 
-    public EquivalenceClass getTypeOf(String name)
+    public EquivalenceClass<LocationPointerType> getTypeOf(String name)
     {
         return getTypeOf(null, name);
     }
 
-    public EquivalenceClass getTypeOf(CFGHandle cfg)
+    public EquivalenceClass<LocationPointerType> getTypeOf(CFGHandle cfg)
     {
         return getTypeOf(cfg, null);
     }
 
 
-    public void addFunction(CFGHandle handle, EquivalenceClass functionClass)
+    public void addFunction(CFGHandle handle, EquivalenceClass<LocationPointerType> functionClass)
     {
-        HashMap<String, EquivalenceClass> context = getContextOf(null);
+        // functions are stored as global variables in the type table:
+        // first, add an entry to the type table
+        HashMap<String, EquivalenceClass<LocationPointerType>> context = getContextOf(null);
         context.put(handle.getFunctionName(), functionClass);
 
+        // next, add an entry to the inverse type table
         List<Pair<CFGHandle, String>> backList
                 = new ArrayList<Pair<CFGHandle, String>>();
         backList.add(new Pair<CFGHandle, String>(null, handle.getFunctionName()));
-        List<Pair<CFGHandle, String>> res = inverseTypeTable.put(functionClass, backList);
-        assert res == null;
+        inverseTypeTable.put(functionClass, backList);
+
+        functionClass.notifyPointedFrom(this);
     }
 
     public void notifyEquivalenceClassJoined(EquivalenceClass oldClass, EquivalenceClass newClass)
@@ -92,7 +96,7 @@ public final class TypeTable implements EquivalenceClassJoinListener {
             // update type table
             for (Pair<CFGHandle, String> le: oldList)
             {
-                HashMap<String, EquivalenceClass> context = getContextOf(le.getFirst());
+                HashMap<String, EquivalenceClass<LocationPointerType>> context = getContextOf(le.getFirst());
                 context.put(le.getSecond(), newClass);
             }
 
@@ -103,27 +107,27 @@ public final class TypeTable implements EquivalenceClassJoinListener {
             {
                 oldList.addAll(newList);
             }
+            else
+            {
+                newClass.notifyPointedFrom(this);
+            }
             inverseTypeTable.put(newClass, oldList);
         }
     }
     
-    private Set<Pair<CFGHandle, String>> getPointsToSetOf(CFGHandle cfg, String id, EquivalenceClass sourceClass)
+    private Set<Pair<CFGHandle, String>> getPointsToSetOf(EquivalenceClass<LocationPointerType> sourceClass)
     {
         Set<Pair<CFGHandle, String>> result = new HashSet<Pair<CFGHandle, String>>();
 
-        EquivalenceClass destinationClass = ((LocationPointerType)sourceClass.getType()).getTau();
+        // get the equivalence class to which this class points to
+        EquivalenceClass<LocationPointerType> destinationClass = sourceClass.getType().getTau();
 
         List<Pair<CFGHandle, String>> equivList = inverseTypeTable.get(destinationClass);
+
+        // any variables pointed to?
         if (equivList != null)
         {
             result.addAll(equivList);
-            /*for (Pair<CFGHandle, String> listEnt: equivList)
-            {
-                if (listEnt.getFirst() != cfg || !listEnt.getSecond().equals(id))
-                {
-                    result.add(listEnt);
-                }
-            }*/
         }
         
         return result;
@@ -131,20 +135,16 @@ public final class TypeTable implements EquivalenceClassJoinListener {
 
     public Set<Pair<CFGHandle, String>> getPointsToSetOf(CFGHandle cfg, String id)
     {
-        EquivalenceClass sourceClass = getTypeOf(cfg, id);
-        if (!(sourceClass.getType() instanceof LocationPointerType))
-        {
-            return null;
-        }
+        EquivalenceClass<LocationPointerType> sourceClass = getTypeOf(cfg, id);
 
-        return getPointsToSetOf(cfg, id, sourceClass);
+        return getPointsToSetOf(sourceClass);
     }
 
     public void toDotFile()
     {
         System.out.println("digraph {");
 
-        for (Entry<CFGHandle, HashMap<String, EquivalenceClass>> entry: typeTable.entrySet())
+        for (Entry<CFGHandle, HashMap<String, EquivalenceClass<LocationPointerType>>> entry: typeTable.entrySet())
         {
             for (String name: entry.getValue().keySet())
             {
@@ -152,27 +152,24 @@ public final class TypeTable implements EquivalenceClassJoinListener {
             }
         }
 
-        for (Entry<CFGHandle, HashMap<String, EquivalenceClass>> functionEntry: typeTable.entrySet())
+        for (Entry<CFGHandle, HashMap<String, EquivalenceClass<LocationPointerType>>> functionEntry: typeTable.entrySet())
         {
             CFGHandle cfg = functionEntry.getKey();
 
-            for (Entry<String, EquivalenceClass> symbolEntry: functionEntry.getValue().entrySet())
+            for (Entry<String, EquivalenceClass<LocationPointerType>> symbolEntry: functionEntry.getValue().entrySet())
             {
                 String name = symbolEntry.getKey();
                 EquivalenceClass type = symbolEntry.getValue();
 
-                if (!(type.getType() instanceof LocationPointerType))
-                    continue;
+                Set<Pair<CFGHandle, String>> pointsToSet = getPointsToSetOf(type);
 
-                Set<Pair<CFGHandle, String>> aliases = getPointsToSetOf(cfg, name, type);
-
-                for (Pair<CFGHandle, String> alias: aliases)
+                for (Pair<CFGHandle, String> pointedTo: pointsToSet)
                 {
                     System.out.printf("%s__%s -> %s__%s;\n",
                             cfg != null ? cfg.getFunctionName() : "",
                             name,
-                            alias.getFirst() != null ? alias.getFirst().getFunctionName() : "",
-                            alias.getSecond());
+                            pointedTo.getFirst() != null ? pointedTo.getFirst().getFunctionName() : "",
+                            pointedTo.getSecond());
                 }
 
             }

@@ -7,43 +7,51 @@ package cz.muni.stanse.pointeranalyzer.steensgaard;
  */
 public class EvaluatedType implements EquivalenceClassJoinListener {
 
-    private EquivalenceClass tau;
+    private EquivalenceClass<LocationPointerType> tau;
 
-    private EquivalenceClass lambda;
+    private EquivalenceClass<FunctionPointerType> lambda;
 
     // if true, do a settype(this.tau, ref(lhs.tau, lhs.lambda))
     // generally, this will be true if the previous operation was a dereference
     // and there was no type associated with the dereferenced value
     private boolean isDereference;
 
-    public EquivalenceClass getTau()
+    public EquivalenceClass<LocationPointerType> getTau()
     {
         return tau;
     }
 
-    public EquivalenceClass getLambda()
+    public EquivalenceClass<FunctionPointerType> getLambda()
     {
         return lambda;
     }
 
     public EvaluatedType dereference()
     {
-        // TODO what now?
-        if (isDereference) throw new UnsupportedOperationException("panic");
-
-        if (tau.getType() != null)
+        // is this already a dereference?
+        if (!isDereference)
         {
-            EquivalenceClass derefTau = ((LocationPointerType)tau.getType()).getTau();
-            EquivalenceClass derefLambda = ((LocationPointerType)tau.getType()).getLambda();
-            return new EvaluatedType(derefTau, derefLambda);
+            // can we dereference it already?
+            if (tau.getType() != null)
+            {
+                EquivalenceClass derefTau = tau.getType().getTau();
+                EquivalenceClass derefLambda = tau.getType().getLambda();
+                return new EvaluatedType(derefTau, derefLambda);
+            }
+            else
+            {
+                // no type associated with tau yet, so let's defer the dereference
+                return new EvaluatedType(tau, null, true);
+            }
         }
         else
         {
-            return new EvaluatedType(tau, null, true);
+            throw new UnsupportedOperationException("bah");
         }
     }
 
-    public EvaluatedType(EquivalenceClass tau, EquivalenceClass lambda, boolean isDereference)
+    private EvaluatedType(EquivalenceClass<LocationPointerType> tau,
+            EquivalenceClass<FunctionPointerType> lambda, boolean isDereference)
     {
         this.tau = tau;
         this.tau.notifyPointedFrom(this);

@@ -7,12 +7,14 @@ package cz.muni.stanse.pointeranalyzer.steensgaard;
 public final class LocationPointerType implements PointerType {
     
     // tau
-    private EquivalenceClass tau;
+    private EquivalenceClass<LocationPointerType> tau;
     
     // lambda
-    private EquivalenceClass lambda;
+    private EquivalenceClass<FunctionPointerType> lambda;
     
-    public LocationPointerType(EquivalenceClass tau, EquivalenceClass lambda)
+    public LocationPointerType(
+            EquivalenceClass<LocationPointerType> tau,
+            EquivalenceClass<FunctionPointerType> lambda)
     {
         this.tau = tau;
         this.lambda = lambda;
@@ -24,12 +26,12 @@ public final class LocationPointerType implements PointerType {
             lambda.notifyPointedFrom(this);
     }
 
-    public EquivalenceClass getTau()
+    public EquivalenceClass<LocationPointerType> getTau()
     {
         return tau;
     }
 
-    public EquivalenceClass getLambda()
+    public EquivalenceClass<FunctionPointerType> getLambda()
     {
         return lambda;
     }
@@ -56,5 +58,4 @@ public final class LocationPointerType implements PointerType {
          t2.tau.joinWith(tau);
          t2.lambda.joinWith(lambda);
      }
-
 }
