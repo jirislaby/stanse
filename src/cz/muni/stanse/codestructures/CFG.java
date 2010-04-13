@@ -8,6 +8,7 @@ package cz.muni.stanse.codestructures;
 
 import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.dom4j.Element;
@@ -83,6 +84,10 @@ public class CFG extends CFGPart {
 
     public void setSymbols(Set<String> symbols) {
 	this.symbols = symbols;
+    }
+    
+    public Set<String> getSymbols() {
+	return Collections.unmodifiableSet(this.symbols);
     }
 
     public boolean isSymbolLocal(String symbol) {

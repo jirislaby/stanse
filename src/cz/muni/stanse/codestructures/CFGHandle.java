@@ -6,10 +6,11 @@
 
 package cz.muni.stanse.codestructures;
 
-import cz.muni.stanse.Stanse;
+import java.util.Set;
+
 import org.dom4j.Element;
 
-import java.util.Set;
+import cz.muni.stanse.Stanse;
 
 /**
  * Holds a handle to a CFG which might be unmapped
@@ -62,6 +63,10 @@ public class CFGHandle {
 
     public boolean isSymbolLocal(String symbol) {
         return getCFG().isSymbolLocal(symbol);
+    }
+    
+    public Set<String> getSymbols() {
+    	return getCFG().getSymbols();
     }
 
     protected Unit getUnit() {
