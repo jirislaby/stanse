@@ -112,7 +112,7 @@ close(NONINCS);
 close(INCS);
 close(CPP);
 
-system("bin/stcparser-c $includes") && die "can't exec cparser-c";
+system("stcparser-c $includes") && die "can't exec cparser-c";
 
 unlink $includes;
 unlink $armored;
