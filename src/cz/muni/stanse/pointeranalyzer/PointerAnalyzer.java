@@ -2,7 +2,7 @@ package cz.muni.stanse.pointeranalyzer;
 
 import cz.muni.stanse.checker.*;
 import cz.muni.stanse.codestructures.*;
-import cz.muni.stanse.pointeranalyzer.steensgaard.*;
+import cz.muni.stanse.pointeranalyzer.shapirohorwitz.*;
 import org.dom4j.*;
 import java.util.Collection;
 
@@ -41,7 +41,10 @@ public class PointerAnalyzer extends Checker {
 
         monitor.write("Entering PointerAnalyzer");
 
-        SteensgaardAnalyzer analyzer = new SteensgaardAnalyzer();
+        //SteensgaardAnalyzer analyzer = new SteensgaardAnalyzer();
+        ShapiroHorwitzAnalyzer analyzer = new ShapiroHorwitzAnalyzer(
+                new AndersenCategorizationProvider(VariableCounter.countVariables(internals.getCFGHandles())));
+                //new SteensgaardCategorizationProvider());
         analyzer.analyze(internals.getCFGHandles());
 
         return result;
@@ -49,35 +52,34 @@ public class PointerAnalyzer extends Checker {
 
     public static void main(String[] args)
     {
-        TypeTable table = new TypeTable();
+        TypeTable table = new TypeTable(new AndersenCategorizationProvider(4));
         //EquivalenceClass.addJoinListener(table);
 
-        EquivalenceClass t1;
-        EquivalenceClass t2;
+        AbstractLocationSet t1;
+        AbstractLocationSet t2;
 
         // a = &x
         System.out.println("a = &x");
         t1 = ((LocationPointerType)table.getTypeOf("a").getType()).getTau();
-        t2 = table.getTypeOf("x");
-        if (t1 != t2)
-            t1.joinWith(t2);
+        t1.joinWith(table.getTypeOf("x"));
 
         // y = &z
         System.out.println("y = &z");
         t1 = ((LocationPointerType)table.getTypeOf("y").getType()).getTau();
-        t2 = table.getTypeOf("z");
-        if (t1 != t2)
-            t1.joinWith(t2);
+        t1.joinWith(table.getTypeOf("z"));
 
         // y = &x
         System.out.println("y = &x");
         t1 = ((LocationPointerType)table.getTypeOf("y").getType()).getTau();
-        t2 = table.getTypeOf("x");
-        if (t1 != t2)
-            t1.joinWith(t2);
+        t1.joinWith(table.getTypeOf("x"));
 
-        System.out.printf("Z: %s X: %s\n", table.getTypeOf("y").toString(),
+        System.out.printf("Z: %s X: %s\n", table.getTypeOf("z").toString(),
                 table.getTypeOf("x").toString());
+
+        System.out.printf("A: %s Y: %s\n", table.getTypeOf("a").toString(),
+                table.getTypeOf("y").toString());
+
+        table.toDotFile();
     }
 
 }
