@@ -1,13 +1,22 @@
 package cz.muni.stanse.pointeranalyzer.shapirohorwitz;
 
 /**
+ * Represents the location pointer type.
  *
  * @author Michal Strehovsky
  */
 public class LocationPointerType implements PointerType, AbstractLocationJoinListener {
 
+    /**
+     * Location component of the type.
+     * (Taken from Steensgaard's article.)
+     */
     private AbstractLocationSet tau;
-    
+
+    /**
+     * Function component of the type.
+     * (Taken from Steensgaard's article.)
+     */
     private AbstractLocation lambda;
 
     private CategorizationProvider catProvider;
@@ -29,14 +38,24 @@ public class LocationPointerType implements PointerType, AbstractLocationJoinLis
         lambda.notifyPointedFrom(this);
     }
 
+    /**
+     * Gets the location component of the type.
+     */
     public AbstractLocationSet getTau() {
         return tau;
     }
 
+    /**
+     * Gets the function component of the type.
+     */
     public AbstractLocation getLambda() {
         return lambda;
     }
 
+    /**
+     * Dereferences the type.
+     * @return the dereferenced type.
+     */
     public LocationPointerType dereference() {
 
         AbstractLocationSet newTau = null;
@@ -65,6 +84,9 @@ public class LocationPointerType implements PointerType, AbstractLocationJoinLis
         return (LocationPointerType)tau.get(0).getType();
     }
 
+    /**
+     * Unifies this type with another LocationPointerType.
+     */
     public void unifyWith(PointerType that) {
 
         assert that instanceof LocationPointerType;

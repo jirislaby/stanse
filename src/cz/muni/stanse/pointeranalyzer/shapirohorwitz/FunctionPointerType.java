@@ -3,13 +3,20 @@ package cz.muni.stanse.pointeranalyzer.shapirohorwitz;
 import java.util.List;
 
 /**
+ * Represents a type for functions.
  *
  * @author Michal Strehovsky
  */
 public class FunctionPointerType implements PointerType, AbstractLocationJoinListener {
 
+    /**
+     * List of abstract locations representing function parameters.
+     */
     List<AbstractLocation> parameters;
 
+    /**
+     * Abstract location representing the return value.
+     */
     AbstractLocation returnParameter;
 
     public FunctionPointerType(List<AbstractLocation> parameters, AbstractLocation returnParameter) {
@@ -23,14 +30,19 @@ public class FunctionPointerType implements PointerType, AbstractLocationJoinLis
         returnParameter.notifyPointedFrom(this);
     }
 
+    /**
+     * Unifies this type with another FunctionPointerType.
+     */
     public void unifyWith(PointerType that) {
 
         assert that instanceof FunctionPointerType;
 
+        // unify the return value
         returnParameter.joinWith(((FunctionPointerType)that).returnParameter);
         
         assert ((FunctionPointerType)that).parameters.size() == parameters.size();
-        
+
+        // unify the parameters
         for (int i = 0; i < parameters.size(); i++) {
             parameters.get(i).joinWith(((FunctionPointerType)that).parameters.get(i));
         }

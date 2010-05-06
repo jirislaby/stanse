@@ -1,6 +1,7 @@
 package cz.muni.stanse.pointeranalyzer.shapirohorwitz;
 
 /**
+ * Represents a general pointer type.
  *
  * @author Michal Strehovsky
  */

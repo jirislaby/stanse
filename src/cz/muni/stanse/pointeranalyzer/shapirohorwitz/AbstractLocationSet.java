@@ -3,15 +3,22 @@ package cz.muni.stanse.pointeranalyzer.shapirohorwitz;
 import java.util.Iterator;
 
 /**
- * Represents a set of n abstract location, where n is the number of
+ * Represents a set of k abstract location, where k is the number of
  * categories.
  *
  * @author Michal Strehovsky
  */
 public class AbstractLocationSet implements Iterable<AbstractLocation>, AbstractLocationJoinListener {
 
+    /**
+     * Array backing the set of abstract location. Array index represents the
+     * AbstractLocation's category.
+     */
     private AbstractLocation[] locations;
 
+    /**
+     * Gets i'th AbstractLocation in the set.
+     */
     public AbstractLocation get(int i) {
         assert i < locations.length;
 
@@ -32,16 +39,13 @@ public class AbstractLocationSet implements Iterable<AbstractLocation>, Abstract
             locations[aloc.getCategory()] = aloc;
             aloc.notifyPointedFrom(this);
         }
-
-        // initialize the set with empty AbstractLocations
-        /*newnew for (int i = 0; i < provider.getNumberOfCategories(); i++) {
-            if (locations[i] == null) {
-                locations[i] = new AbstractLocation(i, "backPtr");
-                locations[i].notifyPointedFrom(this);
-            }
-        }*/
     }
 
+    /**
+     * Joins the specified abstract location to the set.
+     * If AbstractLocation having the same category is already contained,
+     * it will join it with specified abstract location.
+     */
     public void joinWith(AbstractLocation that) {
 
         if (locations[that.getCategory()] != that) {
@@ -56,6 +60,9 @@ public class AbstractLocationSet implements Iterable<AbstractLocation>, Abstract
         }
     }
 
+    /**
+     * Joins this AbstractLocationSet with another.
+     */
     public void joinWith(AbstractLocationSet that) {
 
         for (int i = 0; i < locations.length; i++) {

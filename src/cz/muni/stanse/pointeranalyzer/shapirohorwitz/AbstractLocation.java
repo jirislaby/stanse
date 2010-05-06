@@ -18,6 +18,10 @@ import java.util.Map.Entry;
  */
 public final class AbstractLocation implements AbstractLocationJoinListener {
 
+    /**
+     * If false, the name field will be ignored (speeds up analysis,
+     * but makes debugging harder)
+     */
     static boolean debugNames = false;
 
     /**
@@ -76,12 +80,15 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
     }
 
     /**
-     * Returns the name of this AbstractLocation.
+     * Gets the name of this AbstractLocation.
      */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the category number of this AbstractLocation.
+     */
     public int getCategory() {
         return category;
     }
@@ -99,6 +106,9 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
         this(category, name, null);
     }
 
+    /**
+     * Performs pending joins.
+     */
     private void performPendingJoins() {
 
         // It is essential to keep this semantic despite being ugly because
@@ -115,6 +125,9 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
         }
     }
 
+    /**
+     * Adds a new abstract location to the set of pending joins.
+     */
     private void addPendingJoin(AbstractLocation with) {
         if (!pendingJoins.contains(with)) {
             pendingJoins.add(with);
@@ -122,12 +135,19 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
         }
     }
 
+    /**
+     * Adds a new collection of abstract locations to the set of pending joins.
+     */
     private void addPendingJoins(Collection<AbstractLocation> with) {
         for (AbstractLocation aloc: with) {
             addPendingJoin(aloc);
         }
     }
 
+    /**
+     * Performs a conditional join. If no type is associated with given location,
+     * the join is deferred. Otherwise, it's performed.
+     */
     public void conditionalJoinWith(AbstractLocation that) {
         // taken straight from Steensgaard's article
 
@@ -138,20 +158,27 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
         }
     }
 
+    /**
+     * Adjusts the reference count to specified location by specified adjustment.
+     */
     private void adjustPointedFromRefCount(AbstractLocationJoinListener what, int adjust) {
 
         assert what != this;
         assert adjust > 0 || pointedFrom.containsKey(what);
 
+        // find the current reference count
         int previousRefCount = 0;
         if (pointedFrom.containsKey(what)) {
             previousRefCount = pointedFrom.get(what);
         }
 
+        // adjust the reference count
         int newRefCount = previousRefCount + adjust;
 
+        // sanity check
         assert newRefCount >= 0;
 
+        // if refcount is zero, no need to store the reference, otherwise store it
         if (newRefCount == 0) {
             pointedFrom.remove(what);
         } else {
@@ -159,20 +186,34 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
         }
     }
 
+    /**
+     * Notifies this AbstractLocation that it's pointed from another object.
+     * AbstractLocation will then call notifyAbstractLocationsJoined() if
+     * joined with another AbstractLocation.
+     */
     public void notifyPointedFrom(AbstractLocationJoinListener what) {
         adjustPointedFromRefCount(what, 1);
     }
 
+    /**
+     * Notifies this AbstractLocation that it's no longer pointed from another object.
+     */
     public void notifyPointerRemoved(AbstractLocationJoinListener what) {
         adjustPointedFromRefCount(what, -1);
     }
 
+    /**
+     * Joins the the pointedFrom set of this abstract location with other pointedFrom set.
+     */
     private void joinPointedFromSet(HashMap<AbstractLocationJoinListener, Integer> other) {
         for (Entry<AbstractLocationJoinListener, Integer> e: other.entrySet()) {
             adjustPointedFromRefCount(e.getKey(), e.getValue());
         }
     }
 
+    /**
+     * Joins this AbstractLocation with other AbstractLocation.
+     */
     public void joinWith(AbstractLocation that) {
         // taken straight from Steensgaard's article
 

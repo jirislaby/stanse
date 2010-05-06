@@ -1,19 +1,30 @@
 package cz.muni.stanse.pointeranalyzer.shapirohorwitz;
 
-import cz.muni.stanse.codestructures.*;
-import java.util.*;
-import org.dom4j.*;
+import cz.muni.stanse.codestructures.CFGHandle;
+import cz.muni.stanse.codestructures.CFGNode;
+import java.util.Collection;
+import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+import org.dom4j.Element;
 import cz.muni.stanse.pointeranalyzer.PointsToAnalyzer;
 import cz.muni.stanse.utils.Pair;
 
 /**
+ * Provides Shapiro-Horwitz pointer analysis.
  *
  * @author Michal Strehovsky
  */
 public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
 
+    /**
+     * Holds information about symbol types.
+     */
     private TypeTable typeTable;
 
+    /**
+     * Provides categories for variables.
+     */
     private CategorizationProvider categorizationProvider;
 
     public ShapiroHorwitzAnalyzer(CategorizationProvider catProvider) {
@@ -42,6 +53,12 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
         typeTable.toDotFile();
     }
 
+    /**
+     * Gets the points to set of specified symbol.
+     *
+     * @param cfg CFG of the function declaring the symbol (null for globals).
+     * @param id Name of the symbol.
+     */
     public Set<Pair<CFGHandle, String>> getPointsToSetOf(CFGHandle cfg, String id) {
         return typeTable.getPointsToSetOf(cfg, id);
     }

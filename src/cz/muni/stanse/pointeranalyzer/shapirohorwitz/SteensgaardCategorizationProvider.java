@@ -1,6 +1,7 @@
 package cz.muni.stanse.pointeranalyzer.shapirohorwitz;
 
 /**
+ * Represents the categorization provider for Steensgaards's analysis.
  *
  * @author Michal Strehovsky
  */
