@@ -227,6 +227,7 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
             return;
         } else {
             joiningWith.add(that);
+            that.joiningWith.add(this);
         }
 
         if (this.type == null) {
@@ -259,6 +260,13 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
 
         joinPointedFromSet(that.pointedFrom);
 
+        // make old equivalence class unusable - helps with debugging
+        that.joiningWith = null;
+        that.name = null;
+        that.pendingJoins = null;
+        that.pointedFrom = null;
+        that.type = null;
+
         // join process ended, so remove the anti-loop flag
         joiningWith.remove(that);
     }
@@ -275,6 +283,9 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
             adjustPointedFromRefCount(newClass, refCount);
         }
 
+        /*if (joiningWith.contains(oldClass)) {
+            System.out.println("!!!!!!! BUGBUGBUG !!!!!!");
+        }*/
     }
 
     @Override

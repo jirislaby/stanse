@@ -24,6 +24,7 @@ public class AbstractLocationSet implements Iterable<AbstractLocation>, Abstract
 
         if (locations[i] == null) {
             locations[i] = new AbstractLocation(i, "backPtr");
+            locations[i].notifyPointedFrom(this);
         }
 
         return locations[i];

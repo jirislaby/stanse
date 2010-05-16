@@ -215,6 +215,9 @@ public final class TypeTable implements AbstractLocationJoinListener {
             // update type table
             for (Pair<CFGHandle, String> le: oldList) {
                 HashMap<String, AbstractLocation> context = getContextOf(le.getFirst());
+
+                assert context.get(le.getSecond()) == oldClass;
+
                 context.put(le.getSecond(), newClass);
             }
 
@@ -223,8 +226,6 @@ public final class TypeTable implements AbstractLocationJoinListener {
             List<Pair<CFGHandle, String>> newList = inverseTypeTable.get(newClass);
             if (newList != null) {
                 oldList.addAll(newList);
-            } else {
-                //BUGBUG neccessary? newClass.notifyPointedFrom(this);
             }
             inverseTypeTable.put(newClass, oldList);
         }

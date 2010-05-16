@@ -43,43 +43,10 @@ public class PointerAnalyzer extends Checker {
 
         //SteensgaardAnalyzer analyzer = new SteensgaardAnalyzer();
         ShapiroHorwitzAnalyzer analyzer = new ShapiroHorwitzAnalyzer(
-                new AndersenCategorizationProvider(VariableCounter.countVariables(internals.getCFGHandles())));
-                //new SteensgaardCategorizationProvider());
+                //new AndersenCategorizationProvider(VariableCounter.countVariables(internals.getCFGHandles())));
+                new SteensgaardCategorizationProvider());
         analyzer.analyze(internals.getCFGHandles());
 
         return result;
     }
-
-    public static void main(String[] args)
-    {
-        TypeTable table = new TypeTable(new AndersenCategorizationProvider(4));
-        //EquivalenceClass.addJoinListener(table);
-
-        AbstractLocationSet t1;
-        AbstractLocationSet t2;
-
-        // a = &x
-        System.out.println("a = &x");
-        t1 = ((LocationPointerType)table.getTypeOf("a").getType()).getTau();
-        t1.joinWith(table.getTypeOf("x"));
-
-        // y = &z
-        System.out.println("y = &z");
-        t1 = ((LocationPointerType)table.getTypeOf("y").getType()).getTau();
-        t1.joinWith(table.getTypeOf("z"));
-
-        // y = &x
-        System.out.println("y = &x");
-        t1 = ((LocationPointerType)table.getTypeOf("y").getType()).getTau();
-        t1.joinWith(table.getTypeOf("x"));
-
-        System.out.printf("Z: %s X: %s\n", table.getTypeOf("z").toString(),
-                table.getTypeOf("x").toString());
-
-        System.out.printf("A: %s Y: %s\n", table.getTypeOf("a").toString(),
-                table.getTypeOf("y").toString());
-
-        table.toDotFile();
-    }
-
 }

@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import cz.muni.stanse.pointeranalyzer.PointsToAnalyzer;
 import cz.muni.stanse.utils.Pair;
 
@@ -65,13 +66,21 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
 
     private void addFunction(CFGHandle cfg) {
 
+        // TODO: varargs support. also has to be supported in functioncall
+
         Element functionDecl = cfg.getElement().element("declarator").element("functionDecl");
 
         List<String> parameterNames = new ArrayList<String>();
 
         for (Object o: functionDecl.elements()) {
             Element e = (Element)o;
-            parameterNames.add(e.selectSingleNode("declarator/id").getText());
+
+            Node idNode = e.selectSingleNode("declarator/id");
+
+            // check to see if an id is associated (if not, it's just foo(void))
+            if (idNode != null) {
+                parameterNames.add(idNode.getText());
+            }
         }
 
         typeTable.addFunction(cfg, parameterNames);
@@ -115,10 +124,16 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
             addressedExpression = (Element)addressedExpression.elements().get(0);
         }
 
-        assert addressedExpression.getName().equals("id");
+        AbstractLocation idLocation;
 
-        String name = addressedExpression.getText();
-        AbstractLocation idLocation = getSymbolAbstractLocation(cfg, name);
+        if (!addressedExpression.getName().equals("id")) {
+            // TODO: is this the proper way?
+            // this is for weird cases like this: &(*p)->bla
+            idLocation = new AbstractLocation(0, "", handleExpression(cfg, addressedExpression));
+        } else {
+            String name = addressedExpression.getText();
+            idLocation = getSymbolAbstractLocation(cfg, name);
+        }
 
         return new LocationPointerType(
                 categorizationProvider,
@@ -253,7 +268,27 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
             return handleConditionalExpression(cfg, expr);
         }
 
-        throw new UnsupportedOperationException(expr.getName());
+        if (expr.getName().equals("castExpression")) {
+            return handleExpression(cfg, (Element)expr.elements().get(1));
+        }
+
+        if (expr.getName().equals("initializer")) {
+            //TODO: placeholder, figure out how to safely implement
+            return new LocationPointerType(categorizationProvider);
+        }
+
+        if (expr.getName().equals("compoundStatement")) {
+            // bozo who came up with this GCC extension should be smacked
+            // this allows you to put statements inside expressions
+
+            // no idea how to handle this. we have to return at least something...
+            // throw UnsupportedOperationException seems appropriate but Linux kernel uses this shit
+            // TODO: figure out what to do here. best idea would be to handle it in CFG generation
+            return new LocationPointerType(categorizationProvider);
+        }
+
+        throw new UnsupportedOperationException(expr.getName() +
+                " [" + expr.attributeValue("bl") + ", " + expr.attributeValue("bc") + "]");
     }
 
 
@@ -286,7 +321,19 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
             return;
         }
 
+        if (statement.getName().equals("continueStatement")) {
+            return;
+        }
+
         if (statement.getName().equals("assert")) {
+            return;
+        }
+
+        if (statement.getName().equals("gnuAssembler")) {
+            return;
+        }
+
+        if (statement.getName().equals("gotoStatement")) {
             return;
         }
 
