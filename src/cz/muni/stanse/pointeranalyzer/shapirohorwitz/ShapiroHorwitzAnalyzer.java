@@ -156,7 +156,10 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
             return new LocationPointerType(categorizationProvider);
         }
 
-        for (int i = 1; i < functionCall.elements().size(); i++) {
+        // TODO: add vararg support here
+        int paramCount = Math.min(functionCall.elements().size(), functionType.parameters.size());
+
+        for (int i = 1; i < paramCount; i++) {
             LocationPointerType parameterVariable =
                     (LocationPointerType)functionType.parameters.get(i - 1).getType();
 
@@ -174,9 +177,18 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
         
         handleExpression(cfg, (Element)conditionalExpression.elements().get(0));
 
-        return handleAssignment(cfg,
+        // again, a stupid GNU extenstion to make parsing less obvious
+        // (who said that "Embrace and extend standards policy" is a bad thing that FOSS avoids?)
+
+        // this is valid in GNU C: foo = bar ? : baz;
+
+        if (conditionalExpression.elements().size() == 3) {
+            return handleAssignment(cfg,
                 (Element)conditionalExpression.elements().get(1),
                 (Element)conditionalExpression.elements().get(2));
+        } else {
+            return handleExpression(cfg, (Element)conditionalExpression.elements().get(1));
+        }
     }
     
     private LocationPointerType handleCommaExpression(CFGHandle cfg, Element commaExpression) {
@@ -196,13 +208,30 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
         return handleExpression(cfg, (Element)arrayAccess.elements().get(0));
     }
 
+    private LocationPointerType handleCompoundLiteral(CFGHandle cfg, Element compoundLiteral) {
+
+        Element initializer = (Element)compoundLiteral.selectSingleNode("initializer/initializer/*[1]");
+
+        return handleExpression(cfg, initializer);
+    }
+
+    private LocationPointerType handleInitDeclarator(CFGHandle cfg, Element initDeclarator) {
+
+        Element e1 = (Element)initDeclarator.selectSingleNode("declarator/id");
+        Element e2 = (Element)initDeclarator.selectSingleNode("initializer/*[1]");
+        
+        if (e1 == null || e2 == null) return new LocationPointerType(categorizationProvider);
+
+        return handleAssignment(cfg, e1, e2);
+        
+        //return handleExpression(cfg, initializer);
+    }
+
     private LocationPointerType handleExpression(CFGHandle cfg, Element expr) {
         //System.out.printf("eval: %s\n", expr.getName());
 
         if (expr.getName().equals("initDeclarator")) {
-            return handleAssignment(cfg,
-                    (Element)expr.selectSingleNode("declarator/id"),
-                    (Element)expr.selectSingleNode("initializer/*[1]"));
+            return handleInitDeclarator(cfg, expr);
         }
 
         if (expr.getName().equals("assignExpression")) {
@@ -221,7 +250,8 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
 
         if (expr.getName().equals("intConst")
                 || expr.getName().equals("sizeofExpression")
-                || expr.getName().equals("stringConst")) {
+                || expr.getName().equals("stringConst")
+                || expr.getName().equals("allignofExpression")) {
             return new LocationPointerType(categorizationProvider);
         }
 
@@ -277,8 +307,18 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
             return new LocationPointerType(categorizationProvider);
         }
 
+        if (expr.getName().equals("designator")) {
+            //TODO: placeholder, figure out how to safely implement
+            return new LocationPointerType(categorizationProvider);
+        }
+
+        if (expr.getName().equals("compoundLiteral")) {
+            return handleCompoundLiteral(cfg, expr);
+        }
+
         if (expr.getName().equals("compoundStatement")) {
-            // bozo who came up with this GCC extension should be smacked
+            // bozo who came up with this GCC extension should be smacked repeatedly
+
             // this allows you to put statements inside expressions
 
             // no idea how to handle this. we have to return at least something...

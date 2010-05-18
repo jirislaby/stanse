@@ -1,9 +1,7 @@
 package cz.muni.stanse.pointeranalyzer.shapirohorwitz;
 
 import java.util.HashSet;
-import java.util.HashMap;
 import java.util.Collection;
-import java.util.Map.Entry;
 
 
 /**
@@ -47,8 +45,8 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
      * Maintains a list of AbstractLocationJoinListeners interested in being
      * notified about equivalence class joins.
      */
-    private HashMap<AbstractLocationJoinListener, Integer> pointedFrom
-            = new HashMap<AbstractLocationJoinListener, Integer>();
+    private HashSet<AbstractLocationJoinListener> pointedFrom
+            = new HashSet<AbstractLocationJoinListener>();
 
     /**
      * Name of the abstract location. Used for debugging purposes only.
@@ -119,7 +117,6 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
 
             AbstractLocation current = pendingJoins.iterator().next();
             pendingJoins.remove(current);
-            current.notifyPointerRemoved(this);
 
             joinWith(current);
         }
@@ -159,56 +156,19 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
     }
 
     /**
-     * Adjusts the reference count to specified location by specified adjustment.
-     */
-    private void adjustPointedFromRefCount(AbstractLocationJoinListener what, int adjust) {
-
-        assert what != this;
-        assert adjust > 0 || pointedFrom.containsKey(what);
-
-        // find the current reference count
-        int previousRefCount = 0;
-        if (pointedFrom.containsKey(what)) {
-            previousRefCount = pointedFrom.get(what);
-        }
-
-        // adjust the reference count
-        int newRefCount = previousRefCount + adjust;
-
-        // sanity check
-        assert newRefCount >= 0;
-
-        // if refcount is zero, no need to store the reference, otherwise store it
-        if (newRefCount == 0) {
-            pointedFrom.remove(what);
-        } else {
-            pointedFrom.put(what, newRefCount);
-        }
-    }
-
-    /**
      * Notifies this AbstractLocation that it's pointed from another object.
      * AbstractLocation will then call notifyAbstractLocationsJoined() if
      * joined with another AbstractLocation.
      */
     public void notifyPointedFrom(AbstractLocationJoinListener what) {
-        adjustPointedFromRefCount(what, 1);
-    }
-
-    /**
-     * Notifies this AbstractLocation that it's no longer pointed from another object.
-     */
-    public void notifyPointerRemoved(AbstractLocationJoinListener what) {
-        adjustPointedFromRefCount(what, -1);
+        pointedFrom.add(what);
     }
 
     /**
      * Joins the the pointedFrom set of this abstract location with other pointedFrom set.
      */
-    private void joinPointedFromSet(HashMap<AbstractLocationJoinListener, Integer> other) {
-        for (Entry<AbstractLocationJoinListener, Integer> e: other.entrySet()) {
-            adjustPointedFromRefCount(e.getKey(), e.getValue());
-        }
+    private void joinPointedFromSet(HashSet<AbstractLocationJoinListener> other) {
+        pointedFrom.addAll(other);
     }
 
     /**
@@ -248,7 +208,7 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
             }
         }
 
-        for (AbstractLocationJoinListener listener: that.pointedFrom.keySet()) {
+        for (AbstractLocationJoinListener listener: that.pointedFrom) {
             listener.notifyAbstractLocationsJoined(that, this);
         }
 
@@ -261,11 +221,11 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
         joinPointedFromSet(that.pointedFrom);
 
         // make old equivalence class unusable - helps with debugging
-        that.joiningWith = null;
+        /*that.joiningWith = null;
         that.name = null;
         that.pendingJoins = null;
         that.pointedFrom = null;
-        that.type = null;
+        that.type = null;*/
 
         // join process ended, so remove the anti-loop flag
         joiningWith.remove(that);
@@ -277,10 +237,9 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
             pendingJoins.add(newClass);
         }
         
-        if (pointedFrom.containsKey(oldClass)) {
-            int refCount = pointedFrom.get(oldClass);
+        if (pointedFrom.contains(oldClass)) {
             pointedFrom.remove(oldClass);
-            adjustPointedFromRefCount(newClass, refCount);
+            pointedFrom.add(newClass);
         }
 
         /*if (joiningWith.contains(oldClass)) {

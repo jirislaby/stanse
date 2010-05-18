@@ -41,10 +41,10 @@ public class PointerAnalyzer extends Checker {
 
         monitor.write("Entering PointerAnalyzer");
 
-        //SteensgaardAnalyzer analyzer = new SteensgaardAnalyzer();
         ShapiroHorwitzAnalyzer analyzer = new ShapiroHorwitzAnalyzer(
                 //new AndersenCategorizationProvider(VariableCounter.countVariables(internals.getCFGHandles())));
                 new SteensgaardCategorizationProvider());
+        
         analyzer.analyze(internals.getCFGHandles());
 
         return result;

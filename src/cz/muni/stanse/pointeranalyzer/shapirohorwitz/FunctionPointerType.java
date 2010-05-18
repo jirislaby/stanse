@@ -40,10 +40,11 @@ public class FunctionPointerType implements PointerType, AbstractLocationJoinLis
         // unify the return value
         returnParameter.joinWith(((FunctionPointerType)that).returnParameter);
         
-        assert ((FunctionPointerType)that).parameters.size() == parameters.size();
+        // TODO: varargs support
+        int paramCount = Math.min(((FunctionPointerType)that).parameters.size(), parameters.size());
 
         // unify the parameters
-        for (int i = 0; i < parameters.size(); i++) {
+        for (int i = 0; i < paramCount; i++) {
             parameters.get(i).joinWith(((FunctionPointerType)that).parameters.get(i));
         }
        
