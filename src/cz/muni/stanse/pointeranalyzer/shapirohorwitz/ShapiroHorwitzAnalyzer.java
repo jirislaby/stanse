@@ -159,7 +159,7 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
         // TODO: add vararg support here
         int paramCount = Math.min(functionCall.elements().size(), functionType.parameters.size());
 
-        for (int i = 1; i < paramCount; i++) {
+        for (int i = 1; i < paramCount + 1; i++) {
             LocationPointerType parameterVariable =
                     (LocationPointerType)functionType.parameters.get(i - 1).getType();
 
@@ -223,8 +223,6 @@ public final class ShapiroHorwitzAnalyzer implements PointsToAnalyzer {
         if (e1 == null || e2 == null) return new LocationPointerType(categorizationProvider);
 
         return handleAssignment(cfg, e1, e2);
-        
-        //return handleExpression(cfg, initializer);
     }
 
     private LocationPointerType handleExpression(CFGHandle cfg, Element expr) {

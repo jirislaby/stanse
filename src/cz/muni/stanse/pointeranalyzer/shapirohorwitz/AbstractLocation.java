@@ -212,9 +212,8 @@ public final class AbstractLocation implements AbstractLocationJoinListener {
             listener.notifyAbstractLocationsJoined(that, this);
         }
 
-        //System.out.println("Joined " + that.toString() + " to " + this.toString());
-
         if (debugNames) {
+            System.out.println("Joined " + that.toString() + " to " + this.toString());
             this.name = this.name + "|" + that.getName();
         }
 
