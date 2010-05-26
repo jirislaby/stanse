@@ -71,5 +71,7 @@ public final class CheckerFactory {
 		ReachabilityCheckerCreator());
         registerCheckerCreator(
                 new cz.muni.stanse.pointeranalyzer.PointerAnalyzerCreator());
+        registerCheckerCreator(
+                new cz.muni.stanse.lockchecker.LockCheckerCreator());
     }
 }

@@ -1,0 +1,608 @@
+Stanse version "1.1.1"
+Copyright (c) 2008-2010 Masaryk University, Brno
+
+
+=== BEWARE ===
+Running in directory mode. Note that this won't work well for C files which need
+special flags on the CC command line. Preferred way is to use --makefile
+option or generate a jobfile using stcc and use --jobfile.
+
+Checking for bugs:
+<-> File: tests/interprocedural/ProcBasic.c
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<exit bl="13"/>
+unlocked
+<functionCall bl="12" bc="1"><id bl="12" bc="1">__st_spin_unlock_st__</id><id bl="12" bc="23">lock_l</id></functionCall>
+[Lock "lock_l" locked]
+<functionCall bl="10" bc="1"><id bl="10" bc="1">__st_spin_lock_st__</id><id bl="10" bc="21">lock_l</id></functionCall>
+unlocked
+<assignExpression bl="11" bc="3"><id bl="11" bc="1">a</id><intConst bl="11" bc="5">1</intConst></assignExpression>
+[Lock "lock_l" locked]
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function main CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<exit bl="13"/>
+unlocked
+<assignExpression bl="16" bc="3"><id bl="16" bc="1">a</id><intConst bl="16" bc="5">0</intConst></assignExpression>
+unlocked
+<functionCall bl="17" bc="1"><id bl="17" bc="1">foo</id></functionCall>
+unlocked
+<assignExpression bl="18" bc="3"><id bl="18" bc="1">a</id><intConst bl="18" bc="5">2</intConst></assignExpression>
+unlocked
+<returnStatement bl="19" bc="4"><intConst bl="19" bc="11">0</intConst></returnStatement>
+unlocked
+<exit bl="20"/>
+unlocked
+INFO - /////////////////  SUMMARY  /////////////////
+/////////////////////////////////////////////
+Function: main
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]|unlocked              ||SUM|
++--------------+----------------------+----------------------++---+
+|a             |1 occurrences, 1 flows|2 occurrences, 2 flows||3  |
++--------------+----------------------+----------------------++---+
+|lock_l        |1 occurrences, 1 flows|0 occurrences, 0 flows||1  |
++--------------+----------------------+----------------------++---+
++--------------+----------------------+----------------------++---+
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]||SUM|
++--------------+----------------------++---+
+|a             |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
+|lock_l        |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+
+<-> --------------------------------
+<-> File: tests/interprocedural/ProcWrapper.c
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: unlocked
+Function left in state: [Lock "lock_l" locked]
+<functionCall bl="10" bc="1"><id bl="10" bc="1">__st_spin_lock_st__</id><id bl="10" bc="21">lock_l</id></functionCall>
+unlocked
+<exit bl="11"/>
+[Lock "lock_l" locked]
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function bar CFG states
+Function entered in state: [Lock "lock_l" locked]
+Function left in state: unlocked
+<functionCall bl="14" bc="1"><id bl="14" bc="1">__st_spin_unlock_st__</id><id bl="14" bc="23">lock_l</id></functionCall>
+[Lock "lock_l" locked]
+<exit bl="15"/>
+unlocked
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function main CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<exit bl="15"/>
+unlocked
+<exit bl="23"/>
+unlocked
+<returnStatement bl="22" bc="4"><intConst bl="22" bc="11">0</intConst></returnStatement>
+unlocked
+<exit bl="11"/>
+[Lock "lock_l" locked]
+<functionCall bl="21" bc="1"><id bl="21" bc="1">bar</id></functionCall>
+[Lock "lock_l" locked]
+<assignExpression bl="20" bc="3"><id bl="20" bc="1">a</id><intConst bl="20" bc="5">2</intConst></assignExpression>
+[Lock "lock_l" locked]
+<functionCall bl="19" bc="1"><id bl="19" bc="1">foo</id></functionCall>
+unlocked
+<assignExpression bl="18" bc="3"><id bl="18" bc="1">a</id><intConst bl="18" bc="5">0</intConst></assignExpression>
+unlocked
+INFO - /////////////////  SUMMARY  /////////////////
+/////////////////////////////////////////////
+Function: bar
+Function entered in state: [Lock "lock_l" locked]
+Function left in state: unlocked
++--------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]||SUM|
++--------------+----------------------++---+
+|lock_l        |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: unlocked
+Function left in state: [Lock "lock_l" locked]
++--------------++---+
+|Variable/State||SUM|
++--------------++---+
++--------------++---+
+/////////////////////////////////////////////
+Function: main
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]|unlocked              ||SUM|
++--------------+----------------------+----------------------++---+
+|a             |1 occurrences, 1 flows|1 occurrences, 1 flows||2  |
++--------------+----------------------+----------------------++---+
+|lock_l        |1 occurrences, 1 flows|0 occurrences, 0 flows||1  |
++--------------+----------------------+----------------------++---+
++--------------+----------------------+----------------------++---+
+/////////////////////////////////////////////
+
+<-> --------------------------------
+<-> File: tests/interprocedural/ProcArgWrapper.c
+<-> --------------------------------
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: unlocked
+Function left in state: [Lock "lock" locked]
+<functionCall bl="10" bc="1"><id bl="10" bc="1">__st_spin_lock_st__</id><id bl="10" bc="21">lock</id></functionCall>
+unlocked
+<exit bl="13"/>
+[Lock "lock" locked]
+<assignExpression bl="12" bc="2"><id bl="12" bc="1">b</id><intConst bl="12" bc="3">1</intConst></assignExpression>
+[Lock "lock" locked]
+<assignExpression bl="11" bc="3"><id bl="11" bc="1">a</id><intConst bl="11" bc="5">4</intConst></assignExpression>
+[Lock "lock" locked]
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function bar CFG states
+Function entered in state: [Lock "lock" locked]
+Function left in state: unlocked
+<functionCall bl="16" bc="1"><id bl="16" bc="1">__st_spin_unlock_st__</id><id bl="16" bc="23">lock</id></functionCall>
+[Lock "lock" locked]
+<exit bl="17"/>
+unlocked
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function main CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<assignExpression bl="20" bc="3"><id bl="20" bc="1">a</id><intConst bl="20" bc="5">0</intConst></assignExpression>
+unlocked
+<functionCall bl="21" bc="1"><id bl="21" bc="1">foo</id><id bl="21" bc="5">lock_l</id></functionCall>
+unlocked
+<returnStatement bl="25" bc="1"><intConst bl="25" bc="8">0</intConst></returnStatement>
+unlocked
+<assignExpression bl="24" bc="3"><id bl="24" bc="1">a</id><intConst bl="24" bc="5">1</intConst></assignExpression>
+unlocked
+<exit bl="17"/>
+unlocked
+<exit bl="26"/>
+unlocked
+<functionCall bl="23" bc="1"><id bl="23" bc="1">bar</id><id bl="23" bc="5">lock_l</id></functionCall>
+[Lock "lock_l" locked]
+<exit bl="13"/>
+[Lock "lock_l" locked]
+<assignExpression bl="22" bc="3"><id bl="22" bc="1">a</id><intConst bl="22" bc="5">2</intConst></assignExpression>
+[Lock "lock_l" locked]
+INFO - /////////////////  SUMMARY  /////////////////
+/////////////////////////////////////////////
+Function: main
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]|unlocked              ||SUM|
++--------------+----------------------+----------------------++---+
+|b             |1 occurrences, 1 flows|0 occurrences, 0 flows||1  |
++--------------+----------------------+----------------------++---+
+|a             |2 occurrences, 2 flows|2 occurrences, 2 flows||4  |
++--------------+----------------------+----------------------++---+
+|lock_l        |2 occurrences, 2 flows|1 occurrences, 1 flows||3  |
++--------------+----------------------+----------------------++---+
++--------------+----------------------+----------------------++---+
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: unlocked
+Function left in state: [Lock "lock" locked]
++--------------+----------------------++---+
+|Variable/State|[Lock "lock" locked]  ||SUM|
++--------------+----------------------++---+
+|b             |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
+|a             |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+Function: bar
+Function entered in state: [Lock "lock" locked]
+Function left in state: unlocked
++--------------+----------------------++---+
+|Variable/State|[Lock "lock" locked]  ||SUM|
++--------------+----------------------++---+
+|lock          |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+
+<-> File: tests/interprocedural/ProcRecursive.c
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: [Lock "lock_l" locked]
+Function left in state: [Lock "lock_l" locked]
+<functionCall bl="13" bc="1"><id bl="13" bc="1">foo</id></functionCall>
+[Lock "lock_l" locked]
+<assert bl="12"><binaryExpression bl="12" bc="5" op="=="><id bl="12" bc="4">a</id><intConst bl="12" bc="7">1</intConst></binaryExpression></assert>
+[Lock "lock_l" locked]
+<assert bl="12"><prefixExpression op="!" bl="12"><binaryExpression bl="12" bc="5" op="=="><id bl="12" bc="4">a</id><intConst bl="12" bc="7">1</intConst></binaryExpression></prefixExpression></assert>
+[Lock "lock_l" locked]
+<binaryExpression bl="12" bc="5" op="=="><id bl="12" bc="4">a</id><intConst bl="12" bc="7">1</intConst></binaryExpression>
+[Lock "lock_l" locked]
+<exit bl="15"/>
+[Lock "lock_l" locked]
+<assignExpression bl="11" bc="3"><id bl="11" bc="1">a</id><intConst bl="11" bc="5">1</intConst></assignExpression>
+[Lock "lock_l" locked]
+<-> --------------------------------
+<-> File: tests/interprocedural/ProcLocalVars.c
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: [Lock "lock_l" locked]
+Function left in state: [Lock "lock_l" locked]
+<functionCall bl="13" bc="1"><id bl="13" bc="1">foo</id></functionCall>
+[Lock "lock_l" locked]
+<assert bl="12"><binaryExpression bl="12" bc="5" op="=="><id bl="12" bc="4">a</id><intConst bl="12" bc="7">1</intConst></binaryExpression></assert>
+[Lock "lock_l" locked]
+<assert bl="12"><prefixExpression op="!" bl="12"><binaryExpression bl="12" bc="5" op="=="><id bl="12" bc="4">a</id><intConst bl="12" bc="7">1</intConst></binaryExpression></prefixExpression></assert>
+[Lock "lock_l" locked]
+<binaryExpression bl="12" bc="5" op="=="><id bl="12" bc="4">a</id><intConst bl="12" bc="7">1</intConst></binaryExpression>
+[Lock "lock_l" locked]
+<exit bl="15"/>
+[Lock "lock_l" locked]
+<assignExpression bl="11" bc="3"><id bl="11" bc="1">a</id><intConst bl="11" bc="5">1</intConst></assignExpression>
+[Lock "lock_l" locked]
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function main CFG states
+Function entered in state: unlocked
+Function left in state: [Lock "lock_l" locked]
+<functionCall bl="20" bc="1"><id bl="20" bc="1">foo</id></functionCall>
+unlocked
+<exit bl="23"/>
+[Lock "lock_l" locked]
+<returnStatement bl="22" bc="4"><intConst bl="22" bc="11">0</intConst></returnStatement>
+[Lock "lock_l" locked]
+<assignExpression bl="21" bc="3"><id bl="21" bc="1">a</id><intConst bl="21" bc="5">2</intConst></assignExpression>
+[Lock "lock_l" locked]
+<assignExpression bl="19" bc="3"><id bl="19" bc="1">a</id><intConst bl="19" bc="5">0</intConst></assignExpression>
+unlocked
+<exit bl="15"/>
+[Lock "lock_l" locked]
+INFO - /////////////////  SUMMARY  /////////////////
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: [Lock "lock_l" locked]
+Function left in state: [Lock "lock_l" locked]
++--------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]||SUM|
++--------------+----------------------++---+
+|a             |2 occurrences, 2 flows||2  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: unlocked
+Function left in state: [Lock "lock_l" locked]
++--------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]||SUM|
++--------------+----------------------++---+
+|a             |2 occurrences, 4 flows||2  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+Function: main
+Function entered in state: unlocked
+Function left in state: [Lock "lock_l" locked]
++--------------+----------------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]|unlocked              ||SUM|
++--------------+----------------------+----------------------++---+
+|a             |3 occurrences, 5 flows|1 occurrences, 1 flows||4  |
++--------------+----------------------+----------------------++---+
++--------------+----------------------+----------------------++---+
+/////////////////////////////////////////////
+
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: unlocked
+Function left in state: [Lock "lock" locked]
+<assignExpression bl="13" bc="2"><id bl="13" bc="1">b</id><intConst bl="13" bc="3">1</intConst></assignExpression>
+[Lock "lock" locked]
+<assignExpression bl="12" bc="3"><id bl="12" bc="1">a</id><intConst bl="12" bc="5">4</intConst></assignExpression>
+[Lock "lock" locked]
+<exit bl="14"/>
+[Lock "lock" locked]
+<initDeclarator bl="10" bc="5"><declarator bl="10" bc="5"><id>len</id></declarator><initializer bl="10" bc="11"><intConst bl="10" bc="11">0</intConst></initializer></initDeclarator>
+unlocked
+<functionCall bl="11" bc="1"><id bl="11" bc="1">__st_spin_lock_st__</id><id bl="11" bc="21">lock</id></functionCall>
+unlocked
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function bar CFG states
+Function entered in state: [Lock "lock" locked]
+Function left in state: unlocked
+<initDeclarator bl="17" bc="5"><declarator bl="17" bc="5"><id>len</id></declarator><initializer bl="17" bc="11"><intConst bl="17" bc="11">0</intConst></initializer></initDeclarator>
+[Lock "lock" locked]
+<functionCall bl="18" bc="1"><id bl="18" bc="1">__st_spin_unlock_st__</id><id bl="18" bc="23">lock</id></functionCall>
+[Lock "lock" locked]
+<exit bl="19"/>
+unlocked
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function main CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<functionCall bl="23" bc="1"><id bl="23" bc="1">foo</id><id bl="23" bc="5">lock_l</id></functionCall>
+unlocked
+<assignExpression bl="24" bc="3"><id bl="24" bc="1">a</id><intConst bl="24" bc="5">2</intConst></assignExpression>
+[Lock "lock_l" locked]
+<exit bl="14"/>
+[Lock "lock_l" locked]
+<functionCall bl="25" bc="1"><id bl="25" bc="1">bar</id><id bl="25" bc="5">lock_l</id></functionCall>
+[Lock "lock_l" locked]
+<assignExpression bl="26" bc="3"><id bl="26" bc="1">a</id><intConst bl="26" bc="5">1</intConst></assignExpression>
+unlocked
+<returnStatement bl="27" bc="1"><intConst bl="27" bc="8">0</intConst></returnStatement>
+unlocked
+<exit bl="19"/>
+unlocked
+<exit bl="28"/>
+unlocked
+<assignExpression bl="22" bc="3"><id bl="22" bc="1">a</id><intConst bl="22" bc="5">0</intConst></assignExpression>
+unlocked
+INFO - /////////////////  SUMMARY  /////////////////
+/////////////////////////////////////////////
+Function: bar
+Function entered in state: [Lock "lock" locked]
+Function left in state: unlocked
++--------------+----------------------++---+
+|Variable/State|[Lock "lock" locked]  ||SUM|
++--------------+----------------------++---+
+|lock          |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: unlocked
+Function left in state: [Lock "lock" locked]
++--------------+----------------------++---+
+|Variable/State|[Lock "lock" locked]  ||SUM|
++--------------+----------------------++---+
+|b             |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
+|a             |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+Function: main
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]|unlocked              ||SUM|
++--------------+----------------------+----------------------++---+
+|b             |1 occurrences, 1 flows|0 occurrences, 0 flows||1  |
++--------------+----------------------+----------------------++---+
+|a             |2 occurrences, 2 flows|2 occurrences, 2 flows||4  |
++--------------+----------------------+----------------------++---+
+|lock_l        |2 occurrences, 2 flows|1 occurrences, 1 flows||3  |
++--------------+----------------------+----------------------++---+
++--------------+----------------------+----------------------++---+
+/////////////////////////////////////////////
+
+<-> --------------------------------
+<-> File: tests/interprocedural/ProcBasicTwice.c
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<functionCall bl="10" bc="1"><id bl="10" bc="1">__st_spin_lock_st__</id><id bl="10" bc="21">lock_l</id></functionCall>
+unlocked
+<assignExpression bl="11" bc="3"><id bl="11" bc="1">a</id><intConst bl="11" bc="5">1</intConst></assignExpression>
+[Lock "lock_l" locked]
+<functionCall bl="12" bc="1"><id bl="12" bc="1">__st_spin_unlock_st__</id><id bl="12" bc="23">lock_l</id></functionCall>
+[Lock "lock_l" locked]
+<exit bl="13"/>
+unlocked
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function main CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<exit bl="21"/>
+unlocked
+<returnStatement bl="20" bc="4"><intConst bl="20" bc="11">0</intConst></returnStatement>
+unlocked
+<functionCall bl="19" bc="1"><id bl="19" bc="1">foo</id></functionCall>
+unlocked
+<exit bl="13"/>
+unlocked
+<assignExpression bl="18" bc="3"><id bl="18" bc="1">a</id><intConst bl="18" bc="5">2</intConst></assignExpression>
+unlocked
+<functionCall bl="17" bc="1"><id bl="17" bc="1">foo</id></functionCall>
+unlocked
+<assignExpression bl="16" bc="3"><id bl="16" bc="1">a</id><intConst bl="16" bc="5">0</intConst></assignExpression>
+unlocked
+INFO - /////////////////  SUMMARY  /////////////////
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]||SUM|
++--------------+----------------------++---+
+|a             |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
+|lock_l        |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+Function: main
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]|unlocked              ||SUM|
++--------------+----------------------+----------------------++---+
+|a             |1 occurrences, 2 flows|2 occurrences, 2 flows||3  |
++--------------+----------------------+----------------------++---+
+|lock_l        |1 occurrences, 2 flows|0 occurrences, 0 flows||1  |
++--------------+----------------------+----------------------++---+
++--------------+----------------------+----------------------++---+
+/////////////////////////////////////////////
+
+<-> --------------------------------
+<-> File: tests/interprocedural/ProcIfElse.c
+<-> --------------------------------
+<-> File: tests/interprocedural/ProcTwiceStateChange.c
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: [Lock "lock_l" locked]
+Function left in state: [Lock "lock_l" locked]
+<assignExpression bl="10" bc="3"><id bl="10" bc="1">a</id><intConst bl="10" bc="5">1</intConst></assignExpression>
+[Lock "lock_l" locked]
+<exit bl="11"/>
+[Lock "lock_l" locked]
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function main CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<functionCall bl="17" bc="2"><id bl="17" bc="2">foo</id></functionCall>
+[Lock "lock_l" locked]
+<functionCall bl="16" bc="2"><id bl="16" bc="2">__st_spin_lock_st__</id><id bl="16" bc="22">lock_l</id></functionCall>
+unlocked
+<exit bl="23"/>
+unlocked
+<assert bl="15"><prefixExpression op="!" bl="15"><binaryExpression bl="15" bc="6" op="=="><id bl="15" bc="4">a</id><intConst bl="15" bc="9">0</intConst></binaryExpression></prefixExpression></assert>
+unlocked
+<binaryExpression bl="15" bc="6" op="=="><id bl="15" bc="4">a</id><intConst bl="15" bc="9">0</intConst></binaryExpression>
+unlocked
+<assert bl="15"><binaryExpression bl="15" bc="6" op="=="><id bl="15" bc="4">a</id><intConst bl="15" bc="9">0</intConst></binaryExpression></assert>
+unlocked
+<assignExpression bl="20" bc="4"><id bl="20" bc="2">a</id><intConst bl="20" bc="6">2</intConst></assignExpression>
+unlocked
+<returnStatement bl="22" bc="4"><intConst bl="22" bc="11">0</intConst></returnStatement>
+unlocked
+<assignExpression bl="14" bc="3"><id bl="14" bc="1">a</id><intConst bl="14" bc="5">0</intConst></assignExpression>
+unlocked
+<functionCall bl="18" bc="2"><id bl="18" bc="2">__st_spin_unlock_st__</id><id bl="18" bc="24">lock_l</id></functionCall>
+[Lock "lock_l" locked]
+<exit bl="11"/>
+[Lock "lock_l" locked]
+INFO - /////////////////  SUMMARY  /////////////////
+/////////////////////////////////////////////
+Function: main
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]|unlocked              ||SUM|
++--------------+----------------------+----------------------++---+
+|a             |1 occurrences, 1 flows|3 occurrences, 3 flows||4  |
++--------------+----------------------+----------------------++---+
+|lock_l        |1 occurrences, 1 flows|0 occurrences, 0 flows||1  |
++--------------+----------------------+----------------------++---+
++--------------+----------------------+----------------------++---+
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: [Lock "lock_l" locked]
+Function left in state: [Lock "lock_l" locked]
++--------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]||SUM|
++--------------+----------------------++---+
+|a             |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+
+<-> --------------------------------
+Done.
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<assignExpression bl="10" bc="3"><id bl="10" bc="1">a</id><intConst bl="10" bc="5">1</intConst></assignExpression>
+unlocked
+<exit bl="11"/>
+unlocked
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function foo CFG states
+Function entered in state: [Lock "lock_l" locked]
+Function left in state: [Lock "lock_l" locked]
+<assignExpression bl="10" bc="3"><id bl="10" bc="1">a</id><intConst bl="10" bc="5">1</intConst></assignExpression>
+[Lock "lock_l" locked]
+<exit bl="11"/>
+[Lock "lock_l" locked]
+INFO - /////////////////////////////////////////////
+/////////////////////////////////////////////
+Function main CFG states
+Function entered in state: unlocked
+Function left in state: unlocked
+<functionCall bl="19" bc="1"><id bl="19" bc="1">__st_spin_unlock_st__</id><id bl="19" bc="23">lock_l</id></functionCall>
+[Lock "lock_l" locked]
+<returnStatement bl="20" bc="4"><intConst bl="20" bc="11">0</intConst></returnStatement>
+unlocked
+<exit bl="11"/>
+[Lock "lock_l" locked]
+<exit bl="21"/>
+unlocked
+<functionCall bl="17" bc="1"><id bl="17" bc="1">__st_spin_lock_st__</id><id bl="17" bc="21">lock_l</id></functionCall>
+unlocked
+<functionCall bl="18" bc="1"><id bl="18" bc="1">foo</id></functionCall>
+[Lock "lock_l" locked]
+<assignExpression bl="16" bc="3"><id bl="16" bc="1">a</id><intConst bl="16" bc="5">2</intConst></assignExpression>
+unlocked
+<assignExpression bl="14" bc="3"><id bl="14" bc="1">a</id><intConst bl="14" bc="5">0</intConst></assignExpression>
+unlocked
+<functionCall bl="15" bc="1"><id bl="15" bc="1">foo</id></functionCall>
+unlocked
+INFO - /////////////////  SUMMARY  /////////////////
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: [Lock "lock_l" locked]
+Function left in state: [Lock "lock_l" locked]
++--------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]||SUM|
++--------------+----------------------++---+
+|a             |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+Function: foo
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------++---+
+|Variable/State|unlocked              ||SUM|
++--------------+----------------------++---+
+|a             |1 occurrences, 1 flows||1  |
++--------------+----------------------++---+
++--------------+----------------------++---+
+/////////////////////////////////////////////
+Function: main
+Function entered in state: unlocked
+Function left in state: unlocked
++--------------+----------------------+----------------------++---+
+|Variable/State|[Lock "lock_l" locked]|unlocked              ||SUM|
++--------------+----------------------+----------------------++---+
+|a             |1 occurrences, 1 flows|3 occurrences, 3 flows||4  |
++--------------+----------------------+----------------------++---+
+|lock_l        |1 occurrences, 1 flows|0 occurrences, 0 flows||1  |
++--------------+----------------------+----------------------++---+
++--------------+----------------------+----------------------++---+
+/////////////////////////////////////////////
+

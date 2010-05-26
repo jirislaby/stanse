@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lockChecker xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="LockChecker.xsd">
+
+	<countFlows>0</countFlows>
+	<countSubvars>0</countSubvars>
+	<countFunctions>0</countFunctions>
+	<countPairs>0</countPairs>
+	<onlyTopFunctions>0</onlyTopFunctions>
+	<generateDoubleErrors>0</generateDoubleErrors>
+	<generateMoreLocksErrors>0</generateMoreLocksErrors>
+
+	<threshold>-200</threshold>
+
+	<expressions>
+		<expression>id</expression>
+		<expression>arrowExpression</expression>
+		<expression>derefExpression</expression>
+		<expression>arrayAccess</expression>
+		<expression>addrExpression</expression>
+		<expression>dotExpression</expression>
+	</expressions>
+
+	<patterns>
+		<pattern name="skipOccurrence">
+			<declarator>
+				<any />
+			</declarator>
+		</pattern>
+		<pattern name="skipOccurrence">
+			<assert>
+				<any />
+			</assert>
+		</pattern>
+		<pattern name="skipOccurrence">
+			<nested>
+				<functionCall>
+					<id>__st_spin_lock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="skipOccurrence">
+			<nested>
+				<functionCall>
+					<id>__st_mutex_lock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>__st_spin_lock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>__st_mutex_lock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>__st_mutex_unlock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>__st_spin_unlock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<!-- true branch of 'if (is_locked())' -->
+		<pattern name="assertLocked">
+			<assert>
+				<functionCall>
+					<id>assert_spin_locked</id>
+					<var name="A" />
+				</functionCall>
+			</assert>
+		</pattern>
+		<!-- false branch of 'if (is_locked())' -->
+		<pattern name="assertUnlocked">
+			<assert>
+				<prefixExpression op="!">
+					<functionCall>
+						<id>assert_spin_locked</id>
+						<var name="A" />
+					</functionCall>
+				</prefixExpression>
+			</assert>
+		</pattern>
+
+
+
+
+
+
+
+
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>mutex_trylock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>__st_mutex_lock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>__st_mutex_unlock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>__st_spin_unlock_irq_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>__st_spin_lock_irq_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>__st_spin_lock_irqsave_st__</id>
+					<var name="A" />
+					<ignore />
+				</functionCall>
+			</nested>
+		</pattern>
+		
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>__st_spin_unlock_irqrestore_st__</id>
+					<var name="A" />
+					<ignore />
+				</functionCall>
+			</nested>
+		</pattern>
+		
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>__st_mutex_lock_nested_st__</id>
+					<var name="A" />
+					<ignore />
+				</functionCall>
+			</nested>
+		</pattern>		
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>__st_mutex_lock_interruptible_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>__st_bh_lock_sock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>__st_bh_unlock_sock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>lock_sock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>lock_sock_nested</id>
+					<var name="A" />
+					<ignore />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>release_sock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>__st_sco_conn_lock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>__st_sco_conn_unlock_st__</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>lock_task_sighand</id>
+					<var name="A" />
+					<ignore />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>unlock_task_sighand</id>
+					<var name="A" />
+					<ignore />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>task_lock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>task_unlock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>anon_vma_lock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>anon_vma_unlock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>cfi_spin_lock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>cfi_spin_unlock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>lock_fat</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>unlock_fat</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>write_seqlock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>write_sequnlock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>fh_lock_nested</id>
+					<var name="A" />
+					<ignore />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="unlock">
+			<nested>
+				<functionCall>
+					<id>fh_unlock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+		<pattern name="lock">
+			<nested>
+				<functionCall>
+					<id>fh_lock</id>
+					<var name="A" />
+				</functionCall>
+			</nested>
+		</pattern>
+
+	</patterns>
+</lockChecker>
+

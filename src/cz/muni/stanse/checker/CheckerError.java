@@ -11,6 +11,7 @@ package cz.muni.stanse.checker;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 
+import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
@@ -77,7 +78,8 @@ public final class CheckerError implements Comparable<CheckerError> {
     @Override
     public String toString() {
         final CheckerErrorTraceLocation errorLocation = getErrorLocation();
-        return new java.io.File(errorLocation.getUnitName()).getAbsolutePath()
+        return "[" + NumberFormat.getIntegerInstance().format(getImportance()) + "] "
+        		+ new java.io.File(errorLocation.getUnitName()).getAbsolutePath()
                   .replaceFirst(cz.muni.stanse.Stanse.getInstance()
                                                      .getRootDirectory()+'/',"")
                + ", line " + errorLocation.getLineNumber() + ": "
