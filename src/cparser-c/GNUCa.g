@@ -713,11 +713,11 @@ jumpStatement
 	;
 
 asmStatement	// GNU
-	:	('asm'|'__asm'|'__asm__') typeQualifier? '(' asmArgument ')' ';'
+	:	('asm'|'__asm'|'__asm__') (typeQualifier|'goto')? '(' asmArgument ')' ';'
 	;
 
 asmArgument	// GNU
-	:	asmStringLiteral (':' asmOperands? (':' asmOperands? (':' asmClobbers)?)?)?
+	:	asmStringLiteral (':' asmOperands? (':' asmOperands? (':' asmClobbers? (':' asmLabels)?)?)?)?
 	;
 
 asmOperands	// GNU
@@ -731,6 +731,10 @@ asmOperand	// GNU
 
 asmClobbers	// GNU
 	:	asmStringLiteral (',' asmStringLiteral)*
+	;
+
+asmLabels	// GNU
+	:	IDENTIFIER (',' IDENTIFIER)*
 	;
 
 
