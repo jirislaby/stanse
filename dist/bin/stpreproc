@@ -77,8 +77,9 @@ open(ASRC, ">$armored") || die "can't open '$armored' for writing";
 close(ASRC);
 close(SRC);
 
-my $cc = $ENV{'CROSS_COMPILE'} . "gcc";
-my $cpp = "$cc -E -w -I$sourcedir " .
+my $cc = ($ENV{'CROSS_COMPILE'} || ""). "gcc";
+my $cppflags = $ENV{'STANSE_CPPFLAGS'} || "";
+my $cpp = "$cc -E -w $cppflags -I$sourcedir " .
 	"-D__st_unlikely_st__\\(x\\)=x -D__st_likely_st__\\(x\\)=x " .
 	"-D__attribute__\\(x\\)= -D__attribute\\(x\\)= " .
 	"-Dva_list='int' -Dva_arg\\(ap,t\\)=\\(t\\)0 " .
