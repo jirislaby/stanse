@@ -713,7 +713,7 @@ jumpStatement
 	;
 
 asmStatement	// GNU
-	:	('asm'|'__asm'|'__asm__') (typeQualifier|'goto')? '(' asmArgument ')' ';'
+	:	('asm'|'__asm'|'__asm__') typeQualifier? 'goto'? '(' asmArgument ')' ';'
 	;
 
 asmArgument	// GNU
