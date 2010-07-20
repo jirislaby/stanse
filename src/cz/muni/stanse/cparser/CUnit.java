@@ -146,6 +146,10 @@ public final class CUnit extends Unit {
 		"bin" + File.separator + "stpreproc";
 	ProcessBuilder builder = new ProcessBuilder("perl", command, jobEntry);
 	Map<String, String> env = builder.environment();
+	if (env.containsKey("Path")) {
+	    env.put("PATH", env.get("Path"));
+	    env.remove("Path");
+	}
 	env.put("PATH", env.get("PATH") + File.pathSeparator +
 		Stanse.getInstance().getRootDirectory() + File.separator + "bin");
 	try {
