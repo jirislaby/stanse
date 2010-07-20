@@ -10,6 +10,7 @@ import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.codestructures.LazyInternalStructuresInter;
 import cz.muni.stanse.codestructures.LazyInternalStructuresIntra;
 import cz.muni.stanse.cparser.CUnit;
+import cz.muni.stanse.cppparser.CppUnit;
 import cz.muni.stanse.utils.ClassLogger;
 
 import java.util.Collections;
@@ -94,8 +95,14 @@ public final class SourceConfiguration {
                               "Failed to get source files.", e);
             return Collections.unmodifiableList(result);
         }
-        for (String pathName: files)
-            result.add(new CUnit(pathName));
+        for (String pathName: files) {
+            int extPos = pathName.lastIndexOf(".");
+            String ext = pathName.substring(extPos + 1, pathName.length());
+            if (ext.equals("cpp") || ext.equals("cc") || ext.equals("cxx") || ext.equals("C"))
+        	result.add(new CppUnit(pathName));
+            else
+        	result.add(new CUnit(pathName));
+        }
         return result;
     }
 
