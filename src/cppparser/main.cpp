@@ -308,6 +308,8 @@ int main(int argc, char * argv[])
 	bool printAST = false;
 	bool printCFG = false;
 	bool printReadableAST = false;
+
+	std::vector<clang::DirectoryLookup> includePaths;
 	
 	for (int i = 1; i < argc; ++i)
 	{
@@ -318,6 +320,15 @@ int main(int argc, char * argv[])
 			printAST = true;
 		else if (arg == "-c")
 			printCFG = true;
+		else if (arg == "-I")
+		{
+			if (++i < argc)
+			{
+				includePaths.push_back(clang::DirectoryLookup(fm.getDirectory(argv[i]), clang::SrcMgr::C_User, true, false));
+			}
+			else
+				std::cerr << "The switch -I requires an argument." << std::endl;
+		}
 		else
 			targetFile = arg;
 	}
@@ -330,6 +341,7 @@ int main(int argc, char * argv[])
 		clang::SourceLocation());
 	
 	clang::HeaderSearch hs(fm);
+	hs.SetSearchPaths(includePaths, 0, false);
 
 	clang::TargetInfo * pTi = clang::TargetInfo::CreateTargetInfo(diag, ci.getTargetOpts());
 
