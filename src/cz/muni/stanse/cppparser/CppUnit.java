@@ -77,7 +77,7 @@ public final class CppUnit extends Unit {
 	org.dom4j.Document cfgDocument;
 
 	String command = Stanse.getInstance().getRootDirectory()
-		+ File.separator + "bin" + File.separator + "clang-pokus";
+		+ File.separator + "bin" + File.separator + "cppparser";
 	ProcessBuilder builder = new ProcessBuilder(command, "-A", "-c",
 		this.fileName.getAbsolutePath());
 	try {
