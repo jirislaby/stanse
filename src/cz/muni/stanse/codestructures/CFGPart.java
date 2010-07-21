@@ -205,7 +205,7 @@ public class CFGPart {
 	    Element e = n.getElement();
 	    if (e != null) {
 		sb.append(' ');
-		sb.append(e.toString());
+		sb.append(e.asXML());
 	    }
 	    CFGBranchNode bn = null;
 	    if (n instanceof CFGBranchNode)
@@ -215,7 +215,7 @@ public class CFGPart {
 		sb.append(eol);
 		sb.append("  -");
 		if (bn != null) {
-		    sb.append(bn.getEdgeLabel(edge));
+		    sb.append(bn.getEdgeLabel(edge).asXML());
 		    sb.append('-');
 		    edge++;
 		}
