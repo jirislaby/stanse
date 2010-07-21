@@ -292,145 +292,6 @@ void xml_print_statement(clang::Stmt const * stmt, std::ostream & fout)
 	}
 }
 
-class CfgPrinter
-{
-public:
-	CfgPrinter()
-		: free_nodeid(0)
-	{
-	}
-
-	void print_decl_name(clang::NamedDecl const * decl, std::ostream & fout)
-	{
-		fout << decl->getName().str();
-	}
-
-	void print_expr(clang::Expr const * expr, std::ostream & fout)
-	{
-		if (clang::CallExpr const * e = llvm::dyn_cast<clang::CallExpr>(expr))
-		{
-			fout << "<functionCall>";
-			xml_print_expr(e->getCallee(), fout);
-			unsigned arg_count = e->getNumArgs();
-			for (unsigned arg = 0; arg < arg_count; ++arg)
-				xml_print_expr(e->getArg(arg), fout);
-			fout << "</functionCall>";
-		}
-		else if (clang::CastExpr const * e = llvm::dyn_cast<clang::CastExpr>(expr))
-		{
-			xml_print_expr(e->getSubExpr(), fout);
-		}
-		else if (clang::DeclRefExpr const * e = llvm::dyn_cast<clang::DeclRefExpr>(expr))
-		{
-			fout << "<id>";
-			xml_print_decl_name(e->getDecl(), fout);
-			fout << "</id>";
-		}
-		else if (clang::BinaryOperator const * e = llvm::dyn_cast<clang::BinaryOperator>(expr))
-		{
-			if (e->getOpcode() == clang::BinaryOperator::Assign)
-			{
-				fout << "<assignExpression>";
-				xml_print_expr(e->getLHS(), fout);
-				xml_print_expr(e->getRHS(), fout);
-				fout << "</assignExpression>";
-			}
-			else
-			{
-				fout << "<binaryExpression op=\"" << clang::BinaryOperator::getOpcodeStr(e->getOpcode()) << "\">";
-				xml_print_expr(e->getLHS(), fout);
-				xml_print_expr(e->getRHS(), fout);
-				fout << "</binaryExpression>";
-			}
-		}
-		else if (clang::ParenExpr const * e = llvm::dyn_cast<clang::ParenExpr>(expr))
-		{
-			xml_print_expr(e->getSubExpr(), fout);
-		}
-		else if (clang::MemberExpr const * e = llvm::dyn_cast<clang::MemberExpr>(expr))
-		{
-			if (e->isArrow())
-				fout << "<arrowExpression>";
-
-			xml_print_expr(e->getBase(), fout);
-			fout << "<member>";
-			xml_print_decl_name(e->getMemberDecl(), fout);
-			fout << "</member>";
-
-			if (e->isArrow())		
-				fout << "</arrowExpression>";
-		}
-		else if (clang::IntegerLiteral const * e = llvm::dyn_cast<clang::IntegerLiteral>(expr))
-		{
-			fout << "<intConst>" << e->getValue().toString(10, true) << "</intConst>";
-		}
-	}
-
-	bool print_statement(clang::Stmt const * stmt, std::ostream & fout, int innode, int outnode)
-	{
-		if (stmt == 0)
-		{
-			//fout << "<node id=\"" << innode << "\" next=\"" << outnode << "\"><emptyStatement /></node>";
-			return false;
-		}
-		else if (clang::CompoundStmt const * s = llvm::dyn_cast<clang::CompoundStmt>(stmt))
-		{
-			clang::CompoundStmt::const_body_iterator ci = s->body_begin();
-			if (ci == s->body_end())
-				print_statement(0, fout, innode, outnode);
-			while (ci != s->body_end())
-			{
-				clang::CompoundStmt::const_body_iterator next_ci = ci;
-				++next_ci;
-
-				
-				if (next_ci == s->body_end())
-					return print_statement(*ci, fout, innode, outnode);
-
-				int midnode = new_nodeid();
-				if (print_statement(*ci, fout, innode, midnode))
-					innode = midnode;
-
-				ci = next_ci;
-			}
-		}
-		else if (clang::Expr const * expr = llvm::dyn_cast<clang::Expr>(stmt))
-		{
-			fout << "<node id=\"" << innode << "\" next=\"" << outnode << "\">";
-			print_expr(expr, fout);
-			fout << "</node>";
-		}
-		else if (clang::IfStmt const * s = llvm::dyn_cast<clang::IfStmt>(stmt))
-		{
-			int thenid = this->new_nodeid();
-			int elseid = this->new_nodeid();
-
-			fout << "<branchnode id=\"" << innode << "\"><cond>";
-			print_expr(s->getCond(), fout);
-			fout << "</cond><next nodeid=\"" << thenid << "\"><default/></next><next nodeid=\"" << elseid << "\"><intConst>0</intConst></next></branchnode>";
-
-			print_statement(s->getThen(), fout, thenid, outnode);
-			print_statement(s->getElse(), fout, elseid, outnode);
-		}
-		else if (clang::ReturnStmt const * s = llvm::dyn_cast<clang::ReturnStmt>(stmt))
-		{
-			fout << "<node id=\"" << innode << "\" next=\"" << outnode << "\"><returnStatement>";
-			print_expr(s->getRetValue(), fout);
-			fout << "</returnStatement></node>";
-		}
-
-		return false;
-	}
-
-	int new_nodeid()
-	{
-		return free_nodeid++;
-	}
-
-private:
-	int free_nodeid;
-};
-
 int main(int argc, char * argv[])
 {
 	MyDiagClient diag_client;
@@ -541,13 +402,7 @@ int main(int argc, char * argv[])
 				fout << "</id></declarator></parameter>";
 			}
 			fout << "</functionDecl></declarator>";
-
-			//fout << "<declarationSpecifiers>\n";
-			//xml_print_type(ft->getResultType(), fout);
-			//fout << "</declarationSpecifiers>\n";
-
 			xml_print_statement((*ci)->getBody(), fout);
-
 			fout << "</functionDefinition></externalDeclaration>";
 		}
 
@@ -647,22 +502,6 @@ int main(int argc, char * argv[])
 			fout << "</cfg>";
 		}
 
-		/*for (std::set<clang::FunctionDecl const *>::const_iterator ci = functionDecls.begin(); ci != functionDecls.end(); ++ci)
-		{
-			clang::QualType fnType = (*ci)->getType();
-			clang::FunctionType * ft = dyn_cast<clang::FunctionType>(fnType.getTypePtr());
-
-			CfgPrinter printer;
-			fout << "<cfg name=\"";
-			printer.print_decl_name(*ci, fout);
-			fout << "\">";
-			int innode = printer.new_nodeid();
-			int outnode = printer.new_nodeid();
-			printer.print_statement((*ci)->getBody(), fout, innode, outnode);
-			fout << "<exitnode id=\"" << outnode << "\" />";
-			fout << "</cfg>";
-		}*/
-
 		fout <<
 			"</cfgs>\n";
 	}
@@ -675,29 +514,4 @@ int main(int argc, char * argv[])
 			print_decl(*ci, std::cout, 0);
 		}
 	}
-
-/*
-	clang::DeclContext * declctx = ctx.getTranslationUnitDecl();
-	for (clang::DeclContext::decl_iterator it = declctx->decls_begin(); it != declctx->decls_end(); ++it)
-	{
-		clang::Decl * decl = *it;
-		print_decl(decl, std::cout, 0);
-	}
-*/
-/*	clang::CFG * cfg = clang::CFG::buildCFG(mainDecl, mainStmt, &ctx);
-	clang::CFGBlock const * block = &cfg->getEntry();
-	while (block != &cfg->getExit())
-	{
-		for (clang::CFGBlock::const_iterator ci = block->begin(); ci != block->end(); ++ci)
-		{
-			print_stmt(ci->getStmt(), std::cout, 0);
-		}
-
-		if (block->succ_size() == 0)
-			block = 0;
-		else
-			block = *block->succ_begin();
-	}
-
-	delete cfg;*/
 }
