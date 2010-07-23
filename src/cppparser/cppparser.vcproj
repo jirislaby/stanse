@@ -48,7 +48,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
-				DisableSpecificWarnings="4146"
+				DisableSpecificWarnings="4146;4800;4355"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -167,6 +167,22 @@
 	<References>
 	</References>
 	<Files>
+		<File
+			RelativePath=".\ast_dumper.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\ast_dumper.hpp"
+			>
+		</File>
+		<File
+			RelativePath=".\ast_dumper_detail.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\ast_dumper_detail.hpp"
+			>
+		</File>
 		<File
 			RelativePath=".\main.cpp"
 			>
