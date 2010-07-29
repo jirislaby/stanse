@@ -4,6 +4,8 @@
 #include <clang/ast/Decl.h>
 #include <clang/ast/DeclTemplate.h>
 
+#include <boost/algorithm/string/replace.hpp>
+
 namespace {
 
 void indent(std::ostream & out, int level)
@@ -20,7 +22,7 @@ void print_decl(clang::Decl const * decl, std::ostream & out, int level)
 	out << decl->getDeclKindName();
 	if (clang::NamedDecl const * namedDecl = llvm::dyn_cast<clang::NamedDecl>(decl))
 	{
-		out << ": " << namedDecl->getName().data();
+		out << ": " << namedDecl->getQualifiedNameAsString().data();
 	}
 	if (clang::ValueDecl const * valueDecl = llvm::dyn_cast<clang::ValueDecl>(decl))
 	{
@@ -101,7 +103,7 @@ void print_stmt(clang::Stmt const * stmt, std::ostream & out, int level)
 	if (clang::MemberExpr const * expr = llvm::dyn_cast<clang::MemberExpr>(stmt))
 	{
 		indent(out, level + 1);
-		out << "member: " << expr->getMemberDecl()->getName().str() << "\n";
+		out << "member: " << expr->getMemberDecl()->getQualifiedNameAsString() << "\n";
 		print_stmt(expr->getBase(), out, level + 1);
 	}
 }
@@ -136,18 +138,65 @@ void get_referenced_functions(clang::Stmt const * stmt, OutputIterator out)
 	}
 }
 
+std::string xml_escape(std::string const & str)
+{
+	std::string res;
+
+	static struct
+	{
+		char ch;
+		char const * entity;
+	}
+	const entities[] =
+	{
+		{ '<', "&lt;" },
+		{ '>', "&gt;" },
+		{ '"', "&quot;" },
+		{ '\'', "&apos;" },
+		{ '&', "&amp;" },
+		{ 0, 0 }
+	};
+
+	char const * start = str.data();
+	char const * end = start + str.size();
+	char const * cur = start;
+
+	while (cur != end)
+	{
+		std::size_t eid;
+		for (; cur != end; ++cur)
+		{
+			eid = 0;
+			while (entities[eid].entity != 0 && entities[eid].ch != *cur)
+				++eid;
+			if (entities[eid].entity != 0)
+				break;
+		}
+
+		res.append(start, cur);
+		if (entities[eid].entity != 0)
+		{
+			res.append(entities[eid].entity);
+			start = cur + 1;
+			++cur;
+		}
+	}
+
+	return res;
+}
+
 void xml_print_type(clang::QualType type, std::ostream & fout)
 {
 	clang::Type * ptype = type.getTypePtr();
 	if (clang::BuiltinType * t = llvm::dyn_cast<clang::BuiltinType>(ptype))
 		fout << "<baseType>" << t->getName(clang::LangOptions()) << "</baseType>\n";
 	if (clang::RecordType * t =  llvm::dyn_cast<clang::RecordType>(ptype))
-		fout << "<struct id=\"" << t->getDecl()->getNameAsString() << "\" />\n";
+		fout << "<struct id=\"" << t->getDecl()->getQualifiedNameAsString() << "\" />\n";
 }
 
 void xml_print_decl_name(clang::NamedDecl const * decl, std::ostream & fout)
 {
-	fout << decl->getName().str();
+	fout << xml_escape(decl->getQualifiedNameAsString());
 }
 
 void xml_print_expr(clang::Expr const * expr, std::ostream & fout)
@@ -182,7 +231,7 @@ void xml_print_expr(clang::Expr const * expr, std::ostream & fout)
 		}
 		else
 		{
-			fout << "<binaryExpression op=\"" << clang::BinaryOperator::getOpcodeStr(e->getOpcode()) << "\">";
+			fout << "<binaryExpression op=\"" << xml_escape(clang::BinaryOperator::getOpcodeStr(e->getOpcode())) << "\">";
 			xml_print_expr(e->getLHS(), fout);
 			xml_print_expr(e->getRHS(), fout);
 			fout << "</binaryExpression>";
@@ -239,9 +288,17 @@ void xml_print_statement(clang::Stmt const * stmt, std::ostream & fout)
 	}
 	else if (clang::ReturnStmt const * s = llvm::dyn_cast<clang::ReturnStmt>(stmt))
 	{
-		fout << "<returnStatement>";
-		xml_print_expr(s->getRetValue(), fout);
-		fout << "</returnStatement>";
+		clang::Expr const * ret_value = s->getRetValue();
+		if (ret_value)
+		{
+			fout << "<returnStatement>";
+			xml_print_expr(s->getRetValue(), fout);
+			fout << "</returnStatement>";
+		}
+		else
+		{
+			fout << "<returnStatement />";
+		}
 	}
 	else
 	{

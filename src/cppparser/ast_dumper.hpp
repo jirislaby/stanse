@@ -85,6 +85,8 @@ void print_ast(std::ostream & fout, clang::ASTContext const & ctx, InputIterator
 		"</translationUnit>\n";
 }
 
+#if 0
+
 template <typename InputIterator>
 void print_cfg(std::ostream & fout, clang::ASTContext & ctx, InputIterator firstFun, InputIterator lastFun)
 {
@@ -94,6 +96,10 @@ void print_cfg(std::ostream & fout, clang::ASTContext & ctx, InputIterator first
 
 	for (; firstFun != lastFun; ++firstFun)
 	{
+		cfg c((*firstFun)->getBody());
+		c.xml_print(fout);
+		continue;
+
 		clang::CFG * cfg = clang::CFG::buildCFG(*firstFun, (*firstFun)->getBody(), &ctx);
 
 		int free_nodeid = cfg->getNumBlockIDs();
@@ -122,7 +128,7 @@ void print_cfg(std::ostream & fout, clang::ASTContext & ctx, InputIterator first
 				}
 				else
 				{
-					if (block->getTerminatorCondition() != 0)
+					if (block->getTerminatorCondition() != 0 && !isa<clang::BinaryOperator>(block->getTerminator()) && !isa<clang::ConditionalOperator>(block->getTerminator()))
 					{
 						BOOST_ASSERT(block->getTerminatorCondition() == *stmt_firstFun);
 
@@ -139,8 +145,41 @@ void print_cfg(std::ostream & fout, clang::ASTContext & ctx, InputIterator first
 							fout << "<next nodeid=\"" << (*succ_firstFun++)->getBlockID() << "\"><intConst>0</intConst></next>";
 							BOOST_ASSERT(succ_firstFun == block->succ_end());
 						}
+						else if (clang::ConditionalOperator const * s = llvm::dyn_cast<clang::ConditionalOperator>(block->getTerminator()))
+						{
+							clang::CFGBlock::const_succ_iterator succ_firstFun = block->succ_begin();
+							fout << "<next nodeid=\"" << (*succ_firstFun++)->getBlockID() << "\"><default/></next>";
+							fout << "<next nodeid=\"" << (*succ_firstFun++)->getBlockID() << "\"><intConst>0</intConst></next>";
+							BOOST_ASSERT(succ_firstFun == block->succ_end());
+						}
+						else if (clang::SwitchStmt const * s = llvm::dyn_cast<clang::SwitchStmt>(block->getTerminator()))
+						{
+							clang::CFGBlock::const_succ_iterator succ_firstFun = block->succ_begin();
+							clang::SwitchCase const * c = s->getSwitchCaseList();
+
+							for (; succ_firstFun != block->succ_end(); ++succ_firstFun)
+							{
+								BOOST_ASSERT(c != 0);
+
+								fout << "<next nodeid=\"" << (*succ_firstFun)->getBlockID() << "\">";
+								if (clang::CaseStmt const * c2 = llvm::dyn_cast<clang::CaseStmt>(c))
+								{
+									xml_print_expr(c2->getLHS(), fout);
+								}
+								else
+								{
+									fout << "<default />";
+								}
+								fout << "</next>";
+
+								c = c->getNextSwitchCase();
+							}
+							BOOST_ASSERT(c == 0);
+						}
 						else
 						{
+							cfg->dump(clang::LangOptions());
+							fout.flush();
 							BOOST_ASSERT(0 && "Not implemented yet.");
 						}
 
@@ -149,7 +188,7 @@ void print_cfg(std::ostream & fout, clang::ASTContext & ctx, InputIterator first
 					}
 					else
 					{
-						BOOST_ASSERT(block->succ_size() == 1);
+						BOOST_ASSERT(block->succ_size() == 1 || isa<clang::BinaryOperator>(block->getTerminator()) || isa<clang::ConditionalOperator>(block->getTerminator()));
 
 						fout << "<node id=\"" << previd;
 						fout << "\" next=\"" << (*block->succ_begin())->getBlockID() << "\">";
@@ -179,5 +218,7 @@ void print_cfg(std::ostream & fout, clang::ASTContext & ctx, InputIterator first
 	fout <<
 		"</cfgs>\n";
 }
+
+#endif
 
 #endif

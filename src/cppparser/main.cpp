@@ -1,4 +1,5 @@
 #include "ast_dumper.hpp"
+#include "cfg_dumper.hpp"
 
 #include <clang/Sema/ParseAST.h>
 #include <clang/Lex/Preprocessor.h>
@@ -36,6 +37,7 @@ public:
 
 	void HandleTranslationUnit(clang::ASTContext &ctx)
 	{
+#if 1
 		if (m_ci.getDiagnostics().getNumErrors() > 0)
 		{
 			std::cerr << "Errors were found, serialization of AST and CFGs is disabled." << std::endl;
@@ -49,10 +51,11 @@ public:
 			print_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
 
 		if (printCFG)
-			print_cfg(std::cout, ctx, functionDecls.begin(), functionDecls.end());
+			print_cfg(std::cout, functionDecls.begin(), functionDecls.end());
 
 		if (printReadableAST)
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
+#endif
 	}
 
 private:
@@ -83,6 +86,14 @@ private:
 	bool printReadableAST;
 };
 
+class MyDiagClient : public clang::DiagnosticClient
+{
+public:
+	virtual void HandleDiagnostic(clang::Diagnostic::Level DiagLevel, const clang::DiagnosticInfo &Info)
+	{
+	}
+};
+
 int main(int argc, char * argv[])
 {
 /*	MyDiagClient diag_client;
@@ -105,6 +116,9 @@ int main(int argc, char * argv[])
 		"-fcolor-diagnostics",
 		//"-fsyntax-only",
 		"-x", "c++",
+		"-nobuiltininc",
+		"-nostdinc",
+		"-nostdinc++"
 		//"c:\\users\\Martin.vejnar\\Documents\\temp\\pokus.cpp"
 	};
 
@@ -131,14 +145,17 @@ int main(int argc, char * argv[])
 
 	clang::CompilerInstance comp_inst;
 
-	clang::TextDiagnosticBuffer argDiagBuffer;
-	clang::Diagnostic argDiag(&argDiagBuffer);
-	clang::CompilerInvocation & ci = comp_inst.getInvocation();
-	clang::CompilerInvocation::CreateFromArgs(ci, &args.front(), &args.back() + 1, argDiag);
-	comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
-	argDiagBuffer.FlushDiagnostics(comp_inst.getDiagnostics());
+	//MyDiagClient * argDiagBuffer = new MyDiagClient();
+	clang::TextDiagnosticBuffer * argDiagBuffer = new clang::TextDiagnosticBuffer();
+	clang::Diagnostic * argDiag = new clang::Diagnostic(argDiagBuffer);
+	//comp_inst.setDiagnosticClient(argDiagBuffer);
+	//comp_inst.setDiagnostics(argDiag);
 
-	comp_inst.createFileManager();
+	clang::CompilerInvocation & ci = comp_inst.getInvocation();
+	clang::CompilerInvocation::CreateFromArgs(ci, &args.front(), &args.back() + 1, *argDiag);
+
+	comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
+	argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
 
 	if (!printReadableAST && !printAST && !printCFG)
 		printReadableAST = true;

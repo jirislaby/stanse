@@ -123,6 +123,17 @@ public final class CUnit extends Unit {
 	}
 
 	nodes.reset();
+	
+	{
+	    try {
+		java.io.FileWriter writer = new java.io.FileWriter("x:\\dump.xml");
+		xmlDocument.write(writer);
+		writer.close();
+	    }
+	    catch (java.io.IOException e)
+	    {
+	    }
+	}
 
 	CFGEmitter cfgEmitter = new CFGEmitter(nodes);
 	try {
@@ -131,6 +142,19 @@ public final class CUnit extends Unit {
 		CFGHs.add(new CFGHandle(this, cfg));
 	} catch (RecognitionException e) {
 	    throw new ParserException("CFGEmitter", e);
+	}
+
+	{
+	    try {
+		java.io.FileWriter writer = new java.io.FileWriter("x:\\dump_cfg.txt");
+		for (CFG cfg: CFGs) {
+		    writer.write(cfg.toStringGraph());
+		}
+		writer.close();
+	    }
+	    catch (java.io.IOException e)
+	    {
+	    }
 	}
     }
 

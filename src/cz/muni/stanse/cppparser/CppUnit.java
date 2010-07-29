@@ -101,48 +101,46 @@ public final class CppUnit extends Unit {
 
 	{
 	    try {
-		java.io.FileWriter writer = new java.io.FileWriter("x:\\dump_cpp.xml");
+		java.io.FileWriter writer = new java.io.FileWriter(
+			"x:\\dump_cpp.xml");
 		xmlDocument.write(writer);
 		writer.close();
-	    }
-	    catch (java.io.IOException e)
-	    {
+	    } catch (java.io.IOException e) {
 	    }
 	}
 
 	List<Element> list = cfgDocument.selectNodes("//cfg");
 	for (Element cfgElem : list) {
+
 	    String cfgname = cfgElem.attribute("name").getValue();
 	    java.util.Map<Integer, CFGNode> nodes = new java.util.HashMap<Integer, CFGNode>();
 	    for (Element node : (List<Element>) cfgElem.elements()) {
-		CFGNode newnode = null;
-		if (node.getName().equals("node") || node.getName().equals("exitnode")) {
-		    if (node.elements().size() > 0) {
-			Element content = (Element)node.elements().get(0);
-			newnode = new CFGNode(content);
-		    } else {
-			newnode = new CFGNode();
-		    }
-		} else if (node.getName().equals("branchnode")) {
-		    newnode = new CFGBranchNode((Element)node.selectSingleNode("cond/*[1]"));
+		List<Element> nodeElems = (List<Element>) node.elements();
+
+		CFGNode newnode = new CFGBranchNode(nodeElems.get(0));
+		if (nodeElems.size() == 1
+			|| (nodeElems.size() == 2 && ((Element) nodeElems
+				.get(1).elements().get(0)).getName().equals(
+				"default"))) {
+		    newnode = new CFGNode(nodeElems.get(0));
+		} else {
+		    newnode = new CFGBranchNode(nodeElems.get(0));
 		}
 		String nodeid = node.attributeValue("id");
 		nodes.put(Integer.parseInt(nodeid), newnode);
 	    }
+
 	    for (Element node : (List<Element>) cfgElem.elements()) {
 		CFGNode newnode = nodes.get(Integer.parseInt(node
 			.attributeValue("id")));
-		if (node.getName().equals("node")) {
-		    newnode.addEdge(nodes.get(Integer.parseInt(node
-			    .attributeValue("next"))));
-		} else if (node.getName().equals("branchnode")) {
-		    CFGBranchNode branchnode = (CFGBranchNode) newnode;
-		    for (Element nextnode : (List<Element>) node
-			    .elements("next")) {
-			String nextNodeId = nextnode.attributeValue("nodeid");
-			branchnode.addEdge(
+		for (Element nextnode : (List<Element>) node.elements("next")) {
+		    String nextNodeId = nextnode.attributeValue("nodeid");
+		    if (newnode instanceof CFGBranchNode) {
+			((CFGBranchNode) newnode).addEdge(
 				nodes.get(Integer.parseInt(nextNodeId)),
 				(Element) nextnode.elements().get(0));
+		    } else {
+			newnode.addEdge(nodes.get(Integer.parseInt(nextNodeId)));
 		    }
 		}
 	    }
@@ -153,7 +151,7 @@ public final class CppUnit extends Unit {
 	    cfgpart.setEndNode(nodes.get(Integer.parseInt(cfgElem
 		    .attributeValue("endnode"))));
 	    String xpath = "//functionDefinition[@name='" + cfgname + "']";
-	    Element fnDef = (Element)xmlDocument.selectSingleNode(xpath);
+	    Element fnDef = (Element) xmlDocument.selectSingleNode(xpath);
 	    CFG cfg = CFG.createFromCFGPart(cfgpart, fnDef);
 	    CFGs.add(cfg);
 	}
