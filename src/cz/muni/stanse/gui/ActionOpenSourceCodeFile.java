@@ -11,7 +11,11 @@ final class ActionOpenSourceCodeFile extends javax.swing.AbstractAction {
         chooser.setCurrentDirectory(new java.io.File(getInitialPath()));
         chooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter(new FileChooserFileFilter(
-                   "C source files",cz.muni.stanse.utils.Make.linkedList("C")));
+                   "C source files",cz.muni.stanse.utils.Make.linkedList("c")));
+        chooser.addChoosableFileFilter(new FileChooserFileFilter(
+                "C++ source files",cz.muni.stanse.utils.Make.linkedList("cpp", "cc", "cxx")));
+        chooser.addChoosableFileFilter(new FileChooserFileFilter(
+                "C/C++ source files",cz.muni.stanse.utils.Make.linkedList("c", "cpp", "cc", "cxx")));
         if (chooser.showDialog(MainWindow.getInstance(),"Add") ==
                     javax.swing.JFileChooser.APPROVE_OPTION) {
             MainWindow.getInstance().getOpenedSourceFilesManager().
