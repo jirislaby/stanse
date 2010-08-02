@@ -221,22 +221,24 @@ void cfg::append_edge(cfg const & nested, std::size_t source_node, std::size_t e
 	this->merge_labels(nested, old_size);
 }
 
-void cfg::xml_print(std::ostream & out, std::string const & name) const
+void cfg::xml_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const
 {
-	out << "<cfg name=\"" << name << "\" startnode=\"0\" endnode=\"" << m_nodes.size() << "\">";
+	xml_printer p(out, sm);
+
+	out << "<cfg name=\"" << fn.getQualifiedNameAsString() << "\" startnode=\"0\" endnode=\"" << m_nodes.size() << "\">";
 	for (std::size_t i = 0; i < m_nodes.size(); ++i)
 	{
 		cfg_node const & node = m_nodes[i];
 		BOOST_ASSERT(node.break_type == cfg_node::bt_none);
 
 		out << "<node id=\"" << i << "\">";
-		xml_print_statement(node.stmt, out);
+		p.xml_print_statement(node.stmt);
 		for (std::size_t j = 0; j < node.succs.size(); ++j)
 		{
 			out << "<next nodeid=\"" << node.succs[j].id << "\">";
 			if (node.succs[j].label)
 			{
-				xml_print_statement(node.succs[j].label, out);
+				p.xml_print_statement(node.succs[j].label);
 			}
 			else
 			{
@@ -255,5 +257,7 @@ void cfg::xml_print(std::ostream & out, std::string const & name) const
 
 		out << "</node>";
 	}
-	out << "<node id=\"" << m_nodes.size() << "\"><exit /></node></cfg>";
+	out << "<node id=\"" << m_nodes.size() << "\">";
+	p.xml_print_tag("exit", fn.getSourceRange().getEnd(), "/");
+	out << "</node></cfg>";
 }

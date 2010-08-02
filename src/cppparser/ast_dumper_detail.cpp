@@ -185,7 +185,12 @@ std::string xml_escape(std::string const & str)
 	return res;
 }
 
-void xml_print_type(clang::QualType type, std::ostream & fout)
+xml_printer::xml_printer(std::ostream & fout, clang::SourceManager const * sm)
+	: fout(fout), m_sm(sm)
+{
+}
+
+void xml_printer::xml_print_type(clang::QualType type)
 {
 	clang::Type * ptype = type.getTypePtr();
 	if (clang::BuiltinType * t = llvm::dyn_cast<clang::BuiltinType>(ptype))
@@ -194,61 +199,61 @@ void xml_print_type(clang::QualType type, std::ostream & fout)
 		fout << "<struct id=\"" << t->getDecl()->getQualifiedNameAsString() << "\" />\n";
 }
 
-void xml_print_decl_name(clang::NamedDecl const * decl, std::ostream & fout)
+void xml_printer::xml_print_decl_name(clang::NamedDecl const * decl)
 {
 	fout << xml_escape(decl->getQualifiedNameAsString());
 }
 
-void xml_print_expr(clang::Expr const * expr, std::ostream & fout)
+void xml_printer::xml_print_expr(clang::Expr const * expr)
 {
 	if (clang::CallExpr const * e = llvm::dyn_cast<clang::CallExpr>(expr))
 	{
-		fout << "<functionCall>";
-		xml_print_expr(e->getCallee(), fout);
+		xml_print_tag("functionCall", expr->getExprLoc());
+		xml_print_expr(e->getCallee());
 		unsigned arg_count = e->getNumArgs();
 		for (unsigned arg = 0; arg < arg_count; ++arg)
-			xml_print_expr(e->getArg(arg), fout);
+			xml_print_expr(e->getArg(arg));
 		fout << "</functionCall>";
 	}
 	else if (clang::CastExpr const * e = llvm::dyn_cast<clang::CastExpr>(expr))
 	{
-		xml_print_expr(e->getSubExpr(), fout);
+		xml_print_expr(e->getSubExpr());
 	}
 	else if (clang::DeclRefExpr const * e = llvm::dyn_cast<clang::DeclRefExpr>(expr))
 	{
-		fout << "<id>";
-		xml_print_decl_name(e->getDecl(), fout);
+		xml_print_tag("id", e->getLocation());
+		xml_print_decl_name(e->getDecl());
 		fout << "</id>";
 	}
 	else if (clang::BinaryOperator const * e = llvm::dyn_cast<clang::BinaryOperator>(expr))
 	{
 		if (e->getOpcode() == clang::BinaryOperator::Assign)
 		{
-			fout << "<assignExpression>";
-			xml_print_expr(e->getLHS(), fout);
-			xml_print_expr(e->getRHS(), fout);
+			xml_print_tag("assignExpression", e->getOperatorLoc());
+			xml_print_expr(e->getLHS());
+			xml_print_expr(e->getRHS());
 			fout << "</assignExpression>";
 		}
 		else
 		{
-			fout << "<binaryExpression op=\"" << xml_escape(clang::BinaryOperator::getOpcodeStr(e->getOpcode())) << "\">";
-			xml_print_expr(e->getLHS(), fout);
-			xml_print_expr(e->getRHS(), fout);
+			xml_print_tag("binaryExpression", e->getOperatorLoc(), "op=\"" + xml_escape(clang::BinaryOperator::getOpcodeStr(e->getOpcode())) + "\"");
+			xml_print_expr(e->getLHS());
+			xml_print_expr(e->getRHS());
 			fout << "</binaryExpression>";
 		}
 	}
 	else if (clang::ParenExpr const * e = llvm::dyn_cast<clang::ParenExpr>(expr))
 	{
-		xml_print_expr(e->getSubExpr(), fout);
+		xml_print_expr(e->getSubExpr());
 	}
 	else if (clang::MemberExpr const * e = llvm::dyn_cast<clang::MemberExpr>(expr))
 	{
 		if (e->isArrow())
-			fout << "<arrowExpression>";
+			xml_print_tag("arrowExpression", e->getExprLoc());
 
-		xml_print_expr(e->getBase(), fout);
-		fout << "<member>";
-		xml_print_decl_name(e->getMemberDecl(), fout);
+		xml_print_expr(e->getBase());
+		xml_print_tag("member", e->getMemberLoc());
+		xml_print_decl_name(e->getMemberDecl());
 		fout << "</member>";
 
 		if (e->isArrow())		
@@ -256,52 +261,55 @@ void xml_print_expr(clang::Expr const * expr, std::ostream & fout)
 	}
 	else if (clang::IntegerLiteral const * e = llvm::dyn_cast<clang::IntegerLiteral>(expr))
 	{
-		fout << "<intConst>" << e->getValue().toString(10, true) << "</intConst>";
+		xml_print_tag("intConst", e->getLocation());
+		fout << e->getValue().toString(10, true) << "</intConst>";
 	}
 }
 
-void xml_print_statement(clang::Stmt const * stmt, std::ostream & fout)
+void xml_printer::xml_print_tag(std::string const & tag_name, clang::SourceLocation sl, std::string const & extra)
+{
+	if (m_sm)
+		fout << "<" << tag_name << " bl=\"" << m_sm->getInstantiationLineNumber(sl) << "\" " << extra << ">";
+	else
+		fout << "<" << tag_name << " " << extra << ">";
+}
+
+void xml_printer::xml_print_statement(clang::Stmt const * stmt)
 {
 	if (clang::CompoundStmt const * s = llvm::dyn_cast<clang::CompoundStmt>(stmt))
 	{
-		fout << "<compoundStatement>";
+		xml_print_tag("compoundStatement", s->getLBracLoc());
 		for (clang::CompoundStmt::const_body_iterator ci = s->body_begin(); ci != s->body_end(); ++ci)
 		{
-			xml_print_statement(*ci, fout);
+			xml_print_statement(*ci);
 		}
 		fout << "</compoundStatement>";
 	}
 	else if (clang::Expr const * expr = llvm::dyn_cast<clang::Expr>(stmt))
 	{
 		//fout << "<expressionStatement>";
-		xml_print_expr(expr, fout);
+		xml_print_expr(expr);
 		//fout << "</expressionStatement>";
 	}
 	else if (clang::IfStmt const * s = llvm::dyn_cast<clang::IfStmt>(stmt))
 	{
-		fout << "<ifStatement>";
-		xml_print_expr(s->getCond(), fout);
-		xml_print_statement(s->getThen(), fout);
+		xml_print_tag("ifStatement", s->getIfLoc());
+		xml_print_expr(s->getCond());
+		xml_print_statement(s->getThen());
 		if (s->getElse())
-			xml_print_statement(s->getElse(), fout);
+			xml_print_statement(s->getElse());
 		fout << "</ifStatement>";
 	}
 	else if (clang::ReturnStmt const * s = llvm::dyn_cast<clang::ReturnStmt>(stmt))
 	{
 		clang::Expr const * ret_value = s->getRetValue();
+		xml_print_tag("returnStatement", s->getReturnLoc());
 		if (ret_value)
-		{
-			fout << "<returnStatement>";
-			xml_print_expr(s->getRetValue(), fout);
-			fout << "</returnStatement>";
-		}
-		else
-		{
-			fout << "<returnStatement />";
-		}
+			xml_print_expr(s->getRetValue());
+		fout << "</returnStatement>";
 	}
 	else
 	{
-		fout << "<unknownStatement />";
+		xml_print_tag("unknownStatement", stmt->getLocStart(), "/");
 	}
 }

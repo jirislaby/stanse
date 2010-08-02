@@ -51,7 +51,7 @@ public:
 			print_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
 
 		if (printCFG)
-			print_cfg(std::cout, functionDecls.begin(), functionDecls.end());
+			print_cfg(std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 
 		if (printReadableAST)
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
@@ -117,8 +117,8 @@ int main(int argc, char * argv[])
 		//"-fsyntax-only",
 		"-x", "c++",
 		"-nobuiltininc",
-		"-nostdinc",
-		"-nostdinc++"
+		//"-nostdinc",
+		//"-nostdinc++"
 		//"c:\\users\\Martin.vejnar\\Documents\\temp\\pokus.cpp"
 	};
 

@@ -59,6 +59,8 @@ void print_ast(std::ostream & fout, clang::ASTContext const & ctx, InputIterator
 		"<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
 		"<translationUnit>";
 
+	xml_printer p(fout);
+
 	for (; firstFun != lastFun; ++firstFun)
 	{
 		clang::QualType fnType = (*firstFun)->getType();
@@ -66,9 +68,9 @@ void print_ast(std::ostream & fout, clang::ASTContext const & ctx, InputIterator
 
 
 		fout << "<externalDeclaration><functionDefinition name=\"";
-		xml_print_decl_name(*firstFun, fout);
+		p.xml_print_decl_name(*firstFun);
 		fout << "\"><declarator><id>";
-		xml_print_decl_name(*firstFun, fout);
+		p.xml_print_decl_name(*firstFun);
 		fout << "</id><functionDecl>";
 		for (clang::FunctionDecl::param_const_iterator param_firstFun = (*firstFun)->param_begin(); param_firstFun != (*firstFun)->param_end(); ++param_firstFun)
 		{
@@ -77,7 +79,7 @@ void print_ast(std::ostream & fout, clang::ASTContext const & ctx, InputIterator
 			fout << "</id></declarator></parameter>";
 		}
 		fout << "</functionDecl></declarator>";
-		xml_print_statement((*firstFun)->getBody(), fout);
+		p.xml_print_statement((*firstFun)->getBody());
 		fout << "</functionDefinition></externalDeclaration>";
 	}
 

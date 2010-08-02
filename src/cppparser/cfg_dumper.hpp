@@ -40,7 +40,7 @@ public:
 	}
 
 	void fix_function();
-	void xml_print(std::ostream & out, std::string const & name) const;
+	void xml_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const;
 
 private:
 	void fix(cfg_node::break_type_t bt, std::size_t target);
@@ -59,7 +59,7 @@ private:
 };
 
 template <typename InputIterator>
-void print_cfg(std::ostream & fout, InputIterator firstFun, InputIterator lastFun)
+void print_cfg(std::ostream & fout, clang::SourceManager const * sm, InputIterator firstFun, InputIterator lastFun)
 {
 	fout <<
 		"<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
@@ -69,7 +69,7 @@ void print_cfg(std::ostream & fout, InputIterator firstFun, InputIterator lastFu
 	{
 		cfg c((*firstFun)->getBody());
 		c.fix_function();
-		c.xml_print(fout, (*firstFun)->getQualifiedNameAsString());
+		c.xml_print(fout, sm, **firstFun);
 	}
 
 	fout << "</cfgs>\n";
