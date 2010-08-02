@@ -37,7 +37,6 @@ public:
 
 	void HandleTranslationUnit(clang::ASTContext &ctx)
 	{
-#if 1
 		if (m_ci.getDiagnostics().getNumErrors() > 0)
 		{
 			std::cerr << "Errors were found, serialization of AST and CFGs is disabled." << std::endl;
@@ -55,7 +54,6 @@ public:
 
 		if (printReadableAST)
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
-#endif
 	}
 
 private:
@@ -96,110 +94,68 @@ public:
 
 int main(int argc, char * argv[])
 {
-/*	MyDiagClient diag_client;
-	clang::Diagnostic diag(&diag_client);*/
-
-	char const * additional_args[] = {
-		"-triple", "i686-pc-win32",
-		//"-disable-free",
-		//"-main-file-name", "pokus.cpp",
-		//"-mrelocation-model", "static",
-		//"-mdisable-fp-elim",
-		//"-mconstructor-aliases",
-		//"-resource-dir", "x:/checkouts/llvm/bin/lib/clang/2.8",
-		"-ferror-limit", "19",
-		"-fmessage-length", "300",
-		"-fexceptions",
-		"-fms-extensions",
-		"-fgnu-runtime",
-		"-fdiagnostics-show-option",
-		"-fcolor-diagnostics",
-		//"-fsyntax-only",
-		"-x", "c++",
-		"-nobuiltininc",
-		//"-nostdinc",
-		//"-nostdinc++"
-		//"c:\\users\\Martin.vejnar\\Documents\\temp\\pokus.cpp"
-	};
-
-	std::vector<char const *> args(additional_args, additional_args + sizeof additional_args / sizeof additional_args[0]);
-
-	bool printAST = false;
-	bool printCFG = false;
-	bool printReadableAST = false;
-	std::vector<clang::DirectoryLookup> includePaths;
-
-	// Parse the arguments
-	for (int i = 1; i < argc; ++i)
+	try
 	{
-		std::string arg = argv[i];
-		if (arg == "-a")
+		static char const * additional_args[] = {
+			"-triple", "i686-pc-win32",
+			"-ferror-limit", "19",
+			"-fmessage-length", "300",
+			"-fexceptions",
+			"-fms-extensions",
+			"-fgnu-runtime",
+			"-fdiagnostics-show-option",
+			"-fcolor-diagnostics",
+			"-x", "c++",
+			"-nobuiltininc",
+		};
+
+		std::vector<char const *> args(additional_args, additional_args + sizeof additional_args / sizeof additional_args[0]);
+
+		bool printAST = false;
+		bool printCFG = false;
+		bool printReadableAST = false;
+		std::vector<clang::DirectoryLookup> includePaths;
+
+		// Parse the arguments
+		for (int i = 1; i < argc; ++i)
+		{
+			std::string arg = argv[i];
+			if (arg == "-a")
+				printReadableAST = true;
+			else if (arg == "-A")
+				printAST = true;
+			else if (arg == "-c")
+				printCFG = true;
+			else
+				args.push_back(argv[i]);
+		}
+
+		clang::CompilerInstance comp_inst;
+		clang::TextDiagnosticBuffer * argDiagBuffer = new clang::TextDiagnosticBuffer();
+		clang::Diagnostic * argDiag = new clang::Diagnostic(argDiagBuffer);
+
+		clang::CompilerInvocation & ci = comp_inst.getInvocation();
+		clang::CompilerInvocation::CreateFromArgs(ci, &args.front(), &args.back() + 1, *argDiag);
+
+		comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
+		argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
+
+		if (!printReadableAST && !printAST && !printCFG)
 			printReadableAST = true;
-		else if (arg == "-A")
-			printAST = true;
-		else if (arg == "-c")
-			printCFG = true;
-		else
-			args.push_back(argv[i]);
+
+		MyASTDumpAction act(printAST, printCFG, printReadableAST);
+		comp_inst.ExecuteAction(act);
+
+		return comp_inst.getDiagnostics().getNumErrors();
 	}
-
-	clang::CompilerInstance comp_inst;
-
-	//MyDiagClient * argDiagBuffer = new MyDiagClient();
-	clang::TextDiagnosticBuffer * argDiagBuffer = new clang::TextDiagnosticBuffer();
-	clang::Diagnostic * argDiag = new clang::Diagnostic(argDiagBuffer);
-	//comp_inst.setDiagnosticClient(argDiagBuffer);
-	//comp_inst.setDiagnostics(argDiag);
-
-	clang::CompilerInvocation & ci = comp_inst.getInvocation();
-	clang::CompilerInvocation::CreateFromArgs(ci, &args.front(), &args.back() + 1, *argDiag);
-
-	comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
-	argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
-
-	if (!printReadableAST && !printAST && !printCFG)
-		printReadableAST = true;
-
-	MyASTDumpAction act(printAST, printCFG, printReadableAST);
-	comp_inst.ExecuteAction(act);
-
-/*
-	comp_inst.createSourceManager();
-	comp_inst.createFileManager();
-
-	clang::SourceManager & sm = comp_inst.getSourceManager();
-	clang::FileManager & fm = comp_inst.getFileManager();
-*/
-
-/*
-	sm.createMainFileID(
-		fm.getFile(targetFile),
-		clang::SourceLocation());
-
-	clang::HeaderSearch hs(fm);
-	hs.SetSearchPaths(includePaths, 0, false);*
-
-	clang::TargetInfo * pTi = clang::TargetInfo::CreateTargetInfo(comp_inst.getDiagnostics(), ci.getTargetOpts());
-	comp_inst.setTarget(pTi);
-
-	comp_inst.createPreprocessor();
-
-	clang::Preprocessor & pp = comp_inst.getPreprocessor();
-
-	pp.getBuiltinInfo().InitializeBuiltins(pp.getIdentifierTable(), pp.getLangOptions().NoBuiltin);
-	InitializePreprocessor(pp, ci.getPreprocessorOpts(), ci.getHeaderSearchOpts(), ci.getFrontendOpts());
-
-	clang::ASTContext ctx(ci.getLangOpts(), pp.getSourceManager(), pp.getTargetInfo(), pp.getIdentifierTable(), pp.getSelectorTable(), pp.getBuiltinInfo());
-	
-	MyConsumer consumer;
-
-	clang::ParseAST(pp, &consumer, ctx);
-*/
-
-	//clang::ASTContext & ctx = comp_inst.getASTContext();
-
-	// Scan the AST and retrieve the set of top-level functions and function template instantiations that are (transitively)
-	// used by these top-level functions.
-	// TODO: member function should be found too.
-
+	catch (std::exception const & e)
+	{
+		std::cerr << "error: " << e.what() << std::endl;
+		return 1;
+	}
+	catch (...)
+	{
+		std::cerr << "error: unexpected error occured" << std::endl;
+		return 1;
+	}
 }
