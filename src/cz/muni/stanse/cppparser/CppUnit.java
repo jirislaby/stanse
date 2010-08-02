@@ -80,13 +80,33 @@ public final class CppUnit extends Unit {
 		+ File.separator + "bin" + File.separator + "cppparser";
 	ProcessBuilder builder = new ProcessBuilder(command, "-A", "-c",
 		this.fileName.getAbsolutePath());
+	builder.redirectErrorStream(true);
 	try {
 	    Process p = builder.start();
 	    java.io.InputStreamReader sr = new java.io.InputStreamReader(
 		    p.getInputStream());
 	    java.io.BufferedReader br = new java.io.BufferedReader(sr);
-	    String astString = br.readLine();
-	    String cfgString = br.readLine();
+
+	    List<String> output_lines = new ArrayList<String>();
+	    {
+		String line = br.readLine();
+		while (line != null) {
+		    output_lines.add(line);
+		    line = br.readLine();
+		}
+	    }
+
+	    try {
+		if (p.waitFor() != 0 || output_lines.size() != 2) {
+		    for (String line : output_lines)
+			System.err.println(line);
+		    throw new ParserException("parser failed");
+		}
+	    } catch (InterruptedException e) {
+	    }
+
+	    String astString = output_lines.get(0);
+	    String cfgString = output_lines.get(1);
 	    br.close();
 	    xmlDocument = (new org.dom4j.io.SAXReader()).read(new StringReader(
 		    astString));
