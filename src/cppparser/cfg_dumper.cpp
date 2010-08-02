@@ -225,7 +225,9 @@ void cfg::xml_print(std::ostream & out, clang::SourceManager const * sm, clang::
 {
 	xml_printer p(out, sm);
 
-	out << "<cfg name=\"" << fn.getQualifiedNameAsString() << "\" startnode=\"0\" endnode=\"" << m_nodes.size() << "\">";
+	out << "<cfg name=\"";
+	p.xml_print_decl_name(&fn);
+	out << "\" startnode=\"0\" endnode=\"" << m_nodes.size() << "\">";
 	for (std::size_t i = 0; i < m_nodes.size(); ++i)
 	{
 		cfg_node const & node = m_nodes[i];
