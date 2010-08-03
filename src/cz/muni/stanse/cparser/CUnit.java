@@ -41,42 +41,32 @@ import cz.muni.stanse.utils.StreamAlgo;
  *     nodes (CFGEmitter.g)
  */
 public final class CUnit extends Unit {
-    private String jobEntry;
     private List<String> typedefs = null;
+    List<String> args;
 
     /**
      * Constructor with flags parameter
      *
      * @param jobEntry string in format TODO
      */
-    public CUnit(String jobEntry) {
-	String file;
-	int outputIdx;
+    public CUnit(List<String> args) {
+	this.args = args;
+	String file = args.get(0);
 
-	jobEntry = jobEntry.trim();
-	outputIdx = jobEntry.indexOf("},{");
-	if (outputIdx < 0 || jobEntry.charAt(0) != '{') {
-	    file = jobEntry;
-	    jobEntry = "{" + file + "},{" + file + "},{},{}";
+	if (args.size() == 1) {
+	    args.add(args.get(0));
+	    args.add("");
+	    args.add("");
 	} else {
-	    String workDir, output;
-	    File f;
-	    int dirIdx;
-
-	    outputIdx += 3;
-	    dirIdx = jobEntry.indexOf("},{", outputIdx) + 3;
-	    output = jobEntry.substring(outputIdx, dirIdx - 3);
-
-	    f = new File(output);
+	    String output = args.get(1);
+	    File f = new File(output);
 	    if (!f.isAbsolute()) {
-		workDir = jobEntry.substring(dirIdx,
-			jobEntry.indexOf("},{", dirIdx));
+		String workDir = args.get(2);
 		f = new File(workDir, output);
 	    }
 	    file = f.getAbsolutePath();
 	}
 	file += ".preproc";
-	this.jobEntry = jobEntry;
 	this.fileName = new File(file);
     }
 
@@ -168,6 +158,12 @@ public final class CUnit extends Unit {
 	// executed!
 	String command = Stanse.getInstance().getRootDirectory() + File.separator +
 		"bin" + File.separator + "stpreproc";
+	String jobEntry = "{" + args.get(0) + "}";
+	for (int i = 1; i < args.size(); ++i) {
+	    jobEntry += ",{";
+	    jobEntry += args.get(i);
+	    jobEntry += "}";
+	}
 	ProcessBuilder builder = new ProcessBuilder("perl", command, jobEntry);
 	Map<String, String> env = builder.environment();
 	if (env.containsKey("Path")) {

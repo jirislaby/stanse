@@ -2,23 +2,15 @@
 
 package cz.muni.stanse.cppparser;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
-
-import com.sun.org.apache.bcel.internal.generic.ASTORE;
 
 import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGBranchNode;
@@ -34,40 +26,11 @@ import cz.muni.stanse.codestructures.CFGHandle;
  */
 public final class CppUnit extends Unit {
     private List<String> typedefs = null;
+    private List<String> args = null;
 
-    /**
-     * Constructor with flags parameter
-     * 
-     * @param jobEntry
-     *            string in format TODO
-     */
-    public CppUnit(String jobEntry) {
-	String file;
-	int outputIdx;
-
-	jobEntry = jobEntry.trim();
-	outputIdx = jobEntry.indexOf("},{");
-	if (outputIdx < 0 || jobEntry.charAt(0) != '{') {
-	    file = jobEntry;
-	    jobEntry = "{" + file + "},{" + file + "},{},{}";
-	} else {
-	    String workDir, output;
-	    File f;
-	    int dirIdx;
-
-	    outputIdx += 3;
-	    dirIdx = jobEntry.indexOf("},{", outputIdx) + 3;
-	    output = jobEntry.substring(outputIdx, dirIdx - 3);
-
-	    f = new File(output);
-	    if (!f.isAbsolute()) {
-		workDir = jobEntry.substring(dirIdx,
-			jobEntry.indexOf("},{", dirIdx));
-		f = new File(workDir, output);
-	    }
-	    file = f.getAbsolutePath();
-	}
-	this.fileName = new File(file);
+    public CppUnit(List<String> args) {
+	this.args = args;
+	this.fileName = new File(args.get(0));
     }
 
     public void parse() throws ParserException {
@@ -78,8 +41,13 @@ public final class CppUnit extends Unit {
 
 	String command = Stanse.getInstance().getRootDirectory()
 		+ File.separator + "bin" + File.separator + "cppparser";
-	ProcessBuilder builder = new ProcessBuilder(command, "-A", "-c",
-		this.fileName.getAbsolutePath());
+	command = "x:\\checkouts\\stanse\\src\\cppparser\\Debug\\cppparser.exe";
+	List<String> parserArgs = new ArrayList<String>();
+	parserArgs.add(command);
+	parserArgs.add("-A");
+	parserArgs.add("-c");
+	parserArgs.addAll(args);
+	ProcessBuilder builder = new ProcessBuilder(parserArgs);
 	builder.redirectErrorStream(true);
 	try {
 	    Process p = builder.start();
