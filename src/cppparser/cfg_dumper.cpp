@@ -2,6 +2,8 @@
 #include "ast_dumper.hpp"
 
 #include <clang/ast/Expr.h>
+#include <clang/ast/StmtCXX.h>
+#include <clang/ast/ExprCXX.h>
 
 #include <boost/assert.hpp>
 
@@ -107,12 +109,40 @@ void cfg::build(clang::Stmt const * stmt)
 	{
 		cfg body_cfg(s->getBody());
 		body_cfg.fix(cfg_node::bt_continue, body_cfg.m_nodes.size());
-		body_cfg.append(s->getInc());
+		if (s->getInc())
+			body_cfg.append(s->getInc());
 
-		m_nodes.push_back(cfg_node(s->getCond()));
-		this->append_edge(body_cfg, 0, 0);
-		m_nodes[0].succs.push_back(m_nodes.size());
-		this->fix(cfg_node::bt_break, m_nodes.size());
+		cfg loop_cfg;
+		if (s->getCond())
+		{
+			loop_cfg.build(s->getCond());
+			loop_cfg.append_edge(body_cfg, 0, 0);
+		}
+		else
+		{
+			loop_cfg = body_cfg;
+			for (std::size_t i = 0; i < loop_cfg.m_nodes.size(); ++i)
+			{
+				for (std::size_t j = 0; j < loop_cfg.m_nodes[i].succs.size(); ++j)
+				{
+					if (loop_cfg.m_nodes[i].succs[j].id == loop_cfg.m_nodes.size())
+						loop_cfg.m_nodes[i].succs[j].id = 0;
+				}
+			}
+		}
+		loop_cfg.fix(cfg_node::bt_break, loop_cfg.m_nodes.size());
+
+		if (s->getInit())
+			m_nodes.push_back(s->getInit());
+		this->append(loop_cfg);
+	}
+	else if (clang::CXXTryStmt const * s = llvm::dyn_cast<clang::CXXTryStmt>(stmt))
+	{
+		// TODO
+	}
+	else if (clang::CXXCatchStmt const * s = llvm::dyn_cast<clang::CXXCatchStmt>(stmt))
+	{
+		// TODO
 	}
 	else
 	{
@@ -188,7 +218,11 @@ void cfg::append(cfg const & nested)
 
 void cfg::append_edge(cfg const & nested, std::size_t source_node, std::size_t end_node, clang::Stmt const * label)
 {
-	BOOST_ASSERT(!nested.m_nodes.empty());
+	if (nested.m_nodes.empty())
+	{
+		m_nodes[source_node].succs.push_back(cfg_node::succ(end_node, label));
+		return;
+	}
 
 	std::size_t const old_size = m_nodes.size();
 	m_nodes.insert(m_nodes.end(), nested.m_nodes.begin(), nested.m_nodes.end());

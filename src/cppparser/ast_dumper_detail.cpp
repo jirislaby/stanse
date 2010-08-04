@@ -268,6 +268,12 @@ void xml_printer::xml_print_expr(clang::Expr const * expr)
 			fout << "</binaryExpression>";
 		}
 	}
+	else if (clang::UnaryOperator const * e = llvm::dyn_cast<clang::UnaryOperator>(expr))
+	{
+		xml_print_tag("unaryExpression", e->getOperatorLoc(), "op=\"" + xml_escape(clang::UnaryOperator::getOpcodeStr(e->getOpcode())) + "\"");
+		xml_print_expr(e->getSubExpr());
+		fout << "</unaryExpression>";
+	}
 	else if (clang::ParenExpr const * e = llvm::dyn_cast<clang::ParenExpr>(expr))
 	{
 		xml_print_expr(e->getSubExpr());
@@ -289,6 +295,24 @@ void xml_printer::xml_print_expr(clang::Expr const * expr)
 	{
 		xml_print_tag("intConst", e->getLocation());
 		fout << e->getValue().toString(10, true) << "</intConst>";
+	}
+	else if (clang::StringLiteral const * e = llvm::dyn_cast<clang::StringLiteral>(expr))
+	{
+		xml_print_tag("stringConst", e->getStrTokenLoc(0));
+		fout << "TODO</stringConst>";
+		//fout << xml_escape(e->getString()) << "</stringConst>";  // TODO: Escape special values?
+	}
+	else if (clang::ConditionalOperator const * e = llvm::dyn_cast<clang::ConditionalOperator>(expr))
+	{
+		xml_print_tag("conditionalExpression", e->getLocStart());
+		xml_print_expr(e->getCond());
+		xml_print_expr(e->getLHS());
+		xml_print_expr(e->getRHS());
+		fout << "</conditionalExpression>";
+	}
+	else
+	{
+		fout << "<unknownExpression />";
 	}
 }
 

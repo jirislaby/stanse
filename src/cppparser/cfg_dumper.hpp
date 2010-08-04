@@ -34,6 +34,10 @@ struct cfg_node
 class cfg
 {
 public:
+	cfg()
+	{
+	}
+
 	cfg(clang::Stmt const * stmt)
 	{
 		this->build(stmt);
