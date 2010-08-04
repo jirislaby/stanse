@@ -26,12 +26,20 @@
 #include <boost/utility.hpp>
 #include <boost/assert.hpp>
 
+struct config
+{
+	bool printAST;
+	bool printCFG;
+	bool printReadableAST;
+	bool debugCFG;
+};
+
 class MyConsumer
 	: public clang::ASTConsumer
 {
 public:
-	MyConsumer(clang::CompilerInstance & ci, bool printAST, bool printCFG, bool printReadableAST)
-		: m_ci(ci), printAST(printAST), printCFG(printCFG), printReadableAST(printReadableAST)
+	MyConsumer(clang::CompilerInstance & ci, config const & c)
+		: m_ci(ci), m_c(c)
 	{
 	}
 
@@ -46,28 +54,29 @@ public:
 		std::set<clang::FunctionDecl const *> functionDecls;
 		get_used_function_defs(ctx, functionDecls);
 
-		if (printAST)
+		if (m_c.printAST)
 			print_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
 
-		if (printCFG)
-			print_cfg(std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
+		if (m_c.printCFG)
+			print_cfg(ctx, std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 
-		if (printReadableAST)
+		if (m_c.debugCFG)
+			print_debug_cfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
+
+		if (m_c.printReadableAST)
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
 	}
 
 private:
 	clang::CompilerInstance & m_ci;
-	bool printAST;
-	bool printCFG;
-	bool printReadableAST;
+	config m_c;
 };
 
 class MyASTDumpAction : public clang::ASTFrontendAction
 {
 public:
-	MyASTDumpAction(bool printAST, bool printCFG, bool printReadableAST)
-		: printAST(printAST), printCFG(printCFG), printReadableAST(printReadableAST)
+	MyASTDumpAction(config const & c)
+		: m_c(c)
 	{
 	}
 
@@ -75,13 +84,11 @@ protected:
 	virtual clang::ASTConsumer *CreateASTConsumer(clang::CompilerInstance &CI,
 		llvm::StringRef InFile)
 	{
-		return new MyConsumer(CI, printAST, printCFG, printReadableAST);
+		return new MyConsumer(CI, m_c);
 	}
 
 private:
-	bool printAST;
-	bool printCFG;
-	bool printReadableAST;
+	config m_c;
 };
 
 class MyDiagClient : public clang::DiagnosticClient
@@ -111,21 +118,20 @@ int main(int argc, char * argv[])
 
 		std::vector<char const *> args(additional_args, additional_args + sizeof additional_args / sizeof additional_args[0]);
 
-		bool printAST = false;
-		bool printCFG = false;
-		bool printReadableAST = false;
-		std::vector<clang::DirectoryLookup> includePaths;
+		config c = {};
 
 		// Parse the arguments
 		for (int i = 1; i < argc; ++i)
 		{
 			std::string arg = argv[i];
 			if (arg == "-a")
-				printReadableAST = true;
+				c.printReadableAST = true;
 			else if (arg == "-A")
-				printAST = true;
+				c.printAST = true;
 			else if (arg == "-c")
-				printCFG = true;
+				c.printCFG = true;
+			else if (arg == "--debugcfg")
+				c.debugCFG = true;
 			else
 				args.push_back(argv[i]);
 		}
@@ -140,10 +146,10 @@ int main(int argc, char * argv[])
 		comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
 		argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
 
-		if (!printReadableAST && !printAST && !printCFG)
-			printReadableAST = true;
+		if (!c.printReadableAST && !c.printAST && !c.printCFG)
+			c.printReadableAST = true;
 
-		MyASTDumpAction act(printAST, printCFG, printReadableAST);
+		MyASTDumpAction act(c);
 		comp_inst.ExecuteAction(act);
 
 		return comp_inst.getDiagnostics().getNumErrors();

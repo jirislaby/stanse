@@ -297,3 +297,23 @@ void cfg::xml_print(std::ostream & out, clang::SourceManager const * sm, clang::
 	p.xml_print_tag("exit", fn.getSourceRange().getEnd(), "/");
 	out << "</node></cfg>";
 }
+
+void cfg::pretty_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const
+{
+	xml_printer p(out, sm);
+
+	out << "def " << make_decl_name(&fn) << ":\n";
+	for (std::size_t i = 0; i < m_nodes.size(); ++i)
+	{
+		cfg_node const & node = m_nodes[i];
+		BOOST_ASSERT(node.break_type == cfg_node::bt_none);
+
+		out << "    node " << i << " ";
+		p.xml_print_statement(node.stmt);
+		out << "\n";
+
+		for (std::size_t j = 0; j < node.succs.size(); ++j)
+			out << "        succ " << node.succs[j].id << "\n";
+	}
+	out << std::endl;
+}

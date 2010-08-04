@@ -20,6 +20,8 @@ private:
 	clang::SourceManager const * m_sm;
 };
 
+std::string make_decl_name(clang::NamedDecl const * decl);
+
 void print_decl(clang::Decl const * decl, std::ostream & out, int level);
 void print_stmt(clang::Stmt const * stmt, std::ostream & out, int level);
 
