@@ -48,13 +48,28 @@ public final class CppUnit extends Unit {
 	parserArgs.add("-c");
 	parserArgs.addAll(args);
 	ProcessBuilder builder = new ProcessBuilder(parserArgs);
-	builder.redirectErrorStream(true);
+	// builder.redirectErrorStream(true);
 	try {
-	    Process p = builder.start();
+	    final Process p = builder.start();
+	    new Thread() {
+		public void run() {
+		    java.io.InputStreamReader sr = new java.io.InputStreamReader(p.getErrorStream());
+		    java.io.BufferedReader br = new java.io.BufferedReader(sr);
+		    try {
+			String line = br.readLine();
+			while (line != null) {
+			    System.err.println(line);
+			    line = br.readLine();
+			}
+			br.close();
+		    } catch (IOException ex) {
+		    }
+		}
+	    }.start();
+
 	    java.io.InputStreamReader sr = new java.io.InputStreamReader(
 		    p.getInputStream());
 	    java.io.BufferedReader br = new java.io.BufferedReader(sr);
-
 	    List<String> output_lines = new ArrayList<String>();
 	    {
 		String line = br.readLine();
@@ -65,11 +80,8 @@ public final class CppUnit extends Unit {
 	    }
 
 	    try {
-		if (p.waitFor() != 0 || output_lines.size() != 2) {
-		    for (String line : output_lines)
-			System.err.println(line);
+		if (p.waitFor() != 0 || output_lines.size() != 2)
 		    throw new ParserException("parser failed");
-		}
 	    } catch (InterruptedException e) {
 	    }
 
@@ -105,7 +117,7 @@ public final class CppUnit extends Unit {
 	    for (Element node : (List<Element>) cfgElem.elements()) {
 		List<Element> nodeElems = (List<Element>) node.elements();
 
-		CFGNode newnode = new CFGBranchNode(nodeElems.get(0));
+		CFGNode newnode;
 		if (nodeElems.size() == 1
 			|| (nodeElems.size() == 2 && ((Element) nodeElems
 				.get(1).elements().get(0)).getName().equals(
