@@ -41,14 +41,12 @@ public final class CppUnit extends Unit {
 
 	String command = Stanse.getInstance().getRootDirectory()
 		+ File.separator + "bin" + File.separator + "cppparser";
-	command = "x:\\checkouts\\stanse\\src\\cppparser\\Debug\\cppparser.exe";
 	List<String> parserArgs = new ArrayList<String>();
 	parserArgs.add(command);
 	parserArgs.add("-A");
 	parserArgs.add("-c");
 	parserArgs.addAll(args);
 	ProcessBuilder builder = new ProcessBuilder(parserArgs);
-	// builder.redirectErrorStream(true);
 	try {
 	    final Process p = builder.start();
 	    new Thread() {
@@ -97,16 +95,6 @@ public final class CppUnit extends Unit {
 	} catch (DocumentException e) {
 	    throw new ParserException("invalid output from the parser: "
 		    + e.getLocalizedMessage(), e);
-	}
-
-	{
-	    try {
-		java.io.FileWriter writer = new java.io.FileWriter(
-			"x:\\dump_cpp.xml");
-		xmlDocument.write(writer);
-		writer.close();
-	    } catch (java.io.IOException e) {
-	    }
 	}
 
 	List<Element> list = cfgDocument.selectNodes("//cfg");
@@ -158,18 +146,6 @@ public final class CppUnit extends Unit {
 
 	for (CFG cfg : CFGs)
 	    CFGHs.add(new CFGHandle(this, cfg));
-
-	{
-	    try {
-		java.io.FileWriter writer = new java.io.FileWriter(
-			"x:\\dump_cfg_cpp.txt");
-		for (CFG cfg : CFGs) {
-		    writer.write(cfg.toStringGraph());
-		}
-		writer.close();
-	    } catch (java.io.IOException e) {
-	    }
-	}
     }
 
     @Override

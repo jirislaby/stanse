@@ -87,6 +87,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy $(TargetPath) $(ProjectDir)..\..\dist\bin"
 			/>
 		</Configuration>
 		<Configuration
