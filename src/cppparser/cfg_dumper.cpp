@@ -1,9 +1,9 @@
 #include "cfg_dumper.hpp"
 #include "ast_dumper.hpp"
 
-#include <clang/ast/Expr.h>
-#include <clang/ast/StmtCXX.h>
-#include <clang/ast/ExprCXX.h>
+#include <clang/AST/Expr.h>
+#include <clang/AST/StmtCXX.h>
+#include <clang/AST/ExprCXX.h>
 
 #include <boost/assert.hpp>
 

@@ -1,8 +1,8 @@
 #include "ast_dumper_detail.hpp"
 
-#include <clang/ast/ASTContext.h>
-#include <clang/ast/Decl.h>
-#include <clang/ast/DeclTemplate.h>
+#include <clang/AST/ASTContext.h>
+#include <clang/AST/Decl.h>
+#include <clang/AST/DeclTemplate.h>
 
 #include <boost/algorithm/string/replace.hpp>
 

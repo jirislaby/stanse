@@ -3,8 +3,8 @@
 
 #include "ast_dumper_detail.hpp"
 
-#include <clang/ast/ASTContext.h>
-#include <clang/ast/Expr.h>
+#include <clang/AST/ASTContext.h>
+#include <clang/AST/Expr.h>
 
 #include <boost/assert.hpp>
 

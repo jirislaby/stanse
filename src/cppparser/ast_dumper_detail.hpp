@@ -1,7 +1,7 @@
 #ifndef AST_DUMPER_DETAIL_HPP
 #define AST_DUMPER_DETAIL_HPP
 
-#include <clang/ast/ASTContext.h>
+#include <clang/AST/ASTContext.h>
 #include <clang/Basic/SourceManager.h>
 
 class xml_printer

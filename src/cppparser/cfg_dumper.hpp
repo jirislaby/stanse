@@ -1,7 +1,8 @@
 #ifndef CFG_DUMPER_HPP
 #define CFG_DUMPER_HPP
 
-#include <clang/ast/Stmt.h>
+#include <clang/AST/Stmt.h>
+#include <clang/Analysis/CFG.h>
 
 #include <cstdlib>
 #include <iostream>
