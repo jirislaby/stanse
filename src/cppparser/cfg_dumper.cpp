@@ -7,6 +7,8 @@
 
 #include <boost/assert.hpp>
 
+#include <sstream>
+
 void cfg::build(clang::Stmt const * stmt)
 {
 	BOOST_ASSERT(m_nodes.empty());
@@ -257,7 +259,9 @@ void cfg::append_edge(cfg const & nested, std::size_t source_node, std::size_t e
 
 void cfg::xml_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const
 {
-	xml_printer p(out, sm);
+	std::map<clang::Decl const *, std::string> decl_names;
+	this->make_decl_names(fn, decl_names);
+	xml_printer p(out, decl_names, sm);
 
 	out << "<cfg name=\"";
 	p.xml_print_decl_name(&fn);
@@ -300,7 +304,9 @@ void cfg::xml_print(std::ostream & out, clang::SourceManager const * sm, clang::
 
 void cfg::pretty_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const
 {
-	xml_printer p(out, sm);
+	std::map<clang::Decl const *, std::string> decl_names;
+	this->make_decl_names(fn, decl_names);
+	xml_printer p(out, decl_names, sm);
 
 	out << "def " << make_decl_name(&fn) << ":\n";
 	for (std::size_t i = 0; i < m_nodes.size(); ++i)
@@ -316,4 +322,35 @@ void cfg::pretty_print(std::ostream & out, clang::SourceManager const * sm, clan
 			out << "        succ " << node.succs[j].id << "\n";
 	}
 	out << std::endl;
+}
+
+void cfg::make_decl_names(clang::FunctionDecl const & fn, std::map<clang::Decl const *, std::string> & decl_names) const
+{
+	std::set<std::string> used_names;
+	for (clang::FunctionDecl::decl_iterator it = fn.decls_begin(); it != fn.decls_end(); ++it)\
+	{
+		clang::Decl const * decl = *it;
+		if (clang::ValueDecl const * d = llvm::dyn_cast<clang::ValueDecl>(decl))
+		{
+			std::string name_base;
+			if (decl->getKind() == clang::Decl::ParmVar)
+				name_base = "p:" + d->getQualifiedNameAsString();
+			else
+				name_base = "l:" + d->getQualifiedNameAsString();
+
+			name_base += ':';
+
+			for (std::size_t i = 0;; ++i)
+			{
+				std::ostringstream ss;
+				ss << name_base << i;
+				if (used_names.find(ss.str()) == used_names.end())
+				{
+					used_names.insert(ss.str());
+					decl_names[decl] = ss.str();
+					break;
+				}
+			}
+		}
+	}
 }

@@ -49,6 +49,8 @@ public:
 	void pretty_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const;
 
 private:
+	void make_decl_names(clang::FunctionDecl const & fn, std::map<clang::Decl const *, std::string> & decl_names) const;
+
 	void fix(cfg_node::break_type_t bt, std::size_t target);
 
 	void build(clang::Stmt const * stmt);
@@ -102,8 +104,6 @@ void print_debug_cfg(clang::ASTContext & ctx, std::ostream & fout, clang::Source
 		c.fix_function();
 		c.pretty_print(fout, sm, **firstFun);
 	}
-
-	fout << "</cfgs>\n";
 }
 
 #endif

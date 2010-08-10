@@ -185,8 +185,8 @@ std::string xml_escape(std::string const & str)
 	return res;
 }
 
-xml_printer::xml_printer(std::ostream & fout, clang::SourceManager const * sm)
-	: fout(fout), m_sm(sm)
+xml_printer::xml_printer(std::ostream & fout, std::map<clang::Decl const *, std::string> const & decl_names, clang::SourceManager const * sm)
+	: m_decl_names(decl_names), fout(fout), m_sm(sm)
 {
 }
 
@@ -201,7 +201,11 @@ void xml_printer::xml_print_type(clang::QualType type)
 
 void xml_printer::xml_print_decl_name(clang::NamedDecl const * decl)
 {
-	fout << xml_escape(make_decl_name(decl));
+	std::map<clang::Decl const *, std::string>::const_iterator ci = m_decl_names.find(decl);
+	if (ci != m_decl_names.end())
+		fout << xml_escape(ci->second);
+	else
+		fout << xml_escape(make_decl_name(decl));
 }
 
 void xml_printer::xml_print_expr(clang::Expr const * expr)
