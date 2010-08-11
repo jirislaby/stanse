@@ -304,6 +304,9 @@ void xml_printer::xml_print_tag(std::string const & tag_name, clang::SourceLocat
 
 void xml_printer::xml_print_statement(clang::Stmt const * stmt)
 {
+	if (!stmt)
+		return;
+
 	if (clang::CompoundStmt const * s = llvm::dyn_cast<clang::CompoundStmt>(stmt))
 	{
 		xml_print_tag("compoundStatement", s->getLBracLoc());

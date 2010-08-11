@@ -1,5 +1,6 @@
 #include "ast_dumper.hpp"
 #include "cfg_dumper.hpp"
+#include "rcfg_dumper.hpp"
 
 #include <clang/Sema/ParseAST.h>
 #include <clang/Lex/Preprocessor.h>
@@ -61,7 +62,7 @@ public:
 			print_cfg(ctx, std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 
 		if (m_c.debugCFG)
-			print_debug_cfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
+			print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 
 		if (m_c.printReadableAST)
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
@@ -146,7 +147,7 @@ int main(int argc, char * argv[])
 		comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
 		argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
 
-		if (!c.printReadableAST && !c.printAST && !c.printCFG)
+		if (!c.printReadableAST && !c.printAST && !c.printCFG && !c.debugCFG)
 			c.printReadableAST = true;
 
 		MyASTDumpAction act(c);

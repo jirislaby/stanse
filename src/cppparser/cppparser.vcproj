@@ -196,6 +196,14 @@
 			RelativePath=".\main.cpp"
 			>
 		</File>
+		<File
+			RelativePath=".\rcfg_dumper.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\rcfg_dumper.hpp"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
