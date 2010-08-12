@@ -259,7 +259,7 @@ void cfg::append_edge(cfg const & nested, std::size_t source_node, std::size_t e
 
 void cfg::xml_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const
 {
-	std::map<clang::Decl const *, std::string> decl_names;
+	std::map<clang::NamedDecl const *, std::string> decl_names;
 	this->make_decl_names(fn, decl_names);
 	xml_printer p(out, decl_names, sm);
 
@@ -304,7 +304,7 @@ void cfg::xml_print(std::ostream & out, clang::SourceManager const * sm, clang::
 
 void cfg::pretty_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const
 {
-	std::map<clang::Decl const *, std::string> decl_names;
+	std::map<clang::NamedDecl const *, std::string> decl_names;
 	this->make_decl_names(fn, decl_names);
 	xml_printer p(out, decl_names, sm);
 
@@ -324,7 +324,7 @@ void cfg::pretty_print(std::ostream & out, clang::SourceManager const * sm, clan
 	out << std::endl;
 }
 
-void cfg::make_decl_names(clang::FunctionDecl const & fn, std::map<clang::Decl const *, std::string> & decl_names) const
+void cfg::make_decl_names(clang::FunctionDecl const & fn, std::map<clang::NamedDecl const *, std::string> & decl_names) const
 {
 	std::set<std::string> used_names;
 	for (clang::FunctionDecl::decl_iterator it = fn.decls_begin(); it != fn.decls_end(); ++it)\
@@ -347,7 +347,7 @@ void cfg::make_decl_names(clang::FunctionDecl const & fn, std::map<clang::Decl c
 				if (used_names.find(ss.str()) == used_names.end())
 				{
 					used_names.insert(ss.str());
-					decl_names[decl] = ss.str();
+					decl_names[d] = ss.str();
 					break;
 				}
 			}

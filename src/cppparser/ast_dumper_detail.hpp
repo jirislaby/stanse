@@ -9,7 +9,7 @@
 class xml_printer
 {
 public:
-	explicit xml_printer(std::ostream & fout, std::map<clang::Decl const *, std::string> const & decl_names, clang::SourceManager const * sm = 0);
+	explicit xml_printer(std::ostream & fout, std::map<clang::NamedDecl const *, std::string> const & decl_names, clang::SourceManager const * sm = 0);
 
 	void xml_print_tag(std::string const & tag_name, clang::SourceLocation sl, std::string const & extra = "");
 	void xml_print_type(clang::QualType type);
@@ -18,7 +18,7 @@ public:
 	void xml_print_statement(clang::Stmt const * stmt);
 
 private:
-	std::map<clang::Decl const *, std::string> const & m_decl_names;
+	std::map<clang::NamedDecl const *, std::string> const & m_decl_names;
 
 	std::ostream & fout;
 	clang::SourceManager const * m_sm;

@@ -11,36 +11,20 @@
 
 struct rcfg_node
 {
+	enum operand_type { ot_none, ot_function, ot_member, ot_varptr, ot_varval, ot_vartgt, ot_nodeval, ot_nodetgt };
+
 	struct operand
 	{
-		enum operand_type { ot_name, ot_function, ot_member, ot_varval, ot_varptr, ot_node } type;
+		operand_type type;
+		std::size_t id;
 
-		std::string name;
-		clang::NamedDecl const * decl;
-		std::size_t node;
-
-		operand(std::size_t node)
-			: type(ot_node), decl(0), node(node)
+		operand()
+			: type(ot_none), id(0)
 		{
 		}
 
-		operand(char const * name)
-			: type(ot_name), name(name), decl(0), node(0)
-		{
-		}
-
-		operand(std::string const & name)
-			: type(ot_name), name(name), decl(0), node(0)
-		{
-		}
-
-		operand(operand_type type, std::string const & name)
-			: type(type), name(name), decl(0), node(0)
-		{
-		}
-
-		operand(operand_type type, clang::NamedDecl const * decl)
-			: type(type), decl(decl), node(0)
+		operand(operand_type type, std::size_t id)
+			: type(type), id(id)
 		{
 		}
 	};
@@ -65,56 +49,109 @@ struct rcfg_node
 		: stmt(stmt), break_type(bt_none)
 	{
 	}
+
+	rcfg_node & operator()(operand_type type, std::size_t id)
+	{
+		this->operands.push_back(operand(type, id));
+		return *this;
+	}
+
+	rcfg_node & operator()(operand const & op)
+	{
+		this->operands.push_back(op);
+		return *this;
+	}
+
+	rcfg_node & add_succ(std::size_t target, clang::Stmt const * label = 0)
+	{
+		this->succs.push_back(succ(target, label));
+		return *this;
+	}
 };
 
-struct rcfg_unique_namegen
+struct rcfg_id_list
 {
 public:
-	explicit rcfg_unique_namegen(clang::FunctionDecl const & fn);
-	std::string get_name(clang::NamedDecl const * decl) const;
-	std::string get_name(rcfg_node::operand const & op) const;
+	explicit rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & ctx);
+
+	std::size_t operator()(clang::NamedDecl const * decl);
+	std::size_t operator()(std::string const & str);
+
+	std::map<clang::NamedDecl const *, std::string> const & decl_names() const { return m_decl_names; }
+	std::map<std::string, std::size_t> const & name_ids() const { return m_name_ids; }
+
+	std::size_t make_temporary(clang::Type const * type);
+
+	std::string name(std::size_t i) const { return m_names[i]; }
+	clang::FunctionDecl const & fn() const { return m_fn; }
+	clang::ASTContext & ctx() const { return m_ctx; }
 
 private:
+	clang::FunctionDecl const & m_fn;
+	clang::ASTContext & m_ctx;
+	std::vector<clang::Type const *> m_temporaries;
+
 	std::map<clang::NamedDecl const *, std::string> m_decl_names;
+	std::map<std::string, std::size_t> m_name_ids;
+	std::vector<std::string> m_names;
 };
 
 class rcfg
 {
 public:
-	rcfg()
-	{
-	}
+	explicit rcfg(clang::FunctionDecl const & fn);
 
-	rcfg(clang::Stmt const * stmt)
-	{
-		this->build(stmt);
-	}
-
-	void fix_function();
-	void xml_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const;
-	void pretty_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const;
+	void xml_print(std::ostream & out, clang::SourceManager const * sm) const;
+	void pretty_print(std::ostream & out, clang::SourceManager const * sm) const;
 
 private:
-	void make_decl_names(clang::FunctionDecl const & fn, std::map<clang::Decl const *, std::string> & decl_names) const;
+	struct builder
+	{
+		builder(rcfg_id_list & id_list, clang::Stmt const * stmt = 0);
 
-	void fix_names(rcfg_unique_namegen const & namegen);
-	void fix(rcfg_node::break_type_t bt, std::size_t target);
+		rcfg_node::operand add_node(rcfg_node const & node);
 
-	void build(clang::Stmt const * stmt);
-	rcfg_node::operand build_expr(clang::Expr const * expr);
-	void create_var(rcfg_node::operand op, clang::Expr const * expr);
-	rcfg_node::operand access_var(clang::ValueDecl const * decl);
+		void build(clang::Stmt const * stmt);
+		rcfg_node::operand build_expr(clang::Expr const * expr, rcfg_node::operand const & target = rcfg_node::operand());
+		rcfg_node::operand access_var(clang::ValueDecl const * decl);
+		rcfg_node::operand deref_var(rcfg_node::operand var);
 
-	void append(rcfg const & nested);
-	void append_edge(rcfg const & nested, std::size_t source_node, std::size_t end_node, clang::Stmt const * label = 0);
+		rcfg_node::operand make_address(rcfg_node::operand var);
+		rcfg_node::operand make_deref(rcfg_node::operand var);
+		rcfg_node::operand make_rvalue(rcfg_node::operand var);
+		std::size_t make_node(rcfg_node::operand const & var);
+		rcfg_node::operand make_param(rcfg_node::operand const & op, clang::Type const * type);
 
-	void merge_labels(rcfg const & nested, std::size_t shift);
+		void fix_function();
+		void fix(rcfg_node::break_type_t bt, std::size_t target);
 
-	// [1] is the exit node, [0] is the entry node.
+		void append(clang::Stmt const * stmt);
+		void append(builder const & nested);
+		void append_edge(clang::Stmt const * stmt, std::size_t source_node, std::size_t end_node, clang::Stmt const * label = 0);
+		void append_edge(builder const & nested, std::size_t source_node, std::size_t end_node, clang::Stmt const * label = 0);
+
+		void merge_labels(builder const & nested, std::size_t shift);
+
+		std::vector<rcfg_node> m_nodes;
+		std::map<clang::LabelStmt const *, std::size_t> m_labels;
+		std::vector<std::pair<std::size_t, clang::CaseStmt const *> > m_switch_cases;
+		std::pair<std::size_t, clang::DefaultStmt const *> m_default_case;
+
+		builder & operator=(builder const & other)
+		{
+			m_nodes = other.m_nodes;
+			m_labels = other.m_labels;
+			m_switch_cases = other.m_switch_cases;
+			m_default_case = other.m_default_case;
+			return *this;
+		}
+
+		rcfg_id_list & m_id_list;
+	};
+
+	rcfg_id_list m_id_list;
+	clang::FunctionDecl const & m_fn;
 	std::vector<rcfg_node> m_nodes;
-	std::map<clang::LabelStmt const *, std::size_t> m_labels;
-	std::vector<std::pair<std::size_t, clang::CaseStmt const *> > m_switch_cases;
-	std::pair<std::size_t, clang::DefaultStmt const *> m_default_case;
 };
 
 template <typename InputIterator>
@@ -132,9 +169,8 @@ void print_rcfg(clang::ASTContext & ctx, std::ostream & fout, clang::SourceManag
 			delete cfg;
 		}
 
-		rcfg c((*firstFun)->getBody());
-		c.fix_function();
-		c.xml_print(fout, sm, **firstFun);
+		rcfg c(**firstFun);
+		c.xml_print(fout, sm);
 	}
 
 	fout << "</cfgs>\n";
@@ -151,9 +187,8 @@ void print_debug_rcfg(clang::ASTContext & ctx, std::ostream & fout, clang::Sourc
 			delete cfg;
 		}
 
-		rcfg c((*firstFun)->getBody());
-		c.fix_function();
-		c.pretty_print(fout, sm, **firstFun);
+		rcfg c(**firstFun);
+		c.pretty_print(fout, sm);
 	}
 }
 

@@ -49,7 +49,7 @@ public:
 	void pretty_print(std::ostream & out, clang::SourceManager const * sm, clang::FunctionDecl const & fn) const;
 
 private:
-	void make_decl_names(clang::FunctionDecl const & fn, std::map<clang::Decl const *, std::string> & decl_names) const;
+	void make_decl_names(clang::FunctionDecl const & fn, std::map<clang::NamedDecl const *, std::string> & decl_names) const;
 
 	void fix(cfg_node::break_type_t bt, std::size_t target);
 

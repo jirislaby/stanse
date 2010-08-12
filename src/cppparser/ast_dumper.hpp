@@ -59,7 +59,7 @@ void print_ast(std::ostream & fout, clang::ASTContext const & ctx, InputIterator
 		"<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
 		"<translationUnit>";
 
-	std::map<clang::Decl const *, std::string> decl_names;
+	std::map<clang::NamedDecl const *, std::string> decl_names;
 	xml_printer p(fout, decl_names);
 
 	for (; firstFun != lastFun; ++firstFun)
