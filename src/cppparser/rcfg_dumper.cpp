@@ -358,7 +358,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 	{
 		rcfg_node::operand op = this->build_expr(s);
 		if (op.type != rcfg_node::ot_nodeval && op.type != rcfg_node::ot_nodetgt)
-			this->add_node(rcfg_node(s)(op));
+			this->add_node(rcfg_node(node_t::nt_value, s)(op));
 		else
 			m_nodes[op.id].stmt = s;
 	}
@@ -739,7 +739,10 @@ std::size_t rcfg::builder::make_node(rcfg_node::operand const & var)
 
 	case rcfg_node::ot_varval:
 	case rcfg_node::ot_varptr:
-		return this->add_node(rcfg_node()(rv)).id;
+		return this->add_node(rcfg_node(node_t::nt_value)(rv)).id;
+
+	default:
+		BOOST_ASSERT(0);
 	}
 }
 
@@ -835,6 +838,19 @@ void rcfg::pretty_print(std::ostream & out, clang::SourceManager const * sm) con
 		BOOST_ASSERT(node.break_type == rcfg_node::bt_none);
 
 		out << "    node " << i << " ";
+		switch (node.type)
+		{
+		case node_t::nt_none:
+			out << "nt_none ";
+			break;
+		case node_t::nt_call:
+			out << "nt_call ";
+			break;
+		case node_t::nt_value:
+			out << "nt_value ";
+			break;
+		}
+
 		p.xml_print_statement(node.stmt);
 		out << "\n";
 

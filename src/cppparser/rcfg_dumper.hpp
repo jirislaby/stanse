@@ -12,6 +12,7 @@
 struct rcfg_node
 {
 	enum operand_type { ot_none, ot_function, ot_member, ot_const, ot_varptr, ot_varval, ot_vartgt, ot_nodeval, ot_nodetgt };
+	enum node_type { nt_none, nt_call, nt_value };
 
 	struct operand
 	{
@@ -41,12 +42,18 @@ struct rcfg_node
 	};
 
 	clang::Stmt const * stmt;
+	node_type type;
 	std::vector<operand> operands;
 	std::vector<succ> succs;
 	enum break_type_t { bt_none, bt_break, bt_continue, bt_return, bt_goto } break_type;
 
+	rcfg_node(node_type type, clang::Stmt const * stmt = 0)
+		: stmt(stmt), type(type), break_type(bt_none)
+	{
+	}
+
 	rcfg_node(clang::Stmt const * stmt = 0)
-		: stmt(stmt), break_type(bt_none)
+		: stmt(stmt), type(nt_call), break_type(bt_none)
 	{
 	}
 
@@ -105,11 +112,11 @@ public:
 	void pretty_print(std::ostream & out, clang::SourceManager const * sm) const;
 
 private:
+	typedef rcfg_node node_t;
+	typedef rcfg_node::operand op_t;
+
 	struct builder
 	{
-		typedef rcfg_node node_t;
-		typedef rcfg_node::operand op_t;
-
 		builder(rcfg_id_list & id_list, clang::Stmt const * stmt = 0);
 
 		rcfg_node::operand add_node(rcfg_node const & node);
