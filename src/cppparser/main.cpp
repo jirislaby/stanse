@@ -31,6 +31,7 @@ struct config
 {
 	bool printAST;
 	bool printCFG;
+	bool printRCFG;
 	bool printReadableAST;
 	bool debugCFG;
 };
@@ -60,6 +61,9 @@ public:
 
 		if (m_c.printCFG)
 			print_cfg(ctx, std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
+
+		if (m_c.printRCFG)
+			print_rcfg(ctx, std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 
 		if (m_c.printReadableAST)
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
@@ -129,6 +133,8 @@ int main(int argc, char * argv[])
 				c.printReadableAST = true;
 			else if (arg == "-A")
 				c.printAST = true;
+			else if (arg == "-r")
+				c.printRCFG = true;
 			else if (arg == "-c")
 				c.printCFG = true;
 			else if (arg == "--debugcfg")

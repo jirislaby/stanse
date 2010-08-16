@@ -24,6 +24,40 @@ public class CFGNode {
     private List<CFGNode> optPreds = new ArrayList<CFGNode>();
     private List<CFGNode> optSuccs = new ArrayList<CFGNode>();
 
+    public enum NodeType { none, call, value };
+    public enum OperandType { none, operator, function, member, constant, varptr, varval, nodeval };
+    
+    public static class Operand {
+	public Operand(OperandType type, int id) {
+	    this.type = type;
+	    this.id = id;
+	}
+	
+	public Operand(String type, int id) {
+	    if (type.equals("function"))
+		this.type = OperandType.function;
+	    else if (type.equals("member"))
+		this.type = OperandType.member;
+	    else if (type.equals("const"))
+		this.type = OperandType.constant;
+	    else if (type.equals("varptr"))
+		this.type = OperandType.varptr;
+	    else if (type.equals("varval"))
+		this.type = OperandType.varval;
+	    else if (type.equals("nodeval"))
+		this.type = OperandType.nodeval;
+	    else
+		throw new IllegalArgumentException("Invalid operand type: " + type);
+	    this.id = id;
+	}
+	
+	public OperandType type;
+	public int id;
+    }
+
+    NodeType nodeType;
+    List<Operand> operands = new ArrayList<Operand>();
+
     /**
      * Creates a new instance of CFGNode
      */
@@ -98,6 +132,36 @@ public class CFGNode {
      */
     public List<CFGNode> getOptSuccessors() {
 	return Collections.unmodifiableList(optSuccs);
+    }
+    
+    public List<Operand> getOperands() {
+	return Collections.unmodifiableList(operands);
+    }
+    
+    public void setOperands(List<Operand> operands) {
+	this.operands.clear();
+	this.operands.addAll(operands);
+    }
+    
+    public void addOperand(OperandType type, int id) {
+	operands.add(new Operand(type, id));
+    }
+    
+    public NodeType getNodeType() {
+	return nodeType;
+    }
+    
+    public void setNodeType(NodeType nodeType) {
+	this.nodeType = nodeType;
+    }
+
+    public void setNodeType(String nodeType) {
+	if (nodeType.equals("call"))
+	    this.nodeType = NodeType.call;
+	else if (nodeType.equals("value"))
+	    this.nodeType = NodeType.value;
+	else
+	    throw new IllegalArgumentException("Unknown node type: " + nodeType);
     }
 
     /**

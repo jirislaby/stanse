@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.dom4j.DocumentException;
@@ -20,6 +21,7 @@ import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.codestructures.CFG;
 import cz.muni.stanse.codestructures.CFGHandle;
+import cz.muni.stanse.utils.Pair;
 
 /**
  * Holds all the code-related data for C++ compilation units (files).
@@ -44,14 +46,15 @@ public final class CppUnit extends Unit {
 	List<String> parserArgs = new ArrayList<String>();
 	parserArgs.add(command);
 	parserArgs.add("-A");
-	parserArgs.add("-c");
+	parserArgs.add("-r");
 	parserArgs.addAll(args);
 	ProcessBuilder builder = new ProcessBuilder(parserArgs);
 	try {
 	    final Process p = builder.start();
 	    new Thread() {
 		public void run() {
-		    java.io.InputStreamReader sr = new java.io.InputStreamReader(p.getErrorStream());
+		    java.io.InputStreamReader sr = new java.io.InputStreamReader(
+			    p.getErrorStream());
 		    java.io.BufferedReader br = new java.io.BufferedReader(sr);
 		    try {
 			String line = br.readLine();
@@ -97,31 +100,73 @@ public final class CppUnit extends Unit {
 		    + e.getLocalizedMessage(), e);
 	}
 
-	List<Element> list = cfgDocument.selectNodes("//cfg");
-	for (Element cfgElem : list) {
+	List<String> names = new ArrayList<String>();
+	HashMap<String, Integer> namemap = new HashMap<String, Integer>();
+	for (Object obj : cfgDocument.getRootElement().elements()) {
+	    Element elem = (Element) obj;
+	    if (!elem.getName().equals("rcfg"))
+		continue;
 
-	    String cfgname = cfgElem.attribute("name").getValue();
+	    String cfgname = elem.attribute("name").getValue();
 	    java.util.Map<Integer, CFGNode> nodes = new java.util.HashMap<Integer, CFGNode>();
-	    for (Element node : (List<Element>) cfgElem.elements()) {
-		List<Element> nodeElems = (List<Element>) node.elements();
+	    for (Object nodeobj : elem.elements()) {
+		Element node = (Element) nodeobj;
+
+		List<CFGNode.Operand> operands = new ArrayList<CFGNode.Operand>();
+		Element ast = null;
+		List<Pair<Integer, Element>> succs = new ArrayList<Pair<Integer, Element>>();
+
+		for (Object nodeElemObj : node.elements()) {
+		    Element nodeElem = (Element) nodeElemObj;
+
+		    if (nodeElem.getName().equals("op")) {
+			String nodeType = nodeElem.attributeValue("type");
+			String valStr = nodeElem.attributeValue("val");
+			int value;
+
+			if (nodeType.equals("nodeval"))
+			    value = Integer.parseInt(valStr);
+			else {
+			    if (namemap.containsKey(valStr))
+				value = namemap.get(valStr);
+			    else {
+				value = names.size();
+				namemap.put(valStr, value);
+			    }
+			}
+			operands.add(new CFGNode.Operand(nodeType, value));
+		    } else if (nodeElem.getName().equals("ast"))
+			ast = (Element) nodeElem.elements().get(0);
+		    else if (nodeElem.getName().equals("next"))
+			succs.add(new Pair<Integer, Element>(Integer
+				.parseInt(nodeElem.attributeValue("nodeid")),
+				(Element) nodeElem.elements().get(0)));
+		}
+		
+		assert ast != null;
 
 		CFGNode newnode;
-		if (nodeElems.size() == 1
-			|| (nodeElems.size() == 2 && ((Element) nodeElems
-				.get(1).elements().get(0)).getName().equals(
-				"default"))) {
-		    newnode = new CFGNode(nodeElems.get(0));
-		} else {
-		    newnode = new CFGBranchNode(nodeElems.get(0));
-		}
+		if (succs.size() == 0
+			|| (succs.size() == 1 && (succs.get(0).getSecond()
+				.getName().equals("default"))))
+		    newnode = new CFGNode(ast);
+		else
+		    newnode = new CFGBranchNode(ast);
+		String nodeType = node.attributeValue("type");
+		if (nodeType != null)
+		    newnode.setNodeType(nodeType);
+		newnode.setOperands(operands);
+
 		String nodeid = node.attributeValue("id");
 		nodes.put(Integer.parseInt(nodeid), newnode);
 	    }
 
-	    for (Element node : (List<Element>) cfgElem.elements()) {
+	    for (Object nodeobj : elem.elements()) {
+		Element node = (Element) nodeobj;
 		CFGNode newnode = nodes.get(Integer.parseInt(node
 			.attributeValue("id")));
-		for (Element nextnode : (List<Element>) node.elements("next")) {
+		for (Object nextnodeobj : node.elements("next")) {
+		    Element nextnode = (Element) nextnodeobj;
 		    String nextNodeId = nextnode.attributeValue("nodeid");
 		    if (newnode instanceof CFGBranchNode) {
 			((CFGBranchNode) newnode).addEdge(
@@ -134,10 +179,11 @@ public final class CppUnit extends Unit {
 	    }
 
 	    CFGPart cfgpart = new CFGPart();
-	    cfgpart.setStartNode(nodes.get(Integer.parseInt(cfgElem
+	    cfgpart.setStartNode(nodes.get(Integer.parseInt(elem
 		    .attributeValue("startnode"))));
-	    cfgpart.setEndNode(nodes.get(Integer.parseInt(cfgElem
+	    cfgpart.setEndNode(nodes.get(Integer.parseInt(elem
 		    .attributeValue("endnode"))));
+
 	    String xpath = "//functionDefinition[@name='" + cfgname + "']";
 	    Element fnDef = (Element) xmlDocument.selectSingleNode(xpath);
 	    CFG cfg = CFG.createFromCFGPart(cfgpart, fnDef);

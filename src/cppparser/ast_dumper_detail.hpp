@@ -24,6 +24,7 @@ private:
 	clang::SourceManager const * m_sm;
 };
 
+std::string xml_escape(std::string const & str);
 std::string make_decl_name(clang::NamedDecl const * decl);
 
 void print_decl(clang::Decl const * decl, std::ostream & out, int level);

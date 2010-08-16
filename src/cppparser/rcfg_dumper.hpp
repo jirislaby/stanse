@@ -86,6 +86,7 @@ public:
 
 	std::map<clang::NamedDecl const *, std::string> const & decl_names() const { return m_decl_names; }
 	std::map<std::string, std::size_t> const & name_ids() const { return m_name_ids; }
+	std::vector<std::string> const & names() const { return m_names; }
 
 	std::size_t make_temporary(clang::Type const * type);
 

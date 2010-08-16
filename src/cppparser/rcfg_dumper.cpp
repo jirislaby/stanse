@@ -119,17 +119,19 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		// Treat assignment specially (takes a pointer to the assignee).
 		if (e->isAssignmentOp() || e->isCompoundAssignmentOp())
 		{
-			return this->add_node(rcfg_node()
+			op_t lhs = this->build_expr(e->getLHS());
+			this->add_node(rcfg_node()
 				(rcfg_node::ot_function, m_id_list(clang::BinaryOperator::getOpcodeStr(e->getOpcode())))
-				(this->make_address(this->build_expr(e->getLHS())))
-				(this->build_expr(e->getRHS())));
+				(this->make_address(lhs))
+				(this->make_rvalue(this->build_expr(e->getRHS()))));
+			return lhs;
 		}
 		else
 		{
 			return this->add_node(rcfg_node()
 				(rcfg_node::ot_function, m_id_list(clang::BinaryOperator::getOpcodeStr(e->getOpcode())))
-				(this->build_expr(e->getLHS()))
-				(this->build_expr(e->getRHS())));
+				(this->make_rvalue(this->build_expr(e->getLHS())))
+				(this->make_rvalue(this->build_expr(e->getRHS()))));
 		}
 	}
 	else if (clang::UnaryOperator const * e = llvm::dyn_cast<clang::UnaryOperator>(expr))
@@ -796,13 +798,44 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 	out << "<rcfg name=\"";
 	p.xml_print_decl_name(&m_fn);
 	out << "\" startnode=\"0\" endnode=\"" << m_nodes.size() << "\">";
+
 	for (std::size_t i = 0; i < m_nodes.size(); ++i)
 	{
 		rcfg_node const & node = m_nodes[i];
 		BOOST_ASSERT(node.break_type == rcfg_node::bt_none);
 
-		out << "<node id=\"" << i << "\">";
-		p.xml_print_statement(node.stmt);
+		static char const * operand_type_names[] = { "none", "function", "member", "const", "varptr", "varval", "vartgt", "nodeval", "nodetgt" };
+		static char const * node_type_names[] = { "none", "call", "value" };
+
+		out << "<node id=\"" << i << "\" type=\"" << node_type_names[node.type] << "\">";
+		for (std::size_t j = 0; j < node.operands.size(); ++j)
+		{
+			switch (node.operands[j].type)
+			{
+			case node_t::ot_function:
+			case node_t::ot_member:
+			case node_t::ot_const:
+			case node_t::ot_varptr:
+			case node_t::ot_varval:
+				out << "<op type=\"" << operand_type_names[node.operands[j].type] << "\" val=\"" << xml_escape(m_id_list.name(node.operands[j].id)) << "\"/>";
+				break;
+			case node_t::ot_nodeval:
+				out << "<op type=\"" << operand_type_names[node.operands[j].type] << "\" val=\"" << node.operands[j].id << "\"/>";
+				break;
+			default:
+				BOOST_ASSERT(0);
+			}
+		}
+
+		if (node.stmt)
+		{
+			out << "<ast>";
+			p.xml_print_statement(node.stmt);
+			out << "</ast>";
+		}
+		else
+			out << "<ast><none/></ast>";
+
 		for (std::size_t j = 0; j < node.succs.size(); ++j)
 		{
 			out << "<next nodeid=\"" << node.succs[j].id << "\">";
@@ -827,9 +860,9 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 
 		out << "</node>";
 	}
-	out << "<node id=\"" << m_nodes.size() << "\">";
+	out << "<node id=\"" << m_nodes.size() << "\"><ast>";
 	p.xml_print_tag("exit", m_fn.getSourceRange().getEnd(), "/");
-	out << "</node></rcfg>";
+	out << "</ast></node></rcfg>";
 }
 
 void rcfg::pretty_print(std::ostream & out, clang::SourceManager const * sm) const
