@@ -303,6 +303,16 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	{
 		return this->build_expr(e->getSubExpr(), target);
 	}
+	else if (clang::ParenExpr const * e = llvm::dyn_cast<clang::ParenExpr>(expr))
+	{
+		return this->build_expr(e->getSubExpr(), target);
+	}
+	else if (clang::MemberExpr const * e = llvm::dyn_cast<clang::MemberExpr>(expr))
+	{
+		return this->make_deref(this->add_node(node_t()
+			(node_t::ot_member, m_id_list(e->getMemberDecl()->getQualifiedNameAsString()))
+			(this->build_expr(e->getBase()))));
+	}
 	else
 	{
 		BOOST_ASSERT(0);
