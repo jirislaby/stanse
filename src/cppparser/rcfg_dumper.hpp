@@ -11,7 +11,7 @@
 
 struct rcfg_node
 {
-	enum operand_type { ot_none, ot_function, ot_member, ot_varptr, ot_varval, ot_vartgt, ot_nodeval, ot_nodetgt };
+	enum operand_type { ot_none, ot_function, ot_member, ot_const, ot_varptr, ot_varval, ot_vartgt, ot_nodeval, ot_nodetgt };
 
 	struct operand
 	{
@@ -107,6 +107,9 @@ public:
 private:
 	struct builder
 	{
+		typedef rcfg_node node_t;
+		typedef rcfg_node::operand op_t;
+
 		builder(rcfg_id_list & id_list, clang::Stmt const * stmt = 0);
 
 		rcfg_node::operand add_node(rcfg_node const & node);
@@ -121,6 +124,9 @@ private:
 		rcfg_node::operand make_rvalue(rcfg_node::operand var);
 		std::size_t make_node(rcfg_node::operand const & var);
 		rcfg_node::operand make_param(rcfg_node::operand const & op, clang::Type const * type);
+
+		rcfg_node::operand make_temporary(rcfg_node::operand op);
+		void construct_object(op_t dest, op_t val);
 
 		void fix_function();
 		void fix(rcfg_node::break_type_t bt, std::size_t target);

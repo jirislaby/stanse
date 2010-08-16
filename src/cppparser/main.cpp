@@ -61,11 +61,11 @@ public:
 		if (m_c.printCFG)
 			print_cfg(ctx, std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 
-		if (m_c.debugCFG)
-			print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
-
 		if (m_c.printReadableAST)
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
+
+		if (m_c.debugCFG)
+			print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 	}
 
 private:

@@ -163,28 +163,39 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	}
 	else if (clang::CallExpr const * e = llvm::dyn_cast<clang::CallExpr>(expr))
 	{
-		opd_t result_op;
+		// There are three possibilities.
+		//  1. The expression type is clang::CXXMemberCallExpr. Then the callee is either
+		//    a. clang::MemberExpr and the type of the function can be determined from the
+		//       member declaration (remember there is an implicit `this` parameter), or
+		//    b. clang::BinaryOperator, with either PtrMemD or PtrMemI; the type of
+		//       the parameters can be extracted from the rhs operand.
+		//  2. This is a normal invocation, in which case the type of the callee is a pointer to function,
+		//     the types of parameters can be extracted from there.
+		//
+		// Additionally, there can be an implicit parameter representing the return value
+		// (if the value is of a class type).
 
-		std::vector<std::pair<opd_t, clang::Type const *> > params;
+		opd_t callee_op;
+		std::vector<opd_t> params;
+		std::vector<clang::Type const *> param_types;
 
-		clang::Type const * restype = e->getCallReturnType().getTypePtr();
-		if (restype->isStructureOrClassType())
-		{
-			std::size_t classres = m_id_list.make_temporary(restype);
-			params.push_back(std::make_pair(opd_t(rcfg_node::ot_varval, classres), restype));
-			result_op = opd_t(rcfg_node::ot_varval, classres);
-		}
-
-		rcfg_node::operand callee_op;
 		clang::FunctionProtoType const * fntype;
+
 		if (llvm::isa<clang::CXXMemberCallExpr>(e))
 		{
-			// TODO: this can fail if there are expressions with .* or ->*
 			if (clang::MemberExpr const * mcallee = llvm::dyn_cast<clang::MemberExpr>(e->getCallee()))
 			{
 				clang::CXXMethodDecl const * mdecl = llvm::dyn_cast<clang::CXXMethodDecl>(mcallee->getMemberDecl());
-				params.push_back(std::make_pair(this->make_address(this->build_expr(mcallee->getBase())), mdecl->getThisType(m_id_list.ctx()).getTypePtr()));
-				callee_op = opd_t(rcfg_node::ot_function, m_id_list(llvm::dyn_cast<clang::NamedDecl>(mcallee->getMemberDecl())));
+				
+				opd_t this_op = this->build_expr(mcallee->getBase());
+				if (!mcallee->isArrow())
+					this_op = this->make_address(this_op);
+				params.push_back(this_op);
+
+				param_types.push_back(
+					mdecl->getThisType(mdecl->getASTContext()).getTypePtr());
+
+				callee_op = opd_t(rcfg_node::ot_function, m_id_list(mdecl));
 
 				fntype = llvm::dyn_cast<clang::FunctionProtoType>(mdecl->getType().getTypePtr());
 			}
@@ -196,10 +207,12 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 				clang::MemberPointerType const * calleePtrType = llvm::dyn_cast<clang::MemberPointerType>(callee->getRHS()->getType().getTypePtr());
 				BOOST_ASSERT(calleePtrType);
 
-				opd_t lhsop = this->build_expr(callee->getLHS());
+				opd_t this_op = this->build_expr(callee->getLHS());
 				if (callee->getOpcode() == clang::BinaryOperator::PtrMemD)
-					lhsop = this->make_address(lhsop);
-				params.push_back(std::make_pair(lhsop, m_id_list.ctx().getPointerType(calleePtrType->getClass()->getCanonicalTypeInternal()).getTypePtr()));
+					this_op = this->make_address(this_op);
+				params.push_back(this_op);
+
+				param_types.push_back(m_id_list.ctx().getPointerType(calleePtrType->getClass()->getCanonicalTypeInternal()).getTypePtr());
 
 				fntype = llvm::dyn_cast<clang::FunctionProtoType>(calleePtrType->getPointeeType().getTypePtr());
 			}
@@ -209,21 +222,34 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		else
 		{
 			callee_op = this->build_expr(e->getCallee());
-			clang::PointerType const * ptrtype = llvm::dyn_cast<clang::PointerType>(e->getCallee()->getType());
-			BOOST_ASSERT(ptrtype);
-			fntype = llvm::dyn_cast<clang::FunctionProtoType>(ptrtype->getPointeeType().getTypePtr());
+			fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getCallee()->getType()->getPointeeType());
 		}
 
 		BOOST_ASSERT(fntype);
 
-		for (std::size_t i = 0; i < e->getNumArgs(); ++i)
-			params.push_back(std::make_pair(this->build_expr(e->getArg(i)), fntype->getArgType(i).getTypePtr()));
+		opd_t result_op;
+		clang::Type const * restype = fntype->getResultType().getTypePtr();
+		if (restype->isStructureOrClassType())
+		{
+			std::size_t classres = m_id_list.make_temporary(restype);
+			params.insert(params.begin(), opd_t(rcfg_node::ot_varval, classres));
+			param_types.insert(param_types.begin(), restype);
+			result_op = opd_t(rcfg_node::ot_varval, classres);
+		}
+
+		BOOST_ASSERT(fntype->getNumArgs() == e->getNumArgs());
+
+		for (std::size_t i = 0; i < fntype->getNumArgs(); ++i)
+		{
+			params.push_back(this->build_expr(e->getArg(i)));
+			param_types.push_back(fntype->getArgType(i).getTypePtr());
+		}
 
 		// TODO: handle classes with conversion to pointer to fn.
 		rcfg_node node;
 		node(callee_op);
 		for (std::size_t i = 0; i < params.size(); ++i)
-			node(this->make_param(params[i].first, params[i].second));
+			node(this->make_param(params[i], param_types[i]));
 
 		rcfg_node::operand node_op = this->add_node(node);
 		return result_op.type == rcfg_node::ot_none? node_op: result_op;
@@ -241,8 +267,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	}
 	else if (clang::IntegerLiteral const * e = llvm::dyn_cast<clang::IntegerLiteral>(expr))
 	{
-		return this->add_node(rcfg_node()
-			(rcfg_node::ot_function, m_id_list("c:int:" + e->getValue().toString(10, true))));
+		return op_t(rcfg_node::ot_const, m_id_list(e->getValue().toString(10, true)));
 	}
 	else if (clang::CXXConstructExpr const * e = llvm::dyn_cast<clang::CXXConstructExpr>(expr))
 	{
@@ -253,7 +278,8 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		clang::FunctionProtoType const * fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getConstructor()->getType().getTypePtr());
 
 		rcfg_node::operand tg = target;
-		if (clang::CXXTemporaryObjectExpr const * e = llvm::dyn_cast<clang::CXXTemporaryObjectExpr>(expr))
+		if (tg.type == rcfg_node::ot_none)
+		//if (clang::CXXTemporaryObjectExpr const * e = llvm::dyn_cast<clang::CXXTemporaryObjectExpr>(expr))
 			tg = rcfg_node::operand(rcfg_node::ot_varptr, m_id_list.make_temporary(e->getType().getTypePtr()));
 
 		BOOST_ASSERT(tg.type != rcfg_node::ot_none);
@@ -265,6 +291,10 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		this->add_node(node);
 		return this->make_deref(tg);
 	}
+	/*else if (clang::CXXFunctionalCastExpr const * e = llvm::dyn_cast<clang::CXXFunctionalCastExpr>(expr))
+	{
+
+	}*/
 	else if (clang::CXXBindTemporaryExpr const * e = llvm::dyn_cast<clang::CXXBindTemporaryExpr>(expr))
 	{
 		return this->build_expr(e->getSubExpr(), target);
@@ -668,6 +698,10 @@ rcfg_node::operand rcfg::builder::make_address(rcfg_node::operand var)
 		return var;
 	case rcfg_node::ot_function:
 		return var;
+	case rcfg_node::ot_nodeval:
+	case rcfg_node::ot_varptr:
+	case rcfg_node::ot_const:
+		return this->make_address(this->make_temporary(var));
 	default:
 		BOOST_ASSERT(0);
 		return var;
@@ -715,6 +749,22 @@ rcfg_node::operand rcfg::builder::make_param(rcfg_node::operand const & op, clan
 		return this->make_rvalue(this->make_address(op));
 	else
 		return this->make_rvalue(op);
+}
+
+rcfg_node::operand rcfg::builder::make_temporary(rcfg_node::operand op)
+{
+	std::size_t temp_id = m_id_list.make_temporary(0);
+	this->construct_object(op_t(node_t::ot_varptr, temp_id), op);
+	return op_t(node_t::ot_varval, temp_id);
+}
+
+void rcfg::builder::construct_object(op_t dest, op_t val)
+{
+	node_t node;
+	node(node_t::ot_function, m_id_list("="));
+	node(dest);
+	node(val);
+	this->add_node(node);
 }
 
 //==================================================================
@@ -814,6 +864,9 @@ void rcfg::pretty_print(std::ostream & out, clang::SourceManager const * sm) con
 				break;
 			case rcfg_node::ot_nodetgt:
 				out << "        nodt " << node.operands[j].id;
+				break;
+			case rcfg_node::ot_const:
+				out << "        cons " << m_id_list.name(node.operands[j].id);
 				break;
 			}
 
