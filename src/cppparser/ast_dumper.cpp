@@ -1,16 +1,25 @@
 #include "ast_dumper.hpp"
 
+#include <clang/AST/DeclCXX.h>
+
 static void process_decl_context(clang::DeclContext const * declctx, std::vector<clang::FunctionDecl const *> & fns)
 {
 	for (clang::DeclContext::decl_iterator it = declctx->decls_begin(); it != declctx->decls_end(); ++it)
 	{
 		clang::Decl * decl = *it;
+		if (clang::CXXMethodDecl * fnDecl = dyn_cast<clang::CXXMethodDecl>(decl))
+		{
+			clang::CXXRecordDecl const * par = fnDecl->getParent();
+			if (par->getDescribedClassTemplate() != 0)
+				continue;
+		}
+		
 		if (clang::FunctionDecl * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
 		{
-			if (fnDecl->hasBody())
+			if (fnDecl->isThisDeclarationADefinition())
 				fns.push_back(fnDecl);
 		}
-		if (clang::RecordDecl const * classDecl = dyn_cast<clang::RecordDecl>(decl))
+		else if (clang::RecordDecl const * classDecl = dyn_cast<clang::RecordDecl>(decl))
 		{
 			process_decl_context(classDecl, fns);
 		}

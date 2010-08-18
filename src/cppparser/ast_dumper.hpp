@@ -16,7 +16,7 @@ void get_referenced_functions(clang::Decl const * decl, OutputIterator out)
 {
 	if (clang::FunctionDecl const * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
 	{
-		if (fnDecl->hasBody())
+		if (fnDecl->isThisDeclarationADefinition())
 			*out++ = fnDecl;
 	}
 }

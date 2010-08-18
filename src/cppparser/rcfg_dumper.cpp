@@ -19,6 +19,25 @@ rcfg_id_list::rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & c
 		m_parameters.push_back((*this)("r:"));
 	m_locals.push_back((*this)("r:"));
 
+	if (clang::CXXMethodDecl const * d = llvm::dyn_cast<clang::CXXMethodDecl>(&fn))
+	{
+		if (!d->isStatic())
+		{
+			m_parameters.push_back((*this)("p:this"));
+			m_locals.push_back((*this)("p:this"));
+		}
+	}
+
+	for (clang::FunctionDecl::param_const_iterator it = fn.param_begin(); it != fn.param_end(); ++it)
+	{
+		clang::ParmVarDecl const * d = *it;
+
+		std::string name = "p:" + d->getQualifiedNameAsString();
+		m_decl_names[d] = name;
+		m_locals.push_back((*this)(d));
+		m_parameters.push_back((*this)(d));
+	}
+
 	std::set<std::string> used_names;
 	for (clang::FunctionDecl::decl_iterator it = fn.decls_begin(); it != fn.decls_end(); ++it)
 	{
@@ -27,10 +46,9 @@ rcfg_id_list::rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & c
 		{
 			std::string name_base;
 			if (decl->getKind() == clang::Decl::ParmVar)
-				name_base = "p:" + d->getQualifiedNameAsString();
-			else
-				name_base = "l:" + d->getQualifiedNameAsString();
+				continue;
 
+			name_base = "l:" + d->getQualifiedNameAsString();
 			name_base += ':';
 
 			std::string name;
@@ -48,8 +66,6 @@ rcfg_id_list::rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & c
 			}
 
 			m_locals.push_back((*this)(d));
-			if (decl->getKind() == clang::Decl::ParmVar)
-				m_parameters.push_back((*this)(d));
 		}
 	}
 }
