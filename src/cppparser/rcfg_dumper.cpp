@@ -398,6 +398,30 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 			(node_t::ot_member, m_id_list(e->getMemberDecl()->getQualifiedNameAsString()))
 			(this->build_expr(e->getBase()))));
 	}
+	else if (clang::ConditionalOperator const * e = llvm::dyn_cast<clang::ConditionalOperator>(expr))
+	{
+		op_t cond_op = this->build_expr(e->getCond());
+		std::size_t branch_node = this->make_node(cond_op);
+		m_nodes[branch_node].succs.pop_back();
+
+		rcfg::builder lhs_cfg(m_id_list);
+		op_t lhs = lhs_cfg.build_expr(e->getTrueExpr());
+		this->append_edge(lhs_cfg, branch_node, m_nodes.size());
+
+		rcfg::builder rhs_cfg(m_id_list);
+		op_t rhs = rhs_cfg.build_expr(e->getFalseExpr());
+		this->append_edge(lhs_cfg, branch_node, m_nodes.size());
+		m_nodes[branch_node].succs.back().op = op_t(node_t::ot_const, m_id_list("0"));
+
+		rcfg_node res_node(node_t::nt_phi);
+		res_node(lhs);  // FIXME: rhs is not correct as it refers to a node before relocation
+		res_node(rhs);  // FIXME: rhs is not correct as it refers to a node before relocation
+		return this->add_node(res_node);
+	}
+	else if (clang::CXXThisExpr const * e = llvm::dyn_cast<clang::CXXThisExpr>(expr))
+	{
+		return op_t(node_t::ot_varval, m_id_list("p:this"));
+	}
 	else
 	{
 		BOOST_ASSERT(0);
