@@ -1,5 +1,5 @@
 /**
- * @file AutomatonChecker.java 
+ * @file AutomatonChecker.java
  * @brief Defines public final class AutomatonChecker which provides static
  *        program verification specialized to locking problems, interrupts
  *        enabling/disabling problems, unnecessary check optimizations and
@@ -54,10 +54,10 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     /**
      * @brief Parses accepted XML automata definition and initializes internal
-     *        structures related to automata definition. 
+     *        structures related to automata definition.
      *
      * @param XMLdefinition XML representation of AST
-     * @throws XMLAutomatonSyntaxErrorException 
+     * @throws XMLAutomatonSyntaxErrorException
      */
     public AutomatonChecker(final File xmlFile) {
         super();
@@ -65,7 +65,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     }
 
     /**
-     * @brief Uniquelly identifies the checker by the string identifier. 
+     * @brief Uniquelly identifies the checker by the string identifier.
      *
      * @return String which uniquelly identifies the checker.
      * @see cz.muni.stanse.checker.Checker#getName()
@@ -77,14 +77,14 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     }
 
     /**
-     * @brief Does the source code checking itself. 
+     * @brief Does the source code checking itself.
      *
      * Method searches through source code to find matching patterns defined
      * in XML automata definition file. Each such matched location in the source
      * code is assigned an instance of PatternLocation class. Initial location
      * in the program is always introduced and is initialized with initial
      * states of all automata to be run on the source code.
-     * 
+     *
      * The computation itself is simple distribution of automata states between
      * instances of PatternLocation class (locations are linked together with
      * respect to control-flow of source code). Automata states are transformed
@@ -92,14 +92,14 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * then distributed to linked locations. This procedure is finished, when
      * no location was delivered automaton state, which was not processed in
      * that location.
-     * 
+     *
      * Error detection is the final phase of the procedure. All PatternLocations
      * are crossed and checked for error states. Each PatternLocation has
      * assigned set of error transition rules which are applied to all processed
      * states in the location. If some error transition rule can be applied to
      * processed states, then it means the source code contains error. Each
      * error rule contains description of an error it checks for. Those error
-     * transition rules are defined in XML automaton definition file. 
+     * transition rules are defined in XML automaton definition file.
      *
      * @param units List of translations units (described in internal structures
      *              like CFGs and ASTs)

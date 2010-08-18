@@ -1,6 +1,6 @@
 /**
  * @file .java
- * @brief 
+ * @brief
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *

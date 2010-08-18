@@ -141,24 +141,24 @@ public class CFGNode {
     public List<CFGNode> getOptSuccessors() {
 	return Collections.unmodifiableList(optSuccs);
     }
-    
+
     public List<Operand> getOperands() {
 	return Collections.unmodifiableList(operands);
     }
-    
+
     public void setOperands(List<Operand> operands) {
 	this.operands.clear();
 	this.operands.addAll(operands);
     }
-    
+
     public void addOperand(OperandType type, int id) {
 	operands.add(new Operand(type, id));
     }
-    
+
     public NodeType getNodeType() {
 	return nodeType;
     }
-    
+
     public void setNodeType(NodeType nodeType) {
 	this.nodeType = nodeType;
     }
