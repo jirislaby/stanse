@@ -90,6 +90,10 @@ public class CFGNode {
 	return element;
     }
 
+    public boolean hasLocation() {
+	return getElement() != null && getElement().attribute("bl") != null;
+    }
+
     public final int getColumn() {
 	if (getElement() == null || getElement().attribute("bc") == null)
 	    return 1;

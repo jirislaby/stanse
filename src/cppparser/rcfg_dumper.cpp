@@ -833,8 +833,6 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 			p.xml_print_statement(node.stmt);
 			out << "</ast>";
 		}
-		else
-			out << "<ast><none/></ast>";
 
 		for (std::size_t j = 0; j < node.succs.size(); ++j)
 		{

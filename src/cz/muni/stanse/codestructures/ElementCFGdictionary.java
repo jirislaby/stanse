@@ -40,7 +40,7 @@ public final class ElementCFGdictionary {
     private static Pair<String,Integer>
     buildKey(final Element elem) {
         final java.util.Vector<Element> linerCall =
-            XMLLinearizeASTElement.functionCall(elem);
+            elem != null? XMLLinearizeASTElement.functionCall(elem): null;
         return (linerCall == null) ?
                     null : Pair.make(linerCall.firstElement().getText(),
                                      linerCall.size() - 1);

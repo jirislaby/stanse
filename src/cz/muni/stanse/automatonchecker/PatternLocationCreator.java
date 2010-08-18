@@ -36,7 +36,7 @@ final class PatternLocationCreator extends CFGvisitor {
             matchings = new LinkedList<Pair<XMLPattern,SimpleAutomatonID>>();
         for (XMLPattern pattern : getXMLAutomatonDefinition().getXMLpatterns()){
             final Pair<Boolean,XMLPatternVariablesAssignment>
-                matchResult = pattern.matchesXMLElement(element);
+                matchResult = element != null? pattern.matchesXMLElement(element): new Pair<Boolean, XMLPatternVariablesAssignment>(false, null);
             if (matchResult.getFirst()) {
                 final XMLPatternVariablesAssignment assign =
                         matchResult.getSecond();
