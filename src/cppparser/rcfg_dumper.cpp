@@ -271,6 +271,64 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	{
 		return op_t(rcfg_node::ot_const, m_id_list(e->getValue().toString(10, true)));
 	}
+	else if (clang::StringLiteral const * e = llvm::dyn_cast<clang::StringLiteral>(expr))
+	{
+		std::string res;
+		if (e->isWide())
+		{
+			res = "L\"";
+			llvm::StringRef str = e->getString();
+			for (std::size_t i = 0; i < str.size(); i += 2)
+			{
+				if (str[i+1] == 0 && str[i] >= 32 && str[i] < 128)
+				{
+					res.push_back(str[i]);
+					if (str[i] == '\\')
+						res.push_back('\\');
+				}
+				else
+				{
+					res.append("\\u");
+
+					char const digits[] = "0123456789abcdef";
+
+					unsigned char ch = str[i+1];
+					res.push_back(digits[ch >> 4]);
+					res.push_back(digits[ch & 0xf]);
+
+					ch = str[i];
+					res.push_back(digits[ch >> 4]);
+					res.push_back(digits[ch & 0xf]);
+				}
+			}
+		}
+		else
+		{
+			res = '\"';
+			llvm::StringRef str = e->getString();
+			for (std::size_t i = 0; i < str.size(); ++i)
+			{
+				if (str[i] >= 32 && str[i] < 128)
+				{
+					res.push_back(str[i]);
+					if (str[i] == '\\')
+						res.push_back('\\');
+				}
+				else
+				{
+					res.append("\\x");
+
+					unsigned char ch = str[i];
+					char const digits[] = "0123456789abcdef";
+					res.push_back(digits[ch >> 4]);
+					res.push_back(digits[ch & 0xf]);
+				}
+			}
+		}
+
+		res += '\"';
+		return op_t(rcfg_node::ot_const, m_id_list(res));
+	}
 	else if (clang::CXXConstructExpr const * e = llvm::dyn_cast<clang::CXXConstructExpr>(expr))
 	{
 		// TODO: proper conversion
