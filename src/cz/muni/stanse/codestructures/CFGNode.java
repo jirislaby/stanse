@@ -26,14 +26,14 @@ public class CFGNode {
 
     public enum NodeType { none, call, value, phi };
     public enum OperandType { none, operator, function, member, constant, varptr, varval, nodeval };
-    
+
     public static class Operand {
-	public Operand(OperandType type, int id) {
+	public Operand(OperandType type, Object id) {
 	    this.type = type;
 	    this.id = id;
 	}
-	
-	public Operand(String type, int id) {
+
+	public Operand(String type, Object id) {
 	    if (type.equals("function"))
 		this.type = OperandType.function;
 	    else if (type.equals("member"))
@@ -50,12 +50,16 @@ public class CFGNode {
 		throw new IllegalArgumentException("Invalid operand type: " + type);
 	    this.id = id;
 	}
-	
+
+	public String toString() {
+	    return type.toString() + " " + id.toString();
+	}
+
 	public OperandType type;
-	public int id;
+	public Object id;
     }
 
-    NodeType nodeType;
+    NodeType nodeType = NodeType.none;
     List<Operand> operands = new ArrayList<Operand>();
 
     /**
@@ -328,6 +332,10 @@ public class CFGNode {
 
     @Override
     public String toString() {
-	return Integer.toString(number);
+	String res = Integer.toString(number) + " " + nodeType.toString();
+	for (Operand op : operands) {
+	    res += "[" + op.toString() + "]";
+	}
+	return res;
     }
 }

@@ -82,6 +82,10 @@ final class AutomatonState {
                getContext().equals(other.getContext());
     }
 
+    public String toString() {
+	return symbol;
+    }
+
     // private section
 
     private final String symbol;

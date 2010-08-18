@@ -15,8 +15,12 @@
 rcfg_id_list::rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & ctx)
 	: m_fn(fn), m_ctx(ctx)
 {
+	if (fn.getResultType()->isStructureOrClassType())
+		m_parameters.push_back((*this)("r:"));
+	m_locals.push_back((*this)("r:"));
+
 	std::set<std::string> used_names;
-	for (clang::FunctionDecl::decl_iterator it = fn.decls_begin(); it != fn.decls_end(); ++it)\
+	for (clang::FunctionDecl::decl_iterator it = fn.decls_begin(); it != fn.decls_end(); ++it)
 	{
 		clang::Decl const * decl = *it;
 		if (clang::ValueDecl const * d = llvm::dyn_cast<clang::ValueDecl>(decl))
@@ -29,17 +33,23 @@ rcfg_id_list::rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & c
 
 			name_base += ':';
 
+			std::string name;
 			for (std::size_t i = 0;; ++i)
 			{
 				std::ostringstream ss;
 				ss << name_base << i;
 				if (used_names.find(ss.str()) == used_names.end())
 				{
-					used_names.insert(ss.str());
-					m_decl_names[d] = ss.str();
+					name = ss.str();
+					used_names.insert(name);
+					m_decl_names[d] = name;
 					break;
 				}
 			}
+
+			m_locals.push_back((*this)(d));
+			if (decl->getKind() == clang::Decl::ParmVar)
+				m_parameters.push_back((*this)(d));
 		}
 	}
 }
@@ -64,12 +74,16 @@ std::size_t rcfg_id_list::operator()(std::string const & str)
 	return ci->second;
 }
 
-std::size_t rcfg_id_list::make_temporary(clang::Type const * type)
+std::size_t rcfg_id_list::make_temporary(clang::Type const *)
 {
 	std::ostringstream ss;
 	ss << "t:" << m_temporaries.size();
-	m_temporaries.push_back(type);
-	return this->operator()(ss.str()); 
+
+	std::size_t id = this->operator()(ss.str());
+
+	m_locals.push_back(id);
+	m_temporaries.push_back(id);
+	return id; 
 }
 
 //==================================================================
@@ -277,14 +291,8 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		rcfg_node::operand node_op = this->add_node(node);
 		return result_op.type == rcfg_node::ot_none? node_op: result_op;
 	}
-	else if (clang::ImplicitCastExpr const * e = llvm::dyn_cast<clang::ImplicitCastExpr >(expr))
-	{
-		opd_t op = this->build_expr(e->getSubExpr());
-		return op;
-	}
 	else if (clang::CastExpr const * e = llvm::dyn_cast<clang::CastExpr>(expr))
 	{
-		// TODO: call cast operators
 		opd_t op = this->build_expr(e->getSubExpr());
 		return op;
 	}
@@ -372,10 +380,6 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		this->add_node(node);
 		return this->make_deref(tg);
 	}
-	/*else if (clang::CXXFunctionalCastExpr const * e = llvm::dyn_cast<clang::CXXFunctionalCastExpr>(expr))
-	{
-
-	}*/
 	else if (clang::CXXBindTemporaryExpr const * e = llvm::dyn_cast<clang::CXXBindTemporaryExpr>(expr))
 	{
 		return this->build_expr(e->getSubExpr(), target);
@@ -474,7 +478,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 		{
 			if (m_id_list.fn().getResultType().getTypePtr()->isStructureOrClassType())
 			{
-				this->build_expr(s->getRetValue(), rcfg_node::operand(rcfg_node::ot_varptr, m_id_list("ret")));
+				this->build_expr(s->getRetValue(), rcfg_node::operand(rcfg_node::ot_varptr, m_id_list("r:")));
 			}
 			else
 			{
@@ -484,7 +488,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 
 				this->add_node(rcfg_node()
 					(rcfg_node::ot_function, m_id_list("="))
-					(rcfg_node::ot_varptr, m_id_list("ret"))
+					(rcfg_node::ot_varptr, m_id_list("r:"))
 					(this->make_rvalue(retval)));
 			}
 
@@ -608,8 +612,11 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 	}
 	else if (clang::CXXCatchStmt const * s = llvm::dyn_cast<clang::CXXCatchStmt>(stmt))
 	{
-		m_nodes.push_back(0);
-		//BOOST_ASSERT(0 && "the statement type is not recognized");
+		// TODO
+	}
+	else
+	{
+		BOOST_ASSERT(0 && "the statement type is not recognized");
 	}
 }
 
@@ -878,6 +885,11 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 	p.xml_print_decl_name(&m_fn);
 	out << "\" startnode=\"0\" endnode=\"" << m_nodes.size() << "\">";
 
+	out << "<locals>";
+	for (std::size_t i = 0; i < m_id_list.locals().size(); ++i)
+		out << "<sym>" << xml_escape(m_id_list.name(m_id_list.locals()[i])) << "</sym>";
+	out << "</locals>";
+
 	for (std::size_t i = 0; i < m_nodes.size(); ++i)
 	{
 		rcfg_node const & node = m_nodes[i];
@@ -982,9 +994,8 @@ void rcfg::pretty_print(std::ostream & out, clang::SourceManager const * sm) con
 
 	out << "def " << make_decl_name(&m_fn) << ":\n";
 
-	std::vector<clang::Type const *> param_types = get_function_param_types(m_id_list.fn());
-	for (std::size_t i = 0; i < param_types.size(); ++i)
-		out << "    param: " << param_types[i]->getCanonicalTypeInternal().getAsString() << "\n";
+	for (std::size_t i = 0; i < m_id_list.locals().size(); ++i)
+		out << "    var: " << m_id_list.name(m_id_list.locals()[i]) << "\n";
 
 	for (std::size_t i = 0; i < m_nodes.size(); ++i)
 	{

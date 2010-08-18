@@ -207,6 +207,10 @@ final class PatternLocation {
         return unprocessedAutomataStates;
     }
 
+    public String toString() {
+	return "PL(" + CFGreferenceNode.toString() + ")";
+    }
+
     private final CFGNode CFGreferenceNode;
     private final HashSet<AutomatonState> processedAutomataStates;
     private final LinkedList<AutomatonState> unprocessedAutomataStates;

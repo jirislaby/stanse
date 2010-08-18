@@ -91,6 +91,10 @@ public:
 
 	std::size_t make_temporary(clang::Type const * type);
 
+	std::vector<std::size_t> const & locals() const { return m_locals; }
+	std::vector<std::size_t> const & temporaries() const { return m_temporaries; }
+	std::vector<std::size_t> const & parameters() const { return m_parameters; }
+
 	std::string name(std::size_t i) const { return m_names[i]; }
 	clang::FunctionDecl const & fn() const { return m_fn; }
 	clang::ASTContext & ctx() const { return m_ctx; }
@@ -98,11 +102,15 @@ public:
 private:
 	clang::FunctionDecl const & m_fn;
 	clang::ASTContext & m_ctx;
-	std::vector<clang::Type const *> m_temporaries;
+
+	std::vector<std::size_t> m_temporaries;
+	std::vector<std::size_t> m_parameters;
+	std::vector<std::size_t> m_locals;
+
+	std::vector<std::string> m_names;
 
 	std::map<clang::NamedDecl const *, std::string> m_decl_names;
 	std::map<std::string, std::size_t> m_name_ids;
-	std::vector<std::string> m_names;
 };
 
 class rcfg
