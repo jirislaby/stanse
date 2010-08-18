@@ -24,7 +24,7 @@ public class CFGNode {
     private List<CFGNode> optPreds = new ArrayList<CFGNode>();
     private List<CFGNode> optSuccs = new ArrayList<CFGNode>();
 
-    public enum NodeType { none, call, value };
+    public enum NodeType { none, call, value, phi };
     public enum OperandType { none, operator, function, member, constant, varptr, varval, nodeval };
     
     public static class Operand {
@@ -164,6 +164,8 @@ public class CFGNode {
 	    this.nodeType = NodeType.call;
 	else if (nodeType.equals("value"))
 	    this.nodeType = NodeType.value;
+	else if (nodeType.equals("phi"))
+	    this.nodeType = NodeType.phi;
 	else
 	    throw new IllegalArgumentException("Unknown node type: " + nodeType);
     }

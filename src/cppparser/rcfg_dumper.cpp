@@ -7,6 +7,7 @@
 #include <clang/AST/ExprCXX.h>
 
 #include <boost/assert.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <sstream>
 
@@ -125,6 +126,26 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 				(this->make_address(lhs))
 				(this->make_rvalue(this->build_expr(e->getRHS()))));
 			return lhs;
+		}
+		else if (e->getOpcode() == clang::BinaryOperator::LOr || e->getOpcode() == clang::BinaryOperator::LAnd)
+		{
+			op_t lhs = this->build_expr(e->getLHS());
+			std::size_t branch_node = this->make_node(lhs);
+
+			rcfg::builder rhs_cfg(m_id_list);
+			op_t rhs = rhs_cfg.build_expr(e->getRHS());
+
+			this->append_edge(rhs_cfg, branch_node, m_nodes.size());
+
+			if (e->getOpcode() == clang::BinaryOperator::LAnd)
+				m_nodes[branch_node].succs[0].op = op_t(node_t::ot_const, m_id_list("0"));
+			else
+				m_nodes[branch_node].succs[1].op = op_t(node_t::ot_const, m_id_list("0"));
+			
+			rcfg_node res_node(node_t::nt_phi);
+			res_node(lhs);
+			res_node(rhs);  // FIXME: rhs is not correct as it refers to a node before relocation
+			return this->add_node(res_node);
 		}
 		else
 		{
@@ -863,7 +884,7 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 		BOOST_ASSERT(node.break_type == rcfg_node::bt_none);
 
 		static char const * operand_type_names[] = { "none", "function", "member", "const", "varptr", "varval", "vartgt", "nodeval", "nodetgt" };
-		static char const * node_type_names[] = { "none", "call", "value" };
+		static char const * node_type_names[] = { "none", "call", "value", "phi" };
 
 		out << "<node id=\"" << i << "\" type=\"" << node_type_names[node.type] << "\">";
 		for (std::size_t j = 0; j < node.operands.size(); ++j)
@@ -901,14 +922,17 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 			}
 			else
 			{
-				switch (j)
+				op_t label_op = node.succs[j].op;
+				if (label_op.type == node_t::ot_none)
 				{
-				case 0:
-					out << "<default />";
-					break;
-				case 1:
-					out << "<intConst>0</intConst>";
-					break;
+					out << "<default/>";
+				}
+				else
+				{
+					BOOST_ASSERT(label_op.type == node_t::ot_const);
+					out << "<intConst>";
+					out << boost::lexical_cast<long long>(m_id_list.name(label_op.id));
+					out << "</intConst>";
 				}
 			}
 			out << "</next>";
@@ -919,6 +943,37 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 	out << "<node id=\"" << m_nodes.size() << "\"><ast>";
 	p.xml_print_tag("exit", m_fn.getSourceRange().getEnd(), "/");
 	out << "</ast></node></rcfg>";
+}
+
+void rcfg::print_op(std::ostream & out, op_t op) const
+{
+	switch (op.type)
+	{
+	case rcfg_node::ot_function:
+		out << "func " << m_id_list.name(op.id);
+		break;
+	case rcfg_node::ot_member:
+		out << "memb " << m_id_list.name(op.id);
+		break;
+	case rcfg_node::ot_vartgt:
+		out << "vart " << m_id_list.name(op.id);
+		break;
+	case rcfg_node::ot_varval:
+		out << "varv " << m_id_list.name(op.id);
+		break;
+	case rcfg_node::ot_varptr:
+		out << "varp " << m_id_list.name(op.id);
+		break;
+	case rcfg_node::ot_nodeval:
+		out << "node " << op.id;
+		break;
+	case rcfg_node::ot_nodetgt:
+		out << "nodt " << op.id;
+		break;
+	case rcfg_node::ot_const:
+		out << "cons " << m_id_list.name(op.id);
+		break;
+	}
 }
 
 void rcfg::pretty_print(std::ostream & out, clang::SourceManager const * sm) const
@@ -948,6 +1003,9 @@ void rcfg::pretty_print(std::ostream & out, clang::SourceManager const * sm) con
 		case node_t::nt_value:
 			out << "nt_value ";
 			break;
+		case node_t::nt_phi:
+			out << "nt_phi ";
+			break;
 		}
 
 		p.xml_print_statement(node.stmt);
@@ -955,41 +1013,21 @@ void rcfg::pretty_print(std::ostream & out, clang::SourceManager const * sm) con
 
 		for (std::size_t j = 0; j < node.operands.size(); ++j)
 		{
-			typedef rcfg_node::operand opd_t;
-
-			switch (node.operands[j].type)
-			{
-			case rcfg_node::ot_function:
-				out << "        func " << m_id_list.name(node.operands[j].id);
-				break;
-			case rcfg_node::ot_member:
-				out << "        memb " << m_id_list.name(node.operands[j].id);
-				break;
-			case rcfg_node::ot_vartgt:
-				out << "        vart " << m_id_list.name(node.operands[j].id);
-				break;
-			case rcfg_node::ot_varval:
-				out << "        varv " << m_id_list.name(node.operands[j].id);
-				break;
-			case rcfg_node::ot_varptr:
-				out << "        varp " << m_id_list.name(node.operands[j].id);
-				break;
-			case rcfg_node::ot_nodeval:
-				out << "        node " << node.operands[j].id;
-				break;
-			case rcfg_node::ot_nodetgt:
-				out << "        nodt " << node.operands[j].id;
-				break;
-			case rcfg_node::ot_const:
-				out << "        cons " << m_id_list.name(node.operands[j].id);
-				break;
-			}
-
+			out << "        ";
+			this->print_op(out, node.operands[j]);
 			out << "\n";
 		}
 
 		for (std::size_t j = 0; j < node.succs.size(); ++j)
-			out << "        succ " << node.succs[j].id << "\n";
+		{
+			out << "        succ " << node.succs[j].id;
+			if (node.succs[j].op.type != node_t::ot_none)
+			{
+				out << " ";
+				this->print_op(out, node.succs[j].op);
+			}
+			out << "\n";
+		}
 	}
 	out << std::endl;
 }

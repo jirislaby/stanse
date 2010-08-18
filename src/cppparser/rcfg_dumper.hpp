@@ -12,7 +12,7 @@
 struct rcfg_node
 {
 	enum operand_type { ot_none, ot_function, ot_member, ot_const, ot_varptr, ot_varval, ot_vartgt, ot_nodeval, ot_nodetgt };
-	enum node_type { nt_none, nt_call, nt_value };
+	enum node_type { nt_none, nt_call, nt_value, nt_phi };
 
 	struct operand
 	{
@@ -33,6 +33,7 @@ struct rcfg_node
 	struct succ
 	{
 		std::size_t id;
+		operand op;
 		clang::Stmt const * label;
 
 		succ(std::size_t id, clang::Stmt const * label = 0)
@@ -115,6 +116,8 @@ public:
 private:
 	typedef rcfg_node node_t;
 	typedef rcfg_node::operand op_t;
+
+	void print_op(std::ostream & out, op_t op) const;
 
 	struct builder
 	{
