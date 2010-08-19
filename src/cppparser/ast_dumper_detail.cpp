@@ -108,36 +108,6 @@ void print_stmt(clang::Stmt const * stmt, std::ostream & out, int level)
 	}
 }
 
-template <typename OutputIterator>
-void get_referenced_functions(clang::Decl const * decl, OutputIterator out)
-{
-	if (clang::FunctionDecl const * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
-	{
-		if (fnDecl->hasBody())
-			*out++ = fnDecl;
-	}
-}
-
-template <typename OutputIterator>
-void get_referenced_functions(clang::Stmt const * stmt, OutputIterator out)
-{
-	if (clang::DeclRefExpr const * expr = dyn_cast<clang::DeclRefExpr>(stmt))
-	{
-		clang::ValueDecl const * decl = expr->getDecl();
-		get_referenced_functions(decl, out);
-	}
-
-	for (clang::Stmt::const_child_iterator ci = stmt->child_begin(); ci != stmt->child_end(); ++ci)
-	{
-		if (*ci != 0)
-			get_referenced_functions(*ci, out);
-	}
-	if (clang::MemberExpr const * memberExpr = dyn_cast<clang::MemberExpr>(stmt))
-	{
-		get_referenced_functions(memberExpr->getMemberDecl(), out);
-	}
-}
-
 std::string xml_escape(std::string const & str)
 {
 	std::string res;
