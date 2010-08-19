@@ -33,6 +33,7 @@ struct config
 	bool printCFG;
 	bool printRCFG;
 	bool printReadableAST;
+	bool printUnitAST;
 	bool debugCFG;
 };
 
@@ -67,6 +68,9 @@ public:
 
 		if (m_c.printReadableAST)
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
+
+		if (m_c.printUnitAST)
+			print_decl(ctx.getTranslationUnitDecl(), std::cout, 0);
 
 		if (m_c.debugCFG)
 			print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
@@ -137,6 +141,8 @@ int main(int argc, char * argv[])
 				c.printRCFG = true;
 			else if (arg == "-c")
 				c.printCFG = true;
+			else if (arg == "-u")
+				c.printUnitAST = true;
 			else if (arg == "--debugcfg")
 				c.debugCFG = true;
 			else
@@ -153,7 +159,7 @@ int main(int argc, char * argv[])
 		comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
 		argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
 
-		if (!c.printReadableAST && !c.printAST && !c.printCFG && !c.debugCFG)
+		if (!c.printReadableAST && !c.printAST && !c.printCFG && !c.debugCFG && !c.printUnitAST && !c.printCFG)
 			c.printReadableAST = true;
 
 		MyASTDumpAction act(c);
