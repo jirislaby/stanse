@@ -9,6 +9,8 @@
 #include <vector>
 #include <map>
 
+#include <boost/assert.hpp>
+
 struct rcfg_node
 {
 	enum operand_type { ot_none, ot_function, ot_member, ot_const, ot_varptr, ot_varval, ot_vartgt, ot_nodeval, ot_nodetgt };
@@ -146,6 +148,17 @@ private:
 
 		rcfg_node::operand make_temporary(rcfg_node::operand op);
 		void construct_object(op_t dest, op_t val);
+
+		template <typename ParamIter, typename ArgIter>
+		void append_args(rcfg_node & node, ParamIter param_first, ParamIter param_last, ArgIter arg_first, ArgIter arg_last)
+		{
+			for (; param_first != param_last; ++param_first, ++arg_first)
+				node(this->make_param(
+					this->build_expr(*arg_first),
+					(*param_first)->getType().getTypePtr()
+				));
+			BOOST_ASSERT(arg_first == arg_last);
+		}
 
 		void fix_function();
 		void fix(rcfg_node::break_type_t bt, std::size_t target);

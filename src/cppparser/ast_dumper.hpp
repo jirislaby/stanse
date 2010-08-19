@@ -46,6 +46,16 @@ void get_referenced_functions(clang::Stmt const * stmt, OutputIterator out)
 	{
 		get_referenced_functions(e->getConstructor(), out);
 	}
+	else if (clang::CXXNewExpr const * e = llvm::dyn_cast<clang::CXXNewExpr>(stmt))
+	{
+		get_referenced_functions(e->getConstructor(), out);
+		get_referenced_functions(e->getOperatorNew(), out);
+		get_referenced_functions(e->getOperatorDelete(), out);
+	}
+	else if (clang::CXXDeleteExpr const * e = llvm::dyn_cast<clang::CXXDeleteExpr>(stmt))
+	{
+		get_referenced_functions(e->getOperatorDelete(), out);
+	}
 }
 
 void get_used_function_defs(clang::ASTContext const & ctx, std::set<clang::FunctionDecl const *> & functionDecls);

@@ -216,6 +216,12 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	}
 	else if (clang::CallExpr const * e = llvm::dyn_cast<clang::CallExpr>(expr))
 	{
+		// Deal with pseudo-destructor calls.
+		if (clang::CXXPseudoDestructorExpr const * de = llvm::dyn_cast<clang::CXXPseudoDestructorExpr>(e->getCallee()))
+		{
+			return this->build_expr(de->getBase());
+		}
+
 		// There are several possibilities.
 		//  1. The call is a call to an overloaded operator.
 		//  2. The expression type is clang::CXXMemberCallExpr. Then the callee is either
@@ -475,6 +481,65 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	else if (clang::FloatingLiteral const * e = llvm::dyn_cast<clang::FloatingLiteral>(expr))
 	{
 		return op_t(rcfg_node::ot_const, m_id_list(boost::lexical_cast<std::string>(e->getValueAsApproximateDouble())));
+	}
+	else if (clang::CXXPseudoDestructorExpr const * e = llvm::dyn_cast<clang::CXXPseudoDestructorExpr>(expr))
+	{
+		return this->build_expr(e->getBase());
+	}
+	else if (clang::CXXNewExpr const * e = llvm::dyn_cast<clang::CXXNewExpr>(expr))
+	{
+		if (e->isArray())
+		{
+			node_t node;
+			node(node_t::ot_function, m_id_list("cxx:new[]"));
+			node(node_t::ot_function, m_id_list(e->getOperatorNew()));
+			node(node_t::ot_function, m_id_list(e->getConstructor()));
+			node(node_t::ot_function, m_id_list(e->getOperatorDelete()));
+			node(node_t::ot_const, m_id_list(e->hasInitializer()? "1": "0"));
+			this->append_args(
+				node,
+				e->getOperatorNew()->param_begin() + 1, e->getOperatorNew()->param_end(),
+				e->placement_arg_begin(), e->placement_arg_end());
+
+			return this->add_node(node);
+		}
+		else
+		{
+			// TODO: exception safety
+
+			node_t opnew_node;
+			opnew_node(node_t::ot_function, m_id_list(e->getOperatorNew()));
+			opnew_node(node_t::ot_const, m_id_list("sizeof:" + e->getAllocatedType().getAsString()));
+			this->append_args(
+				opnew_node,
+				e->getOperatorNew()->param_begin() + 1, e->getOperatorNew()->param_end(),
+				e->placement_arg_begin(), e->placement_arg_end());
+
+			op_t ptr_op = this->add_node(opnew_node);
+
+			node_t construct_node;
+			construct_node(node_t::ot_function, m_id_list(e->getConstructor()));
+			construct_node(ptr_op);
+			this->append_args(construct_node, e->getConstructor()->param_begin(), e->getConstructor()->param_end(),
+				e->constructor_arg_begin(), e->constructor_arg_end());
+
+			this->add_node(construct_node);
+			return ptr_op;
+		}
+	}
+	else if (clang::CXXDeleteExpr const * e = llvm::dyn_cast<clang::CXXDeleteExpr>(expr))
+	{
+		std::string name = e->isArrayForm()? "cxx:delete[]:": "cxx:delete:";
+
+		// TODO: Append a correct type of argument
+		//BOOST_ASSERT(llvm::isa<clang::PointerType>(e->getArgument()->getType()));
+		//name += e->getArgument()->getType().getAsString();//->getPointeeType()->getCanonicalTypeInternal().getAsString();
+
+		node_t node;
+		node(node_t::ot_function, m_id_list(name));
+		node(this->build_expr(e->getArgument()));
+		node(node_t::ot_function, m_id_list(e->getOperatorDelete()));
+		return this->add_node(node);
 	}
 	else
 	{
