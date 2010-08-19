@@ -517,13 +517,16 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 
 			op_t ptr_op = this->add_node(opnew_node);
 
-			node_t construct_node;
-			construct_node(node_t::ot_function, m_id_list(e->getConstructor()));
-			construct_node(ptr_op);
-			this->append_args(construct_node, e->getConstructor()->param_begin(), e->getConstructor()->param_end(),
-				e->constructor_arg_begin(), e->constructor_arg_end());
+			if (e->getConstructor() != 0)
+			{
+				node_t construct_node;
+				construct_node(node_t::ot_function, m_id_list(e->getConstructor()));
+				construct_node(ptr_op);
+				this->append_args(construct_node, e->getConstructor()->param_begin(), e->getConstructor()->param_end(),
+					e->constructor_arg_begin(), e->constructor_arg_end());
+				this->add_node(construct_node);
+			}
 
-			this->add_node(construct_node);
 			return ptr_op;
 		}
 	}

@@ -15,6 +15,9 @@
 template <typename OutputIterator>
 void get_referenced_functions(clang::Decl const * decl, OutputIterator out)
 {
+	if (!decl)
+		return;
+
 	if (clang::FunctionDecl const * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
 	{
 		clang::FunctionDecl const * bodyFnDecl;
