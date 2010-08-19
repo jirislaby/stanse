@@ -133,7 +133,7 @@ private:
 	{
 		builder(rcfg_id_list & id_list, clang::Stmt const * stmt = 0);
 
-		rcfg_node::operand add_node(rcfg_node const & node);
+		rcfg_node::operand add_node(rcfg_node node);
 
 		void build(clang::Stmt const * stmt);
 		rcfg_node::operand build_expr(clang::Expr const * expr, rcfg_node::operand const & target = rcfg_node::operand());

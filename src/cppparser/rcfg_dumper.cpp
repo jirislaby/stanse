@@ -110,8 +110,10 @@ rcfg::builder::builder(rcfg_id_list & id_list, clang::Stmt const * stmt)
 		this->build(stmt);
 }
 
-rcfg_node::operand rcfg::builder::add_node(rcfg_node const & node)
+rcfg_node::operand rcfg::builder::add_node(rcfg_node node)
 {
+	for (std::size_t i = 0; i < node.operands.size(); ++i)
+		node.operands[i] = this->make_rvalue(node.operands[i]);
 	m_nodes.push_back(node);
 	m_nodes.back().add_succ(m_nodes.size());
 	return rcfg_node::operand(rcfg_node::ot_nodeval, m_nodes.size() - 1);
@@ -142,8 +144,8 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	{
 		return this->make_deref(this->add_node(rcfg_node()
 			(rcfg_node::ot_function, m_id_list("[]"))
-			(this->build_expr(e->getLHS()))
-			(this->build_expr(e->getRHS()))));
+			(this->make_rvalue(this->build_expr(e->getLHS())))
+			(this->make_rvalue(this->build_expr(e->getRHS())))));
 	}
 	else if (clang::BinaryOperator const * e = llvm::dyn_cast<clang::BinaryOperator>(expr))
 	{
@@ -173,8 +175,8 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 				m_nodes[branch_node].succs[1].op = op_t(node_t::ot_const, m_id_list("0"));
 			
 			rcfg_node res_node(node_t::nt_phi);
-			res_node(lhs);
-			res_node(rhs);  // FIXME: rhs is not correct as it refers to a node before relocation
+			res_node(this->make_rvalue(lhs));
+			res_node(this->make_rvalue(rhs));  // FIXME: rhs is not correct as it refers to a node before relocation
 			return this->add_node(res_node);
 		}
 		else
@@ -327,7 +329,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 
 		// TODO: handle classes with conversion to pointer to fn.
 		rcfg_node node;
-		node(callee_op);
+		node(this->make_rvalue(callee_op));
 		for (std::size_t i = 0; i < params.size(); ++i)
 			node(this->make_param(params[i], param_types[i]));
 
@@ -439,7 +441,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	{
 		return this->make_deref(this->add_node(node_t()
 			(node_t::ot_member, m_id_list(e->getMemberDecl()->getQualifiedNameAsString()))
-			(this->build_expr(e->getBase()))));
+			(this->make_rvalue(this->build_expr(e->getBase())))));
 	}
 	else if (clang::ConditionalOperator const * e = llvm::dyn_cast<clang::ConditionalOperator>(expr))
 	{
@@ -457,8 +459,8 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		m_nodes[branch_node].succs.back().op = op_t(node_t::ot_const, m_id_list("0"));
 
 		rcfg_node res_node(node_t::nt_phi);
-		res_node(lhs);  // FIXME: rhs is not correct as it refers to a node before relocation
-		res_node(rhs);  // FIXME: rhs is not correct as it refers to a node before relocation
+		res_node(this->make_rvalue(lhs));  // FIXME: rhs is not correct as it refers to a node before relocation
+		res_node(this->make_rvalue(rhs));  // FIXME: rhs is not correct as it refers to a node before relocation
 		return this->add_node(res_node);
 	}
 	else if (clang::CXXThisExpr const * e = llvm::dyn_cast<clang::CXXThisExpr>(expr))
@@ -540,7 +542,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 
 		node_t node;
 		node(node_t::ot_function, m_id_list(name));
-		node(this->build_expr(e->getArgument()));
+		node(this->make_rvalue(this->build_expr(e->getArgument())));
 		node(node_t::ot_function, m_id_list(e->getOperatorDelete()));
 		return this->add_node(node);
 	}
@@ -602,7 +604,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 									this->add_node(rcfg_node()
 										(rcfg_node::ot_function, m_id_list("="))
 										(op)
-										(this->build_expr(e->getInit(i))));
+										(this->make_rvalue(this->build_expr(e->getInit(i)))));
 								}
 								else
 								{
@@ -651,7 +653,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 						this->add_node(rcfg_node()
 							(rcfg_node::ot_function, m_id_list("="))
 							(rcfg_node::ot_varptr, m_id_list(vd))
-							(this->build_expr(vd->getInit())));
+							(this->make_rvalue(this->build_expr(vd->getInit()))));
 					}
 				}
 			}
