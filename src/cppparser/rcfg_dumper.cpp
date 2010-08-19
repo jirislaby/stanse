@@ -140,10 +140,10 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 
 	if (clang::ArraySubscriptExpr const * e = llvm::dyn_cast<clang::ArraySubscriptExpr>(expr))
 	{
-		return this->add_node(rcfg_node()
+		return this->make_deref(this->add_node(rcfg_node()
 			(rcfg_node::ot_function, m_id_list("[]"))
 			(this->build_expr(e->getLHS()))
-			(this->build_expr(e->getRHS())));
+			(this->build_expr(e->getRHS()))));
 	}
 	else if (clang::BinaryOperator const * e = llvm::dyn_cast<clang::BinaryOperator>(expr))
 	{
@@ -459,6 +459,14 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	{
 		return op_t(node_t::ot_varval, m_id_list("p:this"));
 	}
+	else if (clang::CXXDefaultArgExpr const * e = llvm::dyn_cast<clang::CXXDefaultArgExpr>(expr))
+	{
+		return this->build_expr(e->getExpr());
+	}
+	else if (clang::CXXBoolLiteralExpr const * e = llvm::dyn_cast<clang::CXXBoolLiteralExpr>(expr))
+	{
+		return op_t(node_t::ot_const, m_id_list(e->getValue()? "1": "0"));
+	}
 	else
 	{
 		BOOST_ASSERT(0);
@@ -496,6 +504,70 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 							(rcfg_node::ot_function, m_id_list("="))
 							(rcfg_node::ot_varptr, m_id_list(vd))
 							(this->make_address(this->build_expr(vd->getInit()))));
+					}
+					else if (vd->getType()->isArrayType())
+					{
+						// TODO: initialization by string literal
+						if (clang::InitListExpr const * e = llvm::dyn_cast<clang::InitListExpr>(vd->getInit()))
+						{
+							clang::ArrayType const * at = llvm::dyn_cast<clang::ArrayType>(vd->getType());
+
+							// TODO: type safety, make a loop for zero initialization
+							for (std::size_t i = 0; i < e->getNumInits(); ++i)
+							{
+								op_t op = this->add_node(node_t()
+									(node_t::ot_function, m_id_list("[]"))
+									(node_t::ot_varptr, m_id_list(vd))
+									(node_t::ot_const, m_id_list(boost::lexical_cast<std::string>(i))));
+
+								if (!at->getElementType()->isStructureOrClassType())
+								{
+									this->add_node(rcfg_node()
+										(rcfg_node::ot_function, m_id_list("="))
+										(op)
+										(this->build_expr(e->getInit(i))));
+								}
+								else
+								{
+									this->build_expr(e->getInit(i), op);
+								}
+							}
+
+							if (clang::ConstantArrayType const * cat = llvm::dyn_cast<clang::ConstantArrayType>(at))
+							{
+								std::size_t bound = cat->getSize().getLimitedValue();
+								for (std::size_t i = e->getNumInits(); i < bound; ++i)
+								{
+									op_t op = this->add_node(node_t()
+										(node_t::ot_function, m_id_list("[]"))
+										(node_t::ot_varptr, m_id_list(vd))
+										(node_t::ot_const, m_id_list(boost::lexical_cast<std::string>(i))));
+
+									this->add_node(rcfg_node()
+										(rcfg_node::ot_function, m_id_list("="))
+										(op)
+										(node_t::ot_const, m_id_list("0")));
+								}
+							}
+						}
+						else
+						{
+							BOOST_ASSERT(llvm::isa<clang::CXXConstructExpr>(vd->getInit()));
+
+							// TODO: Make this a loop in the program, ensure proper exception safety
+							clang::ConstantArrayType const * at = llvm::dyn_cast<clang::ConstantArrayType>(vd->getType());
+							BOOST_ASSERT(at->getSize().getBitWidth() <= sizeof(std::size_t) * CHAR_BIT);
+							std::size_t bounds = at->getSize().getLimitedValue();
+							for (std::size_t i = 0; i < bounds; ++i)
+							{
+								op_t op = this->add_node(node_t()
+									(node_t::ot_function, m_id_list("[]"))
+									(node_t::ot_varptr, m_id_list(vd))
+									(node_t::ot_const, m_id_list(boost::lexical_cast<std::string>(i))));
+
+								this->build_expr(vd->getInit(), op);
+							}
+						}
 					}
 					else
 					{
