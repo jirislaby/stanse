@@ -31,12 +31,12 @@ final class PatternLocationCreator extends CFGvisitor {
     // public section
 
     @Override
-    public boolean visit(final CFGNode node, final org.dom4j.Element element) {
+    public boolean visit(final CFGNode node) {
         final LinkedList<Pair<XMLPattern,SimpleAutomatonID>>
             matchings = new LinkedList<Pair<XMLPattern,SimpleAutomatonID>>();
         for (XMLPattern pattern : getXMLAutomatonDefinition().getXMLpatterns()){
             final Pair<Boolean,XMLPatternVariablesAssignment>
-                matchResult = element != null? pattern.matchesXMLElement(element): new Pair<Boolean, XMLPatternVariablesAssignment>(false, null);
+                matchResult = node.getElement() != null? pattern.matchesXMLElement(node.getElement()): new Pair<Boolean, XMLPatternVariablesAssignment>(false, null);
             if (matchResult.getFirst()) {
                 final XMLPatternVariablesAssignment assign =
                         matchResult.getSecond();

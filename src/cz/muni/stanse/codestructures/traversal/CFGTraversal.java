@@ -271,7 +271,7 @@ public final class CFGTraversal {
             if (visitedNodes.contains(currentNode))
                 continue;
             visitedNodes.add(currentNode);
-            if (!visitor.visitInternal(currentNode,currentNode.getElement()))
+            if (!visitor.visitInternal(currentNode))
                 continue;
             for (CFGNode currentNodeFollower : nodeFollowers.get(currentNode))
                 nodesToVisit.insert(currentNodeFollower);

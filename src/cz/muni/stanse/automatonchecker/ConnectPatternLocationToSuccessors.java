@@ -29,7 +29,7 @@ final class ConnectPatternLocationToSuccessors extends
     // public section
 
     @Override
-    public boolean visit(final CFGNode node, final org.dom4j.Element element) {
+    public boolean visit(final CFGNode node) {
         final Pair<PatternLocation,PatternLocation> nodeLocationsPair =
             getNodeLocationsDictionary().get(node);
 
