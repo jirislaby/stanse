@@ -5,6 +5,7 @@
 
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/Expr.h>
+#include <clang/AST/ExprCXX.h>
 
 #include <boost/assert.hpp>
 
@@ -16,8 +17,9 @@ void get_referenced_functions(clang::Decl const * decl, OutputIterator out)
 {
 	if (clang::FunctionDecl const * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
 	{
-		if (fnDecl->isThisDeclarationADefinition())
-			*out++ = fnDecl;
+		clang::FunctionDecl const * bodyFnDecl;
+		if (fnDecl->hasBody(bodyFnDecl))
+			*out++ = bodyFnDecl;
 	}
 }
 
@@ -35,9 +37,14 @@ void get_referenced_functions(clang::Stmt const * stmt, OutputIterator out)
 		if (*ci != 0)
 			get_referenced_functions(*ci, out);
 	}
+
 	if (clang::MemberExpr const * memberExpr = dyn_cast<clang::MemberExpr>(stmt))
 	{
 		get_referenced_functions(memberExpr->getMemberDecl(), out);
+	}
+	else if (clang::CXXConstructExpr const * e = llvm::dyn_cast<clang::CXXConstructExpr>(stmt))
+	{
+		get_referenced_functions(e->getConstructor(), out);
 	}
 }
 
