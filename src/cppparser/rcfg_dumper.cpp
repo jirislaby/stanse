@@ -216,13 +216,14 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	}
 	else if (clang::CallExpr const * e = llvm::dyn_cast<clang::CallExpr>(expr))
 	{
-		// There are three possibilities.
-		//  1. The expression type is clang::CXXMemberCallExpr. Then the callee is either
+		// There are several possibilities.
+		//  1. The call is a call to an overloaded operator.
+		//  2. The expression type is clang::CXXMemberCallExpr. Then the callee is either
 		//    a. clang::MemberExpr and the type of the function can be determined from the
 		//       member declaration (remember there is an implicit `this` parameter), or
 		//    b. clang::BinaryOperator, with either PtrMemD or PtrMemI; the type of
 		//       the parameters can be extracted from the rhs operand.
-		//  2. This is a normal invocation, in which case the type of the callee is a pointer to function,
+		//  3. This is a normal invocation, in which case the type of the callee is a pointer to function,
 		//     the types of parameters can be extracted from there.
 		//
 		// Additionally, there can be an implicit parameter representing the return value
@@ -231,10 +232,30 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		opd_t callee_op;
 		std::vector<opd_t> params;
 		std::vector<clang::Type const *> param_types;
-
 		clang::FunctionProtoType const * fntype;
+		std::size_t arg_index = 0;
+		if (llvm::isa<clang::CXXOperatorCallExpr>(e))
+		{
+			BOOST_ASSERT(e->getDirectCallee() != 0);
+			if (clang::CXXMethodDecl const * md = llvm::dyn_cast<clang::CXXMethodDecl>(e->getDirectCallee()))
+			{
+				opd_t this_op = this->build_expr(e->getArg(arg_index++));
+				this_op = this->make_address(this_op);
+				params.push_back(this_op);
 
-		if (llvm::isa<clang::CXXMemberCallExpr>(e))
+				param_types.push_back(
+					md->getThisType(md->getASTContext()).getTypePtr());
+
+				callee_op = opd_t(rcfg_node::ot_function, m_id_list(md));
+				fntype = llvm::dyn_cast<clang::FunctionProtoType>(md->getType().getTypePtr());
+			}
+			else
+			{
+				callee_op = this->build_expr(e->getCallee());
+				fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getCallee()->getType()->getPointeeType());
+			}
+		}
+		else if (llvm::isa<clang::CXXMemberCallExpr>(e))
 		{
 			if (clang::MemberExpr const * mcallee = llvm::dyn_cast<clang::MemberExpr>(e->getCallee()))
 			{
@@ -290,11 +311,11 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 			result_op = opd_t(rcfg_node::ot_varval, classres);
 		}
 
-		BOOST_ASSERT(fntype->getNumArgs() == e->getNumArgs());
+		BOOST_ASSERT(fntype->getNumArgs() + arg_index == e->getNumArgs());
 
 		for (std::size_t i = 0; i < fntype->getNumArgs(); ++i)
 		{
-			params.push_back(this->build_expr(e->getArg(i)));
+			params.push_back(this->build_expr(e->getArg(i + arg_index)));
 			param_types.push_back(fntype->getArgType(i).getTypePtr());
 		}
 
