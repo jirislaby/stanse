@@ -1084,7 +1084,7 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 
 	out << "<rcfg name=\"";
 	p.xml_print_decl_name(&m_fn);
-	out << "\" startnode=\"0\" endnode=\"" << m_nodes.size() << "\">";
+	out << "\" startnode=\"0\" endnode=\"" << m_nodes.size() - 1 << "\">";
 
 	out << "<locals>";
 	for (std::size_t i = 0; i < m_id_list.locals().size(); ++i)
@@ -1097,7 +1097,7 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 		BOOST_ASSERT(node.break_type == rcfg_node::bt_none);
 
 		static char const * operand_type_names[] = { "none", "function", "member", "const", "varptr", "varval", "vartgt", "nodeval", "nodetgt" };
-		static char const * node_type_names[] = { "none", "call", "value", "phi" };
+		static char const * node_type_names[] = { "none", "call", "exit", "value", "phi" };
 
 		if (node.sl.isValid())
 		{
@@ -1162,9 +1162,12 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 
 		out << "</node>";
 	}
-	out << "<node id=\"" << m_nodes.size() << "\"><ast>";
+
+	out << "</rcfg>";
+
+	/*out << "<node id=\"" << m_nodes.size() << "\"><ast>";
 	p.xml_print_tag("exit", m_fn.getSourceRange().getEnd(), "/");
-	out << "</ast></node></rcfg>";
+	out << "</ast></node></rcfg>";*/
 }
 
 void rcfg::print_op(std::ostream & out, op_t op) const
@@ -1220,6 +1223,9 @@ void rcfg::pretty_print(std::ostream & out, clang::SourceManager const * sm) con
 			break;
 		case node_t::nt_call:
 			out << "nt_call ";
+			break;
+		case node_t::nt_exit:
+			out << "nt_exit ";
 			break;
 		case node_t::nt_value:
 			out << "nt_value ";

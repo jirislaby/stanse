@@ -24,7 +24,7 @@ public class CFGNode {
     private List<CFGNode> optPreds = new ArrayList<CFGNode>();
     private List<CFGNode> optSuccs = new ArrayList<CFGNode>();
 
-    public enum NodeType { none, call, value, phi };
+    public enum NodeType { none, call, exit, value, phi };
     public enum OperandType { none, operator, function, member, constant, varptr, varval, nodeval };
 
     public static class Operand {
@@ -168,6 +168,8 @@ public class CFGNode {
 	    this.nodeType = NodeType.call;
 	else if (nodeType.equals("value"))
 	    this.nodeType = NodeType.value;
+	else if (nodeType.equals("exit"))
+	    this.nodeType = NodeType.exit;
 	else if (nodeType.equals("phi"))
 	    this.nodeType = NodeType.phi;
 	else

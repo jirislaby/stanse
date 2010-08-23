@@ -14,7 +14,7 @@
 struct rcfg_node
 {
 	enum operand_type { ot_none, ot_function, ot_member, ot_const, ot_varptr, ot_varval, ot_vartgt, ot_nodeval, ot_nodetgt };
-	enum node_type { nt_none, nt_call, nt_value, nt_phi };
+	enum node_type { nt_none, nt_call, nt_exit, nt_value, nt_phi };
 
 	struct operand
 	{
