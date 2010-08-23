@@ -89,19 +89,19 @@ public final class InterproceduralCFGsNavigator implements CFGsNavigator {
         }
     }
 
-    private final void fillDictionaries(final CFGNode node,
-            final CFGHandle cfg) {
-        getCallToStart().put(node,cfg.getStartNode());
+    private final void fillDictionaries(final CFGNode callSite,
+            final CFGHandle callee) {
+        getCallToStart().put(callSite,callee.getStartNode());
 
-        getCallToEnd().put(node,cfg.getEndNode());
+        getCallToEnd().put(callSite,callee.getEndNode());
 
-        if (!getBeginings().containsKey(cfg.getStartNode()))
-            getBeginings().put(cfg.getStartNode(),new HashSet<CFGNode>());
-        getBeginings().get(cfg.getStartNode()).add(node);
+        if (!getBeginings().containsKey(callee.getStartNode()))
+            getBeginings().put(callee.getStartNode(),new HashSet<CFGNode>());
+        getBeginings().get(callee.getStartNode()).add(callSite);
 
-        if (!getEndings().containsKey(cfg.getEndNode()))
-            getEndings().put(cfg.getEndNode(),new HashSet<CFGNode>());
-        getEndings().get(cfg.getEndNode()).add(node);
+        if (!getEndings().containsKey(callee.getEndNode()))
+            getEndings().put(callee.getEndNode(),new HashSet<CFGNode>());
+        getEndings().get(callee.getEndNode()).add(callSite);
     }
 
     private final HashMap<CFGNode,CFGNode> getCallToStart() {
