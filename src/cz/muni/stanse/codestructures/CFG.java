@@ -106,18 +106,13 @@ public class CFG extends CFGPart {
 	    return false;
 	}
 	final CFG other = (CFG)obj;
-	if (this.functionDefinition != other.functionDefinition &&
-		(this.functionDefinition == null ||
-		 !this.functionDefinition.equals(other.functionDefinition))) {
-	    return false;
-	}
-	return true;
+	return this.functionName.equals(other.functionName);
     }
 
     @Override
     public int hashCode() {
 	int hash = super.hashCode();
-	hash = 23 * hash + functionDefinition.hashCode();
+	hash = 23 * hash + functionName.hashCode();
 	return hash;
     }
 
