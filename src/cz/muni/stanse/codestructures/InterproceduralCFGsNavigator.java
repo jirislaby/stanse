@@ -80,7 +80,7 @@ public final class InterproceduralCFGsNavigator implements CFGsNavigator {
                 new CFGvisitor() {
                     @Override
                     public boolean visit(final CFGNode node) {
-                        final CFGHandle calleeCFG = cfgDict.get(node.getElement());
+                        final CFGHandle calleeCFG = cfgDict.get(node);
                         if (calleeCFG != null)
                             fillDictionaries(node,calleeCFG);
                         return true;
