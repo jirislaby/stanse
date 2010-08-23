@@ -199,15 +199,11 @@ public final class CppUnit extends Unit {
 		}
 	    }
 
-	    CFGPart cfgpart = new CFGPart();
-	    cfgpart.setStartNode(nodes.get(Integer.parseInt(elem
-		    .attributeValue("startnode"))));
-	    cfgpart.setEndNode(nodes.get(Integer.parseInt(elem
-		    .attributeValue("endnode"))));
-
-	    String xpath = "//functionDefinition[@name='" + cfgname + "']";
-	    Element fnDef = (Element) xmlDocument.selectSingleNode(xpath);
-	    CFG cfg = CFG.createFromCFGPart(cfgpart, fnDef);
+	    CFG cfg = new CFG(
+		    nodes.get(Integer.parseInt(elem.attributeValue("startnode"))),
+		    nodes.get(Integer.parseInt(elem.attributeValue("endnode"))),
+		    cfgname
+		    );
 	    cfg.setSymbols(locals);
 	    cfg.setParams(params);
 	    CFGs.add(cfg);

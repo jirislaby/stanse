@@ -38,6 +38,13 @@ public class CFG extends CFGPart {
 	return cfg;
     }
 
+    public CFG(CFGNode startNode, CFGNode endNode, String functionName) {
+	super();
+	this.functionName = functionName;
+	this.setStartNode(startNode);
+	this.setEndNode(endNode);
+    }
+
     /**
      * Creates a new instance of CFG
      *
