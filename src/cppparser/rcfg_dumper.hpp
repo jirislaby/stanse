@@ -45,18 +45,19 @@ struct rcfg_node
 	};
 
 	clang::Stmt const * stmt;
+	clang::SourceLocation sl;
 	node_type type;
 	std::vector<operand> operands;
 	std::vector<succ> succs;
 	enum break_type_t { bt_none, bt_break, bt_continue, bt_return, bt_goto } break_type;
 
-	rcfg_node(node_type type, clang::Stmt const * stmt = 0)
-		: stmt(stmt), type(type), break_type(bt_none)
+	rcfg_node(node_type type, clang::SourceLocation sl, clang::Stmt const * stmt = 0)
+		: stmt(stmt), sl(sl), type(type), break_type(bt_none)
 	{
 	}
 
-	rcfg_node(clang::Stmt const * stmt = 0)
-		: stmt(stmt), type(nt_call), break_type(bt_none)
+	explicit rcfg_node(clang::SourceLocation sl, clang::Stmt const * stmt = 0)
+		: stmt(stmt), sl(sl), type(nt_call), break_type(bt_none)
 	{
 	}
 

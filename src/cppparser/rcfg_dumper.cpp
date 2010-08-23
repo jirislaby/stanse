@@ -142,7 +142,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 
 	if (clang::ArraySubscriptExpr const * e = llvm::dyn_cast<clang::ArraySubscriptExpr>(expr))
 	{
-		return this->make_deref(this->add_node(rcfg_node()
+		return this->make_deref(this->add_node(rcfg_node(e->getExprLoc())
 			(rcfg_node::ot_function, m_id_list("[]"))
 			(this->make_rvalue(this->build_expr(e->getLHS())))
 			(this->make_rvalue(this->build_expr(e->getRHS())))));
@@ -153,7 +153,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		if (e->isAssignmentOp() || e->isCompoundAssignmentOp())
 		{
 			op_t lhs = this->build_expr(e->getLHS());
-			this->add_node(rcfg_node()
+			this->add_node(rcfg_node(e->getExprLoc())
 				(rcfg_node::ot_function, m_id_list(clang::BinaryOperator::getOpcodeStr(e->getOpcode())))
 				(this->make_address(lhs))
 				(this->make_rvalue(this->build_expr(e->getRHS()))));
@@ -174,14 +174,14 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 			else
 				m_nodes[branch_node].succs[1].op = op_t(node_t::ot_const, m_id_list("0"));
 			
-			rcfg_node res_node(node_t::nt_phi);
+			rcfg_node res_node(node_t::nt_phi, e->getExprLoc());
 			res_node(this->make_rvalue(lhs));
 			res_node(this->make_rvalue(rhs));  // FIXME: rhs is not correct as it refers to a node before relocation
 			return this->add_node(res_node);
 		}
 		else
 		{
-			return this->add_node(rcfg_node()
+			return this->add_node(rcfg_node(e->getExprLoc())
 				(rcfg_node::ot_function, m_id_list(clang::BinaryOperator::getOpcodeStr(e->getOpcode())))
 				(this->make_rvalue(this->build_expr(e->getLHS())))
 				(this->make_rvalue(this->build_expr(e->getRHS()))));
@@ -199,7 +199,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		}
 		else
 		{
-			return this->add_node(rcfg_node()
+			return this->add_node(rcfg_node(e->getExprLoc())
 				(rcfg_node::ot_function, m_id_list(clang::UnaryOperator::getOpcodeStr(e->getOpcode())))
 				(this->build_expr(e->getSubExpr())));
 		}
@@ -328,7 +328,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		}
 
 		// TODO: handle classes with conversion to pointer to fn.
-		rcfg_node node;
+		rcfg_node node(e->getExprLoc());
 		node(this->make_rvalue(callee_op));
 		for (std::size_t i = 0; i < params.size(); ++i)
 			node(this->make_param(params[i], param_types[i]));
@@ -406,7 +406,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	else if (clang::CXXConstructExpr const * e = llvm::dyn_cast<clang::CXXConstructExpr>(expr))
 	{
 		// TODO: proper conversion
-		rcfg_node node;
+		rcfg_node node(e->getExprLoc());
 		node(rcfg_node::ot_function, m_id_list(e->getConstructor()));
 
 		clang::FunctionProtoType const * fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getConstructor()->getType().getTypePtr());
@@ -439,7 +439,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	}
 	else if (clang::MemberExpr const * e = llvm::dyn_cast<clang::MemberExpr>(expr))
 	{
-		return this->make_deref(this->add_node(node_t()
+		return this->make_deref(this->add_node(node_t(e->getExprLoc())
 			(node_t::ot_member, m_id_list(e->getMemberDecl()->getQualifiedNameAsString()))
 			(this->make_rvalue(this->build_expr(e->getBase())))));
 	}
@@ -458,7 +458,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		this->append_edge(lhs_cfg, branch_node, m_nodes.size());
 		m_nodes[branch_node].succs.back().op = op_t(node_t::ot_const, m_id_list("0"));
 
-		rcfg_node res_node(node_t::nt_phi);
+		rcfg_node res_node(node_t::nt_phi, e->getExprLoc());
 		res_node(this->make_rvalue(lhs));  // FIXME: rhs is not correct as it refers to a node before relocation
 		res_node(this->make_rvalue(rhs));  // FIXME: rhs is not correct as it refers to a node before relocation
 		return this->add_node(res_node);
@@ -492,7 +492,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	{
 		if (e->isArray())
 		{
-			node_t node;
+			node_t node(e->getExprLoc());
 			node(node_t::ot_function, m_id_list("cxx:new[]"));
 			node(node_t::ot_function, m_id_list(e->getOperatorNew()));
 			node(node_t::ot_function, m_id_list(e->getConstructor()));
@@ -509,7 +509,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		{
 			// TODO: exception safety
 
-			node_t opnew_node;
+			node_t opnew_node(e->getExprLoc());
 			opnew_node(node_t::ot_function, m_id_list(e->getOperatorNew()));
 			opnew_node(node_t::ot_const, m_id_list("sizeof:" + e->getAllocatedType().getAsString()));
 			this->append_args(
@@ -521,7 +521,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 
 			if (e->getConstructor() != 0)
 			{
-				node_t construct_node;
+				node_t construct_node(e->getExprLoc());
 				construct_node(node_t::ot_function, m_id_list(e->getConstructor()));
 				construct_node(ptr_op);
 				this->append_args(construct_node, e->getConstructor()->param_begin(), e->getConstructor()->param_end(),
@@ -540,7 +540,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		//BOOST_ASSERT(llvm::isa<clang::PointerType>(e->getArgument()->getType()));
 		//name += e->getArgument()->getType().getAsString();//->getPointeeType()->getCanonicalTypeInternal().getAsString();
 
-		node_t node;
+		node_t node(e->getExprLoc());
 		node(node_t::ot_function, m_id_list(name));
 		node(this->make_rvalue(this->build_expr(e->getArgument())));
 		node(node_t::ot_function, m_id_list(e->getOperatorDelete()));
@@ -561,7 +561,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 
 	if (llvm::isa<clang::AsmStmt>(stmt) || llvm::isa<clang::NullStmt>(stmt))
 	{
-		m_nodes.push_back(stmt);
+		m_nodes.push_back(node_t(stmt->getLocStart()));
 		m_nodes[0].succs.push_back(1);
 	}
 	else if (clang::DeclStmt const * s = llvm::dyn_cast<clang::DeclStmt>(stmt))
@@ -579,7 +579,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 					}
 					else if (vd->getType()->isReferenceType())
 					{
-						this->add_node(rcfg_node()
+						this->add_node(rcfg_node(stmt->getLocStart())
 							(rcfg_node::ot_function, m_id_list("="))
 							(rcfg_node::ot_varptr, m_id_list(vd))
 							(this->make_address(this->build_expr(vd->getInit()))));
@@ -594,14 +594,14 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 							// TODO: type safety, make a loop for zero initialization
 							for (std::size_t i = 0; i < e->getNumInits(); ++i)
 							{
-								op_t op = this->add_node(node_t()
+								op_t op = this->add_node(node_t(stmt->getLocStart())
 									(node_t::ot_function, m_id_list("[]"))
 									(node_t::ot_varptr, m_id_list(vd))
 									(node_t::ot_const, m_id_list(boost::lexical_cast<std::string>(i))));
 
 								if (!at->getElementType()->isStructureOrClassType())
 								{
-									this->add_node(rcfg_node()
+									this->add_node(rcfg_node(stmt->getLocStart())
 										(rcfg_node::ot_function, m_id_list("="))
 										(op)
 										(this->make_rvalue(this->build_expr(e->getInit(i)))));
@@ -617,12 +617,12 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 								std::size_t bound = cat->getSize().getLimitedValue();
 								for (std::size_t i = e->getNumInits(); i < bound; ++i)
 								{
-									op_t op = this->add_node(node_t()
+									op_t op = this->add_node(node_t(stmt->getLocStart())
 										(node_t::ot_function, m_id_list("[]"))
 										(node_t::ot_varptr, m_id_list(vd))
 										(node_t::ot_const, m_id_list(boost::lexical_cast<std::string>(i))));
 
-									this->add_node(rcfg_node()
+									this->add_node(rcfg_node(stmt->getLocStart())
 										(rcfg_node::ot_function, m_id_list("="))
 										(op)
 										(node_t::ot_const, m_id_list("0")));
@@ -639,7 +639,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 							std::size_t bounds = at->getSize().getLimitedValue();
 							for (std::size_t i = 0; i < bounds; ++i)
 							{
-								op_t op = this->add_node(node_t()
+								op_t op = this->add_node(node_t(stmt->getLocStart())
 									(node_t::ot_function, m_id_list("[]"))
 									(node_t::ot_varptr, m_id_list(vd))
 									(node_t::ot_const, m_id_list(boost::lexical_cast<std::string>(i))));
@@ -650,7 +650,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 					}
 					else
 					{
-						this->add_node(rcfg_node()
+						this->add_node(rcfg_node(stmt->getLocStart())
 							(rcfg_node::ot_function, m_id_list("="))
 							(rcfg_node::ot_varptr, m_id_list(vd))
 							(this->make_rvalue(this->build_expr(vd->getInit()))));
@@ -665,7 +665,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 	{
 		rcfg_node::operand op = this->build_expr(s);
 		if (op.type != rcfg_node::ot_nodeval && op.type != rcfg_node::ot_nodetgt)
-			this->add_node(rcfg_node(node_t::nt_value, s)(op));
+			this->add_node(rcfg_node(node_t::nt_value, stmt->getLocStart(), s)(op));
 		else
 			m_nodes[op.id].stmt = s;
 	}
@@ -698,7 +698,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 				if (m_id_list.fn().getResultType().getTypePtr()->isReferenceType())
 					retval = this->make_address(retval);
 
-				this->add_node(rcfg_node()
+				this->add_node(rcfg_node(stmt->getLocStart())
 					(rcfg_node::ot_function, m_id_list("="))
 					(rcfg_node::ot_varptr, m_id_list("r:"))
 					(this->make_rvalue(retval)));
@@ -708,24 +708,24 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 			m_nodes.back().stmt = stmt;		}
 		else
 		{
-			m_nodes.push_back(stmt);
+			this->add_node(node_t(node_t::nt_none, stmt->getLocStart(), stmt));
 		}
 
 		m_nodes.back().break_type = rcfg_node::bt_return;
 	}
 	else if (isa<clang::BreakStmt>(stmt))
 	{
-		m_nodes.push_back(stmt);
+		this->add_node(node_t(node_t::nt_none, stmt->getLocStart(), stmt));
 		m_nodes[0].break_type = rcfg_node::bt_break;
 	}
 	else if (isa<clang::ContinueStmt>(stmt))
 	{
-		m_nodes.push_back(stmt);
+		this->add_node(node_t(node_t::nt_none, stmt->getLocStart(), stmt));
 		m_nodes[0].break_type = rcfg_node::bt_continue;
 	}
 	else if (isa<clang::GotoStmt>(stmt))
 	{
-		m_nodes.push_back(stmt);
+		this->add_node(node_t(node_t::nt_none, stmt->getLocStart(), stmt));
 		m_nodes[0].break_type = rcfg_node::bt_goto;
 	}
 	else if (clang::CompoundStmt const * s = llvm::dyn_cast<clang::CompoundStmt>(stmt))
@@ -766,7 +766,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 	}
 	else if (clang::WhileStmt const * s = llvm::dyn_cast<clang::WhileStmt>(stmt))
 	{
-		m_nodes.push_back(rcfg_node(s->getCond()));
+		m_nodes.push_back(rcfg_node(stmt->getLocStart(), s->getCond()));
 		this->append_edge(s->getBody(), 0, 0);
 		m_nodes[0].succs.push_back(m_nodes.size());
 
@@ -776,7 +776,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 	else if (clang::DoStmt const * s = llvm::dyn_cast<clang::DoStmt>(stmt))
 	{
 		this->build(s->getBody());
-		m_nodes.push_back(rcfg_node(s->getCond()));
+		m_nodes.push_back(rcfg_node(stmt->getLocStart(), s->getCond()));
 		m_nodes[0].succs.push_back(0);
 		m_nodes[0].succs.push_back(m_nodes.size());
 
@@ -811,7 +811,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 		loop_cfg.fix(rcfg_node::bt_break, loop_cfg.m_nodes.size());
 
 		if (s->getInit())
-			m_nodes.push_back(s->getInit());
+			m_nodes.push_back(node_t(stmt->getLocStart(), s->getInit()));
 		this->append(loop_cfg);
 	}
 	else if (clang::CXXTryStmt const * s = llvm::dyn_cast<clang::CXXTryStmt>(stmt))
@@ -1010,7 +1010,7 @@ rcfg_node::operand rcfg::builder::make_rvalue(rcfg_node::operand var)
 	if (var.type == rcfg_node::ot_vartgt)
 	{
 		var.type = rcfg_node::ot_varval;
-		return this->add_node(rcfg_node()
+		return this->add_node(rcfg_node(clang::SourceLocation())
 			(rcfg_node::ot_function, m_id_list("*"))
 			(var));
 	}
@@ -1018,7 +1018,7 @@ rcfg_node::operand rcfg::builder::make_rvalue(rcfg_node::operand var)
 	if (var.type == rcfg_node::ot_nodetgt)
 	{
 		var.type = rcfg_node::ot_nodeval;
-		return this->add_node(rcfg_node()
+		return this->add_node(rcfg_node(clang::SourceLocation())
 			(rcfg_node::ot_function, m_id_list("*"))
 			(var));
 	}
@@ -1036,7 +1036,7 @@ std::size_t rcfg::builder::make_node(rcfg_node::operand const & var)
 
 	case rcfg_node::ot_varval:
 	case rcfg_node::ot_varptr:
-		return this->add_node(rcfg_node(node_t::nt_value)(rv)).id;
+		return this->add_node(rcfg_node(node_t::nt_value, clang::SourceLocation())(rv)).id;
 
 	default:
 		BOOST_ASSERT(0);
@@ -1060,7 +1060,7 @@ rcfg_node::operand rcfg::builder::make_temporary(rcfg_node::operand op)
 
 void rcfg::builder::construct_object(op_t dest, op_t val)
 {
-	node_t node;
+	node_t node((clang::SourceLocation()));
 	node(node_t::ot_function, m_id_list("="));
 	node(dest);
 	node(val);
@@ -1074,6 +1074,7 @@ rcfg::rcfg(clang::FunctionDecl const & fn)
 	builder b(m_id_list, fn.getBody());
 	b.fix_function();
 	m_nodes = b.m_nodes;
+	m_nodes.push_back(node_t(node_t::nt_exit, fn.getSourceRange().getEnd()));
 }
 
 void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
@@ -1097,7 +1098,16 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 		static char const * operand_type_names[] = { "none", "function", "member", "const", "varptr", "varval", "vartgt", "nodeval", "nodetgt" };
 		static char const * node_type_names[] = { "none", "call", "value", "phi" };
 
-		out << "<node id=\"" << i << "\" type=\"" << node_type_names[node.type] << "\">";
+		if (node.sl.isValid())
+		{
+			out << "<node id=\"" << i << "\" type=\"" << node_type_names[node.type]
+				<< "\" line=\"" << sm->getInstantiationLineNumber(node.sl) << "\" column=\"" << sm->getInstantiationColumnNumber(node.sl) << "\">";
+		}
+		else
+		{
+			out << "<node id=\"" << i << "\" type=\"" << node_type_names[node.type] << "\">";
+		}
+
 		for (std::size_t j = 0; j < node.operands.size(); ++j)
 		{
 			switch (node.operands[j].type)
