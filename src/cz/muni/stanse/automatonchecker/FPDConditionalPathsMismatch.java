@@ -40,7 +40,7 @@ final class FPDConditionalPathsMismatch extends FalsePositivesDetector {
         if (node.getPredecessors().size() != 1)
             return null;
         final Element assertElem = node.getPredecessors().get(0).getElement();
-        if (!assertElem.getName().equals("assert"))
+        if (assertElem == null || !assertElem.getName().equals("assert"))
             return null;
         return (Element)assertElem.elements().get(0);
     }
