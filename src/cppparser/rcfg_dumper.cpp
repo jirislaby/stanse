@@ -705,7 +705,8 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 			}
 
 			m_nodes.back().succs.pop_back();
-			m_nodes.back().stmt = stmt;		}
+			m_nodes.back().stmt = stmt;
+		}
 		else
 		{
 			this->add_node(node_t(node_t::nt_none, stmt->getLocStart(), stmt));
