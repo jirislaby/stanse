@@ -960,19 +960,6 @@ void rcfg::builder::append_edge(builder const & nested, std::size_t source_node,
 	this->merge_labels(nested, old_size);
 }
 
-rcfg_node::operand rcfg::builder::access_var(clang::ValueDecl const * decl)
-{
-	// TODO: canonical?
-	if (decl->getType()->isReferenceType())
-	{
-		return this->add_node(rcfg_node()
-			(rcfg_node::ot_function, m_id_list("*"))
-			(rcfg_node::ot_varval, m_id_list(decl)));
-	}
-
-	return rcfg_node::operand(rcfg_node::ot_varval, m_id_list(decl));
-}
-
 rcfg_node::operand rcfg::builder::make_deref(rcfg_node::operand var)
 {
 	var = this->make_rvalue(var);

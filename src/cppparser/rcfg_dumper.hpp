@@ -137,8 +137,6 @@ private:
 
 		void build(clang::Stmt const * stmt);
 		rcfg_node::operand build_expr(clang::Expr const * expr, rcfg_node::operand const & target = rcfg_node::operand());
-		rcfg_node::operand access_var(clang::ValueDecl const * decl);
-		rcfg_node::operand deref_var(rcfg_node::operand var);
 
 		rcfg_node::operand make_address(rcfg_node::operand var);
 		rcfg_node::operand make_deref(rcfg_node::operand var);
