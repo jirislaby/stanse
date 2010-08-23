@@ -157,6 +157,10 @@ public final class CppUnit extends Unit {
 		if (nodeType != null)
 		    newnode.setNodeType(nodeType);
 
+		if (node.attributeValue("line") != null) {
+		    newnode.setLocation(Integer.parseInt(node.attributeValue("line")), Integer.parseInt(node.attributeValue("column")));
+		}
+
 		String nodeid = node.attributeValue("id");
 		nodes.put(Integer.parseInt(nodeid), newnode);
 	    }

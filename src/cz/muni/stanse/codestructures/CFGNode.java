@@ -61,6 +61,8 @@ public class CFGNode {
 
     NodeType nodeType = NodeType.none;
     List<Operand> operands = new ArrayList<Operand>();
+    int line = -1;
+    int column = 1;
 
     /**
      * Creates a new instance of CFGNode
@@ -94,20 +96,21 @@ public class CFGNode {
 	return element;
     }
 
+    public void setLocation(int line, int column) {
+	this.line = line;
+	this.column = column;
+    }
+
     public boolean hasLocation() {
-	return getElement() != null && getElement().attribute("bl") != null;
+	return line >= 0;
     }
 
     public final int getColumn() {
-	if (getElement() == null || getElement().attribute("bc") == null)
-	    return 1;
-        return Integer.parseInt(getElement().attributeValue("bc"));
+	return column;
     }
 
     public final int getLine() {
-	if (getElement() == null || getElement().attribute("bl") == null)
-	    return 1;
-        return Integer.parseInt(getElement().attributeValue("bl"));
+	return line;
     }
 
     /**

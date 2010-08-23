@@ -116,7 +116,7 @@ public class CFGPart {
      * Returns all nodes in this CFG
      * @return list of all nodes
      */
-    protected Set<CFGNode> getAllNodes() {
+    public Set<CFGNode> getAllNodes() {
 	return getAllNodes(false);
     }
 
@@ -124,7 +124,7 @@ public class CFGPart {
      * Returns all nodes in this CFG including optimized ones
      * @return list of all nodes
      */
-    protected Set<CFGNode> getAllNodesOpt() {
+    public Set<CFGNode> getAllNodesOpt() {
 	return getAllNodes(true);
     }
 

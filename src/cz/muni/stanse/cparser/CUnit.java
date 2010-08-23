@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
 import org.antlr.runtime.tree.RewriteCardinalityException;
 
 import cz.muni.stanse.Stanse;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.codestructures.CFG;
@@ -118,7 +120,20 @@ public final class CUnit extends Unit {
 	try {
 	    CFGs = cfgEmitter.translationUnit();
 	    for (CFG cfg: CFGs)
+	    {
+		for (CFGNode node : cfg.getAllNodesOpt()) {
+		    assert node.getElement() != null;
+		    int line = 1;
+		    int column = 1;
+		    if (node.getElement().attribute("bl") != null)
+			line = Integer.parseInt(node.getElement().attributeValue("bl"));
+		    if (node.getElement().attribute("bc") != null)
+			column = Integer.parseInt(node.getElement().attributeValue("bc"));
+		    node.setLocation(line, column);
+		}
+
 		CFGHs.add(new CFGHandle(this, cfg));
+	    }
 	} catch (RecognitionException e) {
 	    throw new ParserException("CFGEmitter", e);
 	}
