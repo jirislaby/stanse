@@ -8,6 +8,7 @@
  */
 package cz.muni.stanse.utils.xmlpatterns;
 
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Pair;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +72,59 @@ public final class XMLPattern {
     }
 
     public Pair<Boolean,XMLPatternVariablesAssignment>
+    matchesNode(final CFGNode node) {
+	Element xmlPivot = getPatternXMLelement();
+        if (xmlPivot.getName().equals("node")) {
+            return matchesNode(node, getPatternXMLelement());
+        } else if (node.getElement() != null)
+            return matchesXMLElement(node.getElement());
+        else
+            return Pair.make(false, null);
+    }
+
+    private Pair<Boolean,XMLPatternVariablesAssignment>
+    matchesNode(final CFGNode node, Element xmlPivot) {
+	if (!node.getNodeType().toString().equals(xmlPivot.attributeValue("type")))
+	    return Pair.make(false, null);
+
+	Iterator<Element> i = xmlPivot.elementIterator();
+	Iterator<CFGNode.Operand> j = node.getOperands().iterator();
+	while (i.hasNext() && j.hasNext()) {
+	    Element elem = i.next();
+
+	    if (elem.getName().equals("any"))
+		return Pair.make(true, new XMLPatternVariablesAssignment());
+
+	    CFGNode.Operand op = j.next();
+
+	    if (elem.getName().equals("ignore"))
+		continue;
+
+	    if (!op.type.toString().equals(elem.getName()))
+		return Pair.make(false, null);
+
+	    // TODO: handle <var> tags
+
+	    if (op.type == CFGNode.OperandType.nodeval) {
+		Pair<Boolean, XMLPatternVariablesAssignment> nested = matchesNode((CFGNode)op.id, elem);
+		if (!nested.getFirst())
+		    return nested;
+		// TODO: merge the resulting assignment
+	    } else {
+		if (!op.id.toString().equals(elem.getText()))
+		    return Pair.make(false, null);
+	    }
+	}
+
+	if (i.hasNext() || j.hasNext())
+	    return Pair.make(false, null);
+
+	return Pair.make(true, new XMLPatternVariablesAssignment());
+    }
+
+    public Pair<Boolean,XMLPatternVariablesAssignment>
     matchesXMLElement(final Element XMLelement) {
+        assert XMLelement != null;
         final XMLPatternVariablesAssignment varsAssignment =
                 new XMLPatternVariablesAssignment();
         return new Pair<Boolean,XMLPatternVariablesAssignment>(
