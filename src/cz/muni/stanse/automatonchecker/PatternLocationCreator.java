@@ -1,6 +1,6 @@
 /**
  * @file .java
- * @brief 
+ * @brief
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *
@@ -113,7 +113,7 @@ final class PatternLocationCreator extends CFGvisitor {
                                                        item.getSecond()));
         return transitionRules;
     }
-    
+
     private LinkedList<ErrorRule> createErrorRules(
                final LinkedList<Pair<XMLPattern,SimpleAutomatonID>> matchings) {
         final LinkedList<ErrorRule> errorRules = new LinkedList<ErrorRule>();

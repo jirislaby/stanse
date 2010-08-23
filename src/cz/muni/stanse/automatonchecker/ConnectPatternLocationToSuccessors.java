@@ -2,7 +2,7 @@
  * @file ConnectPatternLocationToSuccessors.java
  * @brief Implements final class ConnectPatternLocationToSuccessors which is
  *        responsible for creating connections between PatternLocation instances
- *        with respect to control-flow of source code.  
+ *        with respect to control-flow of source code.
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *
@@ -19,7 +19,7 @@ import java.util.HashMap;
  * @brief Instances are responsible for creating connections between
  *        PatternLocation instances with respect to control-flow of source code.
  *
- * 
+ *
  *
  * @see cz.muni.stanse.utils.CFGvisitor
  */
@@ -59,12 +59,12 @@ final class ConnectPatternLocationToSuccessors extends
     // private section
 
     private PatternLocation getReferenceLocation() {
-        return referenceLocation; 
+        return referenceLocation;
     }
 
     private HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
     getNodeLocationsDictionary() {
-        return nodeLocationsDictionary; 
+        return nodeLocationsDictionary;
     }
 
     private PatternLocation referenceLocation;

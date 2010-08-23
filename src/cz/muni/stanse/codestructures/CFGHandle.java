@@ -65,7 +65,7 @@ public class CFGHandle {
     public boolean isSymbolLocal(String symbol) {
         return getCFG().isSymbolLocal(symbol);
     }
-    
+
     public Set<String> getSymbols() {
     	return getCFG().getSymbols();
     }

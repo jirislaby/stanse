@@ -1,6 +1,6 @@
 /**
  * @file XMLPattern.java
- * @brief 
+ * @brief
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *
@@ -104,7 +104,7 @@ public final class XMLPattern {
                                XMLelement);
             return true;
         }
-        
+
         if (!XMLpivot.getName().equals(XMLelement.getName()))
             return false;
         if (!matchingAttributes(XMLpivot.attributes(),XMLelement))
@@ -136,7 +136,7 @@ public final class XMLPattern {
         if (matchingElements((Element)XMLpivot.elementIterator().next(),
 		XMLelement, varsAssignment))
             return true;
-        
+
         for (final Iterator<Element> j = XMLelement.elementIterator();
 		j.hasNext(); )
             if (matchingElements(XMLpivot, j.next(), varsAssignment))
@@ -148,7 +148,7 @@ public final class XMLPattern {
     private Element getPatternXMLelement() {
         return (Element)patternXMLelement.elementIterator().next();
     }
-    
+
     private static boolean matchingAttributes(final List<Attribute> pivotATTRs,
                                               final Element XMLelement) {
         for (final Attribute pivotAttr: pivotATTRs) {
