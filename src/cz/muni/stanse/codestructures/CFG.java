@@ -9,6 +9,7 @@ package cz.muni.stanse.codestructures;
 import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.dom4j.Element;
@@ -17,7 +18,8 @@ import org.dom4j.Element;
  * Represents a control-flow graph of a function
  */
 public class CFG extends CFGPart {
-    private Set<String> symbols;
+    private List<String> params;
+    private Set<String> symbols; // locals
     private String functionName;
     private Element functionDefinition;
 
@@ -82,10 +84,19 @@ public class CFG extends CFGPart {
         return functionDefinition;
     }
 
+    public void setParams(List<String> params) {
+	this.params = params;
+    }
+
     public void setSymbols(Set<String> symbols) {
 	this.symbols = symbols;
     }
-    
+
+    public List<String> getParams() {
+	assert this.params != null;
+	return Collections.unmodifiableList(this.params);
+    }
+
     public Set<String> getSymbols() {
 	return Collections.unmodifiableSet(this.symbols);
     }

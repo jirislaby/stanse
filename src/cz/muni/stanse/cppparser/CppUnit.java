@@ -109,6 +109,7 @@ public final class CppUnit extends Unit {
 
 	    String cfgname = elem.attribute("name").getValue();
 	    Set<String> locals = new HashSet<String>();
+	    List<String> params = new ArrayList<String>();
 	    java.util.Map<Integer, CFGNode> nodes = new java.util.HashMap<Integer, CFGNode>();
 	    for (Object nodeobj : elem.elements()) {
 		Element node = (Element) nodeobj;
@@ -118,6 +119,15 @@ public final class CppUnit extends Unit {
 			Element sym = (Element)symobj;
 			assert sym.getName().equals("sym");
 			locals.add(sym.getText());
+		    }
+		    continue;
+		}
+
+		if (node.getName().equals("params")) {
+		    for (Object symobj : node.elements()) {
+			Element sym = (Element)symobj;
+			assert sym.getName().equals("sym");
+			params.add(sym.getText());
 		    }
 		    continue;
 		}
@@ -199,6 +209,7 @@ public final class CppUnit extends Unit {
 	    Element fnDef = (Element) xmlDocument.selectSingleNode(xpath);
 	    CFG cfg = CFG.createFromCFGPart(cfgpart, fnDef);
 	    cfg.setSymbols(locals);
+	    cfg.setParams(params);
 	    CFGs.add(cfg);
 	}
 

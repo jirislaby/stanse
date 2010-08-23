@@ -1086,6 +1086,11 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 	p.xml_print_decl_name(&m_fn);
 	out << "\" startnode=\"0\" endnode=\"" << m_nodes.size() - 1 << "\">";
 
+	out << "<params>";
+	for (std::size_t i = 0; i < m_id_list.parameters().size(); ++i)
+		out << "<sym>" << xml_escape(m_id_list.name(m_id_list.parameters()[i])) << "</sym>";
+	out << "</params>";
+	
 	out << "<locals>";
 	for (std::size_t i = 0; i < m_id_list.locals().size(); ++i)
 		out << "<sym>" << xml_escape(m_id_list.name(m_id_list.locals()[i])) << "</sym>";
