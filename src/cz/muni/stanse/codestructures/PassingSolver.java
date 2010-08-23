@@ -11,7 +11,47 @@ public final class PassingSolver {
 
     // public section
 
+    public static String makeArgument(final CFGNode.Operand op) {
+	StringBuilder result = new StringBuilder();
+        switch (op.type)
+        {
+        case varptr:
+            result.append("& ");
+
+        case function:
+        case member:
+        case constant:
+        case operator:
+        case varval:
+            result.append((String)op.id);
+            break;
+
+        case nodeval:
+            result.append(makeArgument((CFGNode)op.id));
+            break;
+        }
+        return result.toString();
+    }
+
+    public static String makeArgument(final CFGNode node) {
+        if (node.getNodeType() == CFGNode.NodeType.none)
+            return makeArgument(node.getElement());
+
+        assert node.getNodeType() == CFGNode.NodeType.call;
+
+        StringBuilder result = new StringBuilder();
+        for (CFGNode.Operand op : node.getOperands())
+        {
+            if (result.length() != 0)
+        	result.append(' ');
+            result.append(makeArgument(op));
+        }
+        return result.toString();
+    }
+
     public static String makeArgument(final Element elem) {
+        assert elem != null;
+
         StringBuilder result = new StringBuilder(parseElement(elem));
         for (Element e: (List<Element>)elem.elements())
             result.append(' ').append(makeArgument(e));
