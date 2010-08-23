@@ -145,11 +145,7 @@ final class PatternLocationCreator extends CFGvisitor {
     isGlobalAssignement(final XMLPatternVariablesAssignment assignment) {
         final SimpleAutomatonID id = new SimpleAutomatonID(assignment,false);
 
-        final Iterator<Element> paramIter =
-           XMLLinearizeASTElement.functionDeclaration(getCfg().getElement())
-                                 .iterator();
-        for (paramIter.next(); paramIter.hasNext(); ) {
-            final String paramName = paramIter.next().getText();
+        for (String paramName : getCfg().getParams()){
             for (final String var : id.getVarsAssignment())
                 if (var.contains(paramName))
                     return false;

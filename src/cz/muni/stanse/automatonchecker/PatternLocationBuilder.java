@@ -175,9 +175,7 @@ final class PatternLocationBuilder {
                                  new HashSet<SimpleAutomatonID>(),
                                  new HashSet<SimpleAutomatonID>());
         for (final SimpleAutomatonID id : IDs)
-           if (isParameterDependentID(id,cz.muni.stanse.codestructures.builders.
-                    XMLLinearizeASTElement.functionDeclaration(cfg.getElement())
-                                          .iterator()))
+           if (isParameterDependentID(id, cfg.getParams().iterator()))
                 result.getThird().add(id);
             else if (isOfLocallyDeclaredVariable(id,cfg)) {
                 if (isInReturnExpression(id,cfg))
@@ -193,9 +191,9 @@ final class PatternLocationBuilder {
 
     private static boolean
     isParameterDependentID(final SimpleAutomatonID automatonID,
-                        final java.util.Iterator<org.dom4j.Element> paramIter) {
-        for (paramIter.next(); paramIter.hasNext(); )
-            if (isParameterDependentID(automatonID,paramIter.next().getText()))
+                        final java.util.Iterator<String> params) {
+        while (params.hasNext())
+            if (isParameterDependentID(automatonID,params.next()))
                 return true;
         return false;
     }
