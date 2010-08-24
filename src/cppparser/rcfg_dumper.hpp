@@ -99,6 +99,7 @@ public:
 	std::vector<std::size_t> const & parameters() const { return m_parameters; }
 
 	std::string name(std::size_t i) const { return m_names[i]; }
+	std::string name(clang::NamedDecl const * decl) const;
 	clang::FunctionDecl const & fn() const { return m_fn; }
 	clang::ASTContext & ctx() const { return m_ctx; }
 

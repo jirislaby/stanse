@@ -171,7 +171,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                                   beginMsg));
         if (path.size() > 1) {
             for (CFGNode item : path.subList(1,path.size() - 1)) {
-                if (item.hasLocation()) {
+                if (item.isVisible() && item.hasLocation()) {
                     trace.add(new CheckerErrorTraceLocation(getNodeUnitName(item),
                                                 item.getLine(),item.getColumn(),
                                                 innerMsg));

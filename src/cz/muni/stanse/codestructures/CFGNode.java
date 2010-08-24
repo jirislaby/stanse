@@ -63,6 +63,7 @@ public class CFGNode {
     List<Operand> operands = new ArrayList<Operand>();
     int line = -1;
     int column = 1;
+    boolean visible = true;
 
     /**
      * Creates a new instance of CFGNode
@@ -111,6 +112,14 @@ public class CFGNode {
 
     public final int getLine() {
 	return line;
+    }
+
+    public boolean isVisible() {
+	return visible;
+    }
+
+    public void setVisible(boolean value) {
+	visible = value;
     }
 
     /**

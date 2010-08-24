@@ -11,6 +11,8 @@
 
 #include <sstream>
 
+#include "xml_writer.hpp"
+
 //==================================================================
 rcfg_id_list::rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & ctx)
 	: m_fn(fn), m_ctx(ctx)
@@ -68,6 +70,15 @@ rcfg_id_list::rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & c
 			m_locals.push_back((*this)(d));
 		}
 	}
+}
+
+std::string rcfg_id_list::name(clang::NamedDecl const * decl) const
+{
+	std::map<clang::NamedDecl const *, std::string>::const_iterator ci = m_decl_names.find(decl);
+	if (ci != m_decl_names.end())
+		return ci->second;
+	else
+		return make_decl_name(decl);
 }
 
 std::size_t rcfg_id_list::operator()(clang::NamedDecl const * decl)
@@ -1082,19 +1093,28 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 {
 	xml_printer p(out, m_id_list.decl_names(), sm);
 
-	out << "<rcfg name=\"";
-	p.xml_print_decl_name(&m_fn);
-	out << "\" startnode=\"0\" endnode=\"" << m_nodes.size() - 1 << "\">";
+	xml_node xrcfg(out, "rcfg");
+	xrcfg.attr("name", m_id_list.name(&m_fn));
+	xrcfg.attr("startnode", "0");
+	xrcfg.attr("endnode", m_nodes.size() - 1);
 
-	out << "<params>";
-	for (std::size_t i = 0; i < m_id_list.parameters().size(); ++i)
-		out << "<sym>" << xml_escape(m_id_list.name(m_id_list.parameters()[i])) << "</sym>";
-	out << "</params>";
+	{
+		xml_node xparams(xrcfg, "params");
+		for (std::size_t i = 0; i < m_id_list.parameters().size(); ++i)
+		{
+			xml_node xsym(xparams, "sym");
+			xsym.text(m_id_list.name(m_id_list.parameters()[i]));
+		}
+	}
 	
-	out << "<locals>";
-	for (std::size_t i = 0; i < m_id_list.locals().size(); ++i)
-		out << "<sym>" << xml_escape(m_id_list.name(m_id_list.locals()[i])) << "</sym>";
-	out << "</locals>";
+	{
+		xml_node xlocals(xrcfg, "locals");
+		for (std::size_t i = 0; i < m_id_list.locals().size(); ++i)
+		{
+			xml_node xsym(xlocals, "sym");
+			xsym.text(m_id_list.name(m_id_list.locals()[i]));
+		}
+	}
 
 	for (std::size_t i = 0; i < m_nodes.size(); ++i)
 	{
@@ -1104,18 +1124,22 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 		static char const * operand_type_names[] = { "none", "function", "member", "const", "varptr", "varval", "vartgt", "nodeval", "nodetgt" };
 		static char const * node_type_names[] = { "none", "call", "exit", "value", "phi" };
 
+		xml_node xnode(xrcfg, "node");
+		xnode.attr("id", i);
+		xnode.attr("type", node_type_names[node.type]);
+		if (node.stmt != 0)
+			xnode.attr("vis", "1");
 		if (node.sl.isValid())
 		{
-			out << "<node id=\"" << i << "\" type=\"" << node_type_names[node.type]
-				<< "\" line=\"" << sm->getInstantiationLineNumber(node.sl) << "\" column=\"" << sm->getInstantiationColumnNumber(node.sl) << "\">";
-		}
-		else
-		{
-			out << "<node id=\"" << i << "\" type=\"" << node_type_names[node.type] << "\">";
+			xnode.attr("line", sm->getInstantiationLineNumber(node.sl));
+			xnode.attr("column", sm->getInstantiationColumnNumber(node.sl));
 		}
 
 		for (std::size_t j = 0; j < node.operands.size(); ++j)
 		{
+			xml_node xop(xnode, "op");
+			xop.attr("type", operand_type_names[node.operands[j].type]);
+
 			switch (node.operands[j].type)
 			{
 			case node_t::ot_function:
@@ -1123,10 +1147,10 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 			case node_t::ot_const:
 			case node_t::ot_varptr:
 			case node_t::ot_varval:
-				out << "<op type=\"" << operand_type_names[node.operands[j].type] << "\" val=\"" << xml_escape(m_id_list.name(node.operands[j].id)) << "\"/>";
+				xop.attr("val", m_id_list.name(node.operands[j].id));
 				break;
 			case node_t::ot_nodeval:
-				out << "<op type=\"" << operand_type_names[node.operands[j].type] << "\" val=\"" << node.operands[j].id << "\"/>";
+				xop.attr("val", node.operands[j].id);
 				break;
 			default:
 				BOOST_ASSERT(0);
@@ -1142,7 +1166,10 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 
 		for (std::size_t j = 0; j < node.succs.size(); ++j)
 		{
-			out << "<next nodeid=\"" << node.succs[j].id << "\">";
+			xml_node xnext(xnode, "next");
+			xnext.attr("nodeid", node.succs[j].id);
+			xnext.header_done();
+
 			if (node.succs[j].label)
 			{
 				p.xml_print_statement(node.succs[j].label);
@@ -1162,13 +1189,9 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 					out << "</intConst>";
 				}
 			}
-			out << "</next>";
 		}
 
-		out << "</node>";
 	}
-
-	out << "</rcfg>";
 
 	/*out << "<node id=\"" << m_nodes.size() << "\"><ast>";
 	p.xml_print_tag("exit", m_fn.getSourceRange().getEnd(), "/");

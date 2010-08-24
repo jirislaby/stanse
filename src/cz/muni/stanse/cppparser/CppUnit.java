@@ -161,6 +161,9 @@ public final class CppUnit extends Unit {
 		    newnode.setLocation(Integer.parseInt(node.attributeValue("line")), Integer.parseInt(node.attributeValue("column")));
 		}
 
+		String visAttr = node.attributeValue("vis");
+		newnode.setVisible(visAttr != null && visAttr.equals("1"));
+
 		String nodeid = node.attributeValue("id");
 		nodes.put(Integer.parseInt(nodeid), newnode);
 	    }
