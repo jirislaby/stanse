@@ -87,29 +87,34 @@ public final class XMLPattern {
 	if (!node.getNodeType().toString().equals(xmlPivot.attributeValue("type")))
 	    return Pair.make(false, null);
 
+	XMLPatternVariablesAssignment varsAssignment = new XMLPatternVariablesAssignment();
+
 	Iterator<Element> i = xmlPivot.elementIterator();
 	Iterator<CFGNode.Operand> j = node.getOperands().iterator();
 	while (i.hasNext() && j.hasNext()) {
 	    Element elem = i.next();
 
 	    if (elem.getName().equals("any"))
-		return Pair.make(true, new XMLPatternVariablesAssignment());
+		return Pair.make(true, varsAssignment);
 
 	    CFGNode.Operand op = j.next();
 
 	    if (elem.getName().equals("ignore"))
 		continue;
 
+	    if (elem.getName().equals("var")) {
+	        varsAssignment.put(elem.attribute("name").getValue(), op);
+	        continue;
+	    }
+
 	    if (!op.type.toString().equals(elem.getName()))
 		return Pair.make(false, null);
-
-	    // TODO: handle <var> tags
 
 	    if (op.type == CFGNode.OperandType.nodeval) {
 		Pair<Boolean, XMLPatternVariablesAssignment> nested = matchesNode((CFGNode)op.id, elem);
 		if (!nested.getFirst())
 		    return nested;
-		// TODO: merge the resulting assignment
+		varsAssignment.merge(nested.getSecond());
 	    } else {
 		if (!op.id.toString().equals(elem.getText()))
 		    return Pair.make(false, null);
@@ -119,7 +124,7 @@ public final class XMLPattern {
 	if (i.hasNext() || j.hasNext())
 	    return Pair.make(false, null);
 
-	return Pair.make(true, new XMLPatternVariablesAssignment());
+	return Pair.make(true, varsAssignment);
     }
 
     public Pair<Boolean,XMLPatternVariablesAssignment>

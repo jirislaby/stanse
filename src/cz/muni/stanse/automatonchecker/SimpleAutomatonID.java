@@ -1,6 +1,5 @@
 package cz.muni.stanse.automatonchecker;
 
-import cz.muni.stanse.codestructures.PassingSolver;
 import cz.muni.stanse.utils.xmlpatterns.XMLPatternVariablesAssignment;
 
 import java.util.List;
@@ -54,18 +53,7 @@ final class SimpleAutomatonID {
 
     private static Vector<String>
     buildVarsCollection(final XMLPatternVariablesAssignment varsAssignment) {
-        final Vector<String> result = new Vector<String>();
-        for (final org.dom4j.Element elem : sortToVector(varsAssignment))
-            result.add(PassingSolver.makeArgument(elem));
-        return result;
-    }
-
-    private static Vector<org.dom4j.Element>
-    sortToVector(final XMLPatternVariablesAssignment varsAssignment) {
-        return new Vector<org.dom4j.Element>(
-                    new TreeMap<String,org.dom4j.Element>(
-                        varsAssignment.getVarsMap())
-                    .values());
+        return new Vector<String>(new TreeMap<String, String>(varsAssignment.makeArgumentMap()).values());
     }
 
     private final Vector<String> varsAssignment;
