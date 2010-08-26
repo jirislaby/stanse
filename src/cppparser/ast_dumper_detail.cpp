@@ -320,18 +320,15 @@ std::string make_decl_name(clang::NamedDecl const * decl)
 	if (clang::FunctionDecl const * fndecl = llvm::dyn_cast<clang::FunctionDecl>(decl))
 	{
 		std::string name = decl->getQualifiedNameAsString();
-		if (fndecl->getNumParams() != 0)
+		name += '(';
+		for (clang::FunctionDecl::param_const_iterator param_ci = fndecl->param_begin(); param_ci != fndecl->param_end(); ++param_ci)
 		{
-			name += '(';
-			for (clang::FunctionDecl::param_const_iterator param_ci = fndecl->param_begin(); param_ci != fndecl->param_end(); ++param_ci)
-			{
-				if (param_ci != fndecl->param_begin())
-					name += ", ";
-				clang::VarDecl const * param_decl = *param_ci;
-				name += static_cast<clang::QualType>(param_decl->getType()->getCanonicalTypeUnqualified()).getAsString();
-			}
-			name += ')';
+			if (param_ci != fndecl->param_begin())
+				name += ", ";
+			clang::VarDecl const * param_decl = *param_ci;
+			name += static_cast<clang::QualType>(param_decl->getType()->getCanonicalTypeUnqualified()).getAsString();
 		}
+		name += ')';
 
 		if (clang::CXXMethodDecl const * cxxfndecl = llvm::dyn_cast<clang::CXXMethodDecl>(fndecl))
 		{
