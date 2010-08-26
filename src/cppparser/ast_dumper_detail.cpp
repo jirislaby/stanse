@@ -201,7 +201,7 @@ void xml_printer::xml_print_expr(clang::Expr const * expr)
 	}
 	else if (clang::BinaryOperator const * e = llvm::dyn_cast<clang::BinaryOperator>(expr))
 	{
-		if (e->getOpcode() == clang::BinaryOperator::Assign)
+		if (e->getOpcode() == clang::BO_Assign)
 		{
 			xml_print_tag("assignExpression", e->getOperatorLoc());
 			xml_print_expr(e->getLHS());

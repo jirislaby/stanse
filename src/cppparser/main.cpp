@@ -2,7 +2,6 @@
 #include "cfg_dumper.hpp"
 #include "rcfg_dumper.hpp"
 
-#include <clang/Sema/ParseAST.h>
 #include <clang/Lex/Preprocessor.h>
 #include <clang/Basic/SourceManager.h>
 #include <clang/Basic/FileManager.h>

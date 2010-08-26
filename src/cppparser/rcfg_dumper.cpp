@@ -170,7 +170,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 				(this->make_rvalue(this->build_expr(e->getRHS()))));
 			return lhs;
 		}
-		else if (e->getOpcode() == clang::BinaryOperator::LOr || e->getOpcode() == clang::BinaryOperator::LAnd)
+		else if (e->getOpcode() == clang::BO_LOr || e->getOpcode() == clang::BO_LAnd)
 		{
 			op_t lhs = this->build_expr(e->getLHS());
 			std::size_t branch_node = this->make_node(lhs);
@@ -180,7 +180,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 
 			this->append_edge(rhs_cfg, branch_node, m_nodes.size());
 
-			if (e->getOpcode() == clang::BinaryOperator::LAnd)
+			if (e->getOpcode() == clang::BO_LAnd)
 				m_nodes[branch_node].succs[0].op = op_t(node_t::ot_const, m_id_list("0"));
 			else
 				m_nodes[branch_node].succs[1].op = op_t(node_t::ot_const, m_id_list("0"));
@@ -200,11 +200,11 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	}
 	else if (clang::UnaryOperator const * e = llvm::dyn_cast<clang::UnaryOperator>(expr))
 	{
-		if (e->getOpcode() == clang::UnaryOperator::AddrOf)
+		if (e->getOpcode() == clang::UO_AddrOf)
 		{
 			return this->make_address(this->build_expr(e->getSubExpr()));
 		}
-		else if (e->getOpcode() == clang::UnaryOperator::Deref)
+		else if (e->getOpcode() == clang::UO_Deref)
 		{
 			return this->make_deref(this->build_expr(e->getSubExpr()));
 		}
@@ -294,14 +294,14 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 			}
 			else if (clang::BinaryOperator const * callee = llvm::dyn_cast<clang::BinaryOperator>(e->getCallee()))
 			{
-				BOOST_ASSERT(callee->getOpcode() == clang::BinaryOperator::PtrMemD || callee->getOpcode() == clang::BinaryOperator::PtrMemI);
+				BOOST_ASSERT(callee->getOpcode() == clang::BO_PtrMemD || callee->getOpcode() == clang::BO_PtrMemI);
 
 				callee_op = this->build_expr(callee->getRHS());
 				clang::MemberPointerType const * calleePtrType = llvm::dyn_cast<clang::MemberPointerType>(callee->getRHS()->getType().getTypePtr());
 				BOOST_ASSERT(calleePtrType);
 
 				opd_t this_op = this->build_expr(callee->getLHS());
-				if (callee->getOpcode() == clang::BinaryOperator::PtrMemD)
+				if (callee->getOpcode() == clang::BO_PtrMemD)
 					this_op = this->make_address(this_op);
 				params.push_back(this_op);
 
