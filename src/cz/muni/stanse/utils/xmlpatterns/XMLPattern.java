@@ -120,13 +120,18 @@ public final class XMLPattern {
 		    return nested;
 		varsAssignment.merge(nested.getSecond());
 	    } else {
-		java.util.regex.Pattern pattern = compiledRegexes.get(elem.getText());
-		if (pattern == null)
+		if (elem.getText().startsWith("r:"))
 		{
-		    pattern = java.util.regex.Pattern.compile(elem.getText());
-		    compiledRegexes.put(elem.getText(), pattern);
+		    String patternStr = elem.getText().substring(2);
+		    java.util.regex.Pattern pattern = compiledRegexes.get(patternStr);
+		    if (pattern == null) {
+			pattern = java.util.regex.Pattern.compile(patternStr);
+			compiledRegexes.put(patternStr, pattern);
+		    }
+		    if (!pattern.matcher(op.id.toString()).matches())
+			return Pair.make(false, null);
 		}
-		if (!pattern.matcher(op.id.toString()).matches())
+		else if (!op.id.toString().equals(elem.getText()))
 		    return Pair.make(false, null);
 	    }
 	}
