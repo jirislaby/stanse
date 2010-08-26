@@ -68,7 +68,7 @@ public final class ArgumentPassingManager {
             Iterator<String> paramIter = callee.getParams().iterator();
             while (opIter.hasNext()) {
                 assert paramIter.hasNext();
-                result.add(Pair.make(paramIter.next(), PassingSolver.makeArgument(opIter.next())));
+                result.add(Pair.make(PassingSolver.makeArgument(opIter.next()), paramIter.next()));
             }
             assert !paramIter.hasNext();
         } else {
