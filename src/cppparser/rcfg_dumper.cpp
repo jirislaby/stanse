@@ -214,6 +214,36 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		{
 			return this->make_deref(this->build_expr(e->getSubExpr()));
 		}
+		else if (e->getOpcode() == clang::UO_PreInc || e->getOpcode() == clang::UO_PreDec)
+		{
+			opd_t expr = this->build_expr(e->getSubExpr());
+			opd_t op = this->add_node(rcfg_node(e->getExprLoc())
+				(rcfg_node::ot_function, m_id_list(e->getOpcode() == clang::UO_PreInc? "+": "-"))
+				(expr)
+				(node_t::ot_const, m_id_list("1"))
+				);
+			this->add_node(rcfg_node(e->getExprLoc())
+				(rcfg_node::ot_function, m_id_list("="))
+				(this->make_address(expr))
+				(this->make_rvalue(op))
+				);
+			return expr;
+		}
+		else if (e->getOpcode() == clang::UO_PostInc || e->getOpcode() == clang::UO_PostDec)
+		{
+			opd_t expr = this->build_expr(e->getSubExpr());
+			opd_t op = this->add_node(rcfg_node(e->getExprLoc())
+				(rcfg_node::ot_function, m_id_list(e->getOpcode() == clang::UO_PostInc? "+": "-"))
+				(expr)
+				(node_t::ot_const, m_id_list("1"))
+				);
+			this->add_node(rcfg_node(e->getExprLoc())
+				(rcfg_node::ot_function, m_id_list("="))
+				(this->make_address(expr))
+				(this->make_rvalue(op))
+				);
+			return op;
+		}
 		else
 		{
 			return this->add_node(rcfg_node(e->getExprLoc())
