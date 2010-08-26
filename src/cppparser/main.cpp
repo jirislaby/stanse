@@ -1,5 +1,4 @@
 #include "ast_dumper.hpp"
-#include "cfg_dumper.hpp"
 #include "rcfg_dumper.hpp"
 
 #include <clang/Lex/Preprocessor.h>
@@ -29,7 +28,6 @@
 struct config
 {
 	bool printAST;
-	bool printCFG;
 	bool printRCFG;
 	bool printReadableAST;
 	bool printUnitAST;
@@ -58,9 +56,6 @@ public:
 
 		if (m_c.printAST)
 			print_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
-
-		if (m_c.printCFG)
-			print_cfg(ctx, std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 
 		if (m_c.printRCFG)
 			print_rcfg(ctx, std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
@@ -138,8 +133,6 @@ int main(int argc, char * argv[])
 				c.printAST = true;
 			else if (arg == "-r")
 				c.printRCFG = true;
-			else if (arg == "-c")
-				c.printCFG = true;
 			else if (arg == "-u")
 				c.printUnitAST = true;
 			else if (arg == "--debugcfg")
@@ -158,7 +151,7 @@ int main(int argc, char * argv[])
 		comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
 		argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
 
-		if (!c.printReadableAST && !c.printAST && !c.printCFG && !c.debugCFG && !c.printUnitAST && !c.printCFG)
+		if (!c.printReadableAST && !c.printAST && !c.debugCFG && !c.printUnitAST && !c.printRCFG)
 			c.printReadableAST = true;
 
 		MyASTDumpAction act(c);

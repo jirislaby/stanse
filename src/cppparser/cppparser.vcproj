@@ -185,14 +185,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\cfg_dumper.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\cfg_dumper.hpp"
-			>
-		</File>
-		<File
 			RelativePath=".\main.cpp"
 			>
 		</File>
