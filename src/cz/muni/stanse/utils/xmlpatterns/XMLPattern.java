@@ -10,8 +10,11 @@ package cz.muni.stanse.utils.xmlpatterns;
 
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Pair;
+
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Element;
 import org.dom4j.Attribute;
@@ -36,6 +39,7 @@ public final class XMLPattern {
 
     public XMLPattern(final Element XMLelement) {
         patternXMLelement = XMLelement;
+        compiledRegexes = new HashMap<String, java.util.regex.Pattern>();
         name = patternXMLelement.attributeValue("name");
         final String conAttr = patternXMLelement.attributeValue("constructive");
         constructive = (conAttr == null) ? true : !conAttr.equals("false");
@@ -116,7 +120,13 @@ public final class XMLPattern {
 		    return nested;
 		varsAssignment.merge(nested.getSecond());
 	    } else {
-		if (!op.id.toString().equals(elem.getText()))
+		java.util.regex.Pattern pattern = compiledRegexes.get(elem.getText());
+		if (pattern == null)
+		{
+		    pattern = java.util.regex.Pattern.compile(elem.getText());
+		    compiledRegexes.put(elem.getText(), pattern);
+		}
+		if (!pattern.matcher(op.id.toString()).matches())
 		    return Pair.make(false, null);
 	    }
 	}
@@ -258,5 +268,6 @@ public final class XMLPattern {
 
     private final Element patternXMLelement;
     private final String name;
+    private final Map<String, java.util.regex.Pattern> compiledRegexes;
     private final boolean constructive;
 }
