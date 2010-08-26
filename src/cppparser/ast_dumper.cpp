@@ -16,6 +16,9 @@ static void process_decl_context(clang::DeclContext const * declctx, std::vector
 			clang::CXXRecordDecl const * par = fnDecl->getParent();
 			if (par->getDescribedClassTemplate() != 0)
 				continue;
+
+			if (fnDecl->isThisDeclarationADefinition())
+				fns.push_back(fnDecl);
 		}
 		else if (clang::TemplateDecl const * classDecl = dyn_cast<clang::TemplateDecl>(decl))
 		{
