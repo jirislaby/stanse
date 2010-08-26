@@ -211,6 +211,7 @@ public final class CppUnit extends Unit {
 		    nodes.get(Integer.parseInt(elem.attributeValue("endnode"))),
 		    cfgname
 		    );
+	    cfg.setRetVar(elem.attributeValue("retvar"));
 	    cfg.setSymbols(locals);
 	    cfg.setParams(params);
 	    CFGs.add(cfg);

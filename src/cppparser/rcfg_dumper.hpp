@@ -98,6 +98,16 @@ public:
 	std::vector<std::size_t> const & temporaries() const { return m_temporaries; }
 	std::vector<std::size_t> const & parameters() const { return m_parameters; }
 
+	bool is_local(std::string const & name) const
+	{
+		for (std::size_t i = 0; i < m_locals.size(); ++i)
+		{
+			if (m_names[m_locals[i]] == name)
+				return true;
+		}
+		return false;
+	}
+
 	std::string name(std::size_t i) const { return m_names[i]; }
 	std::string name(clang::NamedDecl const * decl) const;
 	clang::FunctionDecl const & fn() const { return m_fn; }

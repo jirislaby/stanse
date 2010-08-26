@@ -74,6 +74,10 @@ public class CFGHandle {
 	return getCFG().getParams();
     }
 
+    public String getRetVar() {
+	return getCFG().getRetVar();
+    }
+
     protected Unit getUnit() {
         return unit;
     }

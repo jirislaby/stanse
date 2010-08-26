@@ -18,8 +18,14 @@ rcfg_id_list::rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & c
 	: m_fn(fn), m_ctx(ctx)
 {
 	if (fn.getResultType()->isStructureOrClassType())
-		m_parameters.push_back((*this)("r:"));
-	m_locals.push_back((*this)("r:"));
+	{
+		m_parameters.push_back((*this)("p:return"));
+		m_locals.push_back((*this)("p:return"));
+	}
+	else if (!fn.getResultType()->isVoidType())
+	{
+		m_locals.push_back((*this)("r:"));
+	}
 
 	if (clang::CXXMethodDecl const * d = llvm::dyn_cast<clang::CXXMethodDecl>(&fn))
 	{
@@ -701,17 +707,16 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 		{
 			if (m_id_list.fn().getResultType().getTypePtr()->isStructureOrClassType())
 			{
-				this->build_expr(s->getRetValue(), rcfg_node::operand(rcfg_node::ot_varptr, m_id_list("r:")));
+				this->build_expr(s->getRetValue(), rcfg_node::operand(rcfg_node::ot_varptr, m_id_list("p:return")));
 			}
 			else
 			{
 				rcfg_node::operand retval = this->build_expr(s->getRetValue());
 				if (m_id_list.fn().getResultType().getTypePtr()->isReferenceType())
 					retval = this->make_address(retval);
-
-				this->add_node(rcfg_node(stmt->getLocStart())
-					(rcfg_node::ot_function, m_id_list("="))
-					(rcfg_node::ot_varptr, m_id_list("r:"))
+				this->add_node(node_t(s->getLocStart())
+					(node_t::ot_function, m_id_list("="))
+					(node_t::ot_varptr, m_id_list("r:"))
 					(this->make_rvalue(retval)));
 			}
 
@@ -1097,6 +1102,8 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 	xrcfg.attr("name", m_id_list.name(&m_fn));
 	xrcfg.attr("startnode", "0");
 	xrcfg.attr("endnode", m_nodes.size() - 1);
+	if (m_id_list.is_local("r:"))
+		xrcfg.attr("retvar", "r:");
 
 	{
 		xml_node xparams(xrcfg, "params");

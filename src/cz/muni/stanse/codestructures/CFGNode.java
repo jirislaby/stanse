@@ -9,6 +9,7 @@ package cz.muni.stanse.codestructures;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.dom4j.Element;
 
@@ -120,6 +121,22 @@ public class CFGNode {
 
     public void setVisible(boolean value) {
 	visible = value;
+    }
+
+    public static Set<String> getDependentVars(Operand op) {
+	Set<String> res = new java.util.HashSet<String>();
+	if (op.type == OperandType.varptr || op.type == OperandType.varval)
+	    res.add((String)op.id);
+	else if (op.type == OperandType.nodeval)
+	    res.addAll(((CFGNode)op.id).getDependentVars());
+	return res;
+    }
+
+    public Set<String> getDependentVars() {
+	Set<String> res = new java.util.HashSet<String>();
+	for (Operand op : operands)
+	    res.addAll(getDependentVars(op));
+	return res;
     }
 
     /**

@@ -24,6 +24,7 @@ public class CFG extends CFGPart {
     private Set<String> symbols; // locals
     private String functionName;
     private Element functionDefinition;
+    private String retvar;
 
     /**
      * Creates a new instance of CFG
@@ -59,6 +60,9 @@ public class CFG extends CFGPart {
 	this.setStartNode(startNode);
 	this.setEndNode(endNode);
     }
+
+    public String getRetVar() { return retvar; }
+    public void setRetVar(String value) { retvar = value; }
 
     /**
      * Returns function name assigned to this CFG

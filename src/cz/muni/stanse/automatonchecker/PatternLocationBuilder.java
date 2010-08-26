@@ -217,20 +217,31 @@ final class PatternLocationBuilder {
 
     private static boolean isInReturnExpression(final SimpleAutomatonID id,
             final CFGHandle cfg) {
-        for (final CFGNode node : cfg.getEndNode().getPredecessors())
-            if (node.getElement().getName().equals("returnStatement") &&
-                isInReturnExpression(id,node))
+        for (final CFGNode node : cfg.getEndNode().getPredecessors()) {
+            Set<String> dependentVars = null;
+            if (node.getNodeType() == CFGNode.NodeType.call
+                    && ((String)node.getOperands().get(0).id).equals("=")
+                    && ((String)node.getOperands().get(1).id).equals(cfg.getRetVar())) {
+                CFGNode.Operand retop = node.getOperands().get(2);
+                dependentVars = CFGNode.getDependentVars(retop);
+            } else if (node.getElement() != null && node.getElement().getName().equals("returnStatement")) {
+                dependentVars = new HashSet<String>();
+                for (Object idElem : node.getElement().selectNodes("id"))
+                    dependentVars.add(((org.dom4j.Element)idElem).getText());
+            }
+            if (dependentVars != null && isInReturnExpression(id,dependentVars))
                 return true;
+        }
         return false;
     }
 
     private static boolean isInReturnExpression(final SimpleAutomatonID id,
-                                                final CFGNode retNode) {
+                                                final Set<String> dependentVars) {
         for (final String varsAssign : id.getVarsAssignment()) {
             final String varName = cz.muni.stanse.codestructures.PassingSolver.
                                               parseRootVariableName(varsAssign);
-            for (Object idElem : retNode.getElement().selectNodes("id"))
-                if (varName.equals(((org.dom4j.Element)idElem).getText()))
+            for (String depVar : dependentVars)
+                if (varName.equals(depVar))
                     return true;
         }
         return false;
