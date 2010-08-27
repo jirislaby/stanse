@@ -624,7 +624,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	}
 	else
 	{
-		BOOST_ASSERT(0);
+		throw unknown_ast_node(expr);
 	}
 }
 
@@ -900,7 +900,7 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 	}
 	else
 	{
-		BOOST_ASSERT(0 && "the statement type is not recognized");
+		throw unknown_ast_node(stmt);
 	}
 }
 

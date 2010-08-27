@@ -202,6 +202,18 @@ private:
 	std::vector<rcfg_node> m_nodes;
 };
 
+#include <stdexcept>
+struct unknown_ast_node
+	: std::runtime_error
+{
+	unknown_ast_node(clang::Stmt const * st)
+		: std::runtime_error("Encountered an unknown AST node"), st(st)
+	{
+	}
+
+	clang::Stmt const * st;
+};
+
 template <typename InputIterator>
 void print_rcfg(clang::ASTContext & ctx, std::ostream & fout, clang::SourceManager const * sm, InputIterator firstFun, InputIterator lastFun)
 {
@@ -211,14 +223,17 @@ void print_rcfg(clang::ASTContext & ctx, std::ostream & fout, clang::SourceManag
 
 	for (; firstFun != lastFun; ++firstFun)
 	{
+		try
 		{
-			clang::CFG * cfg = clang::CFG::buildCFG(*firstFun, (*firstFun)->getBody(), &ctx);
-			//cfg->dump(clang::LangOptions());
-			delete cfg;
+			rcfg c(**firstFun);
+			c.xml_print(fout, sm);
 		}
-
-		rcfg c(**firstFun);
-		c.xml_print(fout, sm);
+		catch (unknown_ast_node const & e)
+		{
+			std::cerr << "Unknown AST node encountered: "
+				<< sm->getInstantiationLineNumber(e.st->getLocStart()) << ":"
+				<< sm->getInstantiationColumnNumber(e.st->getLocStart()) << std::endl;
+		}
 	}
 
 	fout << "</cfgs>\n";
@@ -229,14 +244,17 @@ void print_debug_rcfg(clang::ASTContext & ctx, std::ostream & fout, clang::Sourc
 {
 	for (; firstFun != lastFun; ++firstFun)
 	{
+		try
 		{
-			clang::CFG * cfg = clang::CFG::buildCFG(*firstFun, (*firstFun)->getBody(), &ctx);
-			//cfg->dump(clang::LangOptions());
-			delete cfg;
+			rcfg c(**firstFun);
+			c.pretty_print(fout, sm);
 		}
-
-		rcfg c(**firstFun);
-		c.pretty_print(fout, sm);
+		catch (unknown_ast_node const & e)
+		{
+			std::cerr << "Unknown AST node encountered: "
+				<< sm->getInstantiationLineNumber(e.st->getLocStart()) << ":"
+				<< sm->getInstantiationColumnNumber(e.st->getLocStart()) << std::endl;
+		}
 	}
 }
 
