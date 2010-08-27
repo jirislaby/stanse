@@ -1219,13 +1219,6 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 			}
 		}
 
-		if (node.stmt)
-		{
-			out << "<ast>";
-			p.xml_print_statement(node.stmt);
-			out << "</ast>";
-		}
-
 		for (std::size_t j = 0; j < node.succs.size(); ++j)
 		{
 			xml_node xnext(xnode, "next");
@@ -1254,10 +1247,6 @@ void rcfg::xml_print(std::ostream & out, clang::SourceManager const * sm) const
 		}
 
 	}
-
-	/*out << "<node id=\"" << m_nodes.size() << "\"><ast>";
-	p.xml_print_tag("exit", m_fn.getSourceRange().getEnd(), "/");
-	out << "</ast></node></rcfg>";*/
 }
 
 void rcfg::print_op(std::ostream & out, op_t op) const
