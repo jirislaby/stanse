@@ -543,7 +543,10 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	else if (clang::SizeOfAlignOfExpr const * e = llvm::dyn_cast<clang::SizeOfAlignOfExpr>(expr))
 	{
 		BOOST_ASSERT(e->isSizeOf());
-		return op_t(node_t::ot_const, m_id_list("sizeof:" + e->getArgumentType().getAsString()));
+		if (e->isArgumentType())
+			return op_t(node_t::ot_const, m_id_list("sizeof:" + e->getArgumentType().getAsString()));
+		else
+			return op_t(node_t::ot_const, m_id_list("sizeof:" + e->getArgumentExpr()->getType().getAsString()));
 	}
 	else if (clang::FloatingLiteral const * e = llvm::dyn_cast<clang::FloatingLiteral>(expr))
 	{
