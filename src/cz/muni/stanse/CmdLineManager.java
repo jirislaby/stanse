@@ -72,7 +72,7 @@ final class CmdLineManager {
                     .withRequiredArg()
                     .describedAs("directory")
                     .ofType(String.class);
-    	rdir =
+        rdir =
               parser.accepts("rdir","Directory to be recursively searched " +
                                     "for input files.")
                     .withRequiredArg()

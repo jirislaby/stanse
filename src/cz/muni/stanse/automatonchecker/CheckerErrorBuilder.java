@@ -2,7 +2,7 @@
  * @file CheckerErrorBuilder.java
  * @brief Implements final class CheckerErrorBuilder which is responsible to
  *        compute all checker errors which can be translated from automata
- *        states at PaternLocations. 
+ *        states at PaternLocations.
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *
@@ -46,10 +46,10 @@ final class CheckerErrorBuilder {
      * @brief Computes a list of all checker-errors, which can be recognized by
      *        error transition rules (defined in XML automata definition file)
      *        from automata states at PattenLocations assigned to matching
-     *        source code locacions.
+     *        source code locations.
      *
      * @param edgeLocationDictionary Dictionary, which provides mapping from
-     *                                   CFGNodes (i.e. reference to souce code
+     *                                   CFGNodes (i.e. reference to source code
      *                                   locations) to related PatternLocations.
      * @return List of checker-errors recognized from automata states at
      *         PatternLocations.
@@ -142,11 +142,11 @@ final class CheckerErrorBuilder {
                         result = new CheckingFailed(creator.getFailMessage(),
                                 getLocationUnitName(location,internals));
 
-                    // Next condition eliminates cyclic dependances of two
-                    // error locations (diferent). These locations have same
+                    // Next condition eliminates cyclic dependences of two
+                    // error locations (different). These locations have same
                     // error rule and theirs methods checkForError() returns
                     // true (so  they are both error locations). But their
-                    // cyclic dependancy disables to find starting nodes of
+                    // cyclic dependency disables to find starting nodes of
                     // theirs error traces -> both error traces returned will
                     // be empty.
                     if (traces.isEmpty())

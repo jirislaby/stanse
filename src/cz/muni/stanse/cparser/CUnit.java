@@ -36,7 +36,7 @@ import cz.muni.stanse.utils.StreamAlgo;
  * Holds all the code-related data for C compilation units (files).
  *
  * Currently based on the ANTLR parser, working in three steps.
- * 
+ *
  *  1. parse C and create an AST (GNUCa.g)
  *  2. parse AST and generate an XML representation of the AST (XMLEmitter.g)
  *  3. parse AST and generate its CFG, with pointers to the relevant XML
@@ -143,7 +143,7 @@ public final class CUnit extends Unit {
 	typedefs = new LinkedList<String>();
 	Process p;
 	String line;
-	
+
 	// this is necessary
 	// the environment is modified only AFTER the command is
 	// executed!
