@@ -79,6 +79,9 @@ final class CmdLineManager {
                     .describedAs("directory")
                     .ofType(String.class);
 
+        runTest = parser.accepts("test", "Run a test suite.")
+            .withRequiredArg().ofType(String.class);
+
         dumpCFG =
               parser.accepts("dump-cfg",
                              "Dump control flow graphs in Dot format");
@@ -284,6 +287,10 @@ final class CmdLineManager {
 	    }
     }
 
+    String testSuite() {
+        return getOptions().valueOf(runTest);
+    }
+
     boolean dumpAST() {
         return getOptions().has(dumpXML);
     }
@@ -465,6 +472,7 @@ final class CmdLineManager {
     private final OptionSpec<String> jobfile;
     private final OptionSpec<String> dir;
     private final OptionSpec<String> rdir;
+    private final OptionSpec<String> runTest;
     private final OptionSpec<Void> dumpCFG;
     private final OptionSpec<Void> dumpXML;
     private final OptionSpec<Void> dumpCallGraph;
