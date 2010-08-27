@@ -193,7 +193,9 @@ public class CFGNode {
     }
 
     public void setNodeType(String nodeType) {
-	if (nodeType.equals("call"))
+        if (nodeType.equals("none"))
+            this.nodeType = NodeType.none;
+        else if (nodeType.equals("call"))
 	    this.nodeType = NodeType.call;
 	else if (nodeType.equals("value"))
 	    this.nodeType = NodeType.value;
