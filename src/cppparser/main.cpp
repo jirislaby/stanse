@@ -32,6 +32,7 @@ struct config
 	bool printReadableAST;
 	bool printUnitAST;
 	bool debugCFG;
+	std::string filter;
 };
 
 class MyConsumer
@@ -53,6 +54,16 @@ public:
 
 		std::set<clang::FunctionDecl const *> functionDecls;
 		get_used_function_defs(ctx, functionDecls);
+		if (!m_c.filter.empty())
+		{
+			std::set<clang::FunctionDecl const *> filtered;
+			for (std::set<clang::FunctionDecl const *>::const_iterator ci = functionDecls.begin(); ci != functionDecls.end(); ++ci)
+			{
+				if ((*ci)->getQualifiedNameAsString() == m_c.filter)
+					filtered.insert(*ci);
+			}
+			functionDecls.swap(filtered);
+		}
 
 		if (m_c.printAST)
 			print_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
@@ -137,6 +148,8 @@ int main(int argc, char * argv[])
 				c.printUnitAST = true;
 			else if (arg == "--debugcfg")
 				c.debugCFG = true;
+			else if (arg == "--filter" && i + 1 < argc)
+				c.filter = argv[++i];
 			else
 				args.push_back(argv[i]);
 		}
