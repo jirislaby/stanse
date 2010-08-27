@@ -406,6 +406,10 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 	{
 		return op_t(rcfg_node::ot_const, m_id_list(e->getValue().toString(10, true)));
 	}
+	else if (clang::CharacterLiteral const * e = llvm::dyn_cast<clang::CharacterLiteral>(expr))
+	{
+		return op_t(rcfg_node::ot_const, m_id_list(boost::lexical_cast<std::string>(e->getValue())));
+	}
 	else if (clang::StringLiteral const * e = llvm::dyn_cast<clang::StringLiteral>(expr))
 	{
 		std::string res;
