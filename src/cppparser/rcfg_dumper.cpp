@@ -617,6 +617,11 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 		node(node_t::ot_function, m_id_list(e->getOperatorDelete()));
 		return this->add_node(node);
 	}
+	else if (clang::CXXThrowExpr const * e = llvm::dyn_cast<clang::CXXThrowExpr>(expr))
+	{
+		// TODO: Make this actually throw...
+		return this->build_expr(e->getSubExpr());
+	}
 	else
 	{
 		BOOST_ASSERT(0);
@@ -886,10 +891,6 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 		this->append(loop_cfg);
 	}
 	else if (clang::CXXTryStmt const * s = llvm::dyn_cast<clang::CXXTryStmt>(stmt))
-	{
-		// TODO
-	}
-	else if (clang::CXXCatchStmt const * s = llvm::dyn_cast<clang::CXXCatchStmt>(stmt))
 	{
 		// TODO
 	}
