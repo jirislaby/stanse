@@ -563,7 +563,10 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 			node_t node(e->getExprLoc());
 			node(node_t::ot_function, m_id_list("cxx:new[]"));
 			node(node_t::ot_function, m_id_list(e->getOperatorNew()));
-			node(node_t::ot_function, m_id_list(e->getConstructor()));
+			if (e->getConstructor())
+				node(node_t::ot_function, m_id_list(e->getConstructor()));
+			else
+				node(node_t::ot_const, m_id_list("0"));
 			node(node_t::ot_function, m_id_list(e->getOperatorDelete()));
 			node(node_t::ot_const, m_id_list(e->hasInitializer()? "1": "0"));
 			this->append_args(
