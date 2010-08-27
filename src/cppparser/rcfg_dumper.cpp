@@ -366,12 +366,18 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 			result_op = opd_t(rcfg_node::ot_varval, classres);
 		}
 
-		BOOST_ASSERT(fntype->getNumArgs() + arg_index == e->getNumArgs());
+		BOOST_ASSERT(fntype->isVariadic() || fntype->getNumArgs() + arg_index == e->getNumArgs());
 
 		for (std::size_t i = 0; i < fntype->getNumArgs(); ++i)
 		{
 			params.push_back(this->build_expr(e->getArg(i + arg_index)));
 			param_types.push_back(fntype->getArgType(i).getTypePtr());
+		}
+
+		for (std::size_t i = fntype->getNumArgs() + arg_index; i < e->getNumArgs(); ++i)
+		{
+			params.push_back(this->build_expr(e->getArg(i)));
+			param_types.push_back(e->getArg(i)->getType().getTypePtr());
 		}
 
 		// TODO: handle classes with conversion to pointer to fn.
