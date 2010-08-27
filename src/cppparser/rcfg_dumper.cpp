@@ -294,6 +294,7 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 			BOOST_ASSERT(e->getDirectCallee() != 0);
 			if (clang::CXXMethodDecl const * md = llvm::dyn_cast<clang::CXXMethodDecl>(e->getDirectCallee()))
 			{
+				// C++03: 13.5/6: overloaded operators can't be static member functions
 				opd_t this_op = this->build_expr(e->getArg(arg_index++));
 				this_op = this->make_address(this_op);
 				params.push_back(this_op);
@@ -315,14 +316,21 @@ rcfg_node::operand rcfg::builder::build_expr(clang::Expr const * expr, rcfg_node
 			if (clang::MemberExpr const * mcallee = llvm::dyn_cast<clang::MemberExpr>(e->getCallee()))
 			{
 				clang::CXXMethodDecl const * mdecl = llvm::dyn_cast<clang::CXXMethodDecl>(mcallee->getMemberDecl());
-				
-				opd_t this_op = this->build_expr(mcallee->getBase());
-				if (!mcallee->isArrow())
-					this_op = this->make_address(this_op);
-				params.push_back(this_op);
 
-				param_types.push_back(
-					mdecl->getThisType(mdecl->getASTContext()).getTypePtr());
+				opd_t this_op = this->build_expr(mcallee->getBase());
+				if (!mdecl->isStatic())
+				{
+					if (!mcallee->isArrow())
+						this_op = this->make_address(this_op);
+					params.push_back(this_op);
+
+					param_types.push_back(
+						mdecl->getThisType(mdecl->getASTContext()).getTypePtr());
+				}
+				else
+				{
+					this->make_node(this_op);
+				}
 
 				callee_op = opd_t(rcfg_node::ot_function, m_id_list(mdecl));
 
