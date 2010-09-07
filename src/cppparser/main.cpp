@@ -1,6 +1,10 @@
 #include "ast_dumper.hpp"
 #include "rcfg_dumper.hpp"
 
+#include "cfg.hpp"
+#include "cfg_builder.hpp"
+#include "cfg_json_writer.hpp"
+
 #include <clang/Lex/Preprocessor.h>
 #include <clang/Basic/SourceManager.h>
 #include <clang/Basic/FileManager.h>
@@ -29,6 +33,7 @@ struct config
 {
 	bool printAST;
 	bool printRCFG;
+	bool printJsonCfg;
 	bool printReadableAST;
 	bool printUnitAST;
 	bool debugCFG;
@@ -39,8 +44,8 @@ class MyConsumer
 	: public clang::ASTConsumer
 {
 public:
-	MyConsumer(clang::CompilerInstance & ci, config const & c)
-		: m_ci(ci), m_c(c)
+	MyConsumer(clang::CompilerInstance & ci, config const & c, std::string const & filename)
+		: m_ci(ci), m_c(c), m_filename(filename)
 	{
 	}
 
@@ -65,6 +70,12 @@ public:
 			functionDecls.swap(filtered);
 		}
 
+		if (m_c.printJsonCfg)
+		{
+			program prog = build_program(ctx.getTranslationUnitDecl());
+			cfg_json_write(std::cout, prog);
+		}
+
 		if (m_c.printAST)
 			print_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
 
@@ -78,12 +89,17 @@ public:
 			print_decl(ctx.getTranslationUnitDecl(), std::cout, 0);
 
 		if (m_c.debugCFG)
-			print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
+		{
+			program prog = build_program(ctx.getTranslationUnitDecl());
+			prog.pretty_print(std::cerr);
+			//print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
+		}
 	}
 
 private:
 	clang::CompilerInstance & m_ci;
 	config m_c;
+	std::string m_filename;
 };
 
 class MyASTDumpAction : public clang::ASTFrontendAction
@@ -94,11 +110,13 @@ public:
 	{
 	}
 
+	clang::ASTContext * ctx;
+
 protected:
 	virtual clang::ASTConsumer *CreateASTConsumer(clang::CompilerInstance &CI,
 		llvm::StringRef InFile)
 	{
-		return new MyConsumer(CI, m_c);
+		return new MyConsumer(CI, m_c, InFile.str());
 	}
 
 private:
@@ -142,6 +160,8 @@ int main(int argc, char * argv[])
 				c.printReadableAST = true;
 			else if (arg == "-A")
 				c.printAST = true;
+			else if (arg == "-j")
+				c.printJsonCfg = true;
 			else if (arg == "-r")
 				c.printRCFG = true;
 			else if (arg == "-u")
@@ -164,7 +184,7 @@ int main(int argc, char * argv[])
 		comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
 		argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
 
-		if (!c.printReadableAST && !c.printAST && !c.debugCFG && !c.printUnitAST && !c.printRCFG)
+		if (!c.printJsonCfg && !c.printReadableAST && !c.printAST && !c.debugCFG && !c.printUnitAST && !c.printRCFG)
 			c.printReadableAST = true;
 
 		MyASTDumpAction act(c);

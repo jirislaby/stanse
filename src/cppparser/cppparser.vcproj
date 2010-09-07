@@ -87,7 +87,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(ProjectDir)..\..\dist\bin"
+				CommandLine="copy $(TargetPath) $(ProjectDir)..\..\dist\bin&#x0D;&#x0A;$(ProjectDir)test\test_all.cmd -e $(TargetPath)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -170,6 +170,22 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="json"
+			>
+			<File
+				RelativePath=".\json\json_reader.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\json\json_value.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\json\json_writer.cpp"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\ast_dumper.cpp"
 			>
@@ -184,6 +200,30 @@
 		</File>
 		<File
 			RelativePath=".\ast_dumper_detail.hpp"
+			>
+		</File>
+		<File
+			RelativePath=".\cfg.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\cfg.hpp"
+			>
+		</File>
+		<File
+			RelativePath=".\cfg_builder.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\cfg_builder.hpp"
+			>
+		</File>
+		<File
+			RelativePath=".\cfg_json_writer.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\cfg_json_writer.hpp"
 			>
 		</File>
 		<File
