@@ -59,6 +59,9 @@ struct context
 	std::vector<cfg::vertex_descriptor> m_break_sentinels;
 	std::vector<cfg::vertex_descriptor> m_continue_sentinels;
 
+	std::map<clang::GotoStmt const *, cfg::vertex_descriptor> m_gotos;
+	std::map<clang::LabelStmt const *, cfg::vertex_descriptor> m_labels;
+
 	typedef std::pair<cfg::vertex_descriptor, std::map<std::string, cfg::vertex_descriptor> > case_context_t;
 	std::vector<case_context_t> m_case_contexts;
 
@@ -683,14 +686,37 @@ struct context
 		{
 			// TODO: perhaps we should leave a nt_none node?
 		}
+		else if (clang::LabelStmt const * s = llvm::dyn_cast<clang::LabelStmt>(stmt))
+		{
+			m_labels[s] = head;
+			this->build_stmt(head, s->getSubStmt());
+		}
+		else if (clang::GotoStmt const * s = llvm::dyn_cast<clang::GotoStmt>(stmt))
+		{
+			m_gotos[s] = head;
+			head = add_vertex(g);
+		}
 		else
 		{
 			BOOST_ASSERT(0 && "unknown AST node encountered");
 		}
 	}
 
+	void backpatch_gotos()
+	{
+		for (std::map<clang::GotoStmt const *, cfg::vertex_descriptor>::const_iterator it = m_gotos.begin(); it != m_gotos.end(); ++it)
+		{
+			BOOST_ASSERT(it->first != 0);
+			std::map<clang::LabelStmt const *, cfg::vertex_descriptor>::const_iterator label_it = m_labels.find(it->first->getLabel());
+			BOOST_ASSERT(label_it != m_labels.end());
+			this->join_nodes(it->second, label_it->second);
+		}
+	}
+
 	void finish()
 	{
+		this->backpatch_gotos();
+
 		g[m_head].type = cfg::nt_exit;
 		g[m_head].ops.push_back(cfg::operand(cfg::ot_const, "0"));
 		m_exit_nodes.insert(m_head);
