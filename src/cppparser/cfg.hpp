@@ -40,6 +40,11 @@ public:
 		{
 			return !(lhs == rhs);
 		}
+
+		friend bool operator<(edge_descriptor const & lhs, edge_descriptor const & rhs)
+		{
+			return lhs.source < rhs.source || (lhs.source == rhs.source && lhs.parity < rhs.parity);
+		}
 	};
 
 	typedef boost::variant<boost::none_t, std::string, vertex_descriptor> op_id;
@@ -155,17 +160,19 @@ public:
 
 	friend void clear_vertex(vertex_descriptor v, cfg & g)
 	{
-		// TODO: we assume here that the vertex has no successors
-		// and only a single predecessor, which has only one successor.
-		BOOST_ASSERT(v->succs.empty());
+		// TODO: we assume here that the vertex has 
+		// only a single predecessor, which has only one successor.
+		for (std::size_t i = 0; i < v->succs.size(); ++i)
+			v->succs[i].target->preds.erase(edge_descriptor(v, i));
+		v->succs.clear();
 
 		if (v->preds.empty())
 			return;
 
 		BOOST_ASSERT(v->preds.size() == 1);
-		BOOST_ASSERT(v->preds[0].source->succs.size() == 1);
+		BOOST_ASSERT((*v->preds.begin()).source->succs.size() == 1);
 
-		v->preds[0].source->succs.clear();
+		(*v->preds.begin()).source->succs.clear();
 		v->preds.clear();
 	}
 
@@ -177,34 +184,24 @@ public:
 		delete v;
 	}
 
-	void redirect_vertex(vertex_descriptor source, vertex_descriptor target)
-	{
-		for (; !source->preds.empty(); source->preds.pop_back())
-		{
-			source->preds.back().source->succs[source->preds.back().parity].target = target;
-			target->preds.push_back(source->preds.back());
-		}
-	}
-
-	vertex_descriptor duplicate_vertex(vertex_descriptor source)
-	{
-		BOOST_ASSERT(source->succs.empty());
-
-		vertex_descriptor res = add_vertex(*this);
-		(*this)[res] = (*this)[source];
-		for (std::size_t i = 0; i < source->preds.size(); ++i)
-		{
-			edge_descriptor e = add_edge(source->preds[i].source, res, *this).first;
-			(*this)[e] = (*this)[source->preds[i]];
-		}
-		return res;
-	}
-
 	friend std::pair<edge_descriptor, bool> add_edge(vertex_descriptor source, vertex_descriptor target, cfg & g)
 	{
-		target->preds.push_back(edge_descriptor(source, source->succs.size()));
+		edge_descriptor new_edge(source, source->succs.size());
+
+		target->preds.insert(new_edge);
 		source->succs.push_back(target);
-		return std::make_pair(target->preds.back(), true);
+		return std::make_pair(new_edge, true);
+	}
+
+	void redirect_vertex(cfg::vertex_descriptor source, cfg::vertex_descriptor target)
+	{
+		// TODO: basic exception guarantees
+		for (std::set<edge_descriptor>::const_iterator it = source->preds.begin(); it != source->preds.end(); ++it)
+		{
+			it->source->succs[it->parity].target = target;
+			target->preds.insert(*it);
+		}
+		source->preds.clear();
 	}
 
 	friend vertex_descriptor source(edge_descriptor const & e, cfg const &)
@@ -253,13 +250,18 @@ public:
 		return std::make_pair(out_edge_iterator(v, 0), out_edge_iterator(v, v->succs.size()));
 	}
 
-	typedef std::vector<edge_descriptor>::const_iterator in_edge_iterator;
+	typedef std::set<edge_descriptor>::const_iterator in_edge_iterator;
 	friend std::pair<in_edge_iterator, in_edge_iterator> in_edges(vertex_descriptor v, cfg const & g)
 	{
 		return std::make_pair(v->preds.begin(), v->preds.end());
 	}
 
 	typedef std::size_t degree_size_type;
+	friend degree_size_type out_degree(vertex_descriptor v, cfg const &)
+	{
+		return v->succs.size();
+	}
+
 	friend degree_size_type in_degree(vertex_descriptor v, cfg const &)
 	{
 		return v->preds.size();
@@ -294,7 +296,7 @@ private:
 	struct graph_vertex
 	{
 		std::vector<graph_edge> succs;
-		std::vector<edge_descriptor> preds;
+		std::set<edge_descriptor> preds;
 		node prop;
 
 		graph_vertex(node prop = node())

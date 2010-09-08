@@ -47,6 +47,10 @@ struct context
 		: g(c), m_head(add_vertex(g))
 	{
 		g.entry(m_head);
+
+		cfg::vertex_descriptor new_head = add_vertex(g);
+		add_edge(m_head, new_head, g);
+		m_head = new_head;
 	}
 
 	cfg & g;
@@ -54,6 +58,22 @@ struct context
 	std::set<cfg::vertex_descriptor> m_exit_nodes;
 
 	std::map<clang::NamedDecl const *, std::string> m_registered_names;
+
+	cfg::vertex_descriptor duplicate_vertex(cfg::vertex_descriptor src)
+	{
+		BOOST_ASSERT(out_degree(src, g) == 0);
+
+		cfg::vertex_descriptor res = add_vertex(g);
+		g[res] = g[src];
+
+		std::pair<cfg::in_edge_iterator, cfg::in_edge_iterator> in_edge_range = in_edges(src, g);
+		for (; in_edge_range.first != in_edge_range.second; ++in_edge_range.first)
+		{
+			cfg::edge_descriptor e = add_edge(source(*in_edge_range.first, g), res, g).first;
+			g[e] = g[*in_edge_range.first];
+		}
+		return res;
+	}
 
 	std::string get_name(clang::NamedDecl const * decl) const
 	{
@@ -578,6 +598,17 @@ struct context
 					}
 				}
 			}
+		}
+
+		cfg::vertex_descriptor entry = g.entry();
+		BOOST_ASSERT(g[entry].type == cfg::nt_none);
+		BOOST_ASSERT(out_degree(entry, g) > 0);
+		if (out_degree(entry, g) == 1)
+		{
+			cfg::vertex_descriptor new_entry = target(*out_edges(entry, g).first, g);
+			g.entry(new_entry);
+			clear_vertex(entry, g);
+			remove_vertex(entry, g);
 		}
 	}
 };
