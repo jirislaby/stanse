@@ -56,6 +56,8 @@ struct context
 	cfg & g;
 	cfg::vertex_descriptor m_head;
 	std::set<cfg::vertex_descriptor> m_exit_nodes;
+	std::vector<cfg::vertex_descriptor> m_break_sentinels;
+	std::vector<cfg::vertex_descriptor> m_continue_sentinels;
 
 	std::map<clang::NamedDecl const *, std::string> m_registered_names;
 
@@ -73,6 +75,12 @@ struct context
 			g[e] = g[*in_edge_range.first];
 		}
 		return res;
+	}
+
+	void join_nodes(cfg::vertex_descriptor src, cfg::vertex_descriptor dest)
+	{
+		g.redirect_vertex(src, dest);
+		remove_vertex(src, g);
 	}
 
 	std::string get_name(clang::NamedDecl const * decl) const
@@ -142,6 +150,11 @@ struct context
 	{
 		eop_type type;
 		cfg::op_id id;
+
+		eop(cfg::operand op)
+			: type(static_cast<eop_type>(op.type)), id(op.id)
+		{
+		}
 
 		eop(eop_type type = eot_none, cfg::op_id id = boost::none)
 			: type(type), id(id)
@@ -217,10 +230,15 @@ struct context
 		return op;
 	}
 
-	eop make_node(eop const & op)
+	/**
+	 * \brief Convert an eop to an op of type ot_node and of the same value.
+	 */
+	cfg::vertex_descriptor make_node(cfg::vertex_descriptor & head, eop op)
 	{
-		// TODO
-		return op;
+		op = this->make_rvalue(head, op);
+		if (op.type != eot_node)
+			op = this->add_node(head, enode(cfg::nt_value)(op));
+		return boost::get<cfg::vertex_descriptor>(op.id);
 	}
 
 	eop add_node(cfg::vertex_descriptor & head, enode const & node)
@@ -241,19 +259,27 @@ struct context
 		return eop(eot_node, new_head);
 	}
 
-	eop build_expr(clang::Expr const * expr)
+	void set_cond(cfg::vertex_descriptor node, std::size_t index, std::string cond)
+	{
+		BOOST_ASSERT(in_degree(node, g) == 1);
+		cfg::edge_descriptor edge = *in_edges(node, g).first;
+		g[edge].id = index;
+		g[edge].cond = cond;
+	}
+
+	eop build_expr(cfg::vertex_descriptor & head, clang::Expr const * expr)
 	{
 		BOOST_ASSERT(expr != 0);
 
 		if (clang::BinaryOperator const * e = llvm::dyn_cast<clang::BinaryOperator>(expr))
 		{
-			eop const & lhs = this->build_expr(e->getLHS());
-			eop const & rhs = this->build_expr(e->getRHS());
+			eop const & lhs = this->build_expr(head, e->getLHS());
+			eop const & rhs = this->build_expr(head, e->getRHS());
 
 			// Treat assignment specially (takes a pointer to the assignee).
 			if (e->isAssignmentOp() || e->isCompoundAssignmentOp())
 			{
-				this->add_node(m_head, enode(cfg::nt_call, expr)
+				this->add_node(head, enode(cfg::nt_call, expr)
 					(eot_oper, clang::BinaryOperator::getOpcodeStr(e->getOpcode()))
 					(this->make_address(lhs))
 					(rhs));
@@ -280,7 +306,7 @@ struct context
 			}
 			else
 			{
-				return this->add_node(m_head, enode(cfg::nt_call, expr)
+				return this->add_node(head, enode(cfg::nt_call, expr)
 					(eot_oper, clang::BinaryOperator::getOpcodeStr(e->getOpcode()))
 					(lhs)
 					(rhs));
@@ -368,7 +394,13 @@ struct context
 			else
 			{
 				BOOST_ASSERT(0 && "encountered a declref to a non-value decl");
+				return eop();
 			}
+		}
+		else if (clang::ImplicitCastExpr const * e = llvm::dyn_cast<clang::ImplicitCastExpr>(expr))
+		{
+			// TODO: deal with the casts correctly
+			return this->build_expr(head, e->getSubExpr());
 		}
 		else
 		{
@@ -377,28 +409,73 @@ struct context
 		}
 	}
 
-	void build_stmt(clang::Stmt const * stmt)
+	void build_stmt(cfg::vertex_descriptor & head, clang::Stmt const * stmt)
 	{
 		BOOST_ASSERT(stmt != 0);
 
 		if (clang::CompoundStmt const * s = llvm::dyn_cast<clang::CompoundStmt>(stmt))
 		{
 			for (clang::CompoundStmt::const_body_iterator it = s->body_begin(); it != s->body_end(); ++it)
-				this->build_stmt(*it);
+				this->build_stmt(head, *it);
+		}
+		else if (clang::Expr const * s = llvm::dyn_cast<clang::Expr>(stmt))
+		{
+			this->build_expr(head, s);
 		}
 		else if (clang::ReturnStmt const * s = llvm::dyn_cast<clang::ReturnStmt>(stmt))
 		{
 			cfg::operand val;
 			if (s->getRetValue() != 0)
-				val = this->make_rvalue(m_head, this->build_expr(s->getRetValue()));
+				val = this->make_rvalue(head, this->build_expr(head, s->getRetValue()));
 
-			g[m_head].type = cfg::nt_exit;
-			g[m_head].ops.push_back(cfg::operand(cfg::ot_const, "0"));
+			g[head].type = cfg::nt_exit;
+			g[head].ops.push_back(cfg::operand(cfg::ot_const, "0"));
 			if (s->getRetValue() != 0)
-				g[m_head].ops.push_back(val);
-			m_exit_nodes.insert(m_head);
+				g[head].ops.push_back(val);
+			m_exit_nodes.insert(head);
 
-			m_head = add_vertex(g);
+			head = add_vertex(g);
+		}
+		else if (clang::BreakStmt const * s = llvm::dyn_cast<clang::BreakStmt>(stmt))
+		{
+			BOOST_ASSERT(!m_break_sentinels.empty());
+			this->join_nodes(head, m_break_sentinels.back());
+			head = add_vertex(g);
+		}
+		else if (clang::ContinueStmt const * s = llvm::dyn_cast<clang::ContinueStmt>(stmt))
+		{
+			BOOST_ASSERT(!m_break_sentinels.empty());
+			this->join_nodes(head, m_continue_sentinels.back());
+			head = add_vertex(g);
+		}
+		else if (clang::IfStmt const * s = llvm::dyn_cast<clang::IfStmt>(stmt))
+		{
+			this->make_node(head, this->build_expr(head, s->getCond()));
+			cfg::vertex_descriptor else_head = this->duplicate_vertex(head);
+
+			this->set_cond(else_head, 0, "0");
+
+			this->build_stmt(head, s->getThen());
+			if (s->getElse() != 0)
+				this->build_stmt(else_head, s->getElse());
+			this->join_nodes(else_head, head);
+		}
+		else if (clang::WhileStmt const * s = llvm::dyn_cast<clang::WhileStmt>(stmt))
+		{
+			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_expr(head, s->getCond()));
+			cfg::vertex_descriptor body_head = this->duplicate_vertex(head);
+			this->set_cond(head, 0, "0");
+
+			m_break_sentinels.push_back(add_vertex(g));
+			m_continue_sentinels.push_back(add_vertex(g));
+
+			this->build_stmt(body_head, s->getBody());
+
+			this->join_nodes(body_head, cond_node);
+			this->join_nodes(m_break_sentinels.back(), head);
+			this->join_nodes(m_continue_sentinels.back(), cond_node);
+			m_break_sentinels.pop_back();
+			m_continue_sentinels.pop_back();
 		}
 		else if (clang::DeclStmt const * s = llvm::dyn_cast<clang::DeclStmt>(stmt))
 		{
@@ -416,10 +493,10 @@ struct context
 						}
 						else */if (vd->getType()->isReferenceType())
 						{
-							this->add_node(m_head, enode(cfg::nt_call, stmt)
+							this->add_node(head, enode(cfg::nt_call, stmt)
 								(eot_oper, "=")
 								(eot_varptr, this->get_name(vd))
-								(this->make_address(this->build_expr(vd->getInit()))));
+								(this->make_address(this->build_expr(head, vd->getInit()))));
 						}
 						else if (vd->getType()->isArrayType())
 						{
@@ -432,17 +509,17 @@ struct context
 								for (std::size_t i = 0; i < e->getNumInits(); ++i)
 								{
 									// TODO: define semantics of [] operator
-									eop op = this->add_node(m_head, enode(cfg::nt_call, stmt)
+									eop op = this->add_node(head, enode(cfg::nt_call, stmt)
 										(eot_oper, "[]")
 										(eot_varptr, this->get_name(vd))
 										(eot_const, boost::lexical_cast<std::string>(i)));
 
 									if (!at->getElementType()->isStructureOrClassType())
 									{
-										this->add_node(m_head, enode(cfg::nt_call, stmt)
+										this->add_node(head, enode(cfg::nt_call, stmt)
 											(eot_oper, "=")
 											(op)
-											(this->build_expr(e->getInit(i))));
+											(this->build_expr(head, e->getInit(i))));
 									}
 									// TODO
 									/*else
@@ -456,12 +533,12 @@ struct context
 									std::size_t bound = cat->getSize().getLimitedValue();
 									for (std::size_t i = e->getNumInits(); i < bound; ++i)
 									{
-										eop op = this->add_node(m_head, enode(cfg::nt_call, stmt)
+										eop op = this->add_node(head, enode(cfg::nt_call, stmt)
 											(eot_oper, "[]")
 											(eot_varptr, this->get_name(vd))
 											(eot_const, boost::lexical_cast<std::string>(i)));
 
-										this->add_node(m_head, enode(cfg::nt_call, stmt)
+										this->add_node(head, enode(cfg::nt_call, stmt)
 											(eot_oper, "=")
 											(op)
 											(eot_const, "0"));
@@ -479,7 +556,7 @@ struct context
 								std::size_t bounds = at->getSize().getLimitedValue();
 								for (std::size_t i = 0; i < bounds; ++i)
 								{
-									eop op = this->add_node(m_head, enode(cfg::nt_call, stmt)
+									eop op = this->add_node(head, enode(cfg::nt_call, stmt)
 										(eot_oper, "[]")
 										(eot_varptr, this->get_name(vd))
 										(eot_const, boost::lexical_cast<std::string>(i)));
@@ -490,10 +567,10 @@ struct context
 						}
 						else
 						{
-							this->add_node(m_head, enode(cfg::nt_call, stmt)
+							this->add_node(head, enode(cfg::nt_call, stmt)
 								(eot_oper, "=")
 								(eot_varptr, this->get_name(vd))
-								(this->build_expr(vd->getInit())));
+								(this->build_expr(head, vd->getInit())));
 						}
 					}
 				}
@@ -550,7 +627,7 @@ struct context
 			if (exit_nodes.size() < 2)
 				continue;
 
-			if (value_node_count > 0)
+			if (value_node_count < 2)
 			{
 				for (std::size_t i = 1; i != exit_nodes.size(); ++i)
 				{
@@ -625,7 +702,7 @@ std::pair<std::string, cfg> build_cfg(clang::FunctionDecl const * fn)
 
 	context ctx(c);
 	ctx.register_locals(fn);
-	ctx.build_stmt(fn->getBody());
+	ctx.build_stmt(ctx.m_head, fn->getBody());
 	ctx.finish();
 	return res;
 }
