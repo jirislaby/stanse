@@ -684,7 +684,8 @@ struct context
 		}
 		else if (clang::NullStmt const * s = llvm::dyn_cast<clang::NullStmt>(stmt))
 		{
-			// TODO: perhaps we should leave a nt_none node?
+			// Leave a comment about the null statement.
+			this->add_node(head, enode(cfg::nt_none)(eot_const, "null"));
 		}
 		else if (clang::CXXTryStmt const * s = llvm::dyn_cast<clang::CXXTryStmt>(stmt))
 		{
@@ -708,6 +709,8 @@ struct context
 		}
 		else
 		{
+			// IndirectGotoStmt
+			// ObjC statements
 			BOOST_ASSERT(0 && "unknown AST node encountered");
 		}
 	}
