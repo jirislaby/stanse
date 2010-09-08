@@ -686,6 +686,11 @@ struct context
 		{
 			// TODO: perhaps we should leave a nt_none node?
 		}
+		else if (clang::CXXTryStmt const * s = llvm::dyn_cast<clang::CXXTryStmt>(stmt))
+		{
+			// TODO
+			this->build_stmt(head, s->getTryBlock());
+		}
 		else if (clang::LabelStmt const * s = llvm::dyn_cast<clang::LabelStmt>(stmt))
 		{
 			m_labels[s] = head;
