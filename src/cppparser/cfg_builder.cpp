@@ -696,6 +696,11 @@ struct context
 			m_gotos[s] = head;
 			head = add_vertex(g);
 		}
+		else if (clang::AsmStmt const * s = llvm::dyn_cast<clang::AsmStmt>(stmt))
+		{
+			// Leave a comment about the asm statement but ignore its contents.
+			this->add_node(head, enode(cfg::nt_none)(eot_const, "asm")(eot_const, std::string(s->getAsmString()->getString())));
+		}
 		else
 		{
 			BOOST_ASSERT(0 && "unknown AST node encountered");
