@@ -59,6 +59,9 @@ struct context
 	std::vector<cfg::vertex_descriptor> m_break_sentinels;
 	std::vector<cfg::vertex_descriptor> m_continue_sentinels;
 
+	typedef std::pair<cfg::vertex_descriptor, std::map<std::string, cfg::vertex_descriptor> > case_context_t;
+	std::vector<case_context_t> m_case_contexts;
+
 	std::map<clang::NamedDecl const *, std::string> m_registered_names;
 
 	cfg::vertex_descriptor duplicate_vertex(cfg::vertex_descriptor src)
@@ -312,6 +315,10 @@ struct context
 					(rhs));
 			}
 		}
+		else if (clang::CXXBoolLiteralExpr const * e = llvm::dyn_cast<clang::CXXBoolLiteralExpr>(expr))
+		{
+			return eop(eot_const, e->getValue()? "1": "0");
+		}
 		else if (clang::IntegerLiteral const * e = llvm::dyn_cast<clang::IntegerLiteral>(expr))
 		{
 			return eop(eot_const, e->getValue().toString(10, true));
@@ -477,6 +484,102 @@ struct context
 			m_break_sentinels.pop_back();
 			m_continue_sentinels.pop_back();
 		}
+		else if (clang::DoStmt const * s = llvm::dyn_cast<clang::DoStmt>(stmt))
+		{
+			cfg::vertex_descriptor start_node = head;
+
+			m_break_sentinels.push_back(add_vertex(g));
+			m_continue_sentinels.push_back(add_vertex(g));
+			this->build_stmt(head, s->getBody());
+
+			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_expr(head, s->getCond()));
+			cfg::vertex_descriptor loop_node = this->duplicate_vertex(head);
+			this->set_cond(head, 0, "0");
+
+			this->join_nodes(loop_node, start_node);
+
+			this->join_nodes(m_break_sentinels.back(), head);
+			this->join_nodes(m_continue_sentinels.back(), cond_node);
+			m_break_sentinels.pop_back();
+			m_continue_sentinels.pop_back();
+		}
+		else if (clang::ForStmt const * s = llvm::dyn_cast<clang::ForStmt>(stmt))
+		{
+			if (s->getInit())
+				this->build_stmt(head, s->getInit());
+
+			cfg::vertex_descriptor cond_node = head;
+			cfg::vertex_descriptor exit_node;
+			if (s->getCond())
+			{
+				cond_node = this->make_node(head, this->build_expr(head, s->getCond()));
+				exit_node = this->duplicate_vertex(head);
+				this->set_cond(exit_node, 0, "0");
+			}
+			else
+				exit_node = add_vertex(g);
+
+			m_break_sentinels.push_back(add_vertex(g));
+			m_continue_sentinels.push_back(add_vertex(g));
+
+			cfg::vertex_descriptor body_node = head;
+			this->build_stmt(head, s->getBody());
+			this->join_nodes(m_continue_sentinels.back(), head);
+			m_continue_sentinels.pop_back();
+
+			if (s->getInc())
+				this->build_expr(head, s->getInc());
+			this->join_nodes(head, cond_node);
+			head = exit_node;
+
+			this->join_nodes(m_break_sentinels.back(), exit_node);
+			m_break_sentinels.pop_back();
+		}
+		else if (clang::DefaultStmt const * s = llvm::dyn_cast<clang::DefaultStmt>(stmt))
+		{
+			BOOST_ASSERT(!m_case_contexts.empty());
+			BOOST_ASSERT(m_case_contexts.back().first == cfg::null_vertex());
+			m_case_contexts.back().first = head;
+			this->build_stmt(head, s->getSubStmt());
+		}
+		else if (clang::CaseStmt const * s = llvm::dyn_cast<clang::CaseStmt>(stmt))
+		{
+			BOOST_ASSERT(!m_case_contexts.empty());
+			BOOST_ASSERT(s->getRHS() == 0 && "case lhs..rhs; gcc extension is not supported");
+
+			eop cond = this->build_expr(head, s->getLHS());
+			BOOST_ASSERT(cond.type == eot_const);
+
+			m_case_contexts.back().second[boost::get<std::string>(cond.id)] = head;
+			this->build_stmt(head, s->getSubStmt());
+		}
+		else if (clang::SwitchStmt const * s = llvm::dyn_cast<clang::SwitchStmt>(stmt))
+		{
+			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_expr(head, s->getCond()));
+			cfg::vertex_descriptor cond_cont = head;
+			cfg::vertex_descriptor body_start = add_vertex(g);
+			head = body_start;
+
+			m_case_contexts.push_back(case_context_t());
+			m_break_sentinels.push_back(add_vertex(g));
+			this->build_stmt(head, s->getBody());
+			this->join_nodes(m_break_sentinels.back(), head);
+			m_break_sentinels.pop_back();
+
+			case_context_t const & case_ctx = m_case_contexts.back();
+			if (case_ctx.first != cfg::null_vertex())
+				this->join_nodes(cond_cont, case_ctx.first);
+			else
+				this->join_nodes(cond_cont, body_start);
+
+			for (case_context_t::second_type::const_iterator it = case_ctx.second.begin(); it != case_ctx.second.end(); ++it)
+			{
+				cfg::edge_descriptor e = add_edge(cond_node, it->second, g).first;
+				g[e].cond = it->first;
+			}
+
+			m_case_contexts.pop_back();
+		}
 		else if (clang::DeclStmt const * s = llvm::dyn_cast<clang::DeclStmt>(stmt))
 		{
 			for (clang::DeclStmt::const_decl_iterator ci = s->decl_begin(); ci != s->decl_end(); ++ci)
@@ -575,6 +678,10 @@ struct context
 					}
 				}
 			}
+		}
+		else if (clang::NullStmt const * s = llvm::dyn_cast<clang::NullStmt>(stmt))
+		{
+			// TODO: perhaps we should leave a nt_none node?
 		}
 		else
 		{

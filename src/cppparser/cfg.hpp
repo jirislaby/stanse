@@ -214,6 +214,11 @@ public:
 		return e.source->succs[e.parity].target;
 	}
 
+	static vertex_descriptor null_vertex()
+	{
+		return 0;
+	}
+
 	typedef std::set<vertex_descriptor>::const_iterator vertex_iterator;
 	friend std::pair<vertex_iterator, vertex_iterator> vertices(cfg const & g)
 	{
