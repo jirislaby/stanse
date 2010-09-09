@@ -255,6 +255,37 @@ struct context
 		return op;
 	}
 
+	eop make_deref(cfg::vertex_descriptor & head, eop op)
+	{
+		switch (op.type)
+		{
+		case eot_func:
+			break;
+		case eot_node:
+			op.type = eot_nodetgt;
+			break;
+		case eot_nodetgt:
+			op = this->make_rvalue(head, op);
+			BOOST_ASSERT(op.type == eot_node);
+			op.type = eot_nodetgt;
+			break;
+		case eot_varptr:
+			op.type = eot_var;
+			break;
+		case eot_var:
+			op.type = eot_vartgt;
+			break;
+		case eot_vartgt:
+			op = this->make_rvalue(head, op);
+			BOOST_ASSERT(op.type == eot_var);
+			op.type = eot_vartgt;
+			break;
+		default:
+			BOOST_ASSERT(0 && "lvalue is required to form an address");
+		}
+		return op;
+	}
+
 	/**
 	 * \brief Convert an eop to an op of type ot_node and of the same value.
 	 */
@@ -560,6 +591,12 @@ struct context
 
 			eop node_op = this->add_node(head, node);
 			return result_op.type == eot_none? node_op: result_op;
+		}
+		else if (clang::MemberExpr const * e = llvm::dyn_cast<clang::MemberExpr>(expr))
+		{
+			return this->make_deref(head, this->add_node(head, enode(cfg::nt_call, e)
+				(eot_member, this->get_name(e->getMemberDecl()))
+				(this->make_address(this->build_expr(head, e->getBase())))));
 		}
 		else if (clang::ImplicitCastExpr const * e = llvm::dyn_cast<clang::ImplicitCastExpr>(expr))
 		{
