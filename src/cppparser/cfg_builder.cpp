@@ -347,11 +347,11 @@ struct context
 		if (clang::BinaryOperator const * e = llvm::dyn_cast<clang::BinaryOperator>(expr))
 		{
 			eop const & lhs = this->build_expr(head, e->getLHS());
-			eop const & rhs = this->build_expr(head, e->getRHS());
 
 			// Treat assignment specially (takes a pointer to the assignee).
 			if (e->isAssignmentOp() || e->isCompoundAssignmentOp())
 			{
+				eop const & rhs = this->build_expr(head, e->getRHS());
 				this->add_node(head, enode(cfg::nt_call, expr)
 					(eot_oper, clang::BinaryOperator::getOpcodeStr(e->getOpcode()))
 					(this->make_address(lhs))
@@ -360,29 +360,26 @@ struct context
 			}
 			else if (e->getOpcode() == clang::BO_Comma)
 			{
-				return rhs;
+				return this->build_expr(head, e->getRHS());
 			}
 			else if (e->getOpcode() == clang::BO_LOr || e->getOpcode() == clang::BO_LAnd)
 			{
-				/*std::size_t branch_node = this->make_node(lhs);
-
-				rcfg::builder rhs_cfg(m_id_list);
-				op_t rhs = rhs_cfg.build_expr(e->getRHS());
-
-				this->append_edge(rhs_cfg, branch_node, m_nodes.size());
+				cfg::vertex_descriptor cond_node = this->make_node(head, lhs);
+				cfg::vertex_descriptor cont_head = this->duplicate_vertex(head);
 
 				if (e->getOpcode() == clang::BO_LAnd)
-					m_nodes[branch_node].succs[0].op = op_t(cfg::ot_const, "0");
+					g[*in_edges(head, g).first].cond = "0";
 				else
-					m_nodes[branch_node].succs[1].op = op_t(cfg::ot_const, "0");
+					g[*in_edges(cont_head, g).first].cond = "0";
 
-				rcfg_node res_node(node_t::nt_phi, e->getExprLoc());
-				res_node(this->make_rvalue(lhs));
-				res_node(this->make_rvalue(rhs));  // FIXME: rhs is not correct as it refers to a node before relocation
-				return this->add_node(res_node);*/
+				eop const & rhs = this->build_expr(cont_head, e->getRHS());
+				cfg::vertex_descriptor rhs_value_node = this->make_node(cont_head, rhs);
+				this->join_nodes(cont_head, head);
+				return this->add_node(head, enode(cfg::nt_phi, e)(eot_node, rhs_value_node)(eot_node, cond_node));
 			}
 			else
 			{
+				eop const & rhs = this->build_expr(head, e->getRHS());
 				return this->add_node(head, enode(cfg::nt_call, expr)
 					(eot_oper, clang::BinaryOperator::getOpcodeStr(e->getOpcode()))
 					(lhs)
