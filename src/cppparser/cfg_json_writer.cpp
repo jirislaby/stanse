@@ -42,6 +42,9 @@ void cfg_json_write(std::ostream & out, program const & prog)
 			case cfg::nt_call:
 				json_node[0u] = "call";
 				break;
+			case cfg::nt_phi:
+				json_node[0u] = "phi";
+				break;
 			default:
 				BOOST_ASSERT(0 && "Unknown node type");
 			}

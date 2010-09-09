@@ -4,19 +4,30 @@ def _is_subgraph_isomorphism(tg, g, isom, sym_isom):
 
         if tv[0] != v[0] or len(tv[1]) > len(v[1]) or len(tv[2]) != len(v[2]):
             return False
-
-        for top, op in zip(tv[2], v[2]):
-            if top[0] != op[0]:
-                return False
             
-            if top[0] == "var" or top[0] == "varptr":
-                if sym_isom[top[1]] != op[1]:
-                    return False
-            elif top[0] == "node":
-                if isom[top[1]] != op[1]:
-                    return False
-            elif top[1] != op[1]:
+        if tv[0] == 'phi':
+            # The order of operands doesn't matter
+            if any(op[0] != 'node' for op in v[2]) or any(top[0] != 'node' for top in tv[2]):
+                # TODO: report error
+                print 1
                 return False
+
+            vs = set(op[1] for op in v[2])
+            if any(isom[top[1]] not in vs for top in tv[2]):
+                return False;
+        else:
+            for top, op in zip(tv[2], v[2]):
+                if top[0] != op[0]:
+                    return False
+
+                if top[0] == "var" or top[0] == "varptr":
+                    if sym_isom[top[1]] != op[1]:
+                        return False
+                elif top[0] == "node":
+                    if isom[top[1]] != op[1]:
+                        return False
+                elif top[1] != op[1]:
+                    return False
 
         for tsucc, tidx, tcond in tv[1]:
             for succ, idx, cond in v[1]:

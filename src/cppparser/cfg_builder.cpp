@@ -47,10 +47,6 @@ struct context
 		: g(c), m_head(add_vertex(g))
 	{
 		g.entry(m_head);
-
-		cfg::vertex_descriptor new_head = add_vertex(g);
-		add_edge(m_head, new_head, g);
-		m_head = new_head;
 	}
 
 	cfg & g;
@@ -785,7 +781,7 @@ struct context
 			else
 			{
 				cfg::vertex_descriptor phi_node = add_vertex(g);
-				g[phi_node].type = cfg::nt_value;
+				g[phi_node].type = cfg::nt_phi;
 
 				cfg::vertex_descriptor new_exit_node = add_vertex(g);
 				g[new_exit_node].type = cfg::nt_exit;
@@ -823,16 +819,7 @@ struct context
 			}
 		}
 
-		cfg::vertex_descriptor entry = g.entry();
-		BOOST_ASSERT(g[entry].type == cfg::nt_none);
-		BOOST_ASSERT(out_degree(entry, g) > 0);
-		if (out_degree(entry, g) == 1)
-		{
-			cfg::vertex_descriptor new_entry = target(*out_edges(entry, g).first, g);
-			g.entry(new_entry);
-			clear_vertex(entry, g);
-			remove_vertex(entry, g);
-		}
+		BOOST_ASSERT(g.entry() != 0);
 	}
 };
 

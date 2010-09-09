@@ -45,6 +45,9 @@ void program::pretty_print(std::ostream & out) const
 			case cfg::nt_call:
 				out << "call";
 				break;
+			case cfg::nt_phi:
+				out << "phi";
+				break;
 			default:
 				BOOST_ASSERT(0 && "Unknown node type");
 			}

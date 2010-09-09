@@ -16,7 +16,7 @@ class cfg
 	struct graph_vertex;
 
 public:
-	enum node_type { nt_none, nt_exit, nt_value, nt_call };
+	enum node_type { nt_none, nt_exit, nt_value, nt_call, nt_phi };
 	enum op_type { ot_none, ot_func, ot_oper, ot_const, ot_member, ot_node, ot_var, ot_varptr };
 
 	typedef graph_vertex * vertex_descriptor;
@@ -180,6 +180,8 @@ public:
 	{
 		BOOST_ASSERT(v->preds.empty());
 		BOOST_ASSERT(v->succs.empty());
+		if (g.m_entry == v)
+			g.m_entry = 0;
 		g.m_vertices.erase(v);
 		delete v;
 	}
@@ -202,6 +204,9 @@ public:
 			target->preds.insert(*it);
 		}
 		source->preds.clear();
+
+		if (m_entry == source)
+			m_entry = target;
 	}
 
 	friend vertex_descriptor source(edge_descriptor const & e, cfg const &)
