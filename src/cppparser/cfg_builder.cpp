@@ -825,12 +825,12 @@ struct context
 				{
 					if (vd->hasInit())
 					{
-						// TODO: deal with in-place construction
-						/*if (vd->getType()->isStructureOrClassType())
+						if (vd->getType()->isStructureOrClassType())
 						{
-							this->build_expr(vd->getInit(), opd_t(rcfg_node::ot_varptr, m_id_list(vd)));
+							BOOST_ASSERT(llvm::isa<clang::CXXConstructExpr>(vd->getInit()));
+							this->build_construct_expr(head, eop(eot_var, this->get_name(vd)), llvm::dyn_cast<clang::CXXConstructExpr>(vd->getInit()));
 						}
-						else */if (vd->getType()->isReferenceType())
+						else if (vd->getType()->isReferenceType())
 						{
 							this->add_node(head, enode(cfg::nt_call, stmt)
 								(eot_oper, "=")
