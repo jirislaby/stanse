@@ -16,7 +16,9 @@ set(LLVM_LIB_DIR "${LLVM_BUILD_PATH}/lib")
 include_directories(${LLVM_INCLUDE_DIR})
 link_directories(${LLVM_LIB_DIR})
 
-add_executable(cppparser ast_dumper.cpp ast_dumper_detail.cpp cfg_dumper.cpp main.cpp)
+add_executable(cppparser ast_dumper.cpp ast_dumper_detail.cpp main.cpp cfg.cpp
+    cfg_builder.cpp cfg_json_writer.cpp rcfg_dumper.cpp json/json_reader.cpp
+    json/json_value.cpp json/json_writer.cpp)
 target_link_libraries(cppparser libclang)
 set_property(
     TARGET cppparser

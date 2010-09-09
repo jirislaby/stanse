@@ -55,8 +55,8 @@ void cfg_json_write(std::ostream & out, program const & prog)
 			for (cfg::out_edge_iterator edge_it = out_edges_range.first; edge_it != out_edges_range.second; ++edge_it)
 			{
 				Json::Value json_succ(Json::arrayValue);
-				json_succ.append(index_map[target(*edge_it, c)]);
-				json_succ.append(c[*edge_it].id);
+				json_succ.append((Json::UInt)index_map[target(*edge_it, c)]);
+				json_succ.append((Json::UInt)c[*edge_it].id);
 				json_succ.append(c[*edge_it].cond);
 				json_node[1].append(json_succ);
 			}
@@ -104,7 +104,7 @@ void cfg_json_write(std::ostream & out, program const & prog)
 					json_op.append(boost::get<std::string>(node.ops[i].id));
 					break;
 				case 2:
-					json_op.append(index_map[boost::get<cfg::vertex_descriptor>(node.ops[i].id)]);
+					json_op.append((Json::UInt)index_map[boost::get<cfg::vertex_descriptor>(node.ops[i].id)]);
 					break;
 				}
 
@@ -124,7 +124,7 @@ void cfg_json_write(std::ostream & out, program const & prog)
 			json_cfg["locals"].append(c.locals()[i]);
 
 		json_cfg["nodes"] = json_nodes;
-		json_cfg["entry"] = index_map[c.entry()];
+		json_cfg["entry"] = (Json::UInt)index_map[c.entry()];
 
 		json_prog[it->first] = json_cfg;
 	}

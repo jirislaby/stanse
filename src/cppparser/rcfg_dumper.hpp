@@ -3,6 +3,7 @@
 
 #include <clang/AST/Stmt.h>
 #include <clang/Analysis/CFG.h>
+#include <clang/Basic/SourceManager.h>
 
 #include <cstdlib>
 #include <iostream>

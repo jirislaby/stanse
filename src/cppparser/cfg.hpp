@@ -11,6 +11,8 @@
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
+#include <memory>
+
 class cfg
 {
 	struct graph_vertex;
