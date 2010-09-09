@@ -188,6 +188,21 @@ struct context
 		}
 	};
 
+	typedef std::vector<std::pair<clang::CXXDestructorDecl const *, eop> > lifetime_context_t;
+	std::vector<lifetime_context_t> m_fullexpr_lifetimes;
+
+	std::vector<clang::Type const *> m_temporaries;
+
+	eop make_temporary(clang::Type const * type)
+	{
+		std::ostringstream ss;
+		ss << "t:" << m_temporaries.size();
+
+		m_temporaries.push_back(type);
+		g.add_local(ss.str());
+		return eop(eot_var, ss.str());
+	}
+
 	cfg::operand make_rvalue(cfg::vertex_descriptor & head, eop const & op)
 	{
 		if (op.type == eot_nodetgt)
@@ -209,6 +224,14 @@ struct context
 
 		BOOST_ASSERT(op.type < eot_nodetgt);
 		return cfg::operand(static_cast<cfg::op_type>(op.type), op.id);
+	}
+
+	eop make_param(eop const & op, clang::Type const * type)
+	{
+		if (type->isReferenceType() || type->isClassType())
+			return this->make_address(op);
+		else
+			return op;
 	}
 
 	eop make_address(eop op)
@@ -402,6 +425,141 @@ struct context
 				BOOST_ASSERT(0 && "encountered a declref to a non-value decl");
 				return eop();
 			}
+		}
+		else if (clang::CallExpr const * e = llvm::dyn_cast<clang::CallExpr>(expr))
+		{
+			// Deal with pseudo-destructor calls.
+			if (clang::CXXPseudoDestructorExpr const * de = llvm::dyn_cast<clang::CXXPseudoDestructorExpr>(e->getCallee()))
+			{
+				return this->build_expr(head, de->getBase());
+			}
+
+			// There are several possibilities.
+			//  1. The call is a call to an overloaded operator.
+			//  2. The expression type is clang::CXXMemberCallExpr. Then the callee is either
+			//    a. clang::MemberExpr and the type of the function can be determined from the
+			//       member declaration (remember there is an implicit `this` parameter), or
+			//    b. clang::BinaryOperator, with either PtrMemD or PtrMemI; the type of
+			//       the parameters can be extracted from the rhs operand.
+			//  3. This is a normal invocation, in which case the type of the callee is a pointer to function,
+			//     the types of parameters can be extracted from there.
+			//
+			// Additionally, there can be an implicit parameter representing the return value
+			// (if the value is of a class type).
+
+			eop callee_op;
+			std::vector<eop> params;
+			std::vector<clang::Type const *> param_types;
+			clang::FunctionProtoType const * fntype;
+			std::size_t arg_index = 0;
+			if (llvm::isa<clang::CXXOperatorCallExpr>(e))
+			{
+				BOOST_ASSERT(e->getDirectCallee() != 0);
+				if (clang::CXXMethodDecl const * md = llvm::dyn_cast<clang::CXXMethodDecl>(e->getDirectCallee()))
+				{
+					// C++03: 13.5/6: overloaded operators can't be static member functions
+					eop this_op = this->build_expr(head, e->getArg(arg_index++));
+					this_op = this->make_address(this_op);
+					params.push_back(this_op);
+
+					param_types.push_back(
+						md->getThisType(md->getASTContext()).getTypePtr());
+
+					callee_op = eop(eot_func, this->get_name(md));
+					fntype = llvm::dyn_cast<clang::FunctionProtoType>(md->getType().getTypePtr());
+				}
+				else
+				{
+					callee_op = this->build_expr(head, e->getCallee());
+					fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getCallee()->getType()->getPointeeType());
+				}
+			}
+			else if (llvm::isa<clang::CXXMemberCallExpr>(e))
+			{
+				if (clang::MemberExpr const * mcallee = llvm::dyn_cast<clang::MemberExpr>(e->getCallee()))
+				{
+					clang::CXXMethodDecl const * mdecl = llvm::dyn_cast<clang::CXXMethodDecl>(mcallee->getMemberDecl());
+
+					eop this_op = this->build_expr(head, mcallee->getBase());
+					if (!mdecl->isStatic())
+					{
+						if (!mcallee->isArrow())
+							this_op = this->make_address(this_op);
+						params.push_back(this_op);
+
+						param_types.push_back(
+							mdecl->getThisType(mdecl->getASTContext()).getTypePtr());
+					}
+					else
+					{
+						this->make_node(head, this_op);
+					}
+
+					callee_op = eop(eot_func, this->get_name(mdecl));
+
+					fntype = llvm::dyn_cast<clang::FunctionProtoType>(mdecl->getType().getTypePtr());
+				}
+				else if (clang::BinaryOperator const * callee = llvm::dyn_cast<clang::BinaryOperator>(e->getCallee()))
+				{
+					BOOST_ASSERT(callee->getOpcode() == clang::BO_PtrMemD || callee->getOpcode() == clang::BO_PtrMemI);
+
+					callee_op = this->build_expr(head, callee->getRHS());
+					clang::MemberPointerType const * calleePtrType = llvm::dyn_cast<clang::MemberPointerType>(callee->getRHS()->getType().getTypePtr());
+					BOOST_ASSERT(calleePtrType);
+
+					eop this_op = this->build_expr(head, callee->getLHS());
+					if (callee->getOpcode() == clang::BO_PtrMemD)
+						this_op = this->make_address(this_op);
+					params.push_back(this_op);
+
+					// FIXME: this should be a pointer to
+					param_types.push_back(calleePtrType->getClass()->getCanonicalTypeInternal().getTypePtr());
+
+					fntype = llvm::dyn_cast<clang::FunctionProtoType>(calleePtrType->getPointeeType().getTypePtr());
+				}
+				else
+					BOOST_ASSERT(0);
+			}
+			else
+			{
+				callee_op = this->build_expr(head, e->getCallee());
+				fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getCallee()->getType()->getPointeeType());
+			}
+
+			BOOST_ASSERT(fntype);
+
+			eop result_op;
+			clang::Type const * restype = fntype->getResultType().getTypePtr();
+			if (restype->isStructureOrClassType())
+			{
+				eop temp = this->make_temporary(restype);
+				params.insert(params.begin(), temp);
+				param_types.insert(param_types.begin(), restype);
+				result_op = temp;
+			}
+
+			BOOST_ASSERT(fntype->isVariadic() || fntype->getNumArgs() + arg_index == e->getNumArgs());
+
+			for (std::size_t i = 0; i < fntype->getNumArgs(); ++i)
+			{
+				params.push_back(this->build_expr(head, e->getArg(i + arg_index)));
+				param_types.push_back(fntype->getArgType(i).getTypePtr());
+			}
+
+			for (std::size_t i = fntype->getNumArgs() + arg_index; i < e->getNumArgs(); ++i)
+			{
+				params.push_back(this->build_expr(head, e->getArg(i)));
+				param_types.push_back(e->getArg(i)->getType().getTypePtr());
+			}
+
+			// TODO: handle classes with conversion to pointer to fn.
+			enode node(cfg::nt_call, e);
+			node(callee_op);
+			for (std::size_t i = 0; i < params.size(); ++i)
+				node(this->make_param(params[i], param_types[i]));
+
+			eop node_op = this->add_node(head, node);
+			return result_op.type == eot_none? node_op: result_op;
 		}
 		else if (clang::ImplicitCastExpr const * e = llvm::dyn_cast<clang::ImplicitCastExpr>(expr))
 		{
