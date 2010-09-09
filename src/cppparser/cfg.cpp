@@ -58,10 +58,9 @@ void program::pretty_print(std::ostream & out) const
 			{
 				cfg::operand const & op = node.ops[j];
 
-				enum op_type { ot_none, ot_func, ot_oper, ot_const, ot_member, ot_node, ot_var, ot_varptr };
 				static char const * op_names[] = { "none", "func", "oper", "const", "member", "node", "var", "varptr" };
 
-				BOOST_ASSERT(op.type <= ot_varptr);
+				BOOST_ASSERT(op.type <= cfg::ot_varptr);
 				out << "        " << op_names[op.type] << " ";
 
 				if (op.id.which() == 2)
