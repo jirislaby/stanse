@@ -190,6 +190,7 @@ struct context
 
 	typedef std::vector<std::pair<clang::CXXDestructorDecl const *, eop> > lifetime_context_t;
 	std::vector<lifetime_context_t> m_fullexpr_lifetimes;
+	std::vector<lifetime_context_t> m_block_lifetimes;
 
 	std::vector<clang::Type const *> m_temporaries;
 
@@ -666,14 +667,28 @@ struct context
 		return res;
 	}
 
+	void end_block_lifetime(cfg::vertex_descriptor & head)
+	{
+		BOOST_ASSERT(!m_block_lifetimes.empty());
+		for (std::size_t i = m_block_lifetimes.back().size(); i != 0; --i)
+		{
+			std::pair<clang::CXXDestructorDecl const *, eop> const & op = m_block_lifetimes.back()[i-1];
+			BOOST_ASSERT(op.first != 0);
+			this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(op.first))(op.second));
+		}
+		m_block_lifetimes.pop_back();
+	}
+
 	void build_stmt(cfg::vertex_descriptor & head, clang::Stmt const * stmt)
 	{
 		BOOST_ASSERT(stmt != 0);
 
 		if (clang::CompoundStmt const * s = llvm::dyn_cast<clang::CompoundStmt>(stmt))
 		{
+			m_block_lifetimes.push_back(lifetime_context_t());
 			for (clang::CompoundStmt::const_body_iterator it = s->body_begin(); it != s->body_end(); ++it)
 				this->build_stmt(head, *it);
+			this->end_block_lifetime(head);
 		}
 		else if (clang::Expr const * s = llvm::dyn_cast<clang::Expr>(stmt))
 		{
@@ -843,7 +858,11 @@ struct context
 						if (vd->getType()->isStructureOrClassType())
 						{
 							BOOST_ASSERT(llvm::isa<clang::CXXConstructExpr>(vd->getInit()));
-							this->build_construct_expr(head, eop(eot_var, this->get_name(vd)), llvm::dyn_cast<clang::CXXConstructExpr>(vd->getInit()));
+							eop var(eot_var, this->get_name(vd));
+							this->build_construct_expr(head, var, llvm::dyn_cast<clang::CXXConstructExpr>(vd->getInit()));
+							clang::CXXRecordDecl const * recordDecl = vd->getInit()->getType()->getAsCXXRecordDecl();
+							if (recordDecl && recordDecl->hasDeclaredDestructor())
+								m_block_lifetimes.back().push_back(std::make_pair(recordDecl->getDestructor(), var));
 						}
 						else if (vd->getType()->isReferenceType())
 						{
