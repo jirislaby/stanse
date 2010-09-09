@@ -573,6 +573,21 @@ struct context
 		}
 	}
 
+	eop build_full_expr(cfg::vertex_descriptor & head, clang::Expr const * expr)
+	{
+		m_fullexpr_lifetimes.push_back(lifetime_context_t());
+		eop res = this->build_expr(head, expr);
+		lifetime_context_t const & ctx = m_fullexpr_lifetimes.back();
+		for (std::size_t i = ctx.size(); i != 0; --i)
+		{
+			std::pair<clang::CXXDestructorDecl const *, eop> const & op = ctx[i-1];
+			BOOST_ASSERT(op.first != 0);
+			this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(op.first))(op.second));
+		}
+		m_fullexpr_lifetimes.pop_back();
+		return res;
+	}
+
 	void build_stmt(cfg::vertex_descriptor & head, clang::Stmt const * stmt)
 	{
 		BOOST_ASSERT(stmt != 0);
@@ -584,13 +599,13 @@ struct context
 		}
 		else if (clang::Expr const * s = llvm::dyn_cast<clang::Expr>(stmt))
 		{
-			this->build_expr(head, s);
+			this->build_full_expr(head, s);
 		}
 		else if (clang::ReturnStmt const * s = llvm::dyn_cast<clang::ReturnStmt>(stmt))
 		{
 			cfg::operand val;
 			if (s->getRetValue() != 0)
-				val = this->make_rvalue(head, this->build_expr(head, s->getRetValue()));
+				val = this->make_rvalue(head, this->build_full_expr(head, s->getRetValue()));
 
 			g[head].type = cfg::nt_exit;
 			g[head].ops.push_back(cfg::operand(cfg::ot_const, "0"));
@@ -614,7 +629,7 @@ struct context
 		}
 		else if (clang::IfStmt const * s = llvm::dyn_cast<clang::IfStmt>(stmt))
 		{
-			this->make_node(head, this->build_expr(head, s->getCond()));
+			this->make_node(head, this->build_full_expr(head, s->getCond()));
 			cfg::vertex_descriptor else_head = this->duplicate_vertex(head);
 
 			this->set_cond(else_head, 0, "0");
@@ -626,7 +641,7 @@ struct context
 		}
 		else if (clang::WhileStmt const * s = llvm::dyn_cast<clang::WhileStmt>(stmt))
 		{
-			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_expr(head, s->getCond()));
+			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_full_expr(head, s->getCond()));
 			cfg::vertex_descriptor body_head = this->duplicate_vertex(head);
 			this->set_cond(head, 0, "0");
 
@@ -649,7 +664,7 @@ struct context
 			m_continue_sentinels.push_back(add_vertex(g));
 			this->build_stmt(head, s->getBody());
 
-			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_expr(head, s->getCond()));
+			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_full_expr(head, s->getCond()));
 			cfg::vertex_descriptor loop_node = this->duplicate_vertex(head);
 			this->set_cond(head, 0, "0");
 
@@ -669,7 +684,7 @@ struct context
 			cfg::vertex_descriptor exit_node;
 			if (s->getCond())
 			{
-				cond_node = this->make_node(head, this->build_expr(head, s->getCond()));
+				cond_node = this->make_node(head, this->build_full_expr(head, s->getCond()));
 				exit_node = this->duplicate_vertex(head);
 				this->set_cond(exit_node, 0, "0");
 			}
@@ -685,7 +700,7 @@ struct context
 			m_continue_sentinels.pop_back();
 
 			if (s->getInc())
-				this->build_expr(head, s->getInc());
+				this->build_full_expr(head, s->getInc());
 			this->join_nodes(head, cond_node);
 			head = exit_node;
 
@@ -712,7 +727,7 @@ struct context
 		}
 		else if (clang::SwitchStmt const * s = llvm::dyn_cast<clang::SwitchStmt>(stmt))
 		{
-			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_expr(head, s->getCond()));
+			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_full_expr(head, s->getCond()));
 			cfg::vertex_descriptor cond_cont = head;
 			cfg::vertex_descriptor body_start = add_vertex(g);
 			head = body_start;
@@ -739,6 +754,7 @@ struct context
 		}
 		else if (clang::DeclStmt const * s = llvm::dyn_cast<clang::DeclStmt>(stmt))
 		{
+			// TODO: check fullexpr lifetimes
 			for (clang::DeclStmt::const_decl_iterator ci = s->decl_begin(); ci != s->decl_end(); ++ci)
 			{
 				clang::Decl const * decl = *ci;
