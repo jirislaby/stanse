@@ -332,7 +332,7 @@ struct context
 		node(eot_func, this->get_name(e->getConstructor()));
 
 		clang::FunctionProtoType const * fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getConstructor()->getType().getTypePtr());
-		node(this->make_address(tg));
+		node(tg);
 
 		for (std::size_t i = 0; i < e->getNumArgs(); ++i)
 			node(this->make_param(this->build_expr(head, e->getArg(i)), fntype->getArgType(i).getTypePtr()));
@@ -616,14 +616,18 @@ struct context
 		}
 		else if (clang::MemberExpr const * e = llvm::dyn_cast<clang::MemberExpr>(expr))
 		{
+			// TODO: lvalue/rvalue
+			eop base = this->build_expr(head, e->getBase());
+			if (!e->isArrow())
+				base = this->make_address(base);
 			return this->make_deref(head, this->add_node(head, enode(cfg::nt_call, e)
 				(eot_member, this->get_name(e->getMemberDecl()))
-				(this->make_address(this->build_expr(head, e->getBase())))));
+				(base)));
 		}
 		else if (clang::CXXConstructExpr const * e = llvm::dyn_cast<clang::CXXConstructExpr>(expr))
 		{
 			eop temp = this->make_temporary(e->getType().getTypePtr());
-			this->build_construct_expr(head, temp, e);
+			this->build_construct_expr(head, this->make_address(temp), e);
 			return temp;
 		}
 		else if (clang::CXXExprWithTemporaries const * e = llvm::dyn_cast<clang::CXXExprWithTemporaries>(expr))
@@ -674,6 +678,102 @@ struct context
 			this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(op.first))(op.second));
 		}
 		m_block_lifetimes.pop_back();
+	}
+
+	void init_object(cfg::vertex_descriptor & head, eop const & var, clang::Expr const * e)
+	{
+		clang::Type const * type = e->getType().getTypePtr();
+
+		// TODO: check fullexpr lifetimes
+		if (e->getType()->isStructureOrClassType())
+		{
+			BOOST_ASSERT(llvm::isa<clang::CXXConstructExpr>(e));
+			this->build_construct_expr(head, var, llvm::dyn_cast<clang::CXXConstructExpr>(e));
+			clang::CXXRecordDecl const * recordDecl = e->getType()->getAsCXXRecordDecl();
+			if (recordDecl && recordDecl->hasDeclaredDestructor())
+				m_block_lifetimes.back().push_back(std::make_pair(recordDecl->getDestructor(), var));
+		}
+		else if (e->getType()->isReferenceType())
+		{
+			this->add_node(head, enode(cfg::nt_call, e)
+				(eot_oper, "=")
+				(var)
+				(this->make_address(this->build_expr(head, e))));
+		}
+		else if (type->isArrayType())
+		{
+			// TODO: initialization by string literal
+			if (clang::InitListExpr const * e = llvm::dyn_cast<clang::InitListExpr>(e))
+			{
+				clang::ArrayType const * at = llvm::dyn_cast<clang::ArrayType>(type);
+
+				// TODO: type safety, make a loop for zero initialization
+				for (std::size_t i = 0; i < e->getNumInits(); ++i)
+				{
+					// TODO: define semantics of [] operator
+					eop op = this->add_node(head, enode(cfg::nt_call, e)
+						(eot_oper, "[]")
+						(var)
+						(eot_const, boost::lexical_cast<std::string>(i)));
+
+					if (!at->getElementType()->isStructureOrClassType())
+					{
+						this->add_node(head, enode(cfg::nt_call, e)
+							(eot_oper, "=")
+							(op)
+							(this->build_expr(head, e->getInit(i))));
+					}
+					// TODO
+					/*else
+					{
+						this->build_expr(e->getInit(i), op);
+					}*/
+				}
+
+				if (clang::ConstantArrayType const * cat = llvm::dyn_cast<clang::ConstantArrayType>(at))
+				{
+					std::size_t bound = cat->getSize().getLimitedValue();
+					for (std::size_t i = e->getNumInits(); i < bound; ++i)
+					{
+						eop op = this->add_node(head, enode(cfg::nt_call, e)
+							(eot_oper, "[]")
+							(var)
+							(eot_const, boost::lexical_cast<std::string>(i)));
+
+						this->add_node(head, enode(cfg::nt_call, e)
+							(eot_oper, "=")
+							(op)
+							(eot_const, "0"));
+					}
+				}
+			}
+			// TODO
+			/*else
+			{
+				BOOST_ASSERT(llvm::isa<clang::CXXConstructExpr>(vd->getInit()));
+
+				// TODO: Make this a loop in the program, ensure proper exception safety
+				clang::ConstantArrayType const * at = llvm::dyn_cast<clang::ConstantArrayType>(vd->getType());
+				BOOST_ASSERT(at->getSize().getBitWidth() <= sizeof(std::size_t) * CHAR_BIT);
+				std::size_t bounds = at->getSize().getLimitedValue();
+				for (std::size_t i = 0; i < bounds; ++i)
+				{
+					eop op = this->add_node(head, enode(cfg::nt_call, stmt)
+						(eot_oper, "[]")
+						(eot_varptr, this->get_name(vd))
+						(eot_const, boost::lexical_cast<std::string>(i)));
+
+					this->build_expr(vd->getInit(), op);
+				}
+			}*/
+		}
+		else
+		{
+			this->add_node(head, enode(cfg::nt_call, e)
+				(eot_oper, "=")
+				(var)
+				(this->build_expr(head, e)));
+		}
 	}
 
 	void build_stmt(cfg::vertex_descriptor & head, clang::Stmt const * stmt)
@@ -844,105 +944,13 @@ struct context
 		}
 		else if (clang::DeclStmt const * s = llvm::dyn_cast<clang::DeclStmt>(stmt))
 		{
-			// TODO: check fullexpr lifetimes
 			for (clang::DeclStmt::const_decl_iterator ci = s->decl_begin(); ci != s->decl_end(); ++ci)
 			{
 				clang::Decl const * decl = *ci;
 				if (clang::VarDecl const * vd = llvm::dyn_cast<clang::VarDecl>(decl))
 				{
 					if (vd->hasInit())
-					{
-						if (vd->getType()->isStructureOrClassType())
-						{
-							BOOST_ASSERT(llvm::isa<clang::CXXConstructExpr>(vd->getInit()));
-							eop var(eot_var, this->get_name(vd));
-							this->build_construct_expr(head, var, llvm::dyn_cast<clang::CXXConstructExpr>(vd->getInit()));
-							clang::CXXRecordDecl const * recordDecl = vd->getInit()->getType()->getAsCXXRecordDecl();
-							if (recordDecl && recordDecl->hasDeclaredDestructor())
-								m_block_lifetimes.back().push_back(std::make_pair(recordDecl->getDestructor(), var));
-						}
-						else if (vd->getType()->isReferenceType())
-						{
-							this->add_node(head, enode(cfg::nt_call, stmt)
-								(eot_oper, "=")
-								(eot_varptr, this->get_name(vd))
-								(this->make_address(this->build_expr(head, vd->getInit()))));
-						}
-						else if (vd->getType()->isArrayType())
-						{
-							// TODO: initialization by string literal
-							if (clang::InitListExpr const * e = llvm::dyn_cast<clang::InitListExpr>(vd->getInit()))
-							{
-								clang::ArrayType const * at = llvm::dyn_cast<clang::ArrayType>(vd->getType());
-
-								// TODO: type safety, make a loop for zero initialization
-								for (std::size_t i = 0; i < e->getNumInits(); ++i)
-								{
-									// TODO: define semantics of [] operator
-									eop op = this->add_node(head, enode(cfg::nt_call, stmt)
-										(eot_oper, "[]")
-										(eot_varptr, this->get_name(vd))
-										(eot_const, boost::lexical_cast<std::string>(i)));
-
-									if (!at->getElementType()->isStructureOrClassType())
-									{
-										this->add_node(head, enode(cfg::nt_call, stmt)
-											(eot_oper, "=")
-											(op)
-											(this->build_expr(head, e->getInit(i))));
-									}
-									// TODO
-									/*else
-									{
-										this->build_expr(e->getInit(i), op);
-									}*/
-								}
-
-								if (clang::ConstantArrayType const * cat = llvm::dyn_cast<clang::ConstantArrayType>(at))
-								{
-									std::size_t bound = cat->getSize().getLimitedValue();
-									for (std::size_t i = e->getNumInits(); i < bound; ++i)
-									{
-										eop op = this->add_node(head, enode(cfg::nt_call, stmt)
-											(eot_oper, "[]")
-											(eot_varptr, this->get_name(vd))
-											(eot_const, boost::lexical_cast<std::string>(i)));
-
-										this->add_node(head, enode(cfg::nt_call, stmt)
-											(eot_oper, "=")
-											(op)
-											(eot_const, "0"));
-									}
-								}
-							}
-							// TODO
-							/*else
-							{
-								BOOST_ASSERT(llvm::isa<clang::CXXConstructExpr>(vd->getInit()));
-
-								// TODO: Make this a loop in the program, ensure proper exception safety
-								clang::ConstantArrayType const * at = llvm::dyn_cast<clang::ConstantArrayType>(vd->getType());
-								BOOST_ASSERT(at->getSize().getBitWidth() <= sizeof(std::size_t) * CHAR_BIT);
-								std::size_t bounds = at->getSize().getLimitedValue();
-								for (std::size_t i = 0; i < bounds; ++i)
-								{
-									eop op = this->add_node(head, enode(cfg::nt_call, stmt)
-										(eot_oper, "[]")
-										(eot_varptr, this->get_name(vd))
-										(eot_const, boost::lexical_cast<std::string>(i)));
-
-									this->build_expr(vd->getInit(), op);
-								}
-							}*/
-						}
-						else
-						{
-							this->add_node(head, enode(cfg::nt_call, stmt)
-								(eot_oper, "=")
-								(eot_varptr, this->get_name(vd))
-								(this->build_expr(head, vd->getInit())));
-						}
-					}
+						this->init_object(head, eop(eot_varptr, this->get_name(vd)), vd->getInit());
 				}
 			}
 		}
