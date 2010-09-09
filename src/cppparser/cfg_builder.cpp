@@ -323,6 +323,22 @@ struct context
 		g[edge].cond = cond;
 	}
 
+	void build_construct_expr(cfg::vertex_descriptor & head, eop const & tg, clang::CXXConstructExpr const * e)
+	{
+		BOOST_ASSERT(tg.type != eot_none);
+
+		enode node(cfg::nt_call, e);
+		node(eot_func, this->get_name(e->getConstructor()));
+
+		clang::FunctionProtoType const * fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getConstructor()->getType().getTypePtr());
+		node(this->make_address(tg));
+
+		for (std::size_t i = 0; i < e->getNumArgs(); ++i)
+			node(this->make_param(this->build_expr(head, e->getArg(i)), fntype->getArgType(i).getTypePtr()));
+
+		this->add_node(head, node);
+	}
+
 	eop build_expr(cfg::vertex_descriptor & head, clang::Expr const * expr)
 	{
 		BOOST_ASSERT(expr != 0);
@@ -456,6 +472,10 @@ struct context
 				BOOST_ASSERT(0 && "encountered a declref to a non-value decl");
 				return eop();
 			}
+		}
+		else if (clang::CXXThisExpr const * e = llvm::dyn_cast<clang::CXXThisExpr>(expr))
+		{
+			return eop(eot_var, "p:this");
 		}
 		else if (clang::CallExpr const * e = llvm::dyn_cast<clang::CallExpr>(expr))
 		{
@@ -597,6 +617,12 @@ struct context
 			return this->make_deref(head, this->add_node(head, enode(cfg::nt_call, e)
 				(eot_member, this->get_name(e->getMemberDecl()))
 				(this->make_address(this->build_expr(head, e->getBase())))));
+		}
+		else if (clang::CXXConstructExpr const * e = llvm::dyn_cast<clang::CXXConstructExpr>(expr))
+		{
+			eop temp = this->make_temporary(e->getType().getTypePtr());
+			this->build_construct_expr(head, temp, e);
+			return temp;
 		}
 		else if (clang::ImplicitCastExpr const * e = llvm::dyn_cast<clang::ImplicitCastExpr>(expr))
 		{
