@@ -824,18 +824,20 @@ void rcfg::builder::build(clang::Stmt const * stmt)
 	}
 	else if (clang::SwitchStmt const * s = llvm::dyn_cast<clang::SwitchStmt>(stmt))
 	{
-		m_nodes.push_back(rcfg_node(s->getCond()));
+		std::size_t cond_node = this->make_node(this->build_expr(s->getCond()));
+		m_nodes[cond_node].stmt = s->getCond();
+		m_nodes[cond_node].succs.pop_back();
 		this->append(s->getBody());
 		
 		// Resolve case labels
 		if (m_default_case.second)
 		{
-			m_nodes[0].succs.push_back(m_default_case.first);
+			m_nodes[cond_node].succs.push_back(m_default_case.first);
 			m_default_case.second = 0;
 		}
 
 		for (std::size_t i = 0; i < m_switch_cases.size(); ++i)
-			m_nodes[0].succs.push_back(rcfg_node::succ(m_switch_cases[i].first, m_switch_cases[i].second->getLHS()));
+			m_nodes[cond_node].succs.push_back(rcfg_node::succ(m_switch_cases[i].first, m_switch_cases[i].second->getLHS()));
 		m_switch_cases.clear();
 
 		this->fix(rcfg_node::bt_break, m_nodes.size());
