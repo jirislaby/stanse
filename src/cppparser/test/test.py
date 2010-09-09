@@ -9,7 +9,6 @@ def _is_subgraph_isomorphism(tg, g, isom, sym_isom):
             # The order of operands doesn't matter
             if any(op[0] != 'node' for op in v[2]) or any(top[0] != 'node' for top in tv[2]):
                 # TODO: report error
-                print 1
                 return False
 
             vs = set(op[1] for op in v[2])
@@ -48,30 +47,29 @@ def _vertices_topo_match(tv, v):
 
     return True
 
+def _update_sym_isom(si, tn, n, tl, l):
+    for top, op in zip(tn[2], n[2]):
+        if top[0] != op[0]:
+            return False
+        if op[0] == 'var' or op[0] == 'varptr':
+            if top[1] not in si:
+                if (top[1] in tl) == (op[1] in l):
+                    si[top[1]] = op[1]
+                else:
+                    return False
+            if si[top[1]] != op[1]:
+                return False
+
+    return True
+
 def _is_subgraph(tg, tu, g, u, isom, sym_isom):
     if not tu:
         return (isom, sym_isom) if _is_subgraph_isomorphism(tg, g, isom, sym_isom) else None
 
     tv = tu[-1]
     for v in u:
-        ok = False;
-        
         si = dict(sym_isom)
-        for top, op in zip(tg['nodes'][tv][2], g['nodes'][v][2]):
-            if top[0] != op[0]:
-                break
-            if op[0] == 'var' or op[0] == 'varptr':
-                if top[1] not in si:
-                    if (top[1] in tg['locals']) == (op[1] in g['locals']):
-                        si[top[1]] = op[1]
-                    else:
-                        break
-                if si[top[1]] != op[1]:
-                    break
-        else:
-            ok = True
-
-        if not ok:
+        if not _update_sym_isom(si, tg['nodes'][tv], g['nodes'][v], tg['locals'], g['locals']):
             continue
 
         if not _vertices_topo_match(tg['nodes'][tv], g['nodes'][v]):
@@ -95,7 +93,8 @@ def _check_fns(tfn, fn):
     isom = { tfn["entry"]: fn["entry"] }
     tu = [x for x in tu if x != tfn["entry"]]
     u = [x for x in u if x != fn["entry"]]
-    return _is_subgraph(tfn, tu, fn, u, isom, sym_isom)
+    if _update_sym_isom(sym_isom, tfn['nodes'][tfn["entry"]], fn['nodes'][fn['entry']], tfn['locals'], fn['locals']):
+        return _is_subgraph(tfn, tu, fn, u, isom, sym_isom)
 
 def main(fin, ftempl, err, showMatches=False):
     import json
