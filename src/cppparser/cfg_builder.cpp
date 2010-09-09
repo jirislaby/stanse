@@ -357,6 +357,10 @@ struct context
 					(rhs));
 				return lhs;
 			}
+			else if (e->getOpcode() == clang::BO_Comma)
+			{
+				return rhs;
+			}
 			else if (e->getOpcode() == clang::BO_LOr || e->getOpcode() == clang::BO_LAnd)
 			{
 				/*std::size_t branch_node = this->make_node(lhs);
