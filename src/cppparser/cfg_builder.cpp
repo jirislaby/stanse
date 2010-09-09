@@ -628,6 +628,17 @@ struct context
 			this->build_construct_expr(head, temp, e);
 			return temp;
 		}
+		else if (clang::CXXExprWithTemporaries const * e = llvm::dyn_cast<clang::CXXExprWithTemporaries>(expr))
+		{
+			return this->build_expr(head, e->getSubExpr());
+		}
+		else if (clang::CXXBindTemporaryExpr const * e = llvm::dyn_cast<clang::CXXBindTemporaryExpr>(expr))
+		{
+			// TODO: deal with extended lifetime of temporaries bound to a reference.
+			eop res = this->build_expr(head, e->getSubExpr());
+			m_fullexpr_lifetimes.back().push_back(std::make_pair(e->getTemporary()->getDestructor(), this->make_address(res)));
+			return res;
+		}
 		else if (clang::ImplicitCastExpr const * e = llvm::dyn_cast<clang::ImplicitCastExpr>(expr))
 		{
 			// TODO: deal with the casts correctly
