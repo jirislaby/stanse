@@ -353,10 +353,12 @@ struct context
 		BOOST_ASSERT(g[head].type == cfg::nt_none);
 		BOOST_ASSERT(g[head].ops.empty());
 
-		g[head].type = node.type;
+		cfg::node n;
+		n.type = node.type;
 		for (std::size_t i = 0; i < node.ops.size(); ++i)
-			g[head].ops.push_back(this->make_rvalue(head, node.ops[i]));
-		g[head].data = node.data;
+			n.ops.push_back(this->make_rvalue(head, node.ops[i]));
+		n.data = node.data;
+		g[head] = n;
 
 		cfg::vertex_descriptor new_head = add_vertex(g);
 		add_edge(head, new_head, g);
