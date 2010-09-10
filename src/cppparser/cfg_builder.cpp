@@ -437,6 +437,53 @@ struct context
 					(rhs));
 			}
 		}
+		else if (clang::UnaryOperator const * e = llvm::dyn_cast<clang::UnaryOperator>(expr))
+		{
+			if (e->getOpcode() == clang::UO_AddrOf)
+			{
+				return this->make_address(this->build_expr(head, e->getSubExpr()));
+			}
+			else if (e->getOpcode() == clang::UO_Deref)
+			{
+				return this->make_deref(head, this->build_expr(head, e->getSubExpr()));
+			}
+			else if (e->getOpcode() == clang::UO_PreInc || e->getOpcode() == clang::UO_PreDec)
+			{
+				eop expr = this->build_expr(head, e->getSubExpr());
+				eop op = this->add_node(head, enode(cfg::nt_call, e)
+					(eot_oper, e->getOpcode() == clang::UO_PreInc? "+": "-")
+					(expr)
+					(eot_const, "1"));
+				this->add_node(head, enode(cfg::nt_call, e)
+					(eot_oper, "=")
+					(this->make_address(expr))
+					(op));
+				return expr;
+			}
+			else if (e->getOpcode() == clang::UO_PostInc || e->getOpcode() == clang::UO_PostDec)
+			{
+				eop expr = this->build_expr(head, e->getSubExpr());
+				eop op = this->add_node(head, enode(cfg::nt_call, e)
+					(eot_oper, e->getOpcode() == clang::UO_PostInc? "+": "-")
+					(expr)
+					(eot_const, "1"));
+				this->add_node(head, enode(cfg::nt_call, e)
+					(eot_oper, "=")
+					(this->make_address(expr))
+					(op));
+				return op;
+			}
+			else if (e->getOpcode() == clang::UO_Plus)
+			{
+				return this->build_expr(head, e->getSubExpr());
+			}
+			else
+			{
+				return this->add_node(head, enode(cfg::nt_call, e)
+					(eot_oper, clang::UnaryOperator::getOpcodeStr(e->getOpcode()))
+					(this->build_expr(head, e->getSubExpr())));
+			}
+		}
 		else if (clang::CXXBoolLiteralExpr const * e = llvm::dyn_cast<clang::CXXBoolLiteralExpr>(expr))
 		{
 			return eop(eot_const, e->getValue()? "1": "0");
