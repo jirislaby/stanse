@@ -285,6 +285,14 @@ struct context
 			return op;
 	}
 
+	template <typename ParamIter, typename ArgIter>
+	void append_args(cfg::vertex_descriptor & head, enode & node, ParamIter param_first, ParamIter param_last, ArgIter arg_first, ArgIter arg_last)
+	{
+		for (; param_first != param_last; ++param_first, ++arg_first)
+			node(this->make_param(this->build_expr(head, *arg_first), (*param_first)->getType().getTypePtr()));
+		BOOST_ASSERT(arg_first == arg_last);
+	}
+
 	eop make_address(eop op)
 	{
 		switch (op.type)
@@ -493,6 +501,10 @@ struct context
 		else if (clang::IntegerLiteral const * e = llvm::dyn_cast<clang::IntegerLiteral>(expr))
 		{
 			return eop(eot_const, e->getValue().toString(10, true));
+		}
+		else if (clang::FloatingLiteral const * e = llvm::dyn_cast<clang::FloatingLiteral>(expr))
+		{
+			return eop(eot_const, boost::lexical_cast<std::string>(e->getValueAsApproximateDouble()));
 		}
 		else if (clang::CharacterLiteral const * e = llvm::dyn_cast<clang::CharacterLiteral>(expr))
 		{
@@ -734,6 +746,15 @@ struct context
 				(eot_node, true_node)
 				(eot_node, false_node));
 		}
+		else if (clang::SizeOfAlignOfExpr const * e = llvm::dyn_cast<clang::SizeOfAlignOfExpr>(expr))
+		{
+			// TODO: is there a better way?
+			BOOST_ASSERT(e->isSizeOf());
+			if (e->isArgumentType())
+				return eop(eot_const, "sizeof:" + e->getArgumentType().getAsString());
+			else
+				return eop(eot_const, "sizeof:" + e->getArgumentExpr()->getType().getAsString());
+		}
 		else if (clang::MemberExpr const * e = llvm::dyn_cast<clang::MemberExpr>(expr))
 		{
 			// TODO: lvalue/rvalue
@@ -744,12 +765,20 @@ struct context
 				(eot_member, this->get_name(e->getMemberDecl()))
 				(base)));
 		}
-		if (clang::ArraySubscriptExpr const * e = llvm::dyn_cast<clang::ArraySubscriptExpr>(expr))
+		else if (clang::ArraySubscriptExpr const * e = llvm::dyn_cast<clang::ArraySubscriptExpr>(expr))
 		{
 			return this->make_deref(head, this->add_node(head, enode(cfg::nt_call, e)
 				(eot_oper, "+")
 				(this->build_expr(head, e->getLHS()))
 				(this->build_expr(head, e->getRHS()))));
+		}
+		else if (clang::ParenExpr const * e = llvm::dyn_cast<clang::ParenExpr>(expr))
+		{
+			return this->build_expr(head, e->getSubExpr());
+		}
+		else if (clang::CXXDefaultArgExpr const * e = llvm::dyn_cast<clang::CXXDefaultArgExpr>(expr))
+		{
+			return this->build_expr(head, e->getExpr());
 		}
 		else if (clang::CXXConstructExpr const * e = llvm::dyn_cast<clang::CXXConstructExpr>(expr))
 		{
@@ -771,6 +800,78 @@ struct context
 		else if (clang::ImplicitCastExpr const * e = llvm::dyn_cast<clang::ImplicitCastExpr>(expr))
 		{
 			// TODO: deal with the casts correctly
+			return this->build_expr(head, e->getSubExpr());
+		}
+		else if (clang::CXXPseudoDestructorExpr const * e = llvm::dyn_cast<clang::CXXPseudoDestructorExpr>(expr))
+		{
+			return this->build_expr(head, e->getBase());
+		}
+		else if (clang::CXXNewExpr const * e = llvm::dyn_cast<clang::CXXNewExpr>(expr))
+		{
+			// TODO: relieve the interpreter of the privilege of having to recognize cxx:new[]
+			if (e->isArray())
+			{
+				enode node(cfg::nt_call, e);
+				node(eot_oper, "cxx:new[]");
+				node(eot_func, this->get_name(e->getOperatorNew()));
+				if (e->getConstructor())
+					node(eot_func, this->get_name(e->getConstructor()));
+				else
+					node(eot_const, "0");
+				node(eot_func, this->get_name(e->getOperatorDelete()));
+				node(eot_const, e->hasInitializer()? "1": "0");
+				this->append_args(
+					head,
+					node,
+					e->getOperatorNew()->param_begin() + 1, e->getOperatorNew()->param_end(),
+					e->placement_arg_begin(), e->placement_arg_end());
+
+				return this->add_node(head, node);
+			}
+			else
+			{
+				// TODO: exception safety
+
+				enode opnew_node(cfg::nt_call, e);
+				opnew_node(eot_func, this->get_name(e->getOperatorNew()));
+				opnew_node(eot_const, "sizeof:" + e->getAllocatedType().getAsString());
+				this->append_args(
+					head,
+					opnew_node,
+					e->getOperatorNew()->param_begin() + 1, e->getOperatorNew()->param_end(),
+					e->placement_arg_begin(), e->placement_arg_end());
+
+				eop ptr_op = this->add_node(head, opnew_node);
+				if (e->getConstructor() != 0)
+				{
+					enode construct_node(cfg::nt_call, e);
+					construct_node(eot_func, this->get_name(e->getConstructor()));
+					construct_node(ptr_op);
+					this->append_args(head, construct_node, e->getConstructor()->param_begin(), e->getConstructor()->param_end(),
+						e->constructor_arg_begin(), e->constructor_arg_end());
+					this->add_node(head, construct_node);
+				}
+
+				return ptr_op;
+			}
+		}
+		else if (clang::CXXDeleteExpr const * e = llvm::dyn_cast<clang::CXXDeleteExpr>(expr))
+		{
+			std::string name = e->isArrayForm()? "cxx:delete[]:": "cxx:delete:";
+
+			// TODO: Append a correct type of argument
+			//BOOST_ASSERT(llvm::isa<clang::PointerType>(e->getArgument()->getType()));
+			//name += e->getArgument()->getType().getAsString();//->getPointeeType()->getCanonicalTypeInternal().getAsString();
+
+			enode node(cfg::nt_call, e);
+			node(eot_oper, name);
+			node(this->build_expr(head, e->getArgument()));
+			node(eot_func, this->get_name(e->getOperatorDelete()));
+			return this->add_node(head, node);
+		}
+		else if (clang::CXXThrowExpr const * e = llvm::dyn_cast<clang::CXXThrowExpr>(expr))
+		{
+			// TODO: Make this actually throw...
 			return this->build_expr(head, e->getSubExpr());
 		}
 		else
