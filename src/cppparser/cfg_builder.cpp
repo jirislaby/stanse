@@ -719,6 +719,21 @@ struct context
 			eop node_op = this->add_node(head, node);
 			return result_op.type == eot_none? node_op: result_op;
 		}
+		else if (clang::ConditionalOperator const * e = llvm::dyn_cast<clang::ConditionalOperator>(expr))
+		{
+			eop cond_op = this->build_expr(head, e->getCond());
+			cfg::vertex_descriptor branch_node = this->make_node(head, cond_op);
+			cfg::vertex_descriptor false_head = this->duplicate_vertex(head);
+			g[*in_edges(false_head, g).first].cond = "0";
+
+			cfg::vertex_descriptor true_node = this->make_node(head, this->build_expr(head, e->getTrueExpr()));
+			cfg::vertex_descriptor false_node = this->make_node(false_head, this->build_expr(false_head, e->getFalseExpr()));
+			this->join_nodes(false_head, head);
+
+			return this->add_node(head, enode(cfg::nt_phi, e)
+				(eot_node, true_node)
+				(eot_node, false_node));
+		}
 		else if (clang::MemberExpr const * e = llvm::dyn_cast<clang::MemberExpr>(expr))
 		{
 			// TODO: lvalue/rvalue
