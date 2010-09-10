@@ -9,8 +9,46 @@
 #include <clang/AST/ExprCXX.h>
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclCXX.h>
+#include <clang/AST/DeclTemplate.h>
 
 namespace {
+
+void get_functions_from_declcontext(clang::DeclContext const * declctx, std::set<clang::FunctionDecl const *> & fns)
+{
+	for (clang::DeclContext::decl_iterator it = declctx->decls_begin(); it != declctx->decls_end(); ++it)
+	{
+		clang::Decl * decl = *it;
+
+		if (clang::NamedDecl const * nd = llvm::dyn_cast<clang::NamedDecl>(decl))
+		{
+			std::string name = nd->getQualifiedNameAsString();
+			name = name;
+		}
+
+		if (clang::FunctionDecl * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
+		{
+			if (fnDecl->isDependentContext())
+				continue;
+			fns.insert(fnDecl);
+		}
+		else if (clang::CXXRecordDecl const * classDecl = dyn_cast<clang::CXXRecordDecl>(decl))
+		{
+			/*if (classDecl->hasDeclaredDefaultConstructor() && !classDecl->getDefaultConstructor()->isTrivial())
+				fns.insert(classDecl->getDefaultConstructor());
+			if (classDecl->hasDeclaredCopyConstructor() && !classDecl->getCopyConstructor()->isTrivial())
+				fns.insert(classDecl->getCopyConstructor());
+			if (classDecl->hasDeclaredCopyAssignment() && !classDecl->getCopyAssignmentOperator()->isTrivial())
+				fns.insert(classDecl->getCopyAssignmentOperator());*/
+			if (classDecl->hasDefinition() && classDecl->hasDeclaredDestructor() && !classDecl->getDestructor()->isTrivial())
+				fns.insert(classDecl->getDestructor());
+			get_functions_from_declcontext(classDecl, fns);
+		}
+		else if (clang::RecordDecl const * classDecl = dyn_cast<clang::RecordDecl>(decl))
+		{
+			get_functions_from_declcontext(classDecl, fns);
+		}
+	}
+}
 
 std::string make_decl_name(clang::NamedDecl const * decl)
 {
@@ -47,6 +85,18 @@ struct context
 		: g(c), m_head(add_vertex(g))
 	{
 		g.entry(m_head);
+	}
+
+	std::set<clang::FunctionDecl const *> m_referenced_functions2;
+
+	void register_decl_ref(clang::FunctionDecl const * fn)
+	{
+		m_referenced_functions2.insert(fn);
+	}
+
+	std::set<clang::FunctionDecl const *> const & referenced_functions() const
+	{
+		return m_referenced_functions2;
 	}
 
 	cfg & g;
@@ -329,6 +379,7 @@ struct context
 		BOOST_ASSERT(tg.type != eot_none);
 
 		enode node(cfg::nt_call, e);
+		this->register_decl_ref(e->getConstructor());
 		node(eot_func, this->get_name(e->getConstructor()));
 
 		clang::FunctionProtoType const * fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getConstructor()->getType().getTypePtr());
@@ -461,8 +512,11 @@ struct context
 			clang::Decl const * decl = e->getDecl();
 			if (clang::ValueDecl const * nd = llvm::dyn_cast<clang::ValueDecl>(decl))
 			{
-				if (llvm::isa<clang::FunctionDecl>(nd))
-					return eop(eot_func, this->get_name(nd));
+				if (clang::FunctionDecl const * fd = llvm::dyn_cast<clang::FunctionDecl>(nd))
+				{
+					this->register_decl_ref(fd);
+					return eop(eot_func, this->get_name(fd));
+				}
 				
 				if (nd->getType()->isReferenceType())
 					return eop(eot_vartgt, this->get_name(nd));
@@ -518,6 +572,7 @@ struct context
 					param_types.push_back(
 						md->getThisType(md->getASTContext()).getTypePtr());
 
+					this->register_decl_ref(md);
 					callee_op = eop(eot_func, this->get_name(md));
 					fntype = llvm::dyn_cast<clang::FunctionProtoType>(md->getType().getTypePtr());
 				}
@@ -548,6 +603,7 @@ struct context
 						this->make_node(head, this_op);
 					}
 
+					this->register_decl_ref(mdecl);
 					callee_op = eop(eot_func, this->get_name(mdecl));
 
 					fntype = llvm::dyn_cast<clang::FunctionProtoType>(mdecl->getType().getTypePtr());
@@ -662,6 +718,7 @@ struct context
 		{
 			std::pair<clang::CXXDestructorDecl const *, eop> const & op = ctx[i-1];
 			BOOST_ASSERT(op.first != 0);
+			this->register_decl_ref(op.first);
 			this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(op.first))(op.second));
 		}
 		m_fullexpr_lifetimes.pop_back();
@@ -675,6 +732,7 @@ struct context
 		{
 			std::pair<clang::CXXDestructorDecl const *, eop> const & op = m_block_lifetimes.back()[i-1];
 			BOOST_ASSERT(op.first != 0);
+			this->register_decl_ref(op.first);
 			this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(op.first))(op.second));
 		}
 		m_block_lifetimes.pop_back();
@@ -1097,34 +1155,128 @@ struct context
 
 		BOOST_ASSERT(g.entry() != 0);
 	}
+
+	void build_constructor(clang::CXXConstructorDecl const * fn)
+	{
+		// TODO: handle virtual bases properly
+
+		m_block_lifetimes.push_back(lifetime_context_t());
+		for (clang::CXXConstructorDecl::init_const_iterator it = fn->init_begin(); it != fn->init_end(); ++it)
+		{
+			clang::CXXBaseOrMemberInitializer const * init = *it;
+			if (init->isMemberInitializer())
+			{
+				BOOST_ASSERT(!init->isBaseInitializer());
+				eop memberop = this->add_node(m_head, enode(cfg::nt_call)
+					(eot_member, this->get_name(init->getMember()))
+					(eot_var, "p:this"));
+				this->init_object(m_head, memberop, init->getInit());
+			}
+			else
+			{
+				// TODO: Convert p:this
+				BOOST_ASSERT(init->isBaseInitializer());
+				this->init_object(m_head, eop(eot_var, "p:this"), init->getInit());
+			}
+		}
+		
+		// The lifetime gets extended and is guarded by the destructor of this class.
+		// TODO: Kill the object in the case of an exception.
+		m_block_lifetimes.pop_back();
+	}
+
+	void build_destructor(clang::CXXDestructorDecl const * fn)
+	{
+		clang::CXXRecordDecl const * rec = fn->getParent();
+		// TODO: handle virtual bases
+
+		std::vector<clang::FieldDecl const *> fields;
+		for (clang::RecordDecl::field_iterator field_it = rec->field_end(); field_it != rec->field_end(); ++field_it)
+			fields.push_back(*field_it);
+
+		for (std::size_t i = fields.size(); i != 0; --i)
+		{
+			clang::FieldDecl const * fd = fields[i-1];
+			if (clang::CXXRecordDecl const * rd = fd->getType()->getAsCXXRecordDecl())
+			{
+				if (rd->hasDeclaredDestructor() && !rd->getDestructor()->isTrivial())
+				{
+					this->register_decl_ref(rd->getDestructor());
+
+					eop member = this->add_node(m_head, enode(cfg::nt_call)
+						(eot_member, this->get_name(fd))
+						(eot_var, "p:this"));
+
+					this->add_node(m_head, enode(cfg::nt_call)
+						(eot_func, this->get_name(rd->getDestructor()))
+						(member));
+				}
+			}
+		}
+
+		for (clang::CXXRecordDecl::reverse_base_class_const_iterator it = rec->bases_rbegin(); it != rec->bases_rend(); ++it)
+		{
+			clang::CXXBaseSpecifier const & bs = *it;
+
+			if (bs.isVirtual())
+				continue;
+
+			if (clang::CXXRecordDecl const * rd = bs.getType()->getAsCXXRecordDecl())
+			{
+				if (rd->hasDeclaredDestructor() && !rd->getDestructor()->isTrivial())
+				{
+					this->register_decl_ref(rd->getDestructor());
+
+					// TODO: proper conversion, exceptions
+					this->add_node(m_head, enode(cfg::nt_call)
+						(eot_func, this->get_name(rd->getDestructor()))
+						(eot_var, "p:this"));
+				}
+			}
+		}
+	}
+
+	void build(clang::FunctionDecl const * fn)
+	{
+		BOOST_ASSERT(!fn->isDependentContext());
+
+		this->register_locals(fn);
+		if (clang::CXXConstructorDecl const * cd = llvm::dyn_cast<clang::CXXConstructorDecl>(fn))
+			this->build_constructor(cd);
+		if (fn->hasBody())
+			this->build_stmt(m_head, fn->getBody());
+		if (clang::CXXDestructorDecl const * cd = llvm::dyn_cast<clang::CXXDestructorDecl>(fn))
+			this->build_destructor(cd);
+		this->finish();
+	}
 };
 
 }
 
-std::pair<std::string, cfg> build_cfg(clang::FunctionDecl const * fn)
-{
-	BOOST_ASSERT(!fn->isDependentContext());
-	BOOST_ASSERT(fn->hasBody());
-
-	std::pair<std::string, cfg> res(make_decl_name(fn), cfg());
-	cfg & c = res.second;
-
-	context ctx(c);
-	ctx.register_locals(fn);
-	ctx.build_stmt(ctx.m_head, fn->getBody());
-	ctx.finish();
-	return res;
-}
-
-#include "ast_dumper.hpp"
-
 program build_program(clang::TranslationUnitDecl const * tu)
 {
-	std::set<clang::FunctionDecl const *> functionDecls;
-	get_used_function_defs(tu->getASTContext(), functionDecls);
+	std::set<clang::FunctionDecl const *> unprocessedFunctions;
+	get_functions_from_declcontext(tu, unprocessedFunctions);
 
+	std::set<clang::FunctionDecl const *> processedFunctions;
 	program res;
-	for (std::set<clang::FunctionDecl const *>::const_iterator it = functionDecls.begin(); it != functionDecls.end(); ++it)
-		res.cfgs().insert(build_cfg(*it));
+	while (!unprocessedFunctions.empty())
+	{
+		clang::FunctionDecl const * fn = *unprocessedFunctions.begin();
+		unprocessedFunctions.erase(unprocessedFunctions.begin());
+
+		BOOST_ASSERT(processedFunctions.find(fn) == processedFunctions.end());
+
+		cfg c;
+		context ctx(c);
+		ctx.build(fn);
+
+		res.cfgs().insert(std::make_pair(make_decl_name(fn), c));
+
+		std::set_difference(
+			ctx.referenced_functions().begin(), ctx.referenced_functions().end(),
+			processedFunctions.begin(), processedFunctions.end(),
+			std::inserter(unprocessedFunctions, unprocessedFunctions.begin()));
+	}
 	return res;
 }
