@@ -729,6 +729,13 @@ struct context
 				(eot_member, this->get_name(e->getMemberDecl()))
 				(base)));
 		}
+		if (clang::ArraySubscriptExpr const * e = llvm::dyn_cast<clang::ArraySubscriptExpr>(expr))
+		{
+			return this->make_deref(head, this->add_node(head, enode(cfg::nt_call, e)
+				(eot_oper, "+")
+				(this->build_expr(head, e->getLHS()))
+				(this->build_expr(head, e->getRHS()))));
+		}
 		else if (clang::CXXConstructExpr const * e = llvm::dyn_cast<clang::CXXConstructExpr>(expr))
 		{
 			eop temp = this->make_temporary(e->getType().getTypePtr());
