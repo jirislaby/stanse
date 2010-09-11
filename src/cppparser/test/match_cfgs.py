@@ -96,34 +96,36 @@ def _check_fns(tfn, fn):
     if _update_sym_isom(sym_isom, tfn['nodes'][tfn["entry"]], fn['nodes'][fn['entry']], tfn['locals'], fn['locals']):
         return _is_subgraph(tfn, tu, fn, u, isom, sym_isom)
 
-def main(fin, ftempl, err, showMatches=False):
+def match_cfgs(fin, ftempl, err, showMatches=False):
     import json
     templ = json.load(ftempl)
     src = json.load(fin)
     
     for fnname, templfn in templ.iteritems():
         if fnname not in src:
-            err.write('Function %s expected but not seen.' % fnname)
+            err.write_templ('error: function %s expected but not seen.' % fnname)
             continue
             
         fn = src[fnname]
         isom = _check_fns(templfn, fn)
         if not isom:
-            err.write('error: %s: function does not match.' % fnname)
-            err.write('templ: %s' % str(templfn))
-            err.write('input: %s' % str(fn))
+            err.write_templ('error: %s: function does not match.' % fnname)
+            err.write_source(str(fn))
         elif showMatches:
-            err.write('note: %s: functions match, isom = %s.' % (fnname, str(isom)))
-            err.write('templ: %s' % str(templfn))
-            err.write('input: %s' % str(fn))
+            err.write_templ('note: %s: functions match, isom = %s.' % (fnname, str(isom)))
+            err.write_source(str(fn))
 
-class _ErrorReporter:
-    def __init__(self, fout, fname):
+class ErrorReporter:
+    def __init__(self, fout, fname, tname):
         self.fout = fout
         self.fname = fname
+        self.tname = tname
 
-    def write(self, str):
+    def write_source(self, str):
         self.fout.write('%s: %s\n' % (self.fname, str))
+
+    def write_templ(self, str):
+        self.fout.write('%s: %s\n' % (self.tname, str))
 
 if __name__ == '__main__':
     import argparse
@@ -136,4 +138,5 @@ if __name__ == '__main__':
     import sys
     fin = open(args.infile, 'r') if args.infile != '-' else sys.stdin
     ftemplate = open(args.template, 'r')
-    main(fin, ftemplate, _ErrorReporter(sys.stdout, args.template), args.showMatches)
+
+    match_cfgs(fin, ftemplate, ErrorReporter(sys.stdout, args.infile, args.template), args.showMatches)

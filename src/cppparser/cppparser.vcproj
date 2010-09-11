@@ -87,7 +87,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(ProjectDir)..\..\dist\bin&#x0D;&#x0A;$(ProjectDir)test\test_all.cmd -e $(TargetPath)&#x0D;&#x0A;"
+				CommandLine="copy $(TargetPath) $(ProjectDir)..\..\dist\bin&#x0D;&#x0A;python -u $(ProjectDir)test\run_test.py -p $(TargetPath) $(ProjectDir)test&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
