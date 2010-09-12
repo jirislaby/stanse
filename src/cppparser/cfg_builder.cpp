@@ -1568,11 +1568,13 @@ program build_program(clang::TranslationUnitDecl const * tu)
 
 		BOOST_ASSERT(processedFunctions.find(fn) == processedFunctions.end());
 
+		std::string const & fnname = make_decl_name(fn);
+
 		cfg c;
 		context ctx(c);
 		ctx.build(fn);
 
-		res.cfgs().insert(std::make_pair(make_decl_name(fn), c));
+		res.cfgs().insert(std::make_pair(fnname, c));
 
 		std::set_difference(
 			ctx.referenced_functions().begin(), ctx.referenced_functions().end(),
