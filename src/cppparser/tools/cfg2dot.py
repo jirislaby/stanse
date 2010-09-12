@@ -3,14 +3,26 @@ from xml.sax.saxutils import escape as xml_escape
 def cfg2dot(fin, fout):
     import json
     src = json.load(fin)
-    
+
     fout.write('digraph G {\n')
     fout.write('    node [shape=record];\n')
     fnidx = 0
     for fnname, fn in src.iteritems():
+        skipexit2 = True
+        for node in fn['nodes']:
+            for succ in node[1]:
+                if succ[1] != 2 and fn['nodes'][succ[0]][0] == 'exit' and fn['nodes'][succ[0]][2][0][1] == '2':
+                    skipexit2 = False
+                    break
+            if not skipexit2:
+                break
+
         fout.write('    entry%d [label="%s"];\n' % (fnidx, xml_escape(fnname)))
         fout.write('    entry%d -> node%d_%d;\n' % (fnidx, fnidx, fn['entry']))
         for i, node in enumerate(fn['nodes']):
+            if skipexit2 and node[0] == 'exit' and node[2][0][1] == '2':
+                continue
+
             if node[0] == 'call':
                 ops = node[2][1:]
                 opstr = node[2][0][1] + '('
@@ -35,7 +47,10 @@ def cfg2dot(fin, fout):
                 opstr = opstr + ']'
             fout.write('    node%d_%d [label="<f1> %d |<f2> %s"];\n' % (fnidx, i, i, xml_escape(opstr)));
             for succ in node[1]:
-                fout.write('    node%d_%d -> node%d_%d [label="%s"];\n' % (fnidx, i, fnidx, succ[0], xml_escape(succ[2])))
+                if succ[1] == 0:
+                    fout.write('    node%d_%d -> node%d_%d [label="%s"];\n' % (fnidx, i, fnidx, succ[0], xml_escape(succ[2])))
+                if succ[1] == 1:
+                    fout.write('    node%d_%d -> node%d_%d [label="%s",style="dotted"];\n' % (fnidx, i, fnidx, succ[0], xml_escape(succ[2])))
         fnidx += 1
     fout.write('}')
 
