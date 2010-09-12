@@ -2,6 +2,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/utility.hpp>
 
 #include <clang/AST/Stmt.h>
 #include <clang/AST/StmtCXX.h>
@@ -10,6 +11,8 @@
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/DeclTemplate.h>
+
+#include <list>
 
 namespace {
 
@@ -82,9 +85,15 @@ std::string make_decl_name(clang::NamedDecl const * decl)
 struct context
 {
 	context(cfg & c)
-		: g(c), m_head(add_vertex(g))
+		: g(c), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
 	{
 		g.entry(m_head);
+
+		g[m_exc_exit_node].type = cfg::nt_exit;
+		g[m_exc_exit_node].ops.push_back(cfg::operand(cfg::ot_const, "1"));
+
+		g[m_term_exit_node].type = cfg::nt_exit;
+		g[m_term_exit_node].ops.push_back(cfg::operand(cfg::ot_const, "2"));
 	}
 
 	std::set<clang::FunctionDecl const *> m_referenced_functions2;
@@ -102,6 +111,9 @@ struct context
 	cfg & g;
 	cfg::vertex_descriptor m_head;
 	std::set<cfg::vertex_descriptor> m_exit_nodes;
+	cfg::vertex_descriptor m_exc_exit_node;
+	cfg::vertex_descriptor m_term_exit_node;
+
 	std::vector<cfg::vertex_descriptor> m_break_sentinels;
 	std::vector<cfg::vertex_descriptor> m_continue_sentinels;
 
@@ -112,6 +124,26 @@ struct context
 	std::vector<case_context_t> m_case_contexts;
 
 	std::map<clang::NamedDecl const *, std::string> m_registered_names;
+
+	void connect_to_term(cfg::vertex_descriptor v)
+	{
+		cfg::edge_descriptor e = add_edge(v, m_term_exit_node, g).first;
+		g[e].id = 2;
+	}
+
+	void connect_to_exc(cfg::vertex_descriptor v, cfg::vertex_descriptor target)
+	{
+		cfg::edge_descriptor e = add_edge(v, target, g).first;
+		g[e].id = 1;
+	}
+
+	void connect_to_exc(cfg::vertex_descriptor v)
+	{
+		if (m_auto_objects.empty())
+			this->connect_to_exc(v, m_exc_exit_node);
+		else
+			this->connect_to_exc(v, m_auto_objects.back().excnode);
+	}
 
 	cfg::vertex_descriptor duplicate_vertex(cfg::vertex_descriptor src)
 	{
@@ -238,10 +270,6 @@ struct context
 		}
 	};
 
-	typedef std::vector<std::pair<clang::CXXDestructorDecl const *, eop> > lifetime_context_t;
-	std::vector<lifetime_context_t> m_fullexpr_lifetimes;
-	std::vector<lifetime_context_t> m_block_lifetimes;
-
 	std::vector<clang::Type const *> m_temporaries;
 
 	eop make_temporary(clang::Type const * type)
@@ -356,17 +384,22 @@ struct context
 		return boost::get<cfg::vertex_descriptor>(op.id);
 	}
 
-	eop add_node(cfg::vertex_descriptor & head, enode const & node)
+	cfg::node convert_node(cfg::vertex_descriptor & head, enode const & node)
 	{
-		BOOST_ASSERT(g[head].type == cfg::nt_none);
-		BOOST_ASSERT(g[head].ops.empty());
-
 		cfg::node n;
 		n.type = node.type;
 		for (std::size_t i = 0; i < node.ops.size(); ++i)
 			n.ops.push_back(this->make_rvalue(head, node.ops[i]));
 		n.data = node.data;
-		g[head] = n;
+		return n;
+	}
+
+	eop add_node(cfg::vertex_descriptor & head, enode const & node)
+	{
+		BOOST_ASSERT(g[head].type == cfg::nt_none);
+		BOOST_ASSERT(g[head].ops.empty());
+
+		g[head] = this->convert_node(head, node);
 
 		cfg::vertex_descriptor new_head = add_vertex(g);
 		add_edge(head, new_head, g);
@@ -384,6 +417,95 @@ struct context
 		g[edge].cond = cond;
 	}
 
+	struct auto_var_registration
+	{
+		clang::CXXDestructorDecl const * destr;
+		eop varptr;
+		cfg::vertex_descriptor excnode;
+	};
+
+	std::list<auto_var_registration> m_auto_objects;
+	typedef std::list<auto_var_registration>::iterator auto_object_iterator;
+
+	typedef std::vector<auto_object_iterator> lifetime_context_t;
+	std::vector<lifetime_context_t> m_fullexpr_lifetimes;
+	std::vector<lifetime_context_t> m_block_lifetimes;
+
+	void begin_lifetime_context(std::vector<lifetime_context_t> & ctx)
+	{
+		ctx.push_back(lifetime_context_t());
+	}
+
+	void end_lifetime_context(cfg::vertex_descriptor & head, std::vector<lifetime_context_t> & ctx)
+	{
+		BOOST_ASSERT(!ctx.empty());
+		for (std::size_t i = ctx.back().size(); i != 0; --i)
+		{
+			auto_object_iterator const & reg_it = ctx.back()[i-1];
+			this->unregister_destructible_var(head, reg_it);
+		}
+		ctx.pop_back();
+	}
+
+	void init_auto_reg_node(auto_var_registration const & reg)
+	{
+		cfg::vertex_descriptor sentinel = cfg::null_vertex();
+		g[reg.excnode] = this->convert_node(sentinel, enode(cfg::nt_call)
+			(eot_func, this->get_name(reg.destr))
+			(reg.varptr));
+		this->connect_to_exc(reg.excnode, m_term_exit_node);
+		this->connect_to_term(reg.excnode);
+	}
+
+	auto_object_iterator register_destructible_var(clang::CXXDestructorDecl const * destructor, eop const & varptr)
+	{
+		auto_var_registration reg = { destructor, varptr, add_vertex(g) };
+		this->init_auto_reg_node(reg);
+
+		if (!m_auto_objects.empty())
+			add_edge(reg.excnode, m_auto_objects.back().excnode, g);
+		else
+			add_edge(reg.excnode, m_exc_exit_node, g);
+		m_auto_objects.push_back(reg);
+		return boost::prior(m_auto_objects.end());
+	}
+
+	void unregister_destructible_var(cfg::vertex_descriptor & head, auto_object_iterator obj)
+	{
+		for (std::list<auto_var_registration>::iterator it = boost::prior(m_auto_objects.end()); it != obj; --it)
+		{
+			if (in_degree(it->excnode, g) == 0)
+			{
+				clear_vertex(it->excnode, g);
+				remove_vertex(it->excnode, g);
+			}
+
+			it->excnode = add_vertex(g);
+			this->init_auto_reg_node(*it);
+		}
+
+		auto_var_registration reg = *obj;
+		if (in_degree(obj->excnode, g) == 0)
+		{
+			clear_vertex(obj->excnode, g);
+			remove_vertex(obj->excnode, g);
+		}
+		obj = m_auto_objects.erase(obj);
+
+		for (; obj != m_auto_objects.end(); ++obj)
+		{
+			if (obj == m_auto_objects.begin())
+				add_edge(obj->excnode, m_exc_exit_node, g);
+			else
+				add_edge(obj->excnode, boost::prior(obj)->excnode, g);
+		}
+
+		this->register_decl_ref(reg.destr);
+		this->connect_to_term(head);
+		this->connect_to_exc(head);
+		this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(reg.destr))(reg.varptr));
+	}
+
 	void build_construct_expr(cfg::vertex_descriptor & head, eop const & tg, clang::CXXConstructExpr const * e)
 	{
 		BOOST_ASSERT(tg.type != eot_none);
@@ -398,6 +520,8 @@ struct context
 		for (std::size_t i = 0; i < e->getNumArgs(); ++i)
 			node(this->make_param(this->build_expr(head, e->getArg(i)), fntype->getArgType(i).getTypePtr()));
 
+		this->connect_to_term(head);
+		this->connect_to_exc(head);
 		this->add_node(head, node);
 	}
 
@@ -728,6 +852,8 @@ struct context
 			for (std::size_t i = 0; i < params.size(); ++i)
 				node(this->make_param(params[i], param_types[i]));
 
+			this->connect_to_term(head);
+			this->connect_to_exc(head);
 			eop node_op = this->add_node(head, node);
 			return result_op.type == eot_none? node_op: result_op;
 		}
@@ -794,7 +920,8 @@ struct context
 		{
 			// TODO: deal with extended lifetime of temporaries bound to a reference.
 			eop res = this->build_expr(head, e->getSubExpr());
-			m_fullexpr_lifetimes.back().push_back(std::make_pair(e->getTemporary()->getDestructor(), this->make_address(res)));
+			auto_object_iterator reg = this->register_destructible_var(e->getTemporary()->getDestructor(), this->make_address(res));
+			m_fullexpr_lifetimes.back().push_back(reg);
 			return res;
 		}
 		else if (clang::ImplicitCastExpr const * e = llvm::dyn_cast<clang::ImplicitCastExpr>(expr))
@@ -883,51 +1010,39 @@ struct context
 
 	eop build_full_expr(cfg::vertex_descriptor & head, clang::Expr const * expr)
 	{
+		this->begin_lifetime_context(m_fullexpr_lifetimes);
 		m_fullexpr_lifetimes.push_back(lifetime_context_t());
 		eop res = this->build_expr(head, expr);
-		lifetime_context_t const & ctx = m_fullexpr_lifetimes.back();
-		for (std::size_t i = ctx.size(); i != 0; --i)
-		{
-			std::pair<clang::CXXDestructorDecl const *, eop> const & op = ctx[i-1];
-			BOOST_ASSERT(op.first != 0);
-			this->register_decl_ref(op.first);
-			this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(op.first))(op.second));
-		}
-		m_fullexpr_lifetimes.pop_back();
+		this->end_lifetime_context(head, m_fullexpr_lifetimes);
 		return res;
 	}
 
-	void end_block_lifetime(cfg::vertex_descriptor & head)
+	void init_object(cfg::vertex_descriptor & head, eop const & varptr, clang::Expr const * e, bool blockLifetime)
 	{
-		BOOST_ASSERT(!m_block_lifetimes.empty());
-		for (std::size_t i = m_block_lifetimes.back().size(); i != 0; --i)
+		if (clang::CXXExprWithTemporaries const * te = llvm::dyn_cast<clang::CXXExprWithTemporaries>(e))
 		{
-			std::pair<clang::CXXDestructorDecl const *, eop> const & op = m_block_lifetimes.back()[i-1];
-			BOOST_ASSERT(op.first != 0);
-			this->register_decl_ref(op.first);
-			this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(op.first))(op.second));
+			this->init_object(head, varptr, te->getSubExpr(), blockLifetime);
+			return;
 		}
-		m_block_lifetimes.pop_back();
-	}
 
-	void init_object(cfg::vertex_descriptor & head, eop const & var, clang::Expr const * e)
-	{
 		clang::Type const * type = e->getType().getTypePtr();
 
 		// TODO: check fullexpr lifetimes
 		if (e->getType()->isStructureOrClassType())
 		{
 			BOOST_ASSERT(llvm::isa<clang::CXXConstructExpr>(e));
-			this->build_construct_expr(head, var, llvm::dyn_cast<clang::CXXConstructExpr>(e));
+			this->build_construct_expr(head, varptr, llvm::dyn_cast<clang::CXXConstructExpr>(e));
 			clang::CXXRecordDecl const * recordDecl = e->getType()->getAsCXXRecordDecl();
-			if (recordDecl && recordDecl->hasDeclaredDestructor())
-				m_block_lifetimes.back().push_back(std::make_pair(recordDecl->getDestructor(), var));
+			if (blockLifetime && recordDecl && recordDecl->hasDeclaredDestructor())
+			{
+				m_block_lifetimes.back().push_back(this->register_destructible_var(recordDecl->getDestructor(), varptr));
+			}
 		}
 		else if (e->getType()->isReferenceType())
 		{
 			this->add_node(head, enode(cfg::nt_call, e)
 				(eot_oper, "=")
-				(var)
+				(varptr)
 				(this->make_address(this->build_expr(head, e))));
 		}
 		else if (type->isArrayType())
@@ -943,7 +1058,7 @@ struct context
 					// TODO: define semantics of [] operator
 					eop op = this->add_node(head, enode(cfg::nt_call, e)
 						(eot_oper, "[]")
-						(var)
+						(varptr)
 						(eot_const, boost::lexical_cast<std::string>(i)));
 
 					if (!at->getElementType()->isStructureOrClassType())
@@ -967,7 +1082,7 @@ struct context
 					{
 						eop op = this->add_node(head, enode(cfg::nt_call, e)
 							(eot_oper, "[]")
-							(var)
+							(varptr)
 							(eot_const, boost::lexical_cast<std::string>(i)));
 
 						this->add_node(head, enode(cfg::nt_call, e)
@@ -1001,7 +1116,7 @@ struct context
 		{
 			this->add_node(head, enode(cfg::nt_call, e)
 				(eot_oper, "=")
-				(var)
+				(varptr)
 				(this->build_expr(head, e)));
 		}
 	}
@@ -1012,10 +1127,10 @@ struct context
 
 		if (clang::CompoundStmt const * s = llvm::dyn_cast<clang::CompoundStmt>(stmt))
 		{
-			m_block_lifetimes.push_back(lifetime_context_t());
+			this->begin_lifetime_context(m_block_lifetimes);
 			for (clang::CompoundStmt::const_body_iterator it = s->body_begin(); it != s->body_end(); ++it)
 				this->build_stmt(head, *it);
-			this->end_block_lifetime(head);
+			this->end_lifetime_context(head, m_block_lifetimes);
 		}
 		else if (clang::Expr const * s = llvm::dyn_cast<clang::Expr>(stmt))
 		{
@@ -1180,7 +1295,11 @@ struct context
 				if (clang::VarDecl const * vd = llvm::dyn_cast<clang::VarDecl>(decl))
 				{
 					if (vd->hasInit())
-						this->init_object(head, eop(eot_varptr, this->get_name(vd)), vd->getInit());
+					{
+						this->begin_lifetime_context(m_fullexpr_lifetimes);
+						this->init_object(head, eop(eot_varptr, this->get_name(vd)), vd->getInit(), true);
+						this->end_lifetime_context(head, m_fullexpr_lifetimes);
+					}
 				}
 			}
 		}
@@ -1231,6 +1350,12 @@ struct context
 	void finish()
 	{
 		this->backpatch_gotos();
+
+		if (in_degree(m_exc_exit_node, g) == 0)
+			remove_vertex(m_exc_exit_node, g);
+
+		if (in_degree(m_term_exit_node, g) == 0)
+			remove_vertex(m_term_exit_node, g);
 
 		g[m_head].type = cfg::nt_exit;
 		g[m_head].ops.push_back(cfg::operand(cfg::ot_const, "0"));
@@ -1342,13 +1467,17 @@ struct context
 				eop memberop = this->add_node(m_head, enode(cfg::nt_call)
 					(eot_member, this->get_name(init->getMember()))
 					(eot_var, "p:this"));
-				this->init_object(m_head, memberop, init->getInit());
+				this->init_object(m_head, memberop, init->getInit(), false);
+
+				// TODO: figure out how to do exception safety here
 			}
 			else
 			{
 				// TODO: Convert p:this
 				BOOST_ASSERT(init->isBaseInitializer());
-				this->init_object(m_head, eop(eot_var, "p:this"), init->getInit());
+				this->init_object(m_head, eop(eot_var, "p:this"), init->getInit(), false);
+
+				// TODO: figure out how to do exception safety here
 			}
 		}
 		
