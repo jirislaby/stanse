@@ -5,6 +5,7 @@ def cfg2pdf(fin, fout):
     p = Popen(['dot', '-Tpdf'], stdin=PIPE, stdout=fout)
     cfg2dot(fin, p.stdin)
     p.stdin.close()
+    p.wait()
 
 if __name__ == '__main__':
     import argparse
