@@ -1,0 +1,7 @@
+*.pyc
+*.ncb
+*.suo
+*.user
+Debug
+Release
+test/*.pdf
