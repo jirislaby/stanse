@@ -17,6 +17,7 @@ def tests2pdf(parser, paths, target_dir):
                 if target_dir:
                     sourcepdf = os.path.join(target_dir, os.path.split(source)[1] + '.pdf')
                 cfg2pdf(p.stdout, open(sourcepdf, 'w'))
+                p.wait()
             except OSError, e:
                 print 'Cannot execute the parser:', e.strerror
                 break
