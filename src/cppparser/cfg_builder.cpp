@@ -84,8 +84,8 @@ std::string make_decl_name(clang::NamedDecl const * decl)
 
 struct context
 {
-	context(cfg & c)
-		: g(c), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
+	context(cfg & c, clang::FunctionDecl const * fn)
+		: g(c), m_fn(fn), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
 	{
 		g.entry(m_head);
 
@@ -97,6 +97,8 @@ struct context
 
 		g[m_term_exit_node].type = cfg::nt_exit;
 		g[m_term_exit_node].ops.push_back(cfg::operand(cfg::ot_const, "2"));
+
+		this->build();
 	}
 
 	std::set<clang::FunctionDecl const *> m_referenced_functions2;
@@ -112,6 +114,8 @@ struct context
 	}
 
 	cfg & g;
+	clang::FunctionDecl const * m_fn;
+
 	cfg::vertex_descriptor m_head;
 	std::set<cfg::vertex_descriptor> m_exit_nodes;
 	cfg::vertex_descriptor m_exc_exit_node;
@@ -852,7 +856,14 @@ struct context
 			this->connect_to_term(head);
 			this->connect_to_exc(head);
 			eop node_op = this->add_node(head, node);
-			return result_op.type == eot_none? node_op: result_op;
+
+			if (result_op.type != eot_none)
+				return result_op;
+
+			if (restype->isReferenceType())
+				return this->make_deref(head, node_op);
+			else
+				return node_op;
 		}
 		else if (clang::ConditionalOperator const * e = llvm::dyn_cast<clang::ConditionalOperator>(expr))
 		{
@@ -1161,7 +1172,12 @@ struct context
 		{
 			cfg::operand val;
 			if (s->getRetValue() != 0)
-				val = this->make_rvalue(head, this->build_full_expr(head, s->getRetValue()));
+			{
+				eop op = this->build_full_expr(head, s->getRetValue());
+				if (m_fn->getResultType()->isReferenceType())
+					op = this->make_address(op);
+				val = this->make_rvalue(head, op);
+			}
 
 			g[head].type = cfg::nt_exit;
 			g[head].ops.push_back(cfg::operand(cfg::ot_const, "0"));
@@ -1558,16 +1574,16 @@ struct context
 		}
 	}
 
-	void build(clang::FunctionDecl const * fn)
+	void build()
 	{
-		BOOST_ASSERT(!fn->isDependentContext());
+		BOOST_ASSERT(!m_fn->isDependentContext());
 
-		this->register_locals(fn);
-		if (clang::CXXConstructorDecl const * cd = llvm::dyn_cast<clang::CXXConstructorDecl>(fn))
+		this->register_locals(m_fn);
+		if (clang::CXXConstructorDecl const * cd = llvm::dyn_cast<clang::CXXConstructorDecl>(m_fn))
 			this->build_constructor(cd);
-		if (fn->hasBody())
-			this->build_stmt(m_head, fn->getBody());
-		if (clang::CXXDestructorDecl const * cd = llvm::dyn_cast<clang::CXXDestructorDecl>(fn))
+		if (m_fn->hasBody())
+			this->build_stmt(m_head, m_fn->getBody());
+		if (clang::CXXDestructorDecl const * cd = llvm::dyn_cast<clang::CXXDestructorDecl>(m_fn))
 			this->build_destructor(cd);
 		this->finish();
 	}
@@ -1592,8 +1608,7 @@ program build_program(clang::TranslationUnitDecl const * tu)
 		std::string const & fnname = make_decl_name(fn);
 
 		cfg c;
-		context ctx(c);
-		ctx.build(fn);
+		context ctx(c, fn);
 
 		res.cfgs().insert(std::make_pair(fnname, c));
 
