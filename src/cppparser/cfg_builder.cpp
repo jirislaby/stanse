@@ -92,6 +92,9 @@ struct context
 		g[m_exc_exit_node].type = cfg::nt_exit;
 		g[m_exc_exit_node].ops.push_back(cfg::operand(cfg::ot_const, "1"));
 
+		auto_var_registration reg = { 0, eop(), m_exc_exit_node };
+		m_auto_objects.push_back(reg);
+
 		g[m_term_exit_node].type = cfg::nt_exit;
 		g[m_term_exit_node].ops.push_back(cfg::operand(cfg::ot_const, "2"));
 	}
@@ -139,10 +142,7 @@ struct context
 
 	void connect_to_exc(cfg::vertex_descriptor v)
 	{
-		if (m_auto_objects.empty())
-			this->connect_to_exc(v, m_exc_exit_node);
-		else
-			this->connect_to_exc(v, m_auto_objects.back().excnode);
+		this->connect_to_exc(v, m_auto_objects.back().excnode);
 	}
 
 	cfg::vertex_descriptor duplicate_vertex(cfg::vertex_descriptor src)
@@ -462,10 +462,7 @@ struct context
 		auto_var_registration reg = { destructor, varptr, add_vertex(g) };
 		this->init_auto_reg_node(reg);
 
-		if (!m_auto_objects.empty())
-			add_edge(reg.excnode, m_auto_objects.back().excnode, g);
-		else
-			add_edge(reg.excnode, m_exc_exit_node, g);
+		add_edge(reg.excnode, m_auto_objects.back().excnode, g);
 		m_auto_objects.push_back(reg);
 		return boost::prior(m_auto_objects.end());
 	}
@@ -998,8 +995,16 @@ struct context
 		}
 		else if (clang::CXXThrowExpr const * e = llvm::dyn_cast<clang::CXXThrowExpr>(expr))
 		{
-			// TODO: Make this actually throw...
-			return this->build_expr(head, e->getSubExpr());
+			eop exc_mem = this->add_node(head, enode(cfg::nt_call)
+				(eot_oper, "magic_alloc")
+				(eot_const, "sizeof:" + e->getSubExpr()->getType().getAsString()));
+
+			this->init_object(head, exc_mem, e->getSubExpr(), false);
+			// TODO: handle exceptions from initialization
+
+			this->join_nodes(head, m_auto_objects.back().excnode);
+			head = add_vertex(g);
+			return eop();
 		}
 		else
 		{
