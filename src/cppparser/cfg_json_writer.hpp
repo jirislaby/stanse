@@ -4,6 +4,6 @@
 #include "cfg.hpp"
 #include <iostream>
 
-void cfg_json_write(std::ostream & out, program const & prog);
+void cfg_json_write(std::ostream & out, program const & prog, bool readable);
 
 #endif

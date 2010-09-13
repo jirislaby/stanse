@@ -3,7 +3,7 @@
 #include <boost/assert.hpp>
 #include <boost/range.hpp>
 
-void cfg_json_write(std::ostream & out, program const & prog)
+void cfg_json_write(std::ostream & out, program const & prog, bool readable)
 {
 	Json::Value json_prog(Json::objectValue);
 
@@ -129,7 +129,14 @@ void cfg_json_write(std::ostream & out, program const & prog)
 		json_prog[it->first] = json_cfg;
 	}
 
-	Json::FastWriter writer;
-	//Json::StyledWriter writer;
-	out << writer.write(json_prog);
+	if (readable)
+	{
+		Json::StyledWriter writer;
+		out << writer.write(json_prog);
+	}
+	else
+	{
+		Json::FastWriter writer;
+		out << writer.write(json_prog);
+	}
 }

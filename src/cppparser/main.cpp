@@ -33,7 +33,7 @@ struct config
 {
 	bool printAST;
 	bool printRCFG;
-	bool printJsonCfg;
+	int printJsonCfg;
 	bool printReadableAST;
 	bool printUnitAST;
 	bool debugCFG;
@@ -73,7 +73,7 @@ public:
 		if (m_c.printJsonCfg)
 		{
 			program prog = build_program(ctx.getTranslationUnitDecl());
-			cfg_json_write(std::cout, prog);
+			cfg_json_write(std::cout, prog, m_c.printJsonCfg == 1);
 		}
 
 		if (m_c.printAST)
@@ -161,7 +161,9 @@ int main(int argc, char * argv[])
 			else if (arg == "-A")
 				c.printAST = true;
 			else if (arg == "-j")
-				c.printJsonCfg = true;
+				c.printJsonCfg = 1;
+			else if (arg == "-J")
+				c.printJsonCfg = 2;
 			else if (arg == "-r")
 				c.printRCFG = true;
 			else if (arg == "-u")
