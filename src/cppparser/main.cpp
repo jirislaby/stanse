@@ -37,7 +37,26 @@ struct config
 	bool printReadableAST;
 	bool printUnitAST;
 	bool debugCFG;
+
+	bool showFnNames;
 	std::string filter;
+};
+
+struct cfg_build_visitor
+	: default_build_visitor
+{
+	explicit cfg_build_visitor(bool show_names)
+		: m_show_names(show_names)
+	{
+	}
+
+	void function_started(std::string const & name)
+	{
+		if (m_show_names)
+			std::cerr << name << std::endl;
+	}
+
+	bool m_show_names;
 };
 
 class MyConsumer
@@ -72,7 +91,7 @@ public:
 
 		if (m_c.printJsonCfg)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl());
+			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_c.showFnNames));
 			cfg_json_write(std::cout, prog, m_c.printJsonCfg == 1);
 		}
 
@@ -90,7 +109,7 @@ public:
 
 		if (m_c.debugCFG)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl());
+			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_c.showFnNames));
 			prog.pretty_print(std::cerr);
 			//print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 		}
@@ -170,6 +189,8 @@ int main(int argc, char * argv[])
 				c.printUnitAST = true;
 			else if (arg == "--debugcfg")
 				c.debugCFG = true;
+			else if (arg == "--showfnnames")
+				c.showFnNames = true;
 			else if (arg == "--filter" && i + 1 < argc)
 				c.filter = argv[++i];
 			else

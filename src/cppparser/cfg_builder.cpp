@@ -13,79 +13,12 @@
 #include <clang/AST/DeclTemplate.h>
 
 #include <list>
-
 namespace {
-
-void get_functions_from_declcontext(clang::DeclContext const * declctx, std::set<clang::FunctionDecl const *> & fns)
-{
-	for (clang::DeclContext::decl_iterator it = declctx->decls_begin(); it != declctx->decls_end(); ++it)
-	{
-		clang::Decl * decl = *it;
-
-		if (clang::NamedDecl const * nd = llvm::dyn_cast<clang::NamedDecl>(decl))
-		{
-			std::string name = nd->getQualifiedNameAsString();
-			name = name;
-		}
-
-		if (clang::FunctionDecl * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
-		{
-			if (fnDecl->isDependentContext())
-				continue;
-			fns.insert(fnDecl);
-		}
-		else if (clang::CXXRecordDecl const * classDecl = dyn_cast<clang::CXXRecordDecl>(decl))
-		{
-			/*if (classDecl->hasDeclaredDefaultConstructor() && !classDecl->getDefaultConstructor()->isTrivial())
-				fns.insert(classDecl->getDefaultConstructor());
-			if (classDecl->hasDeclaredCopyConstructor() && !classDecl->getCopyConstructor()->isTrivial())
-				fns.insert(classDecl->getCopyConstructor());
-			if (classDecl->hasDeclaredCopyAssignment() && !classDecl->getCopyAssignmentOperator()->isTrivial())
-				fns.insert(classDecl->getCopyAssignmentOperator());*/
-			if (classDecl->hasDefinition() && classDecl->hasDeclaredDestructor() && !classDecl->getDestructor()->isTrivial())
-				fns.insert(classDecl->getDestructor());
-			get_functions_from_declcontext(classDecl, fns);
-		}
-		else if (clang::RecordDecl const * classDecl = dyn_cast<clang::RecordDecl>(decl))
-		{
-			get_functions_from_declcontext(classDecl, fns);
-		}
-	}
-}
-
-std::string make_decl_name(clang::NamedDecl const * decl)
-{
-	if (clang::FunctionDecl const * fndecl = llvm::dyn_cast<clang::FunctionDecl>(decl))
-	{
-		std::string name = decl->getQualifiedNameAsString();
-		name += '(';
-		for (clang::FunctionDecl::param_const_iterator param_ci = fndecl->param_begin(); param_ci != fndecl->param_end(); ++param_ci)
-		{
-			if (param_ci != fndecl->param_begin())
-				name += ", ";
-			clang::VarDecl const * param_decl = *param_ci;
-			name += static_cast<clang::QualType>(param_decl->getType()->getCanonicalTypeUnqualified()).getAsString();
-		}
-		name += ')';
-
-		if (clang::CXXMethodDecl const * cxxfndecl = llvm::dyn_cast<clang::CXXMethodDecl>(fndecl))
-		{
-			if (cxxfndecl->getTypeQualifiers() & clang::Qualifiers::Const)
-				name += " const";
-			if (cxxfndecl->getTypeQualifiers() & clang::Qualifiers::Volatile)
-				name += " volatile";
-		}
-		return name;
-	}
-	else
-		return decl->getQualifiedNameAsString();
-}
-
 
 struct context
 {
-	context(cfg & c, clang::FunctionDecl const * fn)
-		: g(c), m_fn(fn), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
+	context(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions)
+		: m_referenced_functions2(referenced_functions), g(c), m_fn(fn), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
 	{
 		g.entry(m_head);
 
@@ -101,16 +34,11 @@ struct context
 		this->build();
 	}
 
-	std::set<clang::FunctionDecl const *> m_referenced_functions2;
+	std::set<clang::FunctionDecl const *> & m_referenced_functions2;
 
 	void register_decl_ref(clang::FunctionDecl const * fn)
 	{
 		m_referenced_functions2.insert(fn);
-	}
-
-	std::set<clang::FunctionDecl const *> const & referenced_functions() const
-	{
-		return m_referenced_functions2;
 	}
 
 	cfg & g;
@@ -1591,31 +1519,7 @@ struct context
 
 }
 
-program build_program(clang::TranslationUnitDecl const * tu)
+void build_cfg(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions)
 {
-	std::set<clang::FunctionDecl const *> unprocessedFunctions;
-	get_functions_from_declcontext(tu, unprocessedFunctions);
-
-	std::set<clang::FunctionDecl const *> processedFunctions;
-	program res;
-	while (!unprocessedFunctions.empty())
-	{
-		clang::FunctionDecl const * fn = *unprocessedFunctions.begin();
-		unprocessedFunctions.erase(unprocessedFunctions.begin());
-
-		BOOST_ASSERT(processedFunctions.find(fn) == processedFunctions.end());
-
-		std::string const & fnname = make_decl_name(fn);
-
-		cfg c;
-		context ctx(c, fn);
-
-		res.cfgs().insert(std::make_pair(fnname, c));
-
-		std::set_difference(
-			ctx.referenced_functions().begin(), ctx.referenced_functions().end(),
-			processedFunctions.begin(), processedFunctions.end(),
-			std::inserter(unprocessedFunctions, unprocessedFunctions.begin()));
-	}
-	return res;
+	context(c, fn, referenced_functions);
 }
