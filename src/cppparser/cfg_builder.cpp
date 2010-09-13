@@ -937,9 +937,9 @@ struct context
 			m_fullexpr_lifetimes.back().push_back(reg);
 			return res;
 		}
-		else if (clang::ImplicitCastExpr const * e = llvm::dyn_cast<clang::ImplicitCastExpr>(expr))
+		else if (clang::CastExpr const * e = llvm::dyn_cast<clang::CastExpr>(expr))
 		{
-			// TODO: deal with the casts correctly
+			// TODO: deal with the casts correctly (notably with dynamic_cast)
 			return this->build_expr(head, e->getSubExpr());
 		}
 		else if (clang::CXXPseudoDestructorExpr const * e = llvm::dyn_cast<clang::CXXPseudoDestructorExpr>(expr))
