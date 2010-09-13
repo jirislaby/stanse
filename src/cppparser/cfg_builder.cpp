@@ -861,13 +861,29 @@ struct context
 			cfg::vertex_descriptor false_head = this->duplicate_vertex(head);
 			g[*in_edges(false_head, g).first].cond = "0";
 
-			cfg::vertex_descriptor true_node = this->make_node(head, this->build_expr(head, e->getTrueExpr()));
-			cfg::vertex_descriptor false_node = this->make_node(false_head, this->build_expr(false_head, e->getFalseExpr()));
-			this->join_nodes(false_head, head);
+			eop true_res = this->build_expr(head, e->getTrueExpr());
+			eop false_res = this->build_expr(false_head, e->getFalseExpr());
+			if (true_res.type != eot_none && false_res.type != eot_none)
+			{
+				cfg::vertex_descriptor true_node = this->make_node(head, true_res);
+				cfg::vertex_descriptor false_node = this->make_node(false_head, false_res);
+				this->join_nodes(false_head, head);
 
-			return this->add_node(head, enode(cfg::nt_phi, e)
-				(eot_node, true_node)
-				(eot_node, false_node));
+				return this->add_node(head, enode(cfg::nt_phi, e)
+					(eot_node, true_node)
+					(eot_node, false_node));
+			}
+			else
+			{
+				this->join_nodes(false_head, head);
+				if (true_res.type == eot_none && false_res.type == eot_none)
+					return eop();
+
+				if (true_res.type != eot_none)
+					return true_res;
+				else
+					return false_res;
+			}
 		}
 		else if (clang::SizeOfAlignOfExpr const * e = llvm::dyn_cast<clang::SizeOfAlignOfExpr>(expr))
 		{
