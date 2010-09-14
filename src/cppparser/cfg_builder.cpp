@@ -1401,9 +1401,8 @@ struct context
 					{
 						using std::swap;
 						swap(exit_nodes[i-1], exit_nodes.back());
-						BOOST_ASSERT(in_degree(exit_nodes.back(), g) == 0);
 						m_exit_nodes.erase(exit_nodes.back());
-						remove_vertex(exit_nodes.back(), g);
+						this->join_nodes(exit_nodes.back(), m_term_exit_node);
 						exit_nodes.pop_back();
 					}
 				}
