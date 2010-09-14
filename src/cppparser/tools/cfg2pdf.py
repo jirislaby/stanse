@@ -3,9 +3,11 @@ def cfg2pdf(fin, fout):
     from subprocess import Popen, PIPE
     
     p = Popen(['dot', '-Tpdf'], stdin=PIPE, stdout=fout)
-    cfg2dot(fin, p.stdin)
-    p.stdin.close()
-    p.wait()
+    try:
+        cfg2dot(fin, p.stdin)
+    finally:
+        p.stdin.close()
+        p.wait()
 
 if __name__ == '__main__':
     import argparse
@@ -16,7 +18,7 @@ if __name__ == '__main__':
 
     import os.path
     if not args.outfile:
-        outfile = os.path.splitext(os.path.split(args.infile)[1])[0] + '.pdf' if args.infile != '-' else '-'
+        outfile = args.infile + '.pdf' if args.infile != '-' else '-'
     else:
         outfile = args.outfile
 
