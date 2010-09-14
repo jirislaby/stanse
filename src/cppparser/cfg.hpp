@@ -37,6 +37,16 @@ public:
 			: type(type), id(id)
 		{
 		}
+
+		friend bool operator==(operand const & lhs, operand const & rhs)
+		{
+			return lhs.type == rhs.type && lhs.id == rhs.id;
+		}
+
+		friend bool operator!=(operand const & lhs, operand const & rhs)
+		{
+			return !(lhs == rhs);
+		}
 	};
 
 	struct edge
@@ -47,6 +57,16 @@ public:
 		edge(std::size_t id = 0, std::string const & cond = std::string())
 			: id(id), cond(cond)
 		{
+		}
+
+		friend bool operator==(edge const & lhs, edge const & rhs)
+		{
+			return lhs.id == rhs.id && lhs.cond == rhs.cond;
+		}
+
+		friend bool operator!=(edge const & lhs, edge const & rhs)
+		{
+			return !(lhs == rhs);
 		}
 	};
 
