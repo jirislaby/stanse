@@ -9,7 +9,7 @@
 
 struct default_build_visitor
 {
-	void function_started(std::string const &) {}
+	bool function_started(std::string const &) {}
 	void function_completed(std::string const &, cfg const &) {}
 };
 
@@ -31,7 +31,8 @@ program build_program(clang::TranslationUnitDecl const * tu, Visitor visitor)
 		BOOST_ASSERT(processedFunctions.find(fn) == processedFunctions.end());
 
 		std::string const & fnname = make_decl_name(fn);
-		visitor.function_started(fnname);
+		if (!visitor.function_started(fnname))
+			continue;
 
 		std::set<clang::FunctionDecl const *> referenced_functions;
 

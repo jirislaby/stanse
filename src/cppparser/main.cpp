@@ -45,18 +45,24 @@ struct config
 struct cfg_build_visitor
 	: default_build_visitor
 {
-	explicit cfg_build_visitor(bool show_names)
-		: m_show_names(show_names)
+	explicit cfg_build_visitor(bool show_names, std::string const & filter)
+		: m_show_names(show_names), m_filter(filter)
 	{
 	}
 
-	void function_started(std::string const & name)
+	bool function_started(std::string const & name)
 	{
+		if (!m_filter.empty() && name.substr(0, m_filter.size()) != m_filter)
+			return false;
+
 		if (m_show_names)
 			std::cerr << name << std::endl;
+
+		return true;
 	}
 
 	bool m_show_names;
+	std::string m_filter;
 };
 
 class MyConsumer
@@ -91,7 +97,7 @@ public:
 
 		if (m_c.printJsonCfg)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_c.showFnNames));
+			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_c.showFnNames, m_c.filter));
 			cfg_json_write(std::cout, prog, m_c.printJsonCfg == 1);
 		}
 
@@ -109,7 +115,7 @@ public:
 
 		if (m_c.debugCFG)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_c.showFnNames));
+			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_c.showFnNames, m_c.filter));
 			prog.pretty_print(std::cerr);
 			//print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 		}
