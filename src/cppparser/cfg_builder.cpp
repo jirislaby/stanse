@@ -1533,6 +1533,9 @@ struct context
 				g[e] = g[*in_edges_range.first];
 			}
 
+			if (g.entry() == it->first)
+				g.entry(it->second);
+
 			clear_vertex(it->first, g);
 			remove_vertex(it->first, g);
 		}
