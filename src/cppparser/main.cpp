@@ -95,6 +95,9 @@ public:
 			functionDecls.swap(filtered);
 		}
 
+		if (m_c.printReadableAST)
+			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
+
 		if (m_c.printJsonCfg)
 		{
 			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_c.showFnNames, m_c.filter));
@@ -106,9 +109,6 @@ public:
 
 		if (m_c.printRCFG)
 			print_rcfg(ctx, std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
-
-		if (m_c.printReadableAST)
-			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
 
 		if (m_c.printUnitAST)
 			print_decl(ctx.getTranslationUnitDecl(), std::cout, 0);
