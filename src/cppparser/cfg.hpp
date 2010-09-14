@@ -1,53 +1,30 @@
 #ifndef CPPPARSER_CFG_HPP
 #define CPPPARSER_CFG_HPP
 
-#include <vector>
-#include <set>
-#include <map>
-#include <string>
 #include <boost/assert.hpp>
 #include <boost/variant.hpp>
 #include <boost/none.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/utility.hpp>
 
 #include <memory>
+#include <vector>
+#include <set>
+#include <list>
+#include <map>
+#include <string>
 
 class cfg
 {
+private:
 	struct graph_vertex;
 
 public:
-	enum node_type { nt_none, nt_exit, nt_value, nt_call, nt_phi };
-	enum op_type { ot_none, ot_func, ot_oper, ot_const, ot_member, ot_node, ot_var, ot_varptr };
-
 	typedef graph_vertex * vertex_descriptor;
 
-	struct edge_descriptor
-	{
-		vertex_descriptor source;
-		std::size_t parity;
-
-		edge_descriptor(vertex_descriptor source, std::size_t parity)
-			: source(source), parity(parity)
-		{
-		}
-
-		friend bool operator==(edge_descriptor const & lhs, edge_descriptor const & rhs)
-		{
-			return lhs.source == rhs.source && lhs.parity == rhs.parity;
-		}
-
-		friend bool operator!=(edge_descriptor const & lhs, edge_descriptor const & rhs)
-		{
-			return !(lhs == rhs);
-		}
-
-		friend bool operator<(edge_descriptor const & lhs, edge_descriptor const & rhs)
-		{
-			return lhs.source < rhs.source || (lhs.source == rhs.source && lhs.parity < rhs.parity);
-		}
-	};
+	enum node_type { nt_none, nt_exit, nt_value, nt_call, nt_phi };
+	enum op_type { ot_none, ot_func, ot_oper, ot_const, ot_member, ot_node, ot_var, ot_varptr };
 
 	typedef boost::variant<boost::none_t, std::string, vertex_descriptor> op_id;
 
@@ -82,6 +59,45 @@ public:
 		node(node_type type = nt_none, void * data = 0)
 			: type(type), data(data)
 		{
+		}
+	};
+
+private:
+	struct graph_edge
+	{
+		vertex_descriptor target;
+		edge prop;
+
+		graph_edge(vertex_descriptor target, edge prop = edge())
+			: target(target), prop(prop)
+		{
+		}
+	};
+
+public:
+	struct edge_descriptor
+	{
+		vertex_descriptor source;
+		std::list<graph_edge>::iterator parity;
+
+		edge_descriptor(vertex_descriptor source, std::list<graph_edge>::iterator parity)
+			: source(source), parity(parity)
+		{
+		}
+
+		friend bool operator==(edge_descriptor const & lhs, edge_descriptor const & rhs)
+		{
+			return lhs.source == rhs.source && lhs.parity == rhs.parity;
+		}
+
+		friend bool operator!=(edge_descriptor const & lhs, edge_descriptor const & rhs)
+		{
+			return !(lhs == rhs);
+		}
+
+		friend bool operator<(edge_descriptor const & lhs, edge_descriptor const & rhs)
+		{
+			return lhs.source < rhs.source || (lhs.source == rhs.source && &*lhs.parity < &*rhs.parity);
 		}
 	};
 
@@ -162,19 +178,12 @@ public:
 
 	friend void clear_vertex(vertex_descriptor v, cfg & g)
 	{
-		// TODO: we assume here that the vertex has 
-		// only a single predecessor, which has only one successor.
-		for (std::size_t i = 0; i < v->succs.size(); ++i)
-			v->succs[i].target->preds.erase(edge_descriptor(v, i));
+		for (std::list<graph_edge>::iterator it = v->succs.begin(); it != v->succs.end(); ++it)
+			it->target->preds.erase(edge_descriptor(v, it));
 		v->succs.clear();
 
-		if (v->preds.empty())
-			return;
-
-		BOOST_ASSERT(v->preds.size() == 1);
-		BOOST_ASSERT((*v->preds.begin()).source->succs.size() == 1);
-
-		(*v->preds.begin()).source->succs.clear();
+		for (std::set<edge_descriptor>::const_iterator it = v->preds.begin(); it != v->preds.end(); ++it)
+			it->source->succs.erase(it->parity);
 		v->preds.clear();
 	}
 
@@ -190,10 +199,10 @@ public:
 
 	friend std::pair<edge_descriptor, bool> add_edge(vertex_descriptor source, vertex_descriptor target, cfg & g)
 	{
-		edge_descriptor new_edge(source, source->succs.size());
-
-		target->preds.insert(new_edge);
 		source->succs.push_back(target);
+
+		edge_descriptor new_edge(source, boost::prior(source->succs.end()));
+		target->preds.insert(new_edge);
 		return std::make_pair(new_edge, true);
 	}
 
@@ -202,7 +211,7 @@ public:
 		// TODO: basic exception guarantees
 		for (std::set<edge_descriptor>::const_iterator it = source->preds.begin(); it != source->preds.end(); ++it)
 		{
-			it->source->succs[it->parity].target = target;
+			it->parity->target = target;
 			target->preds.insert(*it);
 		}
 		source->preds.clear();
@@ -218,7 +227,7 @@ public:
 
 	friend vertex_descriptor target(edge_descriptor const & e, cfg const & g)
 	{
-		return e.source->succs[e.parity].target;
+		return e.parity->target;
 	}
 
 	static vertex_descriptor null_vertex()
@@ -235,13 +244,13 @@ public:
 	node & operator[](vertex_descriptor v) { return v->prop; }
 	node const & operator[](vertex_descriptor v) const { return v->prop; }
 
-	edge & operator[](edge_descriptor e) { return e.source->succs[e.parity].prop; }
-	edge const & operator[](edge_descriptor e) const { return e.source->succs[e.parity].prop; }
+	edge & operator[](edge_descriptor e) { return e.parity->prop; }
+	edge const & operator[](edge_descriptor e) const { return e.parity->prop; }
 
 	struct out_edge_iterator
-		: boost::iterator_facade<out_edge_iterator, edge_descriptor const, boost::random_access_traversal_tag>
+		: boost::iterator_facade<out_edge_iterator, edge_descriptor const, boost::bidirectional_traversal_tag>
 	{
-		out_edge_iterator(vertex_descriptor source, std::size_t parity)
+		out_edge_iterator(vertex_descriptor source, std::list<graph_edge>::iterator parity)
 			: m_current(source, parity)
 		{
 		}
@@ -250,8 +259,6 @@ public:
 		void increment() { ++m_current.parity; }
 		void decrement() { --m_current.parity; }
 		bool equal(out_edge_iterator const & other) const { return m_current == other.m_current; }
-		void advance(std::size_t n) { m_current.parity += n; }
-		std::ptrdiff_t distance_to(out_edge_iterator const & other) const { return other.m_current.parity - m_current.parity; }
 
 	private:
 		edge_descriptor m_current;
@@ -259,7 +266,7 @@ public:
 
 	friend std::pair<out_edge_iterator, out_edge_iterator> out_edges(vertex_descriptor v, cfg const & g)
 	{
-		return std::make_pair(out_edge_iterator(v, 0), out_edge_iterator(v, v->succs.size()));
+		return std::make_pair(out_edge_iterator(v, v->succs.begin()), out_edge_iterator(v, v->succs.end()));
 	}
 
 	typedef std::set<edge_descriptor>::const_iterator in_edge_iterator;
@@ -294,20 +301,10 @@ public:
 	std::vector<std::string> const & locals() const { return m_locals; }
 
 private:
-	struct graph_edge
-	{
-		vertex_descriptor target;
-		edge prop;
-
-		graph_edge(vertex_descriptor target, edge prop = edge())
-			: target(target), prop(prop)
-		{
-		}
-	};
 
 	struct graph_vertex
 	{
-		std::vector<graph_edge> succs;
+		std::list<graph_edge> succs;
 		std::set<edge_descriptor> preds;
 		node prop;
 
