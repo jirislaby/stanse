@@ -23,7 +23,7 @@ if __name__ == '__main__':
         ftempl = open(templ, 'r')
         try:
             try:
-                p = Popen([parser, '-j', source], stdout=PIPE)
+                p = Popen([parser, '-j', '-w', source], stdout=PIPE)
             except OSError, e:
                 print 'Cannot execute the parser:', e.strerror
                 break
