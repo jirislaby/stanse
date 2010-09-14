@@ -63,7 +63,19 @@ void print_decl(clang::Decl const * decl, std::ostream & out, int level)
 void print_stmt(clang::Stmt const * stmt, std::ostream & out, int level)
 {
 	indent(out, level);
-	out << stmt->getStmtClassName() << '\n';
+	out << stmt->getStmtClassName();
+
+	if (clang::Expr const * e = llvm::dyn_cast<clang::Expr>(stmt))
+	{
+		out << " type:" << e->getType().getAsString();
+	}
+
+	if (clang::CastExpr const * e = llvm::dyn_cast<clang::CastExpr>(stmt))
+	{
+		out << " " << e->getCastKindName();
+	}
+
+	out << '\n';
 	for (clang::Stmt::const_child_iterator ci = stmt->child_begin(); ci != stmt->child_end(); ++ci)
 	{
 		if (*ci == 0)
