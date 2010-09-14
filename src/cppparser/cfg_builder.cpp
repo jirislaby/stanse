@@ -312,7 +312,7 @@ struct context
 	{
 		op = this->make_rvalue(head, op);
 		if (op.type != eot_node)
-			op = this->add_node(head, enode(cfg::nt_value)(op));
+			op = eop(eot_node, this->add_node(head, enode(cfg::nt_value)(op)));
 		return boost::get<cfg::vertex_descriptor>(op.id);
 	}
 
@@ -326,7 +326,7 @@ struct context
 		return n;
 	}
 
-	eop add_node(cfg::vertex_descriptor & head, enode const & node)
+	cfg::vertex_descriptor add_node(cfg::vertex_descriptor & head, enode const & node)
 	{
 		BOOST_ASSERT(g[head].type == cfg::nt_none);
 		BOOST_ASSERT(g[head].ops.empty());
@@ -338,7 +338,7 @@ struct context
 		
 		using std::swap;
 		swap(head, new_head);
-		return eop(eot_node, new_head);
+		return new_head;
 	}
 
 	void set_cond(cfg::vertex_descriptor node, std::size_t index, std::string cond)
@@ -377,6 +377,21 @@ struct context
 			this->unregister_destructible_var(head, reg_it);
 		}
 		ctx.pop_back();
+	}
+
+	void generate_destructor_chain(cfg::vertex_descriptor & head, auto_object_iterator new_end)
+	{
+		BOOST_ASSERT(new_end != m_auto_objects.begin());
+
+		for (auto_object_iterator it = m_auto_objects.end(); it != new_end; --it)
+		{
+			auto_var_registration const & reg = *boost::prior(it);
+
+			cfg::vertex_descriptor node = this->add_node(head, enode(cfg::nt_call)
+				(eot_func, this->get_name(reg.destr))
+				(reg.varptr));
+			this->connect_to_exc(node, boost::prior(boost::prior(it))->excnode);
+		}
 	}
 
 	void init_auto_reg_node(auto_var_registration const & reg)
@@ -435,16 +450,16 @@ struct context
 		this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(reg.destr))(reg.varptr));
 	}
 
-	void build_construct_expr(cfg::vertex_descriptor & head, eop const & tg, clang::CXXConstructExpr const * e)
+	void build_construct_expr(cfg::vertex_descriptor & head, eop const & varptr, clang::CXXConstructExpr const * e)
 	{
-		BOOST_ASSERT(tg.type != eot_none);
+		BOOST_ASSERT(varptr.type != eot_none);
 
 		enode node(cfg::nt_call, e);
 		this->register_decl_ref(e->getConstructor());
 		node(eot_func, this->get_name(e->getConstructor()));
 
 		clang::FunctionProtoType const * fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getConstructor()->getType().getTypePtr());
-		node(tg);
+		node(varptr);
 
 		for (std::size_t i = 0; i < e->getNumArgs(); ++i)
 			node(this->make_param(this->build_expr(head, e->getArg(i)), fntype->getArgType(i).getTypePtr()));
@@ -489,15 +504,17 @@ struct context
 				eop const & rhs = this->build_expr(cont_head, e->getRHS());
 				cfg::vertex_descriptor rhs_value_node = this->make_node(cont_head, rhs);
 				this->join_nodes(cont_head, head);
-				return this->add_node(head, enode(cfg::nt_phi, e)(eot_node, rhs_value_node)(eot_node, cond_node));
+				return eop(eot_node, this->add_node(head, enode(cfg::nt_phi, e)
+					(eot_node, rhs_value_node)
+					(eot_node, cond_node)));
 			}
 			else
 			{
 				eop const & rhs = this->build_expr(head, e->getRHS());
-				return this->add_node(head, enode(cfg::nt_call, expr)
+				return eop(eot_node, this->add_node(head, enode(cfg::nt_call, expr)
 					(eot_oper, clang::BinaryOperator::getOpcodeStr(e->getOpcode()))
 					(lhs)
-					(rhs));
+					(rhs)));
 			}
 		}
 		else if (clang::UnaryOperator const * e = llvm::dyn_cast<clang::UnaryOperator>(expr))
@@ -513,28 +530,28 @@ struct context
 			else if (e->getOpcode() == clang::UO_PreInc || e->getOpcode() == clang::UO_PreDec)
 			{
 				eop expr = this->build_expr(head, e->getSubExpr());
-				eop op = this->add_node(head, enode(cfg::nt_call, e)
+				cfg::vertex_descriptor node = this->add_node(head, enode(cfg::nt_call, e)
 					(eot_oper, e->getOpcode() == clang::UO_PreInc? "+": "-")
 					(expr)
 					(eot_const, "1"));
 				this->add_node(head, enode(cfg::nt_call, e)
 					(eot_oper, "=")
 					(this->make_address(expr))
-					(op));
+					(eot_node, node));
 				return expr;
 			}
 			else if (e->getOpcode() == clang::UO_PostInc || e->getOpcode() == clang::UO_PostDec)
 			{
 				eop expr = this->build_expr(head, e->getSubExpr());
-				eop op = this->add_node(head, enode(cfg::nt_call, e)
+				cfg::vertex_descriptor node = this->add_node(head, enode(cfg::nt_call, e)
 					(eot_oper, e->getOpcode() == clang::UO_PostInc? "+": "-")
 					(expr)
 					(eot_const, "1"));
 				this->add_node(head, enode(cfg::nt_call, e)
 					(eot_oper, "=")
 					(this->make_address(expr))
-					(op));
-				return op;
+					(eot_node, node));
+				return eop(eot_node, node);
 			}
 			else if (e->getOpcode() == clang::UO_Plus)
 			{
@@ -542,9 +559,9 @@ struct context
 			}
 			else
 			{
-				return this->add_node(head, enode(cfg::nt_call, e)
+				return eop(eot_node, this->add_node(head, enode(cfg::nt_call, e)
 					(eot_oper, clang::UnaryOperator::getOpcodeStr(e->getOpcode()))
-					(this->build_expr(head, e->getSubExpr())));
+					(this->build_expr(head, e->getSubExpr()))));
 			}
 		}
 		else if (clang::CXXBoolLiteralExpr const * e = llvm::dyn_cast<clang::CXXBoolLiteralExpr>(expr))
@@ -783,7 +800,7 @@ struct context
 
 			this->connect_to_term(head);
 			this->connect_to_exc(head);
-			eop node_op = this->add_node(head, node);
+			eop node_op = eop(eot_node, this->add_node(head, node));
 
 			if (result_op.type != eot_none)
 				return result_op;
@@ -808,9 +825,9 @@ struct context
 				cfg::vertex_descriptor false_node = this->make_node(false_head, false_res);
 				this->join_nodes(false_head, head);
 
-				return this->add_node(head, enode(cfg::nt_phi, e)
+				return eop(eot_node, this->add_node(head, enode(cfg::nt_phi, e)
 					(eot_node, true_node)
-					(eot_node, false_node));
+					(eot_node, false_node)));
 			}
 			else
 			{
@@ -839,13 +856,13 @@ struct context
 			eop base = this->build_expr(head, e->getBase());
 			if (!e->isArrow())
 				base = this->make_address(base);
-			return this->make_deref(head, this->add_node(head, enode(cfg::nt_call, e)
+			return eop(eot_nodetgt, this->add_node(head, enode(cfg::nt_call, e)
 				(eot_member, this->get_name(e->getMemberDecl()))
 				(base)));
 		}
 		else if (clang::ArraySubscriptExpr const * e = llvm::dyn_cast<clang::ArraySubscriptExpr>(expr))
 		{
-			return this->make_deref(head, this->add_node(head, enode(cfg::nt_call, e)
+			return eop(eot_nodetgt, this->add_node(head, enode(cfg::nt_call, e)
 				(eot_oper, "+")
 				(this->build_expr(head, e->getLHS()))
 				(this->build_expr(head, e->getRHS()))));
@@ -905,7 +922,7 @@ struct context
 					e->getOperatorNew()->param_begin() + 1, e->getOperatorNew()->param_end(),
 					e->placement_arg_begin(), e->placement_arg_end());
 
-				return this->add_node(head, node);
+				return eop(eot_node, this->add_node(head, node));
 			}
 			else
 			{
@@ -920,7 +937,7 @@ struct context
 					e->getOperatorNew()->param_begin() + 1, e->getOperatorNew()->param_end(),
 					e->placement_arg_begin(), e->placement_arg_end());
 
-				eop ptr_op = this->add_node(head, opnew_node);
+				eop ptr_op = eop(eot_node, this->add_node(head, opnew_node));
 				if (e->getConstructor() != 0)
 				{
 					enode construct_node(cfg::nt_call, e);
@@ -946,13 +963,13 @@ struct context
 			node(eot_oper, name);
 			node(this->build_expr(head, e->getArgument()));
 			node(eot_func, this->get_name(e->getOperatorDelete()));
-			return this->add_node(head, node);
+			return eop(eot_node, this->add_node(head, node));
 		}
 		else if (clang::CXXThrowExpr const * e = llvm::dyn_cast<clang::CXXThrowExpr>(expr))
 		{
-			eop exc_mem = this->add_node(head, enode(cfg::nt_call)
+			eop exc_mem = eop(eot_node, this->add_node(head, enode(cfg::nt_call)
 				(eot_oper, "magic_alloc")
-				(eot_const, "sizeof:" + e->getSubExpr()->getType().getAsString()));
+				(eot_const, "sizeof:" + e->getSubExpr()->getType().getAsString())));
 
 			this->init_object(head, exc_mem, e->getSubExpr(), false);
 			// TODO: handle exceptions from initialization
@@ -1016,7 +1033,7 @@ struct context
 				for (std::size_t i = 0; i < e->getNumInits(); ++i)
 				{
 					// TODO: define semantics of [] operator
-					eop op = this->add_node(head, enode(cfg::nt_call, e)
+					cfg::vertex_descriptor node = this->add_node(head, enode(cfg::nt_call, e)
 						(eot_oper, "[]")
 						(varptr)
 						(eot_const, boost::lexical_cast<std::string>(i)));
@@ -1025,7 +1042,7 @@ struct context
 					{
 						this->add_node(head, enode(cfg::nt_call, e)
 							(eot_oper, "=")
-							(op)
+							(eot_node, node)
 							(this->build_expr(head, e->getInit(i))));
 					}
 					// TODO
@@ -1040,14 +1057,14 @@ struct context
 					std::size_t bound = cat->getSize().getLimitedValue();
 					for (std::size_t i = e->getNumInits(); i < bound; ++i)
 					{
-						eop op = this->add_node(head, enode(cfg::nt_call, e)
+						cfg::vertex_descriptor node = this->add_node(head, enode(cfg::nt_call, e)
 							(eot_oper, "[]")
 							(varptr)
 							(eot_const, boost::lexical_cast<std::string>(i)));
 
 						this->add_node(head, enode(cfg::nt_call, e)
 							(eot_oper, "=")
-							(op)
+							(eot_node, node)
 							(eot_const, "0"));
 					}
 				}
@@ -1101,15 +1118,26 @@ struct context
 			cfg::operand val;
 			if (s->getRetValue() != 0)
 			{
-				eop op = this->build_full_expr(head, s->getRetValue());
-				if (m_fn->getResultType()->isReferenceType())
-					op = this->make_address(op);
-				val = this->make_rvalue(head, op);
+				if (m_fn->getResultType()->isStructureOrClassType())
+				{
+					this->begin_lifetime_context(m_fullexpr_lifetimes);
+					this->init_object(head, eop(eot_var, "p:return"), s->getRetValue(), false);
+					this->end_lifetime_context(head, m_fullexpr_lifetimes);
+				}
+				else
+				{
+					eop op = this->build_full_expr(head, s->getRetValue());
+					if (m_fn->getResultType()->isReferenceType())
+						op = this->make_address(op);
+					val = this->make_rvalue(head, op);
+				}
 			}
+
+			this->generate_destructor_chain(head, boost::next(m_auto_objects.begin()));
 
 			g[head].type = cfg::nt_exit;
 			g[head].ops.push_back(cfg::operand(cfg::ot_const, "0"));
-			if (s->getRetValue() != 0)
+			if (val.type != eot_none)
 				g[head].ops.push_back(val);
 			m_exit_nodes.insert(head);
 
@@ -1429,10 +1457,10 @@ struct context
 			if (init->isMemberInitializer())
 			{
 				BOOST_ASSERT(!init->isBaseInitializer());
-				eop memberop = this->add_node(m_head, enode(cfg::nt_call)
+				cfg::vertex_descriptor memberop = this->add_node(m_head, enode(cfg::nt_call)
 					(eot_member, this->get_name(init->getMember()))
 					(eot_var, "p:this"));
-				this->init_object(m_head, memberop, init->getInit(), false);
+				this->init_object(m_head, eop(eot_node, memberop), init->getInit(), false);
 
 				// TODO: figure out how to do exception safety here
 			}
@@ -1469,13 +1497,13 @@ struct context
 				{
 					this->register_decl_ref(rd->getDestructor());
 
-					eop member = this->add_node(m_head, enode(cfg::nt_call)
+					cfg::vertex_descriptor member = this->add_node(m_head, enode(cfg::nt_call)
 						(eot_member, this->get_name(fd))
 						(eot_var, "p:this"));
 
 					this->add_node(m_head, enode(cfg::nt_call)
 						(eot_func, this->get_name(rd->getDestructor()))
-						(member));
+						(eot_node, member));
 				}
 			}
 		}
