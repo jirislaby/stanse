@@ -17,3 +17,15 @@ void f4(int i)
 {
     i? throw 3: throw 4;
 }
+
+int e1(int const & a, int const & b);
+
+int const & f5(int const & lhs, int const & rhs)
+{
+    return e1(lhs, rhs)? lhs: rhs;
+}
+
+int f6(int const & lhs, int const & rhs)
+{
+    return e1(lhs, rhs)? lhs: rhs;
+}

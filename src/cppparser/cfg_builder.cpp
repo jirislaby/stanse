@@ -494,6 +494,28 @@ struct context
 		this->add_node(head, node);
 	}
 
+	eop make_phi(cfg::vertex_descriptor & head, cfg::vertex_descriptor branch, eop headop, eop branchop, bool lvalue, clang::Expr const * data = 0)
+	{
+		if (lvalue)
+		{
+			headop = this->make_address(headop);
+			branchop = this->make_address(branchop);
+		}
+
+		cfg::vertex_descriptor head_value_node = this->make_node(head, headop);
+		cfg::vertex_descriptor branch_value_node = this->make_node(branch, branchop);
+		this->join_nodes(branch, head);
+
+		cfg::vertex_descriptor res_node = this->add_node(head, enode(cfg::nt_phi, data)
+			(eot_node, head_value_node)
+			(eot_node, branch_value_node));
+
+		if (lvalue)
+			return eop(eot_nodetgt, res_node);
+		else
+			return eop(eot_node, res_node);
+	}
+
 	eop build_expr(cfg::vertex_descriptor & head, clang::Expr const * expr)
 	{
 		BOOST_ASSERT(expr != 0);
@@ -846,13 +868,7 @@ struct context
 			eop false_res = this->build_expr(false_head, e->getFalseExpr());
 			if (true_res.type != eot_none && false_res.type != eot_none)
 			{
-				cfg::vertex_descriptor true_node = this->make_node(head, true_res);
-				cfg::vertex_descriptor false_node = this->make_node(false_head, false_res);
-				this->join_nodes(false_head, head);
-
-				return eop(eot_node, this->add_node(head, enode(cfg::nt_phi, e)
-					(eot_node, true_node)
-					(eot_node, false_node)));
+				return this->make_phi(head, false_head, true_res, false_res, e->isLvalue(m_fn->getASTContext()) == clang::Expr::LV_Valid, e);
 			}
 			else
 			{
