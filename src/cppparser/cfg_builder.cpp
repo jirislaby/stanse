@@ -986,7 +986,7 @@ struct context
 				(eot_oper, "magic_alloc")
 				(eot_const, "sizeof:" + e->getSubExpr()->getType().getAsString())));
 
-			this->init_object(head, exc_mem, e->getSubExpr(), false);
+			this->init_object(head, exc_mem, e->getType(), e->getSubExpr(), false);
 			// TODO: handle exceptions from initialization
 
 			this->join_nodes(head, m_auto_objects.back().excnode);
@@ -1003,49 +1003,53 @@ struct context
 	eop build_full_expr(cfg::vertex_descriptor & head, clang::Expr const * expr)
 	{
 		this->begin_lifetime_context(m_fullexpr_lifetimes);
-		m_fullexpr_lifetimes.push_back(lifetime_context_t());
 		eop res = this->build_expr(head, expr);
 		this->end_lifetime_context(head, m_fullexpr_lifetimes);
 		return res;
 	}
 
-	void init_object(cfg::vertex_descriptor & head, eop const & varptr, clang::Expr const * e, bool blockLifetime)
+	void init_object(cfg::vertex_descriptor & head, eop const & varptr, clang::QualType vartype, clang::Expr const * e, bool blockLifetime)
 	{
+		BOOST_ASSERT(e != 0);
+		BOOST_ASSERT(!m_fullexpr_lifetimes.empty());
+
 		if (clang::CXXExprWithTemporaries const * te = llvm::dyn_cast<clang::CXXExprWithTemporaries>(e))
 		{
-			this->init_object(head, varptr, te->getSubExpr(), blockLifetime);
+			this->init_object(head, varptr, vartype, te->getSubExpr(), blockLifetime);
 			return;
 		}
 
-		clang::Type const * type = e->getType().getTypePtr();
-
 		// TODO: check fullexpr lifetimes
-		if (e->getType()->isStructureOrClassType())
+		if (vartype->isStructureOrClassType())
 		{
 			BOOST_ASSERT(llvm::isa<clang::CXXConstructExpr>(e));
 			this->build_construct_expr(head, varptr, llvm::dyn_cast<clang::CXXConstructExpr>(e));
-			clang::CXXRecordDecl const * recordDecl = e->getType()->getAsCXXRecordDecl();
-			if (blockLifetime && recordDecl && recordDecl->hasDeclaredDestructor())
+			if (blockLifetime)
 			{
-				m_block_lifetimes.back().push_back(this->register_destructible_var(recordDecl->getDestructor(), varptr));
+				clang::CXXRecordDecl const * recordDecl = vartype->getAsCXXRecordDecl();
+				if (recordDecl && recordDecl->hasDeclaredDestructor())
+				{
+					m_block_lifetimes.back().push_back(this->register_destructible_var(recordDecl->getDestructor(), varptr));
+				}
 			}
 		}
-		else if (e->getType()->isReferenceType())
+		else if (vartype->isReferenceType())
 		{
+			// TODO: extend the lifetime of temporaries
 			this->add_node(head, enode(cfg::nt_call, e)
 				(eot_oper, "=")
 				(varptr)
 				(this->make_address(this->build_expr(head, e))));
 		}
-		else if (type->isArrayType())
+		else if (vartype->isArrayType())
 		{
 			// TODO: initialization by string literal
-			if (clang::InitListExpr const * e = llvm::dyn_cast<clang::InitListExpr>(e))
+			if (clang::InitListExpr const * ile = llvm::dyn_cast<clang::InitListExpr>(e))
 			{
-				clang::ArrayType const * at = llvm::dyn_cast<clang::ArrayType>(type);
+				clang::ArrayType const * at = llvm::dyn_cast<clang::ArrayType>(vartype);
 
 				// TODO: type safety, make a loop for zero initialization
-				for (std::size_t i = 0; i < e->getNumInits(); ++i)
+				for (std::size_t i = 0; i < ile->getNumInits(); ++i)
 				{
 					// TODO: define semantics of [] operator
 					cfg::vertex_descriptor node = this->add_node(head, enode(cfg::nt_call, e)
@@ -1058,7 +1062,7 @@ struct context
 						this->add_node(head, enode(cfg::nt_call, e)
 							(eot_oper, "=")
 							(eot_node, node)
-							(this->build_expr(head, e->getInit(i))));
+							(this->build_expr(head, ile->getInit(i))));
 					}
 					// TODO
 					/*else
@@ -1070,7 +1074,7 @@ struct context
 				if (clang::ConstantArrayType const * cat = llvm::dyn_cast<clang::ConstantArrayType>(at))
 				{
 					std::size_t bound = cat->getSize().getLimitedValue();
-					for (std::size_t i = e->getNumInits(); i < bound; ++i)
+					for (std::size_t i = ile->getNumInits(); i < bound; ++i)
 					{
 						cfg::vertex_descriptor node = this->add_node(head, enode(cfg::nt_call, e)
 							(eot_oper, "[]")
@@ -1136,7 +1140,7 @@ struct context
 				if (m_fn->getResultType()->isStructureOrClassType())
 				{
 					this->begin_lifetime_context(m_fullexpr_lifetimes);
-					this->init_object(head, eop(eot_var, "p:return"), s->getRetValue(), false);
+					this->init_object(head, eop(eot_var, "p:return"), m_fn->getResultType(), s->getRetValue(), false);
 					this->end_lifetime_context(head, m_fullexpr_lifetimes);
 				}
 				else
@@ -1309,7 +1313,7 @@ struct context
 					if (vd->hasInit())
 					{
 						this->begin_lifetime_context(m_fullexpr_lifetimes);
-						this->init_object(head, eop(eot_varptr, this->get_name(vd)), vd->getInit(), true);
+						this->init_object(head, eop(eot_varptr, this->get_name(vd)), vd->getType(), vd->getInit(), true);
 						this->end_lifetime_context(head, m_fullexpr_lifetimes);
 					}
 				}
@@ -1554,7 +1558,10 @@ struct context
 				cfg::vertex_descriptor memberop = this->add_node(m_head, enode(cfg::nt_call)
 					(eot_member, this->get_name(init->getMember()))
 					(eot_var, "p:this"));
-				this->init_object(m_head, eop(eot_node, memberop), init->getInit(), false);
+
+				this->begin_lifetime_context(m_fullexpr_lifetimes);
+				this->init_object(m_head, eop(eot_node, memberop), init->getMember()->getType(), init->getInit(), false);
+				this->end_lifetime_context(m_head, m_fullexpr_lifetimes);
 
 				// TODO: figure out how to do exception safety here
 			}
@@ -1562,7 +1569,10 @@ struct context
 			{
 				// TODO: Convert p:this
 				BOOST_ASSERT(init->isBaseInitializer());
-				this->init_object(m_head, eop(eot_var, "p:this"), init->getInit(), false);
+
+				this->begin_lifetime_context(m_fullexpr_lifetimes);
+				this->init_object(m_head, eop(eot_var, "p:this"), clang::QualType(init->getBaseClass(), 0), init->getInit(), false);
+				this->end_lifetime_context(m_head, m_fullexpr_lifetimes);
 
 				// TODO: figure out how to do exception safety here
 			}
