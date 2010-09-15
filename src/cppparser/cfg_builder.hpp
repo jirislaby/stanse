@@ -29,6 +29,7 @@ program build_program(clang::TranslationUnitDecl const * tu, Visitor visitor)
 		unprocessedFunctions.erase(unprocessedFunctions.begin());
 
 		BOOST_ASSERT(processedFunctions.find(fn) == processedFunctions.end());
+		processedFunctions.insert(fn);
 
 		std::string const & fnname = make_decl_name(fn);
 		if (!visitor.function_started(fnname))
