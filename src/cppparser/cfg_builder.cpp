@@ -911,10 +911,7 @@ struct context
 		}
 		else if (clang::ArraySubscriptExpr const * e = llvm::dyn_cast<clang::ArraySubscriptExpr>(expr))
 		{
-			return eop(eot_nodetgt, this->add_node(head, enode(cfg::nt_call, e)
-				(eot_oper, "+")
-				(this->build_expr(head, e->getLHS()))
-				(this->build_expr(head, e->getRHS()))));
+			return this->get_array_element(head, this->build_expr(head, e->getLHS()), this->build_expr(head, e->getRHS()), e);
 		}
 		else if (clang::ParenExpr const * e = llvm::dyn_cast<clang::ParenExpr>(expr))
 		{
@@ -945,7 +942,13 @@ struct context
 		else if (clang::CastExpr const * e = llvm::dyn_cast<clang::CastExpr>(expr))
 		{
 			// TODO: deal with the casts correctly (notably with dynamic_cast)
-			return this->build_expr(head, e->getSubExpr());
+			switch (e->getCastKind())
+			{
+			case clang::CK_ArrayToPointerDecay:
+				return this->decay_array_to_pointer(head, this->build_expr(head, e->getSubExpr()));
+			default:
+				return this->build_expr(head, e->getSubExpr());
+			}
 		}
 		else if (clang::CXXPseudoDestructorExpr const * e = llvm::dyn_cast<clang::CXXPseudoDestructorExpr>(expr))
 		{
@@ -1034,12 +1037,31 @@ struct context
 		}
 	}
 
+	eop get_array_element(cfg::vertex_descriptor & head, eop const & decayedptr, eop const & index, clang::Stmt const * data)
+	{
+		if (index.type == eot_const && boost::get<std::string>(index.id) == "0")
+			return decayedptr;
+
+		return eop(eot_nodetgt, this->add_node(head, enode(cfg::nt_call, data)
+			(eot_oper, "+")
+			(decayedptr)
+			(index)));
+	}
+
 	eop build_full_expr(cfg::vertex_descriptor & head, clang::Expr const * expr)
 	{
 		this->begin_lifetime_context(m_fullexpr_lifetimes);
 		eop res = this->build_expr(head, expr);
 		this->end_lifetime_context(head, m_fullexpr_lifetimes);
 		return res;
+	}
+
+	eop decay_array_to_pointer(cfg::vertex_descriptor & head, eop const & arrptr)
+	{
+		BOOST_ASSERT(this->is_lvalue(arrptr));
+		return eop(eot_node, this->add_node(head, enode(cfg::nt_call)
+			(eot_oper, "decay")
+			(arrptr)));
 	}
 
 	void init_object(cfg::vertex_descriptor & head, eop const & varptr, clang::QualType vartype, clang::Expr const * e, bool blockLifetime)
