@@ -17,6 +17,26 @@
 
 namespace {
 
+// FIXME: Assumes that sizeof(wchar_t) == 2
+std::vector<boost::int64_t> string_literal_to_value_array(clang::StringLiteral const * sl)
+{
+	std::vector<boost::int64_t> res;
+
+	llvm::StringRef str = sl->getString();
+	if (sl->isWide())
+	{
+		for (std::size_t i = 0; i < str.size(); i += 2)
+			res.push_back(str[i+1] * 256 + (unsigned char)str[i]);
+	}
+	else
+	{
+		for (std::size_t i = 0; i < str.size(); i += 2)
+			res.push_back(str[i]);
+	}
+
+	return res;
+}
+
 struct context
 {
 	context(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions, detail::build_cfg_visitor_base & visitor)
@@ -636,60 +656,15 @@ struct context
 		}
 		else if (clang::StringLiteral const * e = llvm::dyn_cast<clang::StringLiteral>(expr))
 		{
-			std::string res;
-			if (e->isWide())
+			std::vector<boost::int64_t> values = string_literal_to_value_array(e);
+			std::string res = "[";
+			for (std::size_t i = 0; i < values.size(); ++i)
 			{
-				res = "L\"";
-				llvm::StringRef str = e->getString();
-				for (std::size_t i = 0; i < str.size(); i += 2)
-				{
-					if (str[i+1] == 0 && str[i] >= 32 && str[i] < 128)
-					{
-						res.push_back(str[i]);
-						if (str[i] == '\\')
-							res.push_back('\\');
-					}
-					else
-					{
-						res.append("\\u");
-
-						char const digits[] = "0123456789abcdef";
-
-						unsigned char ch = str[i+1];
-						res.push_back(digits[ch >> 4]);
-						res.push_back(digits[ch & 0xf]);
-
-						ch = str[i];
-						res.push_back(digits[ch >> 4]);
-						res.push_back(digits[ch & 0xf]);
-					}
-				}
+				res.append(boost::lexical_cast<std::string>(values[i]));
+				if (i + 1 != values.size())
+					res.append(", ");
 			}
-			else
-			{
-				res = '\"';
-				llvm::StringRef str = e->getString();
-				for (std::size_t i = 0; i < str.size(); ++i)
-				{
-					if (str[i] >= 32 && str[i] < 128)
-					{
-						res.push_back(str[i]);
-						if (str[i] == '\\')
-							res.push_back('\\');
-					}
-					else
-					{
-						res.append("\\x");
-
-						unsigned char ch = str[i];
-						char const digits[] = "0123456789abcdef";
-						res.push_back(digits[ch >> 4]);
-						res.push_back(digits[ch & 0xf]);
-					}
-				}
-			}
-
-			res += '\"';
+			res += "]";
 			return eop(eot_const, res);
 		}
 		else if (clang::DeclRefExpr const * e = llvm::dyn_cast<clang::DeclRefExpr>(expr))
@@ -1061,7 +1036,7 @@ struct context
 	eop decay_array_to_pointer(cfg::vertex_descriptor & head, eop const & arr)
 	{
 		// WISH: When we do cfg typing, fix this to deal with string literals correctly.
-		if (arr.type == eot_const && boost::get<std::string>(arr.id)[0] == '\"')
+		if (arr.type == eot_const)
 			return arr;
 
 		// The array must be an lvalue, otherwise we cannot get a pointer to the first element.
@@ -1161,16 +1136,12 @@ struct context
 		}
 		else if (vartype->isArrayType())
 		{
-			BOOST_ASSERT(llvm::isa<clang::InitListExpr>(e));
+			BOOST_ASSERT(llvm::isa<clang::ConstantArrayType>(vartype));
+			clang::ConstantArrayType const * at = llvm::cast<clang::ConstantArrayType>(vartype);
+			eop decayedptr = this->decay_array_to_pointer(head, this->make_deref(head, varptr));
 
-			// TODO: initialization by string literal
 			if (clang::InitListExpr const * ile = llvm::dyn_cast<clang::InitListExpr>(e))
 			{
-				clang::ConstantArrayType const * at = llvm::dyn_cast<clang::ConstantArrayType>(vartype);
-				BOOST_ASSERT(at);
-
-				eop decayedptr = this->decay_array_to_pointer(head, this->make_deref(head, varptr));
-
 				// TODO: exception safety
 				unsigned init_idx = 0;
 				for (llvm::APInt i(at->getSize().getBitWidth(), 0); i != at->getSize(); ++i, ++init_idx)
@@ -1181,6 +1152,29 @@ struct context
 					else
 						this->value_initialize(head, this->make_address(elem), at->getElementType(), blockLifetime, e);
 				}
+			}
+			else if (clang::StringLiteral const * sl = llvm::dyn_cast<clang::StringLiteral>(e))
+			{
+				std::vector<int64_t> values = string_literal_to_value_array(sl);
+
+				std::size_t init_idx = 0;
+				for (llvm::APInt i(at->getSize().getBitWidth(), 0); i != at->getSize(); ++i, ++init_idx)
+				{
+					eop elem = this->get_array_element(head, decayedptr, eop(eot_const, i.toString(10, false)), e);
+					if (init_idx < values.size())
+					{
+						this->add_node(head, enode(cfg::nt_call, e)
+							(eot_oper, "=")
+							(this->make_address(elem))
+							(eot_const, boost::lexical_cast<std::string>(values[init_idx])));
+					}
+					else
+						this->value_initialize(head, this->make_address(elem), at->getElementType(), blockLifetime, e);
+				}
+			}
+			else
+			{
+				BOOST_ASSERT(0 && "unrecognized array initializer");
 			}
 		}
 		else
