@@ -690,6 +690,9 @@ struct context
 			clang::Decl const * decl = e->getDecl();
 			if (clang::ValueDecl const * nd = llvm::dyn_cast<clang::ValueDecl>(decl))
 			{
+				if (clang::EnumConstantDecl const * ecd = llvm::dyn_cast<clang::EnumConstantDecl>(nd))
+					return eop(eot_const, ecd->getInitVal().toString(10));
+
 				if (clang::FunctionDecl const * fd = llvm::dyn_cast<clang::FunctionDecl>(nd))
 				{
 					this->register_decl_ref(fd);
