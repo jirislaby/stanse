@@ -14,12 +14,13 @@
 #include <clang/AST/DeclTemplate.h>
 
 #include <list>
+
 namespace {
 
 struct context
 {
-	context(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions)
-		: m_referenced_functions2(referenced_functions), g(c), m_fn(fn), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
+	context(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions, detail::build_cfg_visitor_base & visitor)
+		: m_referenced_functions2(referenced_functions), m_visitor(visitor), g(c), m_fn(fn), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
 	{
 		g.entry(m_head);
 
@@ -36,6 +37,7 @@ struct context
 	}
 
 	std::set<clang::FunctionDecl const *> & m_referenced_functions2;
+	detail::build_cfg_visitor_base & m_visitor;
 
 	void register_decl_ref(clang::FunctionDecl const * fn)
 	{
@@ -1206,6 +1208,8 @@ struct context
 	{
 		BOOST_ASSERT(stmt != 0);
 
+		m_visitor.statement_visited(stmt);
+
 		if (clang::CompoundStmt const * s = llvm::dyn_cast<clang::CompoundStmt>(stmt))
 		{
 			this->begin_lifetime_context(m_block_lifetimes);
@@ -1736,7 +1740,7 @@ struct context
 
 }
 
-void build_cfg(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions)
+void detail::build_cfg(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions, build_cfg_visitor_base & visitor)
 {
-	context(c, fn, referenced_functions);
+	context(c, fn, referenced_functions, visitor);
 }

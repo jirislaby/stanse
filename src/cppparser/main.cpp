@@ -36,33 +36,41 @@ struct config
 	int printJsonCfg;
 	bool printReadableAST;
 	bool printUnitAST;
+	bool buildCfg;
 	bool debugCFG;
 
 	bool showFnNames;
+	bool dump_progress;
 	std::string filter;
 };
 
 struct cfg_build_visitor
 	: default_build_visitor
 {
-	explicit cfg_build_visitor(bool show_names, std::string const & filter)
-		: m_show_names(show_names), m_filter(filter)
+	cfg_build_visitor(clang::CompilerInstance & ci, config const & c)
+		: m_ci(ci), m_c(c)
 	{
 	}
 
 	bool function_started(std::string const & name)
 	{
-		if (!m_filter.empty() && name.substr(0, m_filter.size()) != m_filter)
+		if (!m_c.filter.empty() && name.substr(0, m_c.filter.size()) != m_c.filter)
 			return false;
 
-		if (m_show_names)
+		if (m_c.showFnNames)
 			std::cerr << name << std::endl;
 
 		return true;
 	}
 
-	bool m_show_names;
-	std::string m_filter;
+	void statement_visited(clang::Stmt const * stmt)
+	{
+		if (m_c.dump_progress)
+			stmt->getLocStart().dump(m_ci.getSourceManager());
+	}
+
+	clang::CompilerInstance & m_ci;
+	config const & m_c;
 };
 
 class MyConsumer
@@ -89,7 +97,7 @@ public:
 			std::set<clang::FunctionDecl const *> filtered;
 			for (std::set<clang::FunctionDecl const *>::const_iterator ci = functionDecls.begin(); ci != functionDecls.end(); ++ci)
 			{
-				if ((*ci)->getQualifiedNameAsString() == m_c.filter)
+				if ((*ci)->getQualifiedNameAsString().substr(0, m_c.filter.size()) == m_c.filter)
 					filtered.insert(*ci);
 			}
 			functionDecls.swap(filtered);
@@ -98,9 +106,12 @@ public:
 		if (m_c.printReadableAST)
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
 
+		if (m_c.buildCfg)
+			build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c));
+
 		if (m_c.printJsonCfg)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_c.showFnNames, m_c.filter));
+			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c));
 			cfg_json_write(std::cout, prog, m_c.printJsonCfg == 1);
 		}
 
@@ -115,7 +126,7 @@ public:
 
 		if (m_c.debugCFG)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_c.showFnNames, m_c.filter));
+			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c));
 			prog.pretty_print(std::cerr);
 			//print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 		}
@@ -193,10 +204,14 @@ int main(int argc, char * argv[])
 				c.printRCFG = true;
 			else if (arg == "-u")
 				c.printUnitAST = true;
+			else if (arg == "-c")
+				c.buildCfg = true;
 			else if (arg == "--debugcfg")
 				c.debugCFG = true;
 			else if (arg == "--showfnnames")
 				c.showFnNames = true;
+			else if (arg == "--dumpprogress")
+				c.dump_progress = true;
 			else if (arg == "--filter" && i + 1 < argc)
 				c.filter = argv[++i];
 			else
@@ -213,7 +228,7 @@ int main(int argc, char * argv[])
 		comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
 		argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
 
-		if (!c.printJsonCfg && !c.printReadableAST && !c.printAST && !c.debugCFG && !c.printUnitAST && !c.printRCFG)
+		if (!c.printJsonCfg && !c.printReadableAST && !c.printAST && !c.debugCFG && !c.printUnitAST && !c.printRCFG && !c.buildCfg)
 			c.printReadableAST = true;
 
 		MyASTDumpAction act(c);
