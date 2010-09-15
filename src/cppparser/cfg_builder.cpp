@@ -267,7 +267,7 @@ struct context
 
 	eop make_param(cfg::vertex_descriptor & head, eop const & op, clang::Type const * type)
 	{
-		if (type->isReferenceType() && op.type == eot_const)
+		if (type->isReferenceType() && !this->is_lvalue(op))
 		{
 			eop temp = this->make_temporary(type);
 			this->add_node(head, enode(cfg::nt_call)
@@ -289,6 +289,11 @@ struct context
 		for (; param_first != param_last; ++param_first, ++arg_first)
 			node(this->make_param(head, this->build_expr(head, *arg_first), (*param_first)->getType().getTypePtr()));
 		BOOST_ASSERT(arg_first == arg_last);
+	}
+
+	bool is_lvalue(eop const & op)
+	{
+		return op.type == eot_func || op.type == eot_nodetgt || op.type == eot_vartgt || op.type == eot_var;
 	}
 
 	eop make_address(eop op)
