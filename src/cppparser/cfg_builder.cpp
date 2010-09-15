@@ -1040,7 +1040,7 @@ struct context
 	eop get_array_element(cfg::vertex_descriptor & head, eop const & decayedptr, eop const & index, clang::Stmt const * data)
 	{
 		if (index.type == eot_const && boost::get<std::string>(index.id) == "0")
-			return decayedptr;
+			return this->make_deref(head, decayedptr);
 
 		return eop(eot_nodetgt, this->add_node(head, enode(cfg::nt_call, data)
 			(eot_oper, "+")
@@ -1056,12 +1056,17 @@ struct context
 		return res;
 	}
 
-	eop decay_array_to_pointer(cfg::vertex_descriptor & head, eop const & arrptr)
+	eop decay_array_to_pointer(cfg::vertex_descriptor & head, eop const & arr)
 	{
-		BOOST_ASSERT(this->is_lvalue(arrptr));
+		// WISH: When we do cfg typing, fix this to deal with string literals correctly.
+		if (arr.type == eot_const && boost::get<std::string>(arr.id)[0] == '\"')
+			return arr;
+
+		// The array must be an lvalue, otherwise we cannot get a pointer to the first element.
+		BOOST_ASSERT(this->is_lvalue(arr));
 		return eop(eot_node, this->add_node(head, enode(cfg::nt_call)
 			(eot_oper, "decay")
-			(arrptr)));
+			(this->make_address(arr))));
 	}
 
 	void init_object(cfg::vertex_descriptor & head, eop const & varptr, clang::QualType vartype, clang::Expr const * e, bool blockLifetime)
