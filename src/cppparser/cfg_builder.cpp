@@ -265,8 +265,18 @@ struct context
 		return cfg::operand(static_cast<cfg::op_type>(op.type), op.id);
 	}
 
-	eop make_param(eop const & op, clang::Type const * type)
+	eop make_param(cfg::vertex_descriptor & head, eop const & op, clang::Type const * type)
 	{
+		if (type->isReferenceType() && op.type == eot_const)
+		{
+			eop temp = this->make_temporary(type);
+			this->add_node(head, enode(cfg::nt_call)
+				(eot_oper, "=")
+				(this->make_address(temp))
+				(op));
+			return this->make_address(temp);
+		}
+
 		if (type->isReferenceType() || type->isClassType())
 			return this->make_address(op);
 		else
@@ -277,7 +287,7 @@ struct context
 	void append_args(cfg::vertex_descriptor & head, enode & node, ParamIter param_first, ParamIter param_last, ArgIter arg_first, ArgIter arg_last)
 	{
 		for (; param_first != param_last; ++param_first, ++arg_first)
-			node(this->make_param(this->build_expr(head, *arg_first), (*param_first)->getType().getTypePtr()));
+			node(this->make_param(head, this->build_expr(head, *arg_first), (*param_first)->getType().getTypePtr()));
 		BOOST_ASSERT(arg_first == arg_last);
 	}
 
@@ -477,7 +487,7 @@ struct context
 		node(varptr);
 
 		for (std::size_t i = 0; i < e->getNumArgs(); ++i)
-			node(this->make_param(this->build_expr(head, e->getArg(i)), fntype->getArgType(i).getTypePtr()));
+			node(this->make_param(head, this->build_expr(head, e->getArg(i)), fntype->getArgType(i).getTypePtr()));
 
 		this->connect_to_term(head);
 		this->connect_to_exc(head);
@@ -811,7 +821,7 @@ struct context
 			enode node(cfg::nt_call, e);
 			node(callee_op);
 			for (std::size_t i = 0; i < params.size(); ++i)
-				node(this->make_param(params[i], param_types[i]));
+				node(this->make_param(head, params[i], param_types[i]));
 
 			this->connect_to_term(head);
 			this->connect_to_exc(head);
