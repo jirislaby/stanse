@@ -30,7 +30,7 @@ std::vector<boost::int64_t> string_literal_to_value_array(clang::StringLiteral c
 	}
 	else
 	{
-		for (std::size_t i = 0; i < str.size(); i += 2)
+		for (std::size_t i = 0; i < str.size(); ++i)
 			res.push_back(str[i]);
 	}
 
