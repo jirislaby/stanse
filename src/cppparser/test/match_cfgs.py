@@ -1,100 +1,175 @@
-def _is_subgraph_isomorphism(tg, g, isom, sym_isom):
-    for i, tv in enumerate(tg['nodes']):
-        v = g['nodes'][isom[i]]
+class GraphsNotIsomorphicError(RuntimeError):
+    pass
 
-        if tv[0] != v[0] or len(tv[1]) > len(v[1]) or len(tv[2]) != len(v[2]):
-            return False
-            
-        if tv[0] == 'phi':
-            # The order of operands doesn't matter
-            if any(op[0] != 'node' for op in v[2]) or any(top[0] != 'node' for top in tv[2]):
-                # TODO: report error
-                return False
-
-            vs = set(op[1] for op in v[2])
-            if any(isom[top[1]] not in vs for top in tv[2]):
-                return False;
+def _refine(s1, s2, mapping):
+    assert len(s1) <= len(s2)
+    changed = []
+    new_mapping = []
+    for i, (q1, q2) in enumerate(mapping):
+        if q1 <= s1:
+            if q2 <= s2:
+                continue
+            q2.intersection_update(s2)
+            if len(q1) > len(q2):
+                raise GraphsNotIsomorphicError()
+            changed.append(i)
         else:
-            for top, op in zip(tv[2], v[2]):
-                if top[0] != op[0]:
-                    return False
+            i1 = q1.intersection(s1)
+            i2 = q2.intersection(s2)
+            q1 -= s1
+            q2 -= s2
 
-                if top[0] == "var" or top[0] == "varptr":
-                    if sym_isom[top[1]] != op[1]:
-                        return False
-                elif top[0] == "node":
-                    if isom[top[1]] != op[1]:
-                        return False
-                elif top[1] != op[1]:
-                    return False
+            if len(q1) > len(q2) or len(i1) > len(i2):
+                raise GraphsNotIsomorphicError()
 
-        for tsucc, tidx, tcond in tv[1]:
-            for succ, idx, cond in v[1]:
-                if succ == isom[tsucc] and tidx == idx and tcond == cond:
-                    break
-            else:
-                return False
+            if i1:
+                new_mapping.append((i1, i2))
+                changed.append(i)
 
+    changed.extend(xrange(len(mapping), len(mapping)+len(new_mapping)))
+    mapping.extend(new_mapping)
+    return changed
+
+def _topo_refine(g1, g2, start, mapping):
+    q = list(start)
+    while q:
+        # TODO: q should be a set and we should choose the smallest partition
+        i = q.pop(0)
+        s1 = {}
+        for u in mapping[i][0]:
+            for e in g1.out_edges(u):
+                ed = g1[e]
+                if not ed in s1:
+                    s1[ed] = set()
+                s1[ed].add(g1.target(e))
+        s2 = {}
+        for u in mapping[i][1]:
+            for e in g2.out_edges(u):
+                ed = g2[e]
+                if not ed in s2:
+                    s2[ed] = set()
+                s2[ed].add(g2.target(e))
+
+        for e, ts in s1.iteritems():
+            if not e in s2:
+                raise GraphsNotIsomorphicError()
+            q.extend(_refine(ts, s2[e], mapping))
+
+def _struct_refine(g1, g2):
+    s1 = g1.vertices()
+    s2 = g2.vertices()
+
+    source_classes = []
+    for u in s1:
+        for sc in source_classes:
+            if g1[u] == g1[iter(sc).next()]:
+                sc.add(u)
+                break
+        else:
+            source_classes.append(set([u]))
+
+    dest_classes = [set() for x in source_classes]
+    for u in s2:
+        for sc, dc in zip(source_classes, dest_classes):
+            if g1[iter(sc).next()] == g2[u]:
+                dc.add(u)
+                break
+
+    for dc in dest_classes:
+        if not dc:
+            raise GraphsNotIsomorphicError()
+
+    return list(zip(source_classes, dest_classes))
+
+def _prepare_mapping(g1, g2):
+    mapping = _struct_refine(g1, g2)
+    _refine(set([g1.entry()]), set([g2.entry()]), mapping)
+    _topo_refine(g1, g2, range(len(mapping)), mapping)
+    return mapping
+
+def _verify_edges(g1, g2, isom):
+    for s, d in isom.iteritems():
+        se = set((g1[x], isom[g1.target(x)]) for x in g1.out_edges(s))
+        de = set((g2[x], g2.target(x)) for x in g2.out_edges(d))
+        if not (se <= de):
+            return False
     return True
 
-def _vertices_topo_match(tv, v):
-    if tv[0] != v[0] or len(tv[1]) > len(v[1]) or len(tv[2]) != len(v[2]):
-        return False
-        
-    for top, op in zip(tv[2], v[2]):
-        if top[0] != op[0]:
-            return False
+def _find_isomorphism(g1, g2, mapping, isom=None):
+    if isom is None:
+        isom = {}
 
-    return True
+    if not mapping:
+        return isom if _verify_edges(g1, g2, isom) else None
 
-def _update_sym_isom(si, tn, n, tl, l):
-    for top, op in zip(tn[2], n[2]):
-        if top[0] != op[0]:
-            return False
-        if op[0] == 'var' or op[0] == 'varptr':
-            if top[1] not in si:
-                if (top[1] in tl) == (op[1] in l):
-                    si[top[1]] = op[1]
+    def _t(slist, dset, isom):
+        assert len(slist) <= len(dset)
+
+        if not slist:
+            return _find_isomorphism(g1, g2, mapping[1:], isom)
+
+        for d in dset:
+            isom[slist[0]] = d
+            res = _t(slist[1:], dset - set([d]), isom)
+            if res is not None:
+                return res
+        del isom[slist[0]]
+
+    return _t(list(mapping[0][0]), mapping[0][1], isom)
+
+class Cfg:
+    def __init__(self, g):
+        self.g = g
+        self.parammap = { p: i for i, p in enumerate(g['params']) }
+        self.localset = set(self.g['locals'])
+
+        self.nodes = []
+        for node in g['nodes']:
+            phi = node[0] == 'phi'
+            new_succs = [(x[0], (x[1], x[2])) for x in node[1]]
+            new_ops = []
+            for i, (optype, opid) in enumerate(node[2]):
+                if optype == 'node':
+                    new_succs.append((opid, None if phi else i))
+                    new_ops.append((optype, None))
+                elif optype in ('var', 'varptr'):
+                    if opid in self.parammap:
+                        new_ops.append((optype, self.parammap[opid]))
+                    elif opid in self.localset:
+                        new_succs.append((opid, i))
+                        new_ops.append((optype, None))
+                    else:
+                        new_ops.append((optype, opid))
                 else:
-                    return False
-            if si[top[1]] != op[1]:
-                return False
+                    new_ops.append((optype, opid))
+            self.nodes.append((node[0], new_succs, new_ops))
 
-    return True
+    def entry(self):
+        return self.g['entry']
 
-def _is_subgraph(tg, tu, g, u, isom, sym_isom):
-    if not tu:
-        return (isom, sym_isom) if _is_subgraph_isomorphism(tg, g, isom, sym_isom) else None
+    def vertices(self):
+        for i in xrange(len(self.nodes)):
+            yield i
+        for v in self.g['locals']:
+            yield v
 
-    tv = tu[-1]
-    for v in u:
-        si = dict(sym_isom)
-        if not _update_sym_isom(si, tg['nodes'][tv], g['nodes'][v], tg['locals'], g['locals']):
-            continue
+    def out_edges(self, u):
+        if isinstance(u, int):
+            for succ, data in self.nodes[u][1]:
+                yield u, data, succ
 
-        if not _vertices_topo_match(tg['nodes'][tv], g['nodes'][v]):
-            continue
-    
-        isom[tv] = v
-        if _is_subgraph(tg, [x for x in tu if x != tv], g, [x for x in u if x != v], isom, si):
-            return isom, si
+    def source(self, e):
+        return e[0]
 
-    if tv in isom:
-        del isom[tv]
+    def target(self, e):
+        return e[2]
 
-def _check_fns(tfn, fn):
-    tu = range(len(tfn["nodes"]))
-    u = range(len(fn["nodes"]))
-
-    if 'params' in tfn and len(tfn['params']) != len(fn['params']):
-        return None
-
-    sym_isom = dict(zip(tfn['params'], fn['params'])) if 'params' in tfn else {}
-    isom = { tfn["entry"]: fn["entry"] }
-    tu = [x for x in tu if x != tfn["entry"]]
-    u = [x for x in u if x != fn["entry"]]
-    if _update_sym_isom(sym_isom, tfn['nodes'][tfn["entry"]], fn['nodes'][fn['entry']], tfn['locals'], fn['locals']):
-        return _is_subgraph(tfn, tu, fn, u, isom, sym_isom)
+    def __getitem__(self, key):
+        if isinstance(key, tuple):
+            return key[1]
+        if isinstance(key, str):
+            return None
+        return self.nodes[key][0], self.nodes[key][2]
 
 def match_cfgs(fin, ftempl, err, showMatches=False):
     import json
@@ -105,9 +180,17 @@ def match_cfgs(fin, ftempl, err, showMatches=False):
         if fnname not in src:
             err.write_templ('error: function %s expected but not seen.' % fnname)
             continue
-            
+
         fn = src[fnname]
-        isom = _check_fns(templfn, fn)
+        cfg = Cfg(fn)
+        tcfg = Cfg(templfn)
+        
+        try:
+            mapping = _prepare_mapping(tcfg, cfg)
+            isom = _find_isomorphism(tcfg, cfg, mapping)
+        except GraphsNotIsomorphicError:
+            isom = None
+
         if not isom:
             err.write_templ('error: %s: function does not match.' % fnname)
             err.write_source(str(fn))
