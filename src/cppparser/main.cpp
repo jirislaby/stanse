@@ -66,7 +66,10 @@ struct cfg_build_visitor
 	void statement_visited(clang::Stmt const * stmt)
 	{
 		if (m_c.dump_progress)
+		{
 			stmt->getLocStart().dump(m_ci.getSourceManager());
+			std::cerr << '\n';
+		}
 	}
 
 	clang::CompilerInstance & m_ci;
