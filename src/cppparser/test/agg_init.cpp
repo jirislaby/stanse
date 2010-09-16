@@ -48,3 +48,21 @@ int f6()
     int a[] = { 2, 3, 9, 6, 42 };
     return a[4];
 }
+
+int f7()
+{
+    typedef int array_type[4];
+    array_type a = { 1, 2, 3, 4 };
+    return a[2];
+}
+
+int f8()
+{
+    char a[] = "abcd";
+    char b[1000] = "efgh";
+
+    wchar_t c[] = L"abcd";
+    wchar_t d[1000] = "efgh" L"ijkl";
+
+    return c[2];
+}

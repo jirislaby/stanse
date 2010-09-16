@@ -34,6 +34,7 @@ std::vector<boost::int64_t> string_literal_to_value_array(clang::StringLiteral c
 			res.push_back(str[i]);
 	}
 
+	res.push_back(0);
 	return res;
 }
 
@@ -1085,6 +1086,8 @@ struct context
 			return;
 		}
 
+		vartype = vartype->getCanonicalTypeUnqualified();
+
 		// TODO: check fullexpr lifetimes
 		if (vartype->isStructureOrClassType())
 		{
@@ -1140,17 +1143,15 @@ struct context
 			clang::ConstantArrayType const * at = llvm::cast<clang::ConstantArrayType>(vartype);
 			eop decayedptr = this->decay_array_to_pointer(head, this->make_deref(head, varptr));
 
+			llvm::APInt i(at->getSize().getBitWidth(), 0);
 			if (clang::InitListExpr const * ile = llvm::dyn_cast<clang::InitListExpr>(e))
 			{
 				// TODO: exception safety
 				unsigned init_idx = 0;
-				for (llvm::APInt i(at->getSize().getBitWidth(), 0); i != at->getSize(); ++i, ++init_idx)
+				for (; i != at->getSize() && init_idx != ile->getNumInits(); ++i, ++init_idx)
 				{
 					eop elem = this->get_array_element(head, decayedptr, eop(eot_const, i.toString(10, false)), e);
-					if (init_idx < ile->getNumInits())
-						this->init_object(head, this->make_address(elem), at->getElementType(), ile->getInit(init_idx), blockLifetime);
-					else
-						this->value_initialize(head, this->make_address(elem), at->getElementType(), blockLifetime, e);
+					this->init_object(head, this->make_address(elem), at->getElementType(), ile->getInit(init_idx), blockLifetime);
 				}
 			}
 			else if (clang::StringLiteral const * sl = llvm::dyn_cast<clang::StringLiteral>(e))
@@ -1158,23 +1159,49 @@ struct context
 				std::vector<int64_t> values = string_literal_to_value_array(sl);
 
 				std::size_t init_idx = 0;
-				for (llvm::APInt i(at->getSize().getBitWidth(), 0); i != at->getSize(); ++i, ++init_idx)
+				for (; i != at->getSize() && init_idx < values.size(); ++i, ++init_idx)
 				{
 					eop elem = this->get_array_element(head, decayedptr, eop(eot_const, i.toString(10, false)), e);
-					if (init_idx < values.size())
-					{
-						this->add_node(head, enode(cfg::nt_call, e)
-							(eot_oper, "=")
-							(this->make_address(elem))
-							(eot_const, boost::lexical_cast<std::string>(values[init_idx])));
-					}
-					else
-						this->value_initialize(head, this->make_address(elem), at->getElementType(), blockLifetime, e);
+					this->add_node(head, enode(cfg::nt_call, e)
+						(eot_oper, "=")
+						(this->make_address(elem))
+						(eot_const, boost::lexical_cast<std::string>(values[init_idx])));
 				}
 			}
 			else
 			{
 				BOOST_ASSERT(0 && "unrecognized array initializer");
+			}
+
+			if (i != at->getSize())
+			{
+				eop loop_counter = this->make_temporary(m_fn->getASTContext().getSizeType()->getTypePtr());
+				this->add_node(head, enode(cfg::nt_call, e)
+					(eot_oper, "=")
+					(this->make_address(loop_counter))
+					(eot_const, i.toString(10, false)));
+				cfg::vertex_descriptor cond_node = this->add_node(head, enode(cfg::nt_call, e)
+					(eot_oper, "<")
+					(loop_counter)
+					(eot_const, at->getSize().toString(10, false)));
+
+				cfg::vertex_descriptor false_head = this->duplicate_vertex(head);
+				this->set_cond(false_head, 0, "0");
+
+				eop elem = this->get_array_element(head, decayedptr, loop_counter, e);
+				this->value_initialize(head, this->make_address(elem), at->getElementType(), blockLifetime, e);
+
+				cfg::vertex_descriptor incremented = this->add_node(head, enode(cfg::nt_call, e)
+					(eot_oper, "+")
+					(loop_counter)
+					(eot_const, "1"));
+				this->add_node(head, enode(cfg::nt_call, e)
+					(eot_oper, "=")
+					(this->make_address(loop_counter))
+					(eot_node, incremented));
+
+				this->join_nodes(head, cond_node);
+				head = false_head;
 			}
 		}
 		else
