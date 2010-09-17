@@ -40,7 +40,18 @@ void get_functions_from_declcontext(clang::DeclContext const * declctx, std::set
 
 std::string make_decl_name(clang::NamedDecl const * decl)
 {
-	if (clang::FunctionDecl const * fndecl = llvm::dyn_cast<clang::FunctionDecl>(decl))
+	if (clang::VarDecl const * vardecl = llvm::dyn_cast<clang::VarDecl>(decl))
+	{
+		if (vardecl->isStaticLocal())
+		{
+			return make_decl_name(llvm::dyn_cast<clang::NamedDecl>(vardecl->getDeclContext())) + "::" + vardecl->getQualifiedNameAsString();
+		}
+		else
+		{
+			return vardecl->getQualifiedNameAsString();
+		}
+	}
+	else if (clang::FunctionDecl const * fndecl = llvm::dyn_cast<clang::FunctionDecl>(decl))
 	{
 		std::string name = decl->getQualifiedNameAsString();
 		name += '(';

@@ -227,10 +227,10 @@ struct context
 		for (clang::FunctionDecl::decl_iterator it = fn->decls_begin(); it != fn->decls_end(); ++it)
 		{
 			clang::Decl const * decl = *it;
-			if (clang::ValueDecl const * d = llvm::dyn_cast<clang::ValueDecl>(decl))
+			if (clang::VarDecl const * d = llvm::dyn_cast<clang::VarDecl>(decl))
 			{
 				std::string name_base;
-				if (decl->getKind() == clang::Decl::ParmVar)
+				if (d->isStaticLocal() || decl->getKind() == clang::Decl::ParmVar)
 					continue;
 
 				name_base = "l:" + d->getQualifiedNameAsString();
@@ -1420,6 +1420,10 @@ struct context
 				clang::Decl const * decl = *ci;
 				if (clang::VarDecl const * vd = llvm::dyn_cast<clang::VarDecl>(decl))
 				{
+					// TODO: deal with static variables correctly
+					if (vd->isStaticLocal())
+						continue;
+
 					if (vd->hasInit())
 					{
 						this->begin_lifetime_context(m_fullexpr_lifetimes);
