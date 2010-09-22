@@ -10,3 +10,8 @@ int f1(int val)
         res = c1();
     return res;
 }
+
+void f2(int *& p)
+{
+    c2(*p);
+}

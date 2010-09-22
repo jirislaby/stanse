@@ -362,8 +362,8 @@ struct context
 			break;
 		case eot_vartgt:
 			op = this->make_rvalue(head, op);
-			BOOST_ASSERT(op.type == eot_var);
-			op.type = eot_vartgt;
+			BOOST_ASSERT(op.type == eot_node);
+			op.type = eot_nodetgt;
 			break;
 		default:
 			BOOST_ASSERT(0 && "lvalue is required to form an address");
