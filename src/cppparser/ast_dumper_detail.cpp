@@ -52,6 +52,30 @@ void print_decl(clang::Decl const * decl, std::ostream & out, int level)
 		if (clang::FunctionTemplateDecl * tempDecl = funcDecl->getPrimaryTemplate())
 			print_decl(tempDecl, out, level + 2);
 
+		if (clang::CXXConstructorDecl const * conDecl = llvm::dyn_cast<clang::CXXConstructorDecl>(funcDecl))
+		{
+			for (clang::CXXConstructorDecl::init_const_iterator it = conDecl->init_begin(); it != conDecl->init_end(); ++it)
+			{
+				clang::CXXBaseOrMemberInitializer const * init = *it;
+				if (!init->isBaseInitializer())
+				{
+					indent(out, level + 1);
+					out << "init member:\n";
+					print_decl(init->getMember(), out, level + 2);
+					if (init->getMember()->isAnonymousStructOrUnion())
+						print_decl(init->getAnonUnionMember(), out, level + 2);
+				}
+				else
+				{
+					indent(out, level + 1);
+					out << "init base:\n";
+					print_decl(init->getBaseClass()->getAsCXXRecordDecl(), out, level + 2);
+				}
+
+				print_stmt(init->getInit(), out, level + 2);
+			}
+		}
+
 		if (funcDecl->hasBody())
 		{
 			clang::Stmt const * stmt = funcDecl->getBody();
