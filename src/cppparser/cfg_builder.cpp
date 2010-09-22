@@ -300,7 +300,7 @@ struct context
 			return this->make_address(temp);
 		}
 
-		if (type->isReferenceType() || type->isClassType())
+		if (type->isReferenceType() || type->isStructureOrClassType())
 			return this->make_address(op);
 		else
 			return op;
@@ -819,7 +819,7 @@ struct context
 			if (restype->isStructureOrClassType())
 			{
 				eop temp = this->make_temporary(restype);
-				params.insert(params.begin(), this->make_address(temp));
+				params.insert(params.begin(), temp);
 				param_types.insert(param_types.begin(), restype);
 				result_op = temp;
 			}
