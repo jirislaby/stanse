@@ -22,3 +22,20 @@ void f3(int x)
         x = 0;
     }
 }
+
+struct s1
+{
+    s1(s1 const &);
+    ~s1();
+
+    operator bool();
+};
+
+s1 e1(int ch);
+
+void f4(int *& p)
+{
+    while(e1(*p))
+    {
+    }
+}

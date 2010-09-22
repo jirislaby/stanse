@@ -378,8 +378,21 @@ struct context
 	{
 		op = this->make_rvalue(head, op);
 		if (op.type != eot_node)
-			op = eop(eot_node, this->add_node(head, enode(cfg::nt_value)(op)));
+			return this->add_node(head, enode(cfg::nt_value)(op));
 		return boost::get<cfg::vertex_descriptor>(op.id);
+	}
+
+	cfg::vertex_descriptor make_cond_node(cfg::vertex_descriptor & head, eop op)
+	{
+		op = this->make_rvalue(head, op);
+		if (op.type != eot_node || in_degree(head, g) != 1)
+			return this->add_node(head, enode(cfg::nt_value)(op));
+
+		cfg::vertex_descriptor res = boost::get<cfg::vertex_descriptor>(op.id);
+		if (source(*in_edges(head, g).first, g) != res)
+			return this->add_node(head, enode(cfg::nt_value)(op));
+
+		return res;
 	}
 
 	cfg::node convert_node(cfg::vertex_descriptor & head, enode const & node)
@@ -1300,7 +1313,8 @@ struct context
 		}
 		else if (clang::WhileStmt const * s = llvm::dyn_cast<clang::WhileStmt>(stmt))
 		{
-			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_full_expr(head, s->getCond()));
+			cfg::vertex_descriptor cond_start = head;
+			this->make_cond_node(head, this->build_full_expr(head, s->getCond()));
 			cfg::vertex_descriptor body_head = this->duplicate_vertex(head);
 			this->set_cond(head, 0, "0");
 
@@ -1308,10 +1322,10 @@ struct context
 			m_continue_sentinels.push_back(this->create_jump_sentinel());
 
 			this->build_stmt(body_head, s->getBody());
-			this->join_nodes(body_head, cond_node);
+			this->join_nodes(body_head, cond_start);
 
 			this->join_jump_sentinel(m_break_sentinels.back(), head);
-			this->join_jump_sentinel(m_continue_sentinels.back(), cond_node);
+			this->join_jump_sentinel(m_continue_sentinels.back(), cond_start);
 			m_break_sentinels.pop_back();
 			m_continue_sentinels.pop_back();
 		}
