@@ -831,17 +831,17 @@ struct context
 			for (std::size_t i = 0; i < params.size(); ++i)
 				node(this->make_param(head, params[i], param_types[i]));
 
-			this->connect_to_term(head);
-			this->connect_to_exc(head);
-			eop node_op = eop(eot_node, this->add_node(head, node));
+			cfg::vertex_descriptor call_node = this->add_node(head, node);
+			this->connect_to_term(call_node);
+			this->connect_to_exc(call_node);
 
 			if (result_op.type != eot_none)
 				return result_op;
 
 			if (restype->isReferenceType())
-				return this->make_deref(head, node_op);
+				return eop(eot_nodetgt, call_node);
 			else
-				return node_op;
+				return eop(eot_node, call_node);
 		}
 		else if (clang::ConditionalOperator const * e = llvm::dyn_cast<clang::ConditionalOperator>(expr))
 		{
