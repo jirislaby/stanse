@@ -15,3 +15,17 @@ void f2(int *& p)
 {
     c2(*p);
 }
+
+struct s1
+{
+    s1();
+    s1(s1 const &);
+    ~s1();
+};
+
+s1 c3();
+
+void f3()
+{
+    c3();
+}
