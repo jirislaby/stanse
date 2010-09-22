@@ -54,6 +54,9 @@ program build_program(clang::TranslationUnitDecl const * tu, Visitor visitor)
 		clang::FunctionDecl const * fn = *unprocessedFunctions.begin();
 		unprocessedFunctions.erase(unprocessedFunctions.begin());
 
+		if (!fn->hasBody())
+			continue;
+
 		BOOST_ASSERT(processedFunctions.find(fn) == processedFunctions.end());
 		processedFunctions.insert(fn);
 
