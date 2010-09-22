@@ -22,6 +22,7 @@
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Frontend/TextDiagnosticBuffer.h>
+#include <clang/Sema/Sema.h>
 
 #include <iostream>
 #include <set>
@@ -91,6 +92,27 @@ public:
 		{
 			std::cerr << "Errors were found, serialization of AST and CFGs is disabled." << std::endl;
 			return;
+		}
+
+		std::vector<clang::CXXRecordDecl *> structure_decls;
+		for (clang::ASTContext::type_iterator it = ctx.types_begin(); it != ctx.types_end(); ++it)
+		{
+			clang::Type * type = *it;
+			if (type->isDependentType() || !type->isStructureOrClassType())
+				continue;
+
+			structure_decls.push_back(type->getAsCXXRecordDecl());
+		}
+
+		// Instantiate all special member functions
+		for (std::size_t i = 0; i != structure_decls.size(); ++i)
+		{
+			clang::CXXRecordDecl * recdecl = structure_decls[i];
+			for (clang::CXXRecordDecl::method_iterator mit = recdecl->method_begin(); mit != recdecl->method_end(); ++mit)
+			{
+				clang::CXXMethodDecl * method = *mit;
+				m_ci.getSema().MarkDeclarationReferenced(method->getLocation(), method);
+			}
 		}
 
 		std::set<clang::FunctionDecl const *> functionDecls;
