@@ -27,3 +27,21 @@ void f3(int x)
     }
     while (x);
 }
+
+struct s1
+{
+    s1(s1 const &);
+    ~s1();
+
+    operator bool();
+};
+
+s1 e1(int ch);
+
+void f4(int *& p)
+{
+    do
+    {
+    }
+    while (e1(*p));
+}

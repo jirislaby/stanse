@@ -1354,7 +1354,7 @@ struct context
 
 			this->build_stmt(head, s->getBody());
 
-			cfg::vertex_descriptor cond_node = this->make_node(head, this->build_full_expr(head, s->getCond()));
+			cfg::vertex_descriptor cond_node = this->make_cond_node(head, this->build_full_expr(head, s->getCond()));
 			cfg::vertex_descriptor loop_node = this->duplicate_vertex(head);
 			this->set_cond(head, 0, "0");
 
