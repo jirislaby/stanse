@@ -9,11 +9,11 @@ void get_functions_from_declcontext(clang::DeclContext const * declctx, std::set
 	{
 		clang::Decl * decl = *it;
 
+#ifndef NDEBUG
+		std::string name;
 		if (clang::NamedDecl const * nd = llvm::dyn_cast<clang::NamedDecl>(decl))
-		{
-			std::string name = nd->getQualifiedNameAsString();
-			name = name;
-		}
+			name = nd->getQualifiedNameAsString();
+#endif
 
 		if (clang::FunctionDecl * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
 		{
