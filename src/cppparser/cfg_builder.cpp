@@ -808,7 +808,7 @@ struct context
 			else
 			{
 				callee_op = this->build_expr(head, e->getCallee());
-				fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getCallee()->getType()->getPointeeType());
+				fntype = llvm::dyn_cast<clang::FunctionProtoType>(e->getCallee()->getType()->getCanonicalTypeInternal()->getPointeeType().getTypePtr());
 			}
 
 			BOOST_ASSERT(fntype);
