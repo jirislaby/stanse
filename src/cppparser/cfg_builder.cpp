@@ -1393,8 +1393,7 @@ struct context
 			BOOST_ASSERT(!m_case_contexts.empty());
 			BOOST_ASSERT(s->getRHS() == 0 && "case lhs..rhs; gcc extension is not supported");
 
-			eop cond = this->build_expr(head, s->getLHS());
-			BOOST_ASSERT(cond.type == eot_const);
+			eop cond = eop(eot_const, s->getLHS()->EvaluateAsInt(m_fn->getASTContext()).toString(10));
 
 			m_case_contexts.back().second[boost::get<std::string>(cond.id)] = head;
 			this->build_stmt(head, s->getSubStmt());
