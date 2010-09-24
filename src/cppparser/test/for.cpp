@@ -10,3 +10,22 @@ void f1(int x)
         x *= 2;
     }
 }
+
+struct s1
+{
+    s1();
+    s1(s1 const &);
+    ~s1();
+
+    operator bool();
+    s1 operator++();
+};
+
+s1 e1(int ch);
+
+void f2(int *& p)
+{
+    for (s1 a; e1(*p); ++a)
+    {
+    }
+}

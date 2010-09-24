@@ -1370,11 +1370,12 @@ struct context
 			if (s->getInit())
 				this->build_stmt(head, s->getInit());
 
+			cfg::vertex_descriptor start_node = head;
 			cfg::vertex_descriptor cond_node = head;
 			cfg::vertex_descriptor exit_node;
 			if (s->getCond())
 			{
-				cond_node = this->make_node(head, this->build_full_expr(head, s->getCond()));
+				cond_node = this->make_cond_node(head, this->build_full_expr(head, s->getCond()));
 				exit_node = this->duplicate_vertex(head);
 				this->set_cond(exit_node, 0, "0");
 			}
@@ -1391,7 +1392,7 @@ struct context
 
 			if (s->getInc())
 				this->build_full_expr(head, s->getInc());
-			this->join_nodes(head, cond_node);
+			this->join_nodes(head, start_node);
 			head = exit_node;
 
 			this->join_jump_sentinel(m_break_sentinels.back(), exit_node);
