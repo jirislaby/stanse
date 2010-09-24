@@ -1,5 +1,7 @@
 #include "util.hpp"
 #include <clang/AST/DeclCXX.h>
+#include <clang/AST/DeclTemplate.h>
+#include <boost/assert.hpp>
 
 void get_functions_from_declcontext(clang::DeclContext const * declctx, std::set<clang::FunctionDecl const *> & fns)
 {
@@ -19,21 +21,23 @@ void get_functions_from_declcontext(clang::DeclContext const * declctx, std::set
 				continue;
 			fns.insert(fnDecl);
 		}
-		else if (clang::CXXRecordDecl const * classDecl = dyn_cast<clang::CXXRecordDecl>(decl))
-		{
-			/*if (classDecl->hasDeclaredDefaultConstructor() && !classDecl->getDefaultConstructor()->isTrivial())
-				fns.insert(classDecl->getDefaultConstructor());
-			if (classDecl->hasDeclaredCopyConstructor() && !classDecl->getCopyConstructor()->isTrivial())
-				fns.insert(classDecl->getCopyConstructor());
-			if (classDecl->hasDeclaredCopyAssignment() && !classDecl->getCopyAssignmentOperator()->isTrivial())
-				fns.insert(classDecl->getCopyAssignmentOperator());*/
-			if (classDecl->hasDefinition() && classDecl->hasDeclaredDestructor() && !classDecl->getDestructor()->isTrivial())
-				fns.insert(classDecl->getDestructor());
-			get_functions_from_declcontext(classDecl, fns);
-		}
 		else if (clang::RecordDecl const * classDecl = dyn_cast<clang::RecordDecl>(decl))
 		{
 			get_functions_from_declcontext(classDecl, fns);
+		}
+		else if (clang::FunctionTemplateDecl const * d = llvm::dyn_cast<clang::FunctionTemplateDecl>(decl))
+		{
+			for (clang::FunctionTemplateDecl::spec_iterator it = ((clang::FunctionTemplateDecl *)d)->spec_begin(); it != ((clang::FunctionTemplateDecl *)d)->spec_end(); ++it)
+			{
+				if ((*it)->isDependentContext())
+					continue;
+				fns.insert(*it);
+			}
+		}
+		else if (clang::ClassTemplateDecl const * d = llvm::dyn_cast<clang::ClassTemplateDecl>(decl))
+		{
+			for (clang::ClassTemplateDecl::spec_iterator it = ((clang::ClassTemplateDecl *)d)->spec_begin(); it != ((clang::ClassTemplateDecl *)d)->spec_end(); ++it)
+				get_functions_from_declcontext(*it, fns);
 		}
 	}
 }

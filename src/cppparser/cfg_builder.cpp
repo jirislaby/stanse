@@ -40,8 +40,8 @@ std::vector<boost::int64_t> string_literal_to_value_array(clang::StringLiteral c
 
 struct context
 {
-	context(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions, detail::build_cfg_visitor_base & visitor)
-		: m_referenced_functions2(referenced_functions), m_visitor(visitor), g(c), m_fn(fn), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
+	context(cfg & c, clang::FunctionDecl const * fn, detail::build_cfg_visitor_base & visitor)
+		: m_visitor(visitor), g(c), m_fn(fn), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
 	{
 		g.entry(m_head);
 
@@ -57,12 +57,11 @@ struct context
 		this->build();
 	}
 
-	std::set<clang::FunctionDecl const *> & m_referenced_functions2;
 	detail::build_cfg_visitor_base & m_visitor;
 
 	void register_decl_ref(clang::FunctionDecl const * fn)
 	{
-		m_referenced_functions2.insert(fn);
+		// TODO: Will we ever need this function?
 	}
 
 	cfg & g;
@@ -1778,7 +1777,7 @@ struct context
 
 }
 
-void detail::build_cfg(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions, build_cfg_visitor_base & visitor)
+void detail::build_cfg(cfg & c, clang::FunctionDecl const * fn, build_cfg_visitor_base & visitor)
 {
-	context(c, fn, referenced_functions, visitor);
+	context(c, fn, visitor);
 }

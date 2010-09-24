@@ -37,7 +37,7 @@ struct build_cfg_visitor : build_cfg_visitor_base
 	Visitor m_visitor;
 };
 
-void build_cfg(cfg & c, clang::FunctionDecl const * fn, std::set<clang::FunctionDecl const *> & referenced_functions, build_cfg_visitor_base & visitor);
+void build_cfg(cfg & c, clang::FunctionDecl const * fn, build_cfg_visitor_base & visitor);
 
 }
 
@@ -47,7 +47,6 @@ program build_program(clang::TranslationUnitDecl const * tu, Visitor visitor)
 	std::set<clang::FunctionDecl const *> unprocessedFunctions;
 	get_functions_from_declcontext(tu, unprocessedFunctions);
 
-	std::set<clang::FunctionDecl const *> processedFunctions;
 	program res;
 	while (!unprocessedFunctions.empty())
 	{
@@ -57,26 +56,16 @@ program build_program(clang::TranslationUnitDecl const * tu, Visitor visitor)
 		if (!fn->hasBody())
 			continue;
 
-		BOOST_ASSERT(processedFunctions.find(fn) == processedFunctions.end());
-		processedFunctions.insert(fn);
-
 		std::string const & fnname = make_decl_name(fn);
 		if (!visitor.function_started(fnname))
 			continue;
 
-		std::set<clang::FunctionDecl const *> referenced_functions;
-
 		cfg c;
 		detail::build_cfg_visitor<Visitor> cfg_visitor(visitor);
-		build_cfg(c, fn, referenced_functions, cfg_visitor);
+		build_cfg(c, fn, cfg_visitor);
 
 		visitor.function_completed(fnname, c);
 		res.cfgs().insert(std::make_pair(fnname, c));
-
-		std::set_difference(
-			referenced_functions.begin(), referenced_functions.end(),
-			processedFunctions.begin(), processedFunctions.end(),
-			std::inserter(unprocessedFunctions, unprocessedFunctions.begin()));
 	}
 	return res;
 }
