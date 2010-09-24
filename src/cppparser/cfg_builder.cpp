@@ -264,6 +264,12 @@ struct context
 		return eop(eot_var, ss.str());
 	}
 
+	cfg::operand make_rvalue(eop const & op)
+	{
+		BOOST_ASSERT(op.type < eot_nodetgt);
+		return cfg::operand(static_cast<cfg::op_type>(op.type), op.id);
+	}
+
 	cfg::operand make_rvalue(cfg::vertex_descriptor & head, eop const & op)
 	{
 		if (op.type == eot_nodetgt)
@@ -283,8 +289,7 @@ struct context
 			return cfg::operand(cfg::ot_node, res);
 		}
 
-		BOOST_ASSERT(op.type < eot_nodetgt);
-		return cfg::operand(static_cast<cfg::op_type>(op.type), op.id);
+		return this->make_rvalue(op);
 	}
 
 	eop make_param(cfg::vertex_descriptor & head, eop const & op, clang::Type const * type)
@@ -461,10 +466,11 @@ struct context
 
 	void init_auto_reg_node(auto_var_registration const & reg)
 	{
-		cfg::vertex_descriptor sentinel = cfg::null_vertex();
-		g[reg.excnode] = this->convert_node(sentinel, enode(cfg::nt_call)
-			(eot_func, this->get_name(reg.destr))
-			(reg.varptr));
+		cfg::node & n = g[reg.excnode];
+		n.type = cfg::nt_call;
+		n.ops.push_back(cfg::operand(cfg::ot_func, this->get_name(reg.destr)));
+		n.ops.push_back(this->make_rvalue(reg.varptr));
+
 		this->connect_to_exc(reg.excnode, m_term_exit_node);
 		this->connect_to_term(reg.excnode);
 	}
@@ -510,9 +516,10 @@ struct context
 		}
 
 		this->register_decl_ref(reg.destr);
-		this->connect_to_term(head);
-		this->connect_to_exc(head);
-		this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(reg.destr))(reg.varptr));
+
+		cfg::vertex_descriptor call_node = this->add_node(head, enode(cfg::nt_call)(eot_func, this->get_name(reg.destr))(reg.varptr));
+		this->connect_to_term(call_node);
+		this->connect_to_exc(call_node);
 	}
 
 	void build_construct_expr(cfg::vertex_descriptor & head, eop const & varptr, clang::CXXConstructExpr const * e)
@@ -529,9 +536,9 @@ struct context
 		for (std::size_t i = 0; i < e->getNumArgs(); ++i)
 			node(this->make_param(head, this->build_expr(head, e->getArg(i)), fntype->getArgType(i).getTypePtr()));
 
-		this->connect_to_term(head);
-		this->connect_to_exc(head);
-		this->add_node(head, node);
+		cfg::vertex_descriptor call_node = this->add_node(head, node);
+		this->connect_to_term(call_node);
+		this->connect_to_exc(call_node);
 	}
 
 	eop make_phi(cfg::vertex_descriptor & head, cfg::vertex_descriptor branch, eop headop, eop branchop, bool lvalue, clang::Expr const * data = 0)
