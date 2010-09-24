@@ -40,18 +40,22 @@ void print_decl(clang::Decl const * decl, std::ostream & out, int level)
 		}
 	}
 
+	if (clang::FunctionTemplateDecl const * d = llvm::dyn_cast<clang::FunctionTemplateDecl>(decl))
+	{
+		print_decl(d->getTemplatedDecl(), out, level + 1);
+		for (clang::FunctionTemplateDecl::spec_iterator it = ((clang::FunctionTemplateDecl *)d)->spec_begin(); it != ((clang::FunctionTemplateDecl *)d)->spec_end(); ++it)
+			print_decl(*it, out, level + 1);
+	}
+
 	if (clang::ClassTemplateDecl const * d = llvm::dyn_cast<clang::ClassTemplateDecl>(decl))
 	{
 		print_decl(d->getTemplatedDecl(), out, level + 1);
+		for (clang::ClassTemplateDecl::spec_iterator it = ((clang::ClassTemplateDecl *)d)->spec_begin(); it != ((clang::ClassTemplateDecl *)d)->spec_end(); ++it)
+			print_decl(*it, out, level + 1);
 	}
 
 	if (clang::FunctionDecl const * funcDecl = llvm::dyn_cast<clang::FunctionDecl>(decl))
 	{
-		indent(out, level + 1);
-		out << "primary template: \n";
-		if (clang::FunctionTemplateDecl * tempDecl = funcDecl->getPrimaryTemplate())
-			print_decl(tempDecl, out, level + 2);
-
 		if (clang::CXXConstructorDecl const * conDecl = llvm::dyn_cast<clang::CXXConstructorDecl>(funcDecl))
 		{
 			for (clang::CXXConstructorDecl::init_const_iterator it = conDecl->init_begin(); it != conDecl->init_end(); ++it)
