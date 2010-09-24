@@ -1180,6 +1180,16 @@ struct context
 						(eot_const, boost::lexical_cast<std::string>(values[init_idx])));
 				}
 			}
+			else if (clang::ArraySubscriptExpr const * ie = llvm::dyn_cast<clang::ArraySubscriptExpr>(e))
+			{
+				// TODO
+				i = at->getSize();
+			}
+			else if (clang::CXXConstructExpr const * ie = llvm::dyn_cast<clang::CXXConstructExpr>(e))
+			{
+				// TODO
+				i = at->getSize();
+			}
 			else
 			{
 				BOOST_ASSERT(0 && "unrecognized array initializer");
