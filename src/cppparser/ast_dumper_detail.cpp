@@ -1,4 +1,5 @@
 #include "ast_dumper_detail.hpp"
+#include "util.hpp"
 
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/Decl.h>

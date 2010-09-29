@@ -37,12 +37,12 @@ struct build_cfg_visitor : build_cfg_visitor_base
 	Visitor m_visitor;
 };
 
-void build_cfg(cfg & c, clang::FunctionDecl const * fn, build_cfg_visitor_base & visitor);
+void build_cfg(cfg & c, clang::FunctionDecl const * fn, build_cfg_visitor_base & visitor, std::string const & static_prefix);
 
 }
 
 template <typename Visitor>
-program build_program(clang::TranslationUnitDecl const * tu, Visitor visitor)
+program build_program(clang::TranslationUnitDecl const * tu, Visitor visitor, std::string const & static_prefix)
 {
 	std::set<clang::FunctionDecl const *> unprocessedFunctions;
 	get_functions_from_declcontext(tu, unprocessedFunctions);
@@ -56,13 +56,13 @@ program build_program(clang::TranslationUnitDecl const * tu, Visitor visitor)
 		if (!fn->hasBody())
 			continue;
 
-		std::string const & fnname = make_decl_name(fn);
+		std::string const & fnname = make_decl_name(fn, static_prefix);
 		if (!visitor.function_started(fnname))
 			continue;
 
 		cfg c;
 		detail::build_cfg_visitor<Visitor> cfg_visitor(visitor);
-		build_cfg(c, fn, cfg_visitor);
+		build_cfg(c, fn, cfg_visitor, static_prefix);
 
 		visitor.function_completed(fnname, c);
 		res.cfgs().insert(std::make_pair(fnname, c));
@@ -70,9 +70,9 @@ program build_program(clang::TranslationUnitDecl const * tu, Visitor visitor)
 	return res;
 }
 
-inline program build_program(clang::TranslationUnitDecl const * tu)
+inline program build_program(clang::TranslationUnitDecl const * tu, std::string const & static_prefix)
 {
-	return build_program(tu, default_build_visitor());
+	return build_program(tu, default_build_visitor(), static_prefix);
 }
 
 #endif

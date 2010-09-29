@@ -40,8 +40,9 @@ std::vector<boost::int64_t> string_literal_to_value_array(clang::StringLiteral c
 
 struct context
 {
-	context(cfg & c, clang::FunctionDecl const * fn, detail::build_cfg_visitor_base & visitor)
-		: m_visitor(visitor), g(c), m_fn(fn), m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
+	context(cfg & c, clang::FunctionDecl const * fn, detail::build_cfg_visitor_base & visitor, std::string const & static_prefix)
+		: m_static_prefix(static_prefix), m_visitor(visitor), g(c), m_fn(fn),
+		m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
 	{
 		g.entry(m_head);
 
@@ -57,6 +58,7 @@ struct context
 		this->build();
 	}
 
+	std::string m_static_prefix;
 	detail::build_cfg_visitor_base & m_visitor;
 
 	void register_decl_ref(clang::FunctionDecl const * fn)
@@ -197,7 +199,7 @@ struct context
 	{
 		std::map<clang::NamedDecl const *, std::string>::const_iterator it = m_registered_names.find(decl);
 		if (it == m_registered_names.end())
-			return make_decl_name(decl);
+			return make_decl_name(decl, m_static_prefix);
 		else
 			return it->second;
 	}
@@ -1795,7 +1797,7 @@ struct context
 
 }
 
-void detail::build_cfg(cfg & c, clang::FunctionDecl const * fn, build_cfg_visitor_base & visitor)
+void detail::build_cfg(cfg & c, clang::FunctionDecl const * fn, build_cfg_visitor_base & visitor, std::string const & static_prefix)
 {
-	context(c, fn, visitor);
+	context(c, fn, visitor, static_prefix);
 }

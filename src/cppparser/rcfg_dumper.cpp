@@ -12,6 +12,7 @@
 #include <sstream>
 
 #include "xml_writer.hpp"
+#include "util.hpp"
 
 //==================================================================
 rcfg_id_list::rcfg_id_list(clang::FunctionDecl const & fn, clang::ASTContext & ctx)

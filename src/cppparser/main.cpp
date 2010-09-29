@@ -43,6 +43,8 @@ struct config
 	bool showFnNames;
 	bool dump_progress;
 	std::string filter;
+
+	std::string static_prefix;
 };
 
 struct cfg_build_visitor
@@ -132,11 +134,11 @@ public:
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
 
 		if (m_c.buildCfg)
-			build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c));
+			build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 
 		if (m_c.printJsonCfg)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c));
+			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 			cfg_json_write(std::cout, prog, m_c.printJsonCfg == 1);
 		}
 
@@ -151,7 +153,7 @@ public:
 
 		if (m_c.debugCFG)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c));
+			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 			prog.pretty_print(std::cerr);
 			//print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 		}
@@ -212,6 +214,7 @@ int main(int argc, char * argv[])
 		std::vector<char const *> args(additional_args, additional_args + sizeof additional_args / sizeof additional_args[0]);
 
 		config c = {};
+		c.static_prefix = "__unique";
 
 		// Parse the arguments
 		for (int i = 1; i < argc; ++i)
@@ -237,6 +240,8 @@ int main(int argc, char * argv[])
 				c.showFnNames = true;
 			else if (arg == "--dumpprogress")
 				c.dump_progress = true;
+			else if (arg == "--staticprefix" && i + 1 < argc)
+				c.static_prefix = argv[++i];
 			else if (arg == "--filter" && i + 1 < argc)
 				c.filter = argv[++i];
 			else
