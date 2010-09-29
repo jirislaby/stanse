@@ -15,12 +15,54 @@
 #include <map>
 #include <string>
 
+struct range_tag
+{
+	std::size_t fname;
+	int start_line, start_col;
+	int end_line, end_col;
+};
+
+class filename_store
+{
+public:
+	std::size_t add(std::string const & fname)
+	{
+		BOOST_ASSERT(m_fname_map.size() == m_fnames.size());
+		std::pair<std::map<std::string, std::size_t>::iterator, bool> ins = m_fname_map.insert(std::make_pair(fname, m_fnames.size()));
+		if (ins.second)
+			m_fnames.push_back(fname);
+		return ins.first->second;
+	}
+
+	std::string operator[](std::size_t idx) const
+	{
+		return m_fnames[idx];
+	}
+
+	std::size_t size() const
+	{
+		return m_fnames.size();
+	}
+
+private:
+	std::map<std::string, std::size_t> m_fname_map;
+	std::vector<std::string> m_fnames;
+};
+
+struct fullexpr_tag
+{
+	std::size_t id;
+};
+
 class cfg
 {
 private:
 	struct graph_vertex;
 
 public:
+	typedef boost::variant<range_tag, fullexpr_tag> node_tag_type;
+	typedef std::size_t node_tag_ref;
+
 	typedef graph_vertex * vertex_descriptor;
 
 	enum node_type { nt_none, nt_exit, nt_value, nt_call, nt_phi };
@@ -74,10 +116,10 @@ public:
 	{
 		node_type type;
 		std::vector<operand> ops;
-		void const * data;
+		std::set<node_tag_ref> tags;
 
-		node(node_type type = nt_none, void * data = 0)
-			: type(type), data(data)
+		node(node_type type = nt_none)
+			: type(type)
 		{
 		}
 	};
@@ -127,7 +169,7 @@ public:
 	}
 
 	cfg(cfg const & other)
-		: m_entry(0), m_params(other.m_params), m_locals(other.m_locals)
+		: m_entry(0), m_params(other.m_params), m_locals(other.m_locals), m_tags(other.m_tags)
 	{
 		std::map<vertex_descriptor, vertex_descriptor> isom;
 		for (std::set<vertex_descriptor>::const_iterator it = other.m_vertices.begin(); it != other.m_vertices.end(); ++it)
@@ -177,6 +219,7 @@ public:
 		swap(lhs.m_entry, rhs.m_entry);
 		lhs.m_params.swap(rhs.m_params);
 		lhs.m_locals.swap(rhs.m_locals);
+		lhs.m_tags.swap(rhs.m_tags);
 	}
 
 	vertex_descriptor entry() const { return m_entry; }
@@ -320,8 +363,18 @@ public:
 
 	std::vector<std::string> const & locals() const { return m_locals; }
 
-private:
+	node_tag_ref add_tag(node_tag_type const & tag)
+	{
+		m_tags.push_back(tag);
+		return m_tags.size() - 1;
+	}
 
+	node_tag_type const & tag(node_tag_ref tagref) const
+	{
+		return m_tags[tagref];
+	}
+
+private:
 	struct graph_vertex
 	{
 		std::list<graph_edge> succs;
@@ -338,6 +391,7 @@ private:
 	vertex_descriptor m_entry;
 	std::vector<std::string> m_params;
 	std::vector<std::string> m_locals;
+	std::vector<node_tag_type> m_tags;
 };
 
 class program
@@ -368,6 +422,9 @@ public:
 	std::map<std::string, cfg> const & cfgs() const { return m_cfgs; }
 	std::map<std::string, cfg> & cfgs() { return m_cfgs; }
 
+	filename_store const & fnames() const { return m_fnames; }
+	filename_store & fnames() { return m_fnames; }
+
 	void pretty_print(std::ostream & out) const;
 
 private:
@@ -375,6 +432,7 @@ private:
 	std::map<std::string, std::size_t> atom_map;
 
 	std::map<std::string, cfg> m_cfgs;
+	filename_store m_fnames;
 };
 
 #endif

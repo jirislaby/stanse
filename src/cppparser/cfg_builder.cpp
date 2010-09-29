@@ -12,6 +12,8 @@
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/DeclTemplate.h>
+#include <clang/Basic/SourceManager.h>
+#include <clang/Basic/FileManager.h>
 
 #include <list>
 
@@ -40,8 +42,9 @@ std::vector<boost::int64_t> string_literal_to_value_array(clang::StringLiteral c
 
 struct context
 {
-	context(cfg & c, clang::FunctionDecl const * fn, detail::build_cfg_visitor_base & visitor, std::string const & static_prefix)
-		: m_static_prefix(static_prefix), m_visitor(visitor), g(c), m_fn(fn),
+	context(cfg & c, clang::FunctionDecl const * fn, clang::SourceManager const & sm,
+		filename_store & fnames, detail::build_cfg_visitor_base & visitor, std::string const & static_prefix)
+		: m_static_prefix(static_prefix), m_sm(sm), m_fnames(fnames), m_visitor(visitor), g(c), m_fn(fn),
 		m_head(add_vertex(g)), m_exc_exit_node(add_vertex(g)), m_term_exit_node(add_vertex(g))
 	{
 		g.entry(m_head);
@@ -59,6 +62,8 @@ struct context
 	}
 
 	std::string m_static_prefix;
+	clang::SourceManager const & m_sm;
+	filename_store & m_fnames;
 	detail::build_cfg_visitor_base & m_visitor;
 
 	void register_decl_ref(clang::FunctionDecl const * fn)
@@ -407,7 +412,22 @@ struct context
 		n.type = node.type;
 		for (std::size_t i = 0; i < node.ops.size(); ++i)
 			n.ops.push_back(this->make_rvalue(head, node.ops[i]));
-		n.data = node.data;
+
+		if (node.data)
+		{
+			range_tag r = {};
+
+			clang::SourceRange sr = node.data->getSourceRange();
+			std::pair<clang::FileID, unsigned> locinfo = m_sm.getDecomposedLoc(sr.getBegin());
+			r.fname = m_fnames.add(m_sm.getFileEntryForID(locinfo.first)->getName());
+			r.start_line = m_sm.getLineNumber(locinfo.first, locinfo.second);
+			r.start_col = m_sm.getColumnNumber(locinfo.first, locinfo.second);
+			locinfo = m_sm.getDecomposedLoc(sr.getEnd());
+			r.end_line = m_sm.getLineNumber(locinfo.first, locinfo.second);
+			r.end_col = m_sm.getColumnNumber(locinfo.first, locinfo.second);
+
+			n.tags.insert(g.add_tag(r));
+		}
 		return n;
 	}
 
@@ -1629,7 +1649,7 @@ struct context
 				cfg::vertex_descriptor u = unique_vertices[i];
 				cfg::vertex_descriptor v = unique_vertices[j];
 
-				if (g[u].type != g[v].type || g[u].ops.size() != g[v].ops.size() || g[u].data != g[v].data || out_degree(u, g) != out_degree(v, g))
+				if (g[u].type != g[v].type || g[u].ops.size() != g[v].ops.size() || g[u].tags != g[v].tags || out_degree(u, g) != out_degree(v, g))
 					continue;
 
 				if (!std::equal(g[u].ops.begin(), g[u].ops.end(), g[v].ops.begin()))
@@ -1797,7 +1817,8 @@ struct context
 
 }
 
-void detail::build_cfg(cfg & c, clang::FunctionDecl const * fn, build_cfg_visitor_base & visitor, std::string const & static_prefix)
+void detail::build_cfg(cfg & c, clang::FunctionDecl const * fn, clang::SourceManager const & sm,
+	filename_store & fnames, build_cfg_visitor_base & visitor, std::string const & static_prefix)
 {
-	context(c, fn, visitor, static_prefix);
+	context(c, fn, sm, fnames, visitor, static_prefix);
 }

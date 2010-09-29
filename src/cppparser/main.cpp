@@ -134,11 +134,11 @@ public:
 			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
 
 		if (m_c.buildCfg)
-			build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
+			build_program(ctx.getTranslationUnitDecl(), m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 
 		if (m_c.printJsonCfg)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
+			program prog = build_program(ctx.getTranslationUnitDecl(), m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 			cfg_json_write(std::cout, prog, m_c.printJsonCfg == 1);
 		}
 
@@ -153,7 +153,7 @@ public:
 
 		if (m_c.debugCFG)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
+			program prog = build_program(ctx.getTranslationUnitDecl(), m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 			prog.pretty_print(std::cerr);
 			//print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 		}
