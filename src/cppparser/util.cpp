@@ -78,6 +78,9 @@ std::string make_decl_name(clang::NamedDecl const * decl, std::string const & st
 	BOOST_ASSERT(decl);
 	if (clang::VarDecl const * vardecl = llvm::dyn_cast<clang::VarDecl>(decl))
 	{
+		if (vardecl->getLinkage() == clang::InternalLinkage)
+			return make_declctx_name(vardecl->getDeclContext(), static_prefix) + static_prefix + "::static::" + vardecl->getNameAsString();
+
 		if (vardecl->isStaticLocal())
 			return make_declctx_name(vardecl->getDeclContext(), static_prefix) + vardecl->getNameAsString();
 	}

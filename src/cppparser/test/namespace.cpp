@@ -42,3 +42,17 @@ int f4()
 }
 
 }
+
+extern "C" int e2();
+
+int f5()
+{
+    return e2();
+}
+
+static int v1;
+
+int f6()
+{
+    return ++v1;
+}
