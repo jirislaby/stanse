@@ -8,6 +8,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/utility.hpp>
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 #include <set>
@@ -20,6 +21,17 @@ struct range_tag
 	std::size_t fname;
 	int start_line, start_col;
 	int end_line, end_col;
+
+	friend bool operator==(range_tag const & lhs, range_tag const & rhs)
+	{
+		return lhs.fname == rhs.fname && lhs.start_line == rhs.start_line && lhs.start_col == rhs.start_col
+			&& lhs.end_line == rhs.end_line && lhs.end_col == rhs.end_col;
+	}
+
+	friend bool operator!=(range_tag const & lhs, range_tag const & rhs)
+	{
+		return !(lhs == rhs);
+	}
 };
 
 class filename_store
@@ -52,6 +64,16 @@ private:
 struct fullexpr_tag
 {
 	std::size_t id;
+
+	friend bool operator==(fullexpr_tag const & lhs, fullexpr_tag const & rhs)
+	{
+		return lhs.id == rhs.id;
+	}
+
+	friend bool operator!=(fullexpr_tag const & lhs, fullexpr_tag const & rhs)
+	{
+		return !(lhs == rhs);
+	}
 };
 
 class cfg
@@ -365,6 +387,9 @@ public:
 
 	node_tag_ref add_tag(node_tag_type const & tag)
 	{
+		std::vector<node_tag_type>::const_iterator it = std::find(m_tags.begin(), m_tags.end(), tag);
+		if (it != m_tags.end())
+			return it - m_tags.begin();
 		m_tags.push_back(tag);
 		return m_tags.size() - 1;
 	}
