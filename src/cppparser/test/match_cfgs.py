@@ -176,7 +176,7 @@ def match_cfgs(fin, ftempl, err, showMatches=False):
     templ = json.load(ftempl)
     src = json.load(fin)
     
-    for fnname, templfn in templ.iteritems():
+    for fnname, templfn in templ['cfgs'].iteritems():
         if fnname not in src['cfgs']:
             err.write_templ('error: function %s expected but not seen.' % fnname)
             continue
