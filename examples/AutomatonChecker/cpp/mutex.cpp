@@ -1,13 +1,4 @@
-typedef int error_t;
-
-struct mutex
-{
-    mutex();
-    ~mutex();
-
-    error_t acquire();
-    error_t release();
-};
+#include "mutex.h"
 
 int main()
 {
@@ -15,5 +6,5 @@ int main()
     
     error_t error = m.acquire();
     error = m.release();
-    error = m.release();
+    error = release(m);
 }
