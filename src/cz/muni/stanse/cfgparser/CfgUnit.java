@@ -97,7 +97,7 @@ public final class CfgUnit extends Unit {
         List<String> params = new ArrayList<String>(jsonParams.length());
         for (int i = 0; i < jsonParams.length(); ++i) {
             symbols.add(jsonParams.getString(i));
-            params.set(i, jsonParams.getString(i));
+            params.add(jsonParams.getString(i));
         }
 
         JSONArray jsonNodes = jsonCfg.getJSONArray("nodes");
