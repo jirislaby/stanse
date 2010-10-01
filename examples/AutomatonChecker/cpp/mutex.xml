@@ -4,24 +4,24 @@
                  desc="Checks that mutexes don't get release twice" />
 
     <pattern name="lock">
-        <functionCall>
-            <id>mutex::acquire</id>
+        <node type="call">
+            <function>mutex::acquire()</function>
             <var name="P1"/>
-        </functionCall>
+        </node>
     </pattern>
 
     <pattern name="unlock">
-        <functionCall>
-            <id>mutex::release</id>
+        <node type="call">
+            <function>mutex::release()</function>
             <var name="P1"/>
-        </functionCall>
+        </node>
     </pattern>
 
     <pattern name="safe-unlock">
-        <functionCall>
-            <id>mutex::~mutex</id>
+        <node type="call">
+            <function>mutex::~mutex()</function>
             <var name="P1"/>
-        </functionCall>
+        </node>
     </pattern>
 
     <start state="Unlocked" />

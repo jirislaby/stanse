@@ -37,17 +37,19 @@ public class CFGNode {
 	}
 
 	public Operand(String type, Object id) {
-	    if (type.equals("function"))
+	    if (type.equals("func"))
 		this.type = OperandType.function;
+	    else if (type.equals("oper"))
+	        this.type = OperandType.operator;
 	    else if (type.equals("member"))
 		this.type = OperandType.member;
 	    else if (type.equals("const"))
 		this.type = OperandType.constant;
 	    else if (type.equals("varptr"))
 		this.type = OperandType.varptr;
-	    else if (type.equals("varval"))
+	    else if (type.equals("var"))
 		this.type = OperandType.varval;
-	    else if (type.equals("nodeval"))
+	    else if (type.equals("node"))
 		this.type = OperandType.nodeval;
 	    else
 		throw new IllegalArgumentException("Invalid operand type: " + type);

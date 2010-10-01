@@ -1,6 +1,7 @@
 package cz.muni.stanse.configuration;
 
 import cz.muni.stanse.Stanse;
+import cz.muni.stanse.cfgparser.CfgUnit;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesException;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesEnumerator;
 import cz.muni.stanse.codestructures.Unit;
@@ -112,6 +113,8 @@ public final class SourceConfiguration {
 		if (ext.equals("cpp") || ext.equals("cc") || ext.equals("cxx")
 			|| ext.equals("C"))
 		    result.add(new CppUnit(args));
+		else if (ext.equals("cfg"))
+		    result.add(new CfgUnit(args));
 		else if (ext.equals("c"))
 		    result.add(new CUnit(args));
 	    }
