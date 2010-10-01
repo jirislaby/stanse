@@ -60,8 +60,13 @@ public final class CfgUnit extends Unit {
         JSONArray jsonFilenames = jsonUnit.optJSONArray("filenames");
         if (jsonFilenames != null) {
             filenames = new File[jsonFilenames.length()];
-            for (int i = 0; i < jsonFilenames.length(); ++i)
-                filenames[i] = new File(basePath, jsonFilenames.getString(i)).getAbsoluteFile();
+            for (int i = 0; i < jsonFilenames.length(); ++i) {
+                File child = new File(jsonFilenames.getString(i));
+                if (child.isAbsolute())
+                    filenames[i] = child;
+                else
+                    filenames[i] = new File(basePath, child.getPath());
+            }
         }
 
         JSONObject jsonCfgs = jsonUnit.getJSONObject("cfgs");
