@@ -2,7 +2,7 @@ from xml.sax.saxutils import escape as xml_escape
 
 def cfg2dot(fin, fout):
     import json
-    src = json.load(fin)
+    src = json.load(fin)['cfgs']
 
     fout.write('digraph G {\n')
     fout.write('    node [shape=record];\n')
