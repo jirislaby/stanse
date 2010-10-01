@@ -216,8 +216,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     }
 
     private String getNodeUnitName(final CFGNode node) {
-        return Stanse.getUnitManager().getUnitName(getInternals().
-                getNodeToCFGdictionary().get(node));
+        return node.getFile().getPath();
     }
 
     private void updateTotalImportance(final int traceImportance) {

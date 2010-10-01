@@ -129,7 +129,7 @@ public final class CUnit extends Unit {
 			line = Integer.parseInt(node.getElement().attributeValue("bl"));
 		    if (node.getElement().attribute("bc") != null)
 			column = Integer.parseInt(node.getElement().attributeValue("bc"));
-		    node.setLocation(line, column);
+		    node.setLocation(this.fileName, line, column);
 		}
 
 		CFGHs.add(new CFGHandle(this, cfg));

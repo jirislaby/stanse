@@ -158,7 +158,7 @@ public final class CppUnit extends Unit {
 		    newnode.setNodeType(nodeType);
 
 		if (node.attributeValue("line") != null) {
-		    newnode.setLocation(Integer.parseInt(node.attributeValue("line")), Integer.parseInt(node.attributeValue("column")));
+		    newnode.setLocation(this.fileName, Integer.parseInt(node.attributeValue("line")), Integer.parseInt(node.attributeValue("column")));
 		}
 
 		String visAttr = node.attributeValue("vis");

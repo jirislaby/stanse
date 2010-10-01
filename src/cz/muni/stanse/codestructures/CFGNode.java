@@ -6,6 +6,7 @@
 
 package cz.muni.stanse.codestructures;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,8 +64,9 @@ public class CFGNode {
 
     NodeType nodeType = NodeType.none;
     List<Operand> operands = new ArrayList<Operand>();
-    int line = -1;
-    int column = 1;
+    File file;
+    int line;
+    int column;
     boolean visible = true;
 
     /**
@@ -99,13 +101,18 @@ public class CFGNode {
 	return element;
     }
 
-    public void setLocation(int line, int column) {
+    public void setLocation(File file, int line, int column) {
+        this.file = file;
 	this.line = line;
 	this.column = column;
     }
 
     public boolean hasLocation() {
-	return line >= 0;
+	return file != null;
+    }
+
+    public File getFile() {
+        return this.file;
     }
 
     public final int getColumn() {
