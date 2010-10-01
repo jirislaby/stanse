@@ -94,6 +94,7 @@ public:
 			return;
 		}
 
+#if 0
 		std::vector<clang::CXXRecordDecl *> structure_decls;
 		for (clang::ASTContext::type_iterator it = ctx.types_begin(); it != ctx.types_end(); ++it)
 		{
@@ -114,6 +115,7 @@ public:
 				m_ci.getSema().MarkDeclarationReferenced(method->getLocation(), method);
 			}
 		}
+#endif
 
 		std::set<clang::FunctionDecl const *> functionDecls;
 		get_functions_from_declcontext(ctx.getTranslationUnitDecl(), functionDecls);
