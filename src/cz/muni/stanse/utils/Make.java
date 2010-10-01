@@ -27,6 +27,11 @@ public final class Make {
         return add(Make.<T>linkedList(a1,a2,a3),a4);
     }
 
+    public static <T> LinkedList<T> linkedList(final T a1, final T a2,
+            final T a3, final T a4, final T a5) {
+        return add(Make.<T>linkedList(a1,a2,a3,a4),a5);
+    }
+
     public static <T> HashSet<T> hashSet() {
         return new HashSet<T>();
     }
