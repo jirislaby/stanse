@@ -1,9 +1,9 @@
-#include "ast_dumper.hpp"
-#include "rcfg_dumper.hpp"
-
 #include "cfg.hpp"
 #include "cfg_builder.hpp"
 #include "cfg_json_writer.hpp"
+
+#include "ast_pretty_printer.hpp"
+#include "util.hpp"
 
 #include <clang/Lex/Preprocessor.h>
 #include <clang/Basic/SourceManager.h>
@@ -32,8 +32,6 @@
 
 struct config
 {
-	bool printAST;
-	bool printRCFG;
 	int printJsonCfg;
 	bool printReadableAST;
 	bool printUnitAST;
@@ -118,7 +116,7 @@ public:
 		}
 
 		std::set<clang::FunctionDecl const *> functionDecls;
-		get_used_function_defs(ctx, functionDecls);
+		get_functions_from_declcontext(ctx.getTranslationUnitDecl(), functionDecls);
 		if (!m_c.filter.empty())
 		{
 			std::set<clang::FunctionDecl const *> filtered;
@@ -131,7 +129,10 @@ public:
 		}
 
 		if (m_c.printReadableAST)
-			print_readable_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
+		{
+			for (std::set<clang::FunctionDecl const *>::const_iterator ci = functionDecls.begin(); ci != functionDecls.end(); ++ci)
+				pretty_print_decl(*ci, std::cout);
+		}
 
 		if (m_c.buildCfg)
 			build_program(ctx.getTranslationUnitDecl(), m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
@@ -142,20 +143,13 @@ public:
 			cfg_json_write(std::cout, prog, m_c.printJsonCfg == 1);
 		}
 
-		if (m_c.printAST)
-			print_ast(std::cout, ctx, functionDecls.begin(), functionDecls.end());
-
-		if (m_c.printRCFG)
-			print_rcfg(ctx, std::cout, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
-
 		if (m_c.printUnitAST)
-			print_decl(ctx.getTranslationUnitDecl(), std::cout, 0);
+			pretty_print_decl(ctx.getTranslationUnitDecl(), std::cout, 0);
 
 		if (m_c.debugCFG)
 		{
 			program prog = build_program(ctx.getTranslationUnitDecl(), m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 			prog.pretty_print(std::cerr);
-			//print_debug_rcfg(ctx, std::cerr, &ctx.getSourceManager(), functionDecls.begin(), functionDecls.end());
 		}
 	}
 
@@ -222,14 +216,10 @@ int main(int argc, char * argv[])
 			std::string arg = argv[i];
 			if (arg == "-a")
 				c.printReadableAST = true;
-			else if (arg == "-A")
-				c.printAST = true;
 			else if (arg == "-j")
 				c.printJsonCfg = 1;
 			else if (arg == "-J")
 				c.printJsonCfg = 2;
-			else if (arg == "-r")
-				c.printRCFG = true;
 			else if (arg == "-u")
 				c.printUnitAST = true;
 			else if (arg == "-c")
@@ -258,7 +248,7 @@ int main(int argc, char * argv[])
 		comp_inst.createDiagnostics(args.size(), (char **)&args[0]);
 		argDiagBuffer->FlushDiagnostics(comp_inst.getDiagnostics());
 
-		if (!c.printJsonCfg && !c.printReadableAST && !c.printAST && !c.debugCFG && !c.printUnitAST && !c.printRCFG && !c.buildCfg)
+		if (!c.printJsonCfg && !c.printReadableAST && !c.debugCFG && !c.printUnitAST && !c.buildCfg)
 			c.printReadableAST = true;
 
 		MyASTDumpAction act(c);

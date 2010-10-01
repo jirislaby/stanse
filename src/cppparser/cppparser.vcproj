@@ -187,19 +187,11 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\ast_dumper.cpp"
+			RelativePath=".\ast_pretty_printer.cpp"
 			>
 		</File>
 		<File
-			RelativePath=".\ast_dumper.hpp"
-			>
-		</File>
-		<File
-			RelativePath=".\ast_dumper_detail.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\ast_dumper_detail.hpp"
+			RelativePath=".\ast_pretty_printer.hpp"
 			>
 		</File>
 		<File
@@ -228,14 +220,6 @@
 		</File>
 		<File
 			RelativePath=".\main.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\rcfg_dumper.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\rcfg_dumper.hpp"
 			>
 		</File>
 		<File
