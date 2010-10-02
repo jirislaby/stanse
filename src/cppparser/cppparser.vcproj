@@ -230,10 +230,6 @@
 			RelativePath=".\util.hpp"
 			>
 		</File>
-		<File
-			RelativePath=".\xml_writer.hpp"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
