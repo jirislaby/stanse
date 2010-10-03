@@ -23,15 +23,32 @@ void unit_navigator::build(clang::DeclContext const * declctx)
 	{
 		clang::Decl * decl = *it;
 
-#ifndef NDEBUG
 		std::string name;
 		if (clang::NamedDecl const * nd = llvm::dyn_cast<clang::NamedDecl>(decl))
-			name = nd->getQualifiedNameAsString();
-#endif
+			name = make_decl_name(nd);
 
 		if (clang::NamespaceDecl * nsdecl = dyn_cast<clang::NamespaceDecl>(decl))
 		{
 			this->build(nsdecl);
+		}
+		else if (clang::CXXMethodDecl * fnDecl = dyn_cast<clang::CXXMethodDecl>(decl))
+		{
+			if (fnDecl->isDependentContext())
+				continue;
+			m_fns.insert(fnDecl);
+
+			if (fnDecl->isVirtual() && !fnDecl->isPure())
+			{
+				m_vfns.insert(std::make_pair("v:" + name, name));
+				m_vfn_param_count.insert(
+					std::make_pair("v:" + name, fnDecl->getNumParams() + fnDecl->isVariadic()));
+			}
+
+			for (clang::CXXMethodDecl::method_iterator it = fnDecl->begin_overridden_methods();
+				it != fnDecl->end_overridden_methods(); ++it)
+			{
+				m_vfns.insert(std::make_pair("v:" + make_decl_name(*it), name));
+			}
 		}
 		else if (clang::FunctionDecl * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
 		{

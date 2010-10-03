@@ -422,6 +422,9 @@ private:
 class program
 {
 public:
+	typedef std::multimap<std::string, std::string> vfn_map_type;
+	typedef std::map<std::string, std::size_t> vfn_param_counts_type;
+
 	void add_cfg(std::string const & name, cfg const & c)
 	{
 		m_cfgs.insert(std::make_pair(name, c));
@@ -434,9 +437,18 @@ public:
 
 	void pretty_print(std::ostream & out) const;
 
+	void vfn_map(vfn_map_type const & v) { m_vfn_map = v; }
+	vfn_map_type const & vfn_map() const { return m_vfn_map; }
+
+	void vfn_param_counts(vfn_param_counts_type const & v) { m_vfn_param_counts = v; }
+	vfn_param_counts_type const & vfn_param_counts() const { return m_vfn_param_counts; }
+
 private:
 	std::map<std::string, cfg> m_cfgs;
 	filename_store m_fnames;
+
+	vfn_map_type m_vfn_map;
+	vfn_param_counts_type m_vfn_param_counts;
 };
 
 #endif

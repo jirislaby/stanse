@@ -809,8 +809,12 @@ struct context
 					}
 
 					this->register_decl_ref(mdecl);
-					callee_op = eop(eot_func, this->get_name(mdecl));
 
+					std::string fnname = this->get_name(mdecl);
+					if (mdecl->isVirtual() && !mcallee->hasQualifier())
+						fnname = "v:" + fnname;
+
+					callee_op = eop(eot_func, fnname);
 					fntype = llvm::dyn_cast<clang::FunctionProtoType>(mdecl->getType().getTypePtr());
 				}
 				else if (clang::BinaryOperator const * callee = llvm::dyn_cast<clang::BinaryOperator>(e->getCallee()))

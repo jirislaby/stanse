@@ -48,6 +48,8 @@ program build_program(unit_navigator const & un, clang::SourceManager const & sm
 	Visitor visitor, std::string const & static_prefix)
 {
 	program res;
+	res.vfn_map(un.vfn_map());
+	res.vfn_param_counts(un.vfn_param_counts());
 	for (unit_navigator::fns_const_iterator it = un.fns_begin(); it != un.fns_end(); ++it)
 	{
 		clang::FunctionDecl const * fn = *it;

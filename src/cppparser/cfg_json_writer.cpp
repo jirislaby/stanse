@@ -168,6 +168,26 @@ private:
 			json_fnames[i] = Json::Value(prog.fnames()[i]);
 		json_prog["filenames"] = json_fnames;
 
+		Json::Value json_vfn_counts(Json::objectValue);
+		program::vfn_param_counts_type const & param_counts = prog.vfn_param_counts();
+		for (program::vfn_param_counts_type::const_iterator it = param_counts.begin();
+			it != param_counts.end(); ++it)
+		{
+			json_vfn_counts[it->first] = it->second;
+		}
+		json_prog["_vfn_param_counts"] = json_vfn_counts;
+
+		Json::Value json_vfn_map(Json::objectValue);
+		program::vfn_map_type const & vfn_map = prog.vfn_map();
+		for (program::vfn_map_type::const_iterator it = vfn_map.begin(); it != vfn_map.end(); ++it)
+		{
+			Json::Value & entry = json_vfn_map[it->first];
+			if (entry.type() != Json::arrayValue)
+				entry = Json::Value(Json::arrayValue);
+			entry.append(it->second);
+		}
+		json_prog["_vfn_map"] = json_vfn_map;
+
 		return json_prog;
 	}
 
