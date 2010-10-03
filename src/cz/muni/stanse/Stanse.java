@@ -66,12 +66,12 @@ public final class Stanse {
 
         getInstance().setVerbosityLevel(cmdLineManager.getVerbosityLevel());
 
+        if (cmdLineManager.getStanseHome() != null)
+            getInstance().rootDirectory = cmdLineManager.getStanseHome();
+
         buildConfiguration(cmdLineManager);
         setOutputDirectory(cmdLineManager);
         processDumping(cmdLineManager);
-
-        if (cmdLineManager.getStanseHome() != null)
-            getInstance().rootDirectory = cmdLineManager.getStanseHome();
 
         if (cmdLineManager.statsMode())
             processStats(cmdLineManager);

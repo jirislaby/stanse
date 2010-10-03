@@ -190,7 +190,7 @@ public class CFGNode {
 	this.operands.addAll(operands);
     }
 
-    public void addOperand(OperandType type, int id) {
+    public void addOperand(OperandType type, Object id) {
 	operands.add(new Operand(type, id));
     }
 

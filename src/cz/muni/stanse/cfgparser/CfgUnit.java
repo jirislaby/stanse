@@ -128,7 +128,7 @@ public final class CfgUnit extends Unit {
                 JSONArray jsonOp = jsonOps.getJSONArray(j);
                 String opType = jsonOp.getString(0);
                 Object opId;
-                if (opType == "node")
+                if (opType.equals("node"))
                     opId = nodes[jsonOp.getInt(1)];
                 else
                     opId = jsonOp.getString(1);
@@ -151,7 +151,7 @@ public final class CfgUnit extends Unit {
 
             if (node.getNodeType() == CFGNode.NodeType.exit) {
                 // Exit nodes must have at least one operand. The operand must be "const" and have an integer value.
-                if (node.getOperands().size() == 0 || node.getOperands().get(0).type != CFGNode.OperandType.constant)
+                if (node.getOperands().isEmpty() || node.getOperands().get(0).type != CFGNode.OperandType.constant)
                     throw new ParserException("Invalid exit node in the JSON-encoded CFG.");
                 int exitId = Integer.parseInt((String)node.getOperands().get(0).id);
                 if (exitId == 0)
