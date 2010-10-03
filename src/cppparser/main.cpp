@@ -3,7 +3,7 @@
 #include "cfg_json_writer.hpp"
 
 #include "ast_pretty_printer.hpp"
-#include "util.hpp"
+#include "unit_navigator.hpp"
 
 #include <clang/Lex/Preprocessor.h>
 #include <clang/Basic/SourceManager.h>
@@ -117,31 +117,22 @@ public:
 		}
 #endif
 
-		std::set<clang::FunctionDecl const *> functionDecls;
-		get_functions_from_declcontext(ctx.getTranslationUnitDecl(), functionDecls);
+		unit_navigator un(ctx.getTranslationUnitDecl());
 		if (!m_c.filter.empty())
-		{
-			std::set<clang::FunctionDecl const *> filtered;
-			for (std::set<clang::FunctionDecl const *>::const_iterator ci = functionDecls.begin(); ci != functionDecls.end(); ++ci)
-			{
-				if ((*ci)->getQualifiedNameAsString().substr(0, m_c.filter.size()) == m_c.filter)
-					filtered.insert(*ci);
-			}
-			functionDecls.swap(filtered);
-		}
+			un.filter(m_c.filter);
 
 		if (m_c.printReadableAST)
 		{
-			for (std::set<clang::FunctionDecl const *>::const_iterator ci = functionDecls.begin(); ci != functionDecls.end(); ++ci)
+			for (unit_navigator::fns_const_iterator ci = un.fns_begin(); ci != un.fns_end(); ++ci)
 				pretty_print_decl(*ci, std::cout);
 		}
 
 		if (m_c.buildCfg)
-			build_program(ctx.getTranslationUnitDecl(), m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
+			build_program(un, m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 
 		if (m_c.printJsonCfg)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
+			program prog = build_program(un, m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 			cfg_json_write(std::cout, prog, m_c.printJsonCfg == 1);
 		}
 
@@ -150,7 +141,7 @@ public:
 
 		if (m_c.debugCFG)
 		{
-			program prog = build_program(ctx.getTranslationUnitDecl(), m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
+			program prog = build_program(un, m_ci.getSourceManager(), cfg_build_visitor(m_ci, m_c), m_c.static_prefix);
 			prog.pretty_print(std::cerr);
 		}
 	}

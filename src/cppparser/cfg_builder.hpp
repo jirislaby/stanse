@@ -2,6 +2,7 @@
 #define CPPPARSER_CFG_BUILDER_HPP
 
 #include "cfg.hpp"
+#include "unit_navigator.hpp"
 #include "util.hpp"
 #include <clang/AST/Decl.h>
 #include <string>
@@ -43,17 +44,13 @@ void build_cfg(cfg & c, clang::FunctionDecl const * fn, clang::SourceManager con
 }
 
 template <typename Visitor>
-program build_program(clang::TranslationUnitDecl const * tu, clang::SourceManager const & sm,
+program build_program(unit_navigator const & un, clang::SourceManager const & sm,
 	Visitor visitor, std::string const & static_prefix)
 {
-	std::set<clang::FunctionDecl const *> unprocessedFunctions;
-	get_functions_from_declcontext(tu, unprocessedFunctions);
-
 	program res;
-	while (!unprocessedFunctions.empty())
+	for (unit_navigator::fns_const_iterator it = un.fns_begin(); it != un.fns_end(); ++it)
 	{
-		clang::FunctionDecl const * fn = *unprocessedFunctions.begin();
-		unprocessedFunctions.erase(unprocessedFunctions.begin());
+		clang::FunctionDecl const * fn = *it;
 
 		if (!fn->hasBody())
 			continue;
@@ -72,9 +69,10 @@ program build_program(clang::TranslationUnitDecl const * tu, clang::SourceManage
 	return res;
 }
 
-inline program build_program(clang::TranslationUnitDecl const * tu, clang::SourceManager const & sm, std::string const & static_prefix)
+inline program build_program(unit_navigator const & un,
+	clang::SourceManager const & sm, std::string const & static_prefix)
 {
-	return build_program(tu, sm, default_build_visitor(), static_prefix);
+	return build_program(un, sm, default_build_visitor(), static_prefix);
 }
 
 #endif

@@ -3,53 +3,6 @@
 #include <clang/AST/DeclTemplate.h>
 #include <boost/assert.hpp>
 
-void get_functions_from_declcontext(clang::DeclContext const * declctx, std::set<clang::FunctionDecl const *> & fns)
-{
-	for (clang::DeclContext::decl_iterator it = declctx->decls_begin(); it != declctx->decls_end(); ++it)
-	{
-		clang::Decl * decl = *it;
-
-#ifndef NDEBUG
-		std::string name;
-		if (clang::NamedDecl const * nd = llvm::dyn_cast<clang::NamedDecl>(decl))
-			name = nd->getQualifiedNameAsString();
-#endif
-
-		if (clang::NamespaceDecl * nsdecl = dyn_cast<clang::NamespaceDecl>(decl))
-		{
-			get_functions_from_declcontext(nsdecl, fns);
-		}
-		else if (clang::FunctionDecl * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
-		{
-			if (fnDecl->isDependentContext())
-				continue;
-			fns.insert(fnDecl);
-		}
-		else if (clang::RecordDecl const * classDecl = dyn_cast<clang::RecordDecl>(decl))
-		{
-			get_functions_from_declcontext(classDecl, fns);
-		}
-		else if (clang::FunctionTemplateDecl const * d = llvm::dyn_cast<clang::FunctionTemplateDecl>(decl))
-		{
-			for (clang::FunctionTemplateDecl::spec_iterator it = ((clang::FunctionTemplateDecl *)d)->spec_begin(); it != ((clang::FunctionTemplateDecl *)d)->spec_end(); ++it)
-			{
-				if ((*it)->isDependentContext())
-					continue;
-				fns.insert(*it);
-			}
-		}
-		else if (clang::ClassTemplateDecl const * d = llvm::dyn_cast<clang::ClassTemplateDecl>(decl))
-		{
-			for (clang::ClassTemplateDecl::spec_iterator it = ((clang::ClassTemplateDecl *)d)->spec_begin(); it != ((clang::ClassTemplateDecl *)d)->spec_end(); ++it)
-				get_functions_from_declcontext(*it, fns);
-		}
-		else if (clang::LinkageSpecDecl const * lsdecl = llvm::dyn_cast<clang::LinkageSpecDecl>(decl))
-		{
-			get_functions_from_declcontext(lsdecl, fns);
-		}
-	}
-}
-
 namespace {
 
 std::string make_declctx_name(clang::DeclContext const * declctx, std::string const & static_prefix)

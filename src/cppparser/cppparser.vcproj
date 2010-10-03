@@ -223,6 +223,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\unit_navigator.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\unit_navigator.hpp"
+			>
+		</File>
+		<File
 			RelativePath=".\util.cpp"
 			>
 		</File>
