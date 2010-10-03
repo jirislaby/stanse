@@ -161,14 +161,22 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                                        final java.util.Stack<CFGNode> context) {
         final Vector<CheckerErrorTraceLocation> trace =
                                         new Vector<CheckerErrorTraceLocation>();
-        for (final CFGNode node : context)
-            trace.add(new CheckerErrorTraceLocation(getNodeUnitName(node),
+        for (final CFGNode node : context) {
+            if (node.hasLocation()) {
+                trace.add(new CheckerErrorTraceLocation(getNodeUnitName(node),
                           node.getLine(),node.getColumn(),
                           "<context>When called from here."));
-        assert path.get(0).hasLocation();
-        trace.add(new CheckerErrorTraceLocation(getNodeUnitName(path.get(0)),
+            }
+        }
+
+        if (path.get(0).hasLocation()) {
+            trace.add(new CheckerErrorTraceLocation(getNodeUnitName(path.get(0)),
                                   path.get(0).getLine(),path.get(0).getColumn(),
                                   beginMsg));
+        } else {
+            trace.add(new CheckerErrorTraceLocation("", -1,-1, beginMsg));
+        }
+
         if (path.size() > 1) {
             for (CFGNode item : path.subList(1,path.size() - 1)) {
                 if (item.isVisible() && item.hasLocation()) {
@@ -179,13 +187,19 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
             }
         }
 
-        assert path.get(path.size() - 1).hasLocation();
-        trace.add(new CheckerErrorTraceLocation(
+        if (path.get(path.size() - 1).hasLocation()) {
+            trace.add(new CheckerErrorTraceLocation(
                         getNodeUnitName(path.get(path.size() - 1)),
                         path.get(path.size() - 1).getLine(),
                         path.get(path.size() - 1).getColumn(),
                         endMsg + getRule().getAutomatonID().getVarsAssignment()
                                           .toString()));
+        } else {
+            trace.add(new CheckerErrorTraceLocation("", -1, -1,
+                        endMsg + getRule().getAutomatonID().getVarsAssignment()
+                                          .toString()));
+        }
+
         return new CheckerErrorTrace(trace,
                        "error-trace [" + (getErrorTracesList().size()+1) + "]");
     }
