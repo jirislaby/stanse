@@ -64,7 +64,7 @@ program build_program(unit_navigator const & un, clang::SourceManager const & sm
 		build_cfg(c, fn, sm, res.fnames(), cfg_visitor, static_prefix);
 
 		visitor.function_completed(fnname, c);
-		res.cfgs().insert(std::make_pair(fnname, c));
+		res.add_cfg(fnname, c);
 	}
 	return res;
 }

@@ -422,30 +422,12 @@ private:
 class program
 {
 public:
-	program()
-	{
-		this->make_atom("");
-	}
-
-	std::size_t make_atom(std::string const & name)
-	{
-		std::map<std::string, std::size_t>::const_iterator it = atom_map.find(name);
-		if (it == atom_map.end())
-		{
-			it = atom_map.insert(std::make_pair(name, atoms.size())).first;
-			atoms.push_back(name);
-		}
-
-		return it->second;
-	}
-
 	void add_cfg(std::string const & name, cfg const & c)
 	{
 		m_cfgs.insert(std::make_pair(name, c));
 	}
 
 	std::map<std::string, cfg> const & cfgs() const { return m_cfgs; }
-	std::map<std::string, cfg> & cfgs() { return m_cfgs; }
 
 	filename_store const & fnames() const { return m_fnames; }
 	filename_store & fnames() { return m_fnames; }
@@ -453,9 +435,6 @@ public:
 	void pretty_print(std::ostream & out) const;
 
 private:
-	std::vector<std::string> atoms;
-	std::map<std::string, std::size_t> atom_map;
-
 	std::map<std::string, cfg> m_cfgs;
 	filename_store m_fnames;
 };
