@@ -79,7 +79,77 @@ public final class CfgUnit extends Unit {
             cfgs.add(parseCfg(key, cfg, filenames));
         }
 
+        if (jsonUnit.has("_vfn_map") && jsonUnit.has("_vfn_param_counts")) {
+            JSONObject vfn_param_counts = jsonUnit.getJSONObject("_vfn_param_counts");
+            JSONObject vfn_map = jsonUnit.getJSONObject("_vfn_map");
+
+            Iterator vfnMapIter = vfn_map.keys();
+            while (vfnMapIter.hasNext()) {
+                String key = (String)vfnMapIter.next();
+                JSONArray overrides = vfn_map.getJSONArray(key);
+                int paramCount = vfn_param_counts.getInt(key);
+
+                if (overrides.length() != 0)
+                    cfgs.add(lateBind(key, overrides, paramCount));
+            }
+        }
+
         return cfgs;
+    }
+
+    private static CFG lateBind(String cfgName, JSONArray overrides, int paramCount) throws JSONException {
+        assert overrides.length() != 0;
+
+        List<String> params = new ArrayList<String>();
+        Set<String> symbols = new HashSet<String>();
+        for (int j = 0; j < paramCount; ++j) {
+            String paramName = "p:" + Integer.toString(j);
+            params.add(paramName);
+            symbols.add(paramName);
+        }
+
+        Set<CFGNode> overrideCalls = new HashSet<CFGNode>();
+        for (int i = 0; i < overrides.length(); ++i) {
+            String overrideName = overrides.getString(i);
+
+            CFGNode overrideCall = new CFGNode();
+            overrideCall.setNodeType(CFGNode.NodeType.call);
+            overrideCall.addOperand(CFGNode.OperandType.function, overrideName);
+
+            for (int j = 0; j < paramCount; ++j)
+                overrideCall.addOperand(CFGNode.OperandType.varval, params.get(j));
+
+            overrideCalls.add(overrideCall);
+        }
+
+        CFGNode exit = new CFGNode();
+        exit.addOperand(CFGNode.OperandType.constant, "0");
+
+        CFG cfg;
+        if (overrides.length() == 1) {
+            CFGNode oc = overrideCalls.iterator().next();
+            exit.addOperand(CFGNode.OperandType.nodeval, oc);
+            oc.addEdge(exit);
+            cfg = new CFG(oc, exit, cfgName);
+        } else {
+            CFGNode entry = new CFGNode();
+            CFGNode phi = new CFGNode();
+            phi.setNodeType(CFGNode.NodeType.phi);
+            phi.addEdge(exit);
+
+            for (CFGNode oc : overrideCalls) {
+                entry.addEdge(oc);
+                oc.addEdge(phi);
+                phi.addOperand(CFGNode.OperandType.nodeval, oc);
+            }
+
+            cfg = new CFG(entry, exit, cfgName);
+        }
+
+        cfg.setParams(params);
+        cfg.setSymbols(symbols);
+
+        return cfg;
     }
 
     private static CFG parseCfg(String cfgName, JSONObject jsonCfg, File[] filenames) throws JSONException, ParserException {
