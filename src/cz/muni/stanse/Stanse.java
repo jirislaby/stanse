@@ -70,6 +70,9 @@ public final class Stanse {
         setOutputDirectory(cmdLineManager);
         processDumping(cmdLineManager);
 
+        if (cmdLineManager.getStanseHome() != null)
+            getInstance().rootDirectory = cmdLineManager.getStanseHome();
+
         if (cmdLineManager.statsMode())
             processStats(cmdLineManager);
         else
@@ -335,7 +338,7 @@ public final class Stanse {
     private static UnitManager unitManager = new UnitManagerLRU();
     private Configuration configuration;
     private String outputDirectory;
-    private final String rootDirectory;
+    private String rootDirectory;
     private VerbosityLevel verbosityLevel;
     private static Stanse stanse = null;
 }

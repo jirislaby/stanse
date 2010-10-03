@@ -199,7 +199,12 @@ final class CmdLineManager {
                     .describedAs("XMLdatabaseFile:" +
                                  "outputFile:OutputFormat")
                     .ofType(String.class);
-
+        stanseHome =
+              parser.accepts("home",
+                             "")
+                    .withRequiredArg()
+                    .describedAs("dir")
+                    .ofType(String.class);
         options = parser.parse(args);
 
         numArgs = args.length;
@@ -443,6 +448,10 @@ final class CmdLineManager {
         return Pair.make("GUI", value);
     }
 
+    public String getStanseHome() {
+        return getOptions().valueOf(stanseHome);
+    }
+
     // private section
 
     private OptionSet getOptions() {
@@ -485,6 +494,7 @@ final class CmdLineManager {
     private final OptionSpec<String> statsMerge;
     private final OptionSpec<String> statsPerformance;
     private final OptionSpec<String> statsReports;
+    private final OptionSpec<String> stanseHome;
     private final OptionSet options;
     private final int numArgs;
 }
