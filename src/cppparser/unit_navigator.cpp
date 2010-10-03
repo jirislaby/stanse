@@ -41,13 +41,15 @@ void unit_navigator::build(clang::DeclContext const * declctx)
 			{
 				m_vfns.insert(std::make_pair("v:" + name, name));
 				m_vfn_param_count.insert(
-					std::make_pair("v:" + name, fnDecl->getNumParams() + fnDecl->isVariadic()));
+					std::make_pair("v:" + name, 1 + fnDecl->getNumParams() + fnDecl->isVariadic()));
 			}
 
 			for (clang::CXXMethodDecl::method_iterator it = fnDecl->begin_overridden_methods();
 				it != fnDecl->end_overridden_methods(); ++it)
 			{
 				m_vfns.insert(std::make_pair("v:" + make_decl_name(*it), name));
+				m_vfn_param_count.insert(
+					std::make_pair("v:" + make_decl_name(*it), 1 + fnDecl->getNumParams() + fnDecl->isVariadic()));
 			}
 		}
 		else if (clang::FunctionDecl * fnDecl = dyn_cast<clang::FunctionDecl>(decl))
