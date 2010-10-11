@@ -39,9 +39,9 @@ public final class Configuration {
 	public void evaluate(final CheckerErrorReceiver receiver,
 			final CheckerProgressMonitor monitor,
 			final EvaluationStatistic statistic) {
-		final java.util.Vector<Integer> numCheckerCongfigs =
+		final java.util.Vector<Integer> numCheckerConfigs =
 			new java.util.Vector<Integer>();
-		numCheckerCongfigs.add(getCheckerConfigurations().size());
+		numCheckerConfigs.add(getCheckerConfigurations().size());
 		int threadID = 0;
 		for (final CheckerConfiguration checkerCfg : getCheckerConfigurations()) {
 			new MonitoredThread(new MonitorForThread(++threadID, monitor)) {
@@ -64,16 +64,16 @@ public final class Configuration {
 							new CheckingFailed(e.getMessage(),
 							getFailUnitName(checkerCfg)));
 						ClassLogger.error(Configuration.class,
-							"evalueate() failed :: when running configuration "
+							"evaluate() failed :: when running configuration "
 							+ checkerCfg.getCheckerClassName() + "arguments "
 							+ checkerCfg.getCheckerArgumentsList() + " this "
 							+ "exception arose:\n", e);
 					} finally {
 						synchronized (this.getClass()) {
-							assert (numCheckerCongfigs.get(0) > 0);
-							numCheckerCongfigs.set(0,
-								numCheckerCongfigs.firstElement() - 1);
-							if (numCheckerCongfigs.get(0) == 0) {
+							assert (numCheckerConfigs.get(0) > 0);
+							numCheckerConfigs.set(0,
+								numCheckerConfigs.firstElement() - 1);
+							if (numCheckerConfigs.get(0) == 0) {
 								receiver.onEnd();
 							}
 						}
@@ -104,7 +104,7 @@ public final class Configuration {
 				statistic.checkerEnd(new CheckingFailed(e.getMessage(),
 					getFailUnitName(checkerCfg)));
 				ClassLogger.error(Configuration.class,
-					"evalueateWait() failed :: when running configuration "
+					"evaluateWait() failed :: when running configuration "
 					+ checkerCfg.getCheckerClassName() + "arguments "
 					+ checkerCfg.getCheckerArgumentsList() + " this "
 					+ "exception arose:\n", e);
@@ -148,7 +148,7 @@ public final class Configuration {
 					}
 				} catch (final SourceCodeFilesException e) {
 					ClassLogger.error(Configuration.class,
-						"evalueate_EachUnitSeparately() failed :: "
+						"evaluate_EachUnitSeparately() failed :: "
 						+ "due to this exception:\n", e);
 				}
 				receiver.onEnd();
@@ -180,7 +180,7 @@ public final class Configuration {
 			}
 		} catch (final SourceCodeFilesException e) {
 			ClassLogger.error(Configuration.class,
-				"evalueateWait_EachUnitSeparately() failed :: "
+				"evaluateWait_EachUnitSeparately() failed :: "
 				+ "due to this exception:\n", e);
 		}
 		receiver.onEnd();
