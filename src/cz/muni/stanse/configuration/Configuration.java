@@ -37,6 +37,45 @@ public final class Configuration {
 		this.checkerConfigurations = checkerConfiguration;
 	}
 
+	private void runChecker(final CheckerErrorReceiver receiver,
+			final EvaluationStatistic statistic,
+			final Vector<Integer> numCheckerConfigs,
+			final CheckerConfiguration checkerCfg,
+			final MonitorForThread monitor) {
+		try {
+			statistic.internalsStart();
+			final LazyInternalStructures internals =
+				checkerCfg.isInterprocedural()
+				? getSourceConfiguration().getLazySourceInternals()
+				: getSourceConfiguration().getLazySourceIntraproceduralInternals();
+			statistic.internalsEnd();
+			statistic.checkerStart(checkerCfg.getChecker().getName());
+			final CheckingResult result =
+				checkerCfg.getChecker().check(internals, receiver, monitor);
+			statistic.checkerEnd(result);
+		} catch (final CheckerException e) {
+			statistic.checkerEnd(
+				new CheckingFailed(e.getMessage(),
+				getFailUnitName(checkerCfg)));
+			ClassLogger.error(Configuration.class,
+				"evaluate() failed :: when running configuration "
+				+ checkerCfg.getCheckerClassName() + "arguments "
+				+ checkerCfg.getCheckerArgumentsList() + " this "
+				+ "exception arose:\n", e);
+		} finally {
+			if (numCheckerConfigs != null) {
+				synchronized (this.getClass()) {
+					assert (numCheckerConfigs.get(0) > 0);
+					numCheckerConfigs.set(0,
+						numCheckerConfigs.firstElement() - 1);
+					if (numCheckerConfigs.get(0) == 0) {
+						receiver.onEnd();
+					}
+				}
+			}
+		}
+	}
+
 	public void evaluate(final CheckerErrorReceiver receiver,
 			final CheckerProgressMonitor monitor,
 			final EvaluationStatistic statistic) {
@@ -45,70 +84,21 @@ public final class Configuration {
 		int threadID = 0;
 		for (final CheckerConfiguration checkerCfg : getCheckerConfigurations()) {
 			new MonitoredThread(new MonitorForThread(++threadID, monitor)) {
-
 				@Override
 				public void run() {
-					try {
-						statistic.internalsStart();
-						final LazyInternalStructures internals =
-							checkerCfg.isInterprocedural()
-							? getSourceConfiguration().getLazySourceInternals()
-							: getSourceConfiguration().getLazySourceIntraproceduralInternals();
-						statistic.internalsEnd();
-						statistic.checkerStart(checkerCfg.getChecker().getName());
-						final CheckingResult result =
-							checkerCfg.getChecker().check(internals, receiver, getMonitor());
-						statistic.checkerEnd(result);
-					} catch (final CheckerException e) {
-						statistic.checkerEnd(
-							new CheckingFailed(e.getMessage(),
-							getFailUnitName(checkerCfg)));
-						ClassLogger.error(Configuration.class,
-							"evaluate() failed :: when running configuration "
-							+ checkerCfg.getCheckerClassName() + "arguments "
-							+ checkerCfg.getCheckerArgumentsList() + " this "
-							+ "exception arose:\n", e);
-					} finally {
-						synchronized (this.getClass()) {
-							assert (numCheckerConfigs.get(0) > 0);
-							numCheckerConfigs.set(0,
-								numCheckerConfigs.firstElement() - 1);
-							if (numCheckerConfigs.get(0) == 0) {
-								receiver.onEnd();
-							}
-						}
-					}
+					runChecker(receiver, statistic, numCheckerConfigs, checkerCfg, getMonitor());
 				}
 			}.start();
 		}
 	}
 
 	public void evaluateWait(final CheckerErrorReceiver receiver,
-			final CheckerProgressMonitor monitor,
-			final EvaluationStatistic statistic) {
+		final CheckerProgressMonitor monitor,
+		final EvaluationStatistic statistic) {
 		int threadID = 0;
 		for (final CheckerConfiguration checkerCfg : getCheckerConfigurations()) {
-			try {
-				statistic.internalsStart();
-				final LazyInternalStructures internals =
-					checkerCfg.isInterprocedural()
-					? getSourceConfiguration().getLazySourceInternals()
-					: getSourceConfiguration().getLazySourceIntraproceduralInternals();
-				statistic.internalsEnd();
-				statistic.checkerStart(checkerCfg.getChecker().getName());
-				final CheckingResult result =
-					checkerCfg.getChecker().check(internals, receiver,
-					new MonitorForThread(++threadID, monitor));
-				statistic.checkerEnd(result);
-			} catch (final CheckerException e) {
-				statistic.checkerEnd(new CheckingFailed(e.getMessage(),
-					getFailUnitName(checkerCfg)));
-				ClassLogger.error(Configuration.class,
-					"evaluateWait() failed :: when running configuration "
-					+ checkerCfg.getCheckerClassName() + "arguments "
-					+ checkerCfg.getCheckerArgumentsList() + " this "
-					+ "exception arose:\n", e);
-			}
+			runChecker(receiver, statistic, null, checkerCfg,
+				new MonitorForThread(++threadID, monitor));
 		}
 		receiver.onEnd();
 	}
@@ -127,31 +117,7 @@ public final class Configuration {
 		new java.lang.Thread() {
 			@Override
 			public void run() {
-				final CheckerErrorReceiver receiverWrapper =
-					new CheckerErrorReceiver() {
-
-						@Override
-						public void receive(final CheckerError error) {
-							receiver.receive(error);
-						}
-					};
-				try {
-					for (final String fileName : getSourceConfiguration().getSourceEnumerator().getSourceCodeFiles()) {
-						monitor.write("<-> File: " + fileName + "\n");
-						statistic.fileStart(fileName);
-						new Configuration(
-							new SourceConfiguration(new FileListEnumerator(
-							Make.linkedList(fileName))),
-							getCheckerConfigurations()).evaluateWait(receiverWrapper, monitor, statistic);
-						statistic.fileEnd();
-						monitor.write("<-> --------------------------------\n");
-					}
-				} catch (final SourceCodeFilesException e) {
-					ClassLogger.error(Configuration.class,
-						"evaluate_EachUnitSeparately() failed :: "
-						+ "due to this exception:\n", e);
-				}
-				receiver.onEnd();
+				evaluateWait_EachUnitSeparately(receiver, monitor, statistic);
 			}
 		}.start();
 	}
