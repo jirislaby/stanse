@@ -16,6 +16,7 @@ import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.msgformat.ColumnMessageFormatter;
 
 import java.util.List;
+import java.util.Vector;
 
 public final class Configuration {
 
@@ -39,8 +40,7 @@ public final class Configuration {
 	public void evaluate(final CheckerErrorReceiver receiver,
 			final CheckerProgressMonitor monitor,
 			final EvaluationStatistic statistic) {
-		final java.util.Vector<Integer> numCheckerConfigs =
-			new java.util.Vector<Integer>();
+		final Vector<Integer> numCheckerConfigs = new Vector<Integer>();
 		numCheckerConfigs.add(getCheckerConfigurations().size());
 		int threadID = 0;
 		for (final CheckerConfiguration checkerCfg : getCheckerConfigurations()) {
@@ -196,7 +196,7 @@ public final class Configuration {
 
 	public static SourceConfiguration createDefaultSourceConfiguration() {
 		return new SourceConfiguration(
-			new FileListEnumerator(new java.util.Vector<String>()));
+			new FileListEnumerator(new Vector<String>()));
 	}
 
 	public static List<CheckerConfiguration> createDefaultCheckerConfiguration() {
