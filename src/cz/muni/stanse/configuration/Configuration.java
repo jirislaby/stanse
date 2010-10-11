@@ -37,32 +37,6 @@ public final class Configuration {
         this.checkerConfigurations = checkerConfiguration;
     }
 
-    public void evaluate(final CheckerErrorReceiver receiver) {
-        evaluate(receiver,
-                 new CheckerProgressMonitor() {
-                    @Override
-                    public void write(final String s) {
-                    }
-                 },
-                 new DummyEvaluationStatistic());
-    }
-
-    public void evaluate(final CheckerErrorReceiver receiver,
-                         final CheckerProgressMonitor monitor) {
-        evaluate(receiver,monitor,new DummyEvaluationStatistic());
-    }
-
-    public void evaluate(final CheckerErrorReceiver receiver,
-                         final EvaluationStatistic statistic) {
-        evaluate(receiver,
-                 new CheckerProgressMonitor() {
-                    @Override
-                    public void write(final String s) {
-                    }
-                 },
-                 statistic);
-    }
-
     public void evaluate(final CheckerErrorReceiver receiver,
                          final CheckerProgressMonitor monitor,
                          final EvaluationStatistic statistic) {
@@ -111,32 +85,6 @@ public final class Configuration {
             }.start();
     }
 
-    public void evaluateWait(final CheckerErrorReceiver receiver) {
-        evaluateWait(receiver,
-                     new CheckerProgressMonitor() {
-                        @Override
-                        public void write(final String s) {
-                        }
-                     },
-                     new DummyEvaluationStatistic());
-    }
-
-    public void evaluateWait(final CheckerErrorReceiver receiver,
-                             final CheckerProgressMonitor monitor) {
-        evaluateWait(receiver,monitor,new DummyEvaluationStatistic());
-    }
-
-    public void evaluateWait(final CheckerErrorReceiver receiver,
-                             final EvaluationStatistic statistic) {
-        evaluateWait(receiver,
-                     new CheckerProgressMonitor() {
-                        @Override
-                        public void write(final String s) {
-                        }
-                     },
-                     statistic);
-    }
-
     public void evaluateWait(final CheckerErrorReceiver receiver,
                              final CheckerProgressMonitor monitor,
                              final EvaluationStatistic statistic) {
@@ -170,35 +118,10 @@ public final class Configuration {
 
     @Deprecated
     public void
-    evaluate_EachUnitSeparately(final CheckerErrorReceiver receiver) {
-        evaluate_EachUnitSeparately(receiver,
-                                     new CheckerProgressMonitor() {
-                                        @Override
-                                        public void write(final String s) {
-                                        }
-                                     },
-                                     new DummyEvaluationStatistic());
-    }
-
-    @Deprecated
-    public void
     evaluate_EachUnitSeparately(final CheckerErrorReceiver receiver,
                                 final CheckerProgressMonitor monitor) {
         evaluate_EachUnitSeparately(receiver,monitor,
                                     new DummyEvaluationStatistic());
-    }
-
-    @Deprecated
-    public void
-    evaluate_EachUnitSeparately(final CheckerErrorReceiver receiver,
-                                final EvaluationStatistic statistic) {
-        evaluate_EachUnitSeparately(receiver,
-                                    new CheckerProgressMonitor() {
-                                        @Override
-                                        public void write(final String s) {
-                                        }
-                                    },
-                                    statistic);
     }
 
     @Deprecated
@@ -239,39 +162,6 @@ public final class Configuration {
                 receiver.onEnd();
             }
         }.start();
-    }
-
-    @Deprecated
-    public void
-    evaluateWait_EachUnitSeparately(final CheckerErrorReceiver receiver) {
-        evaluateWait_EachUnitSeparately(receiver,
-                                        new CheckerProgressMonitor() {
-                                            @Override
-                                            public void write(final String s) {
-                                            }
-                                        },
-                                        new DummyEvaluationStatistic());
-    }
-
-    @Deprecated
-    public void
-    evaluateWait_EachUnitSeparately(final CheckerErrorReceiver receiver,
-                                    final CheckerProgressMonitor monitor) {
-        evaluateWait_EachUnitSeparately(receiver,monitor,
-                                        new DummyEvaluationStatistic());
-    }
-
-    @Deprecated
-    public void
-    evaluateWait_EachUnitSeparately(final CheckerErrorReceiver receiver,
-                                    final EvaluationStatistic statistic) {
-        evaluateWait_EachUnitSeparately(receiver,
-                                        new CheckerProgressMonitor() {
-                                            @Override
-                                            public void write(final String s) {
-                                            }
-                                        },
-                                        statistic);
     }
 
     @Deprecated
