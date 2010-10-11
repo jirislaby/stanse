@@ -68,7 +68,7 @@ print qq|:</p>\n|;
 print qq|<div style="font-size: 75%;"><em>The number before pipe is |,
 	qq|importance (the lower the better).</em></div>\n|;
 
-my $errors = $dbh->prepare("SELECT * FROM errors WHERE file LIKE ? ORDER BY checker,importance,error,file,line");
+my $errors = $dbh->prepare("SELECT * FROM errors WHERE file LIKE ? ORDER BY checker,importance,error,locations,file,line");
 $errors->execute($filter);
 
 my $checker = "";
