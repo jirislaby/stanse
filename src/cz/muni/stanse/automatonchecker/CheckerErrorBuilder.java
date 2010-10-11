@@ -21,6 +21,7 @@ import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckingResult;
 import cz.muni.stanse.checker.CheckingSuccess;
 import cz.muni.stanse.checker.CheckingFailed;
+import cz.muni.stanse.utils.Make;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.Map;
@@ -152,6 +153,15 @@ final class CheckerErrorBuilder {
                     if (traces.isEmpty())
                         continue;
 
+		    int min_size = Integer.MAX_VALUE;
+		    CheckerErrorTrace min_trace = null;
+		    for (final CheckerErrorTrace trace : traces) {
+			    if (trace.getLocations().size() >= min_size)
+				    continue;
+			    min_size = trace.getLocations().size();
+			    min_trace = trace;
+		    }
+
                     final String shortDesc = rule.getErrorDescription();
                     final String fullDesc
                             = "{" + automatonName + "} in function '"
@@ -165,7 +175,7 @@ final class CheckerErrorBuilder {
                        new CheckerError(shortDesc,fullDesc,
                                         rule.getErrorLevel() +
                                             creator.getTotalImportance(),
-                                        automatonName,traces));
+                                        automatonName, Make.linkedList(min_trace)));
                     ++numErrors;
                     monitor.note("*** error found: " + shortDesc);
                 }
