@@ -10,6 +10,17 @@ my $out = $ARGV[0];
 my $in = $ARGV[1];
 my $crop = @ARGV > 2 ? $ARGV[2] : "";
 
+if (-e $out) {
+	my $reply = "N";
+	do {
+		print "'$out' already exists, overwrite? [y/N] ";
+		$reply = uc(<STDIN>);
+		chomp($reply);
+	} while ($reply ne "Y" && $reply ne "N" && $reply ne "");
+	exit 1 if ($reply ne "Y");
+	unlink $out;
+}
+
 my $dbh = DBI->connect("dbi:SQLite:dbname=$out","","", {AutoCommit => 0}) ||
 	die "connect to db error: " . DBI::errstr;
 
