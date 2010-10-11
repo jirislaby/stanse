@@ -10,12 +10,17 @@ import cz.muni.stanse.checker.CheckingFailed;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
+import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.utils.Make;
 import cz.muni.stanse.utils.ClassLogger;
+import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.msgformat.ColumnMessageFormatter;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 public final class Configuration {
@@ -126,11 +131,12 @@ public final class Configuration {
 	public void evaluateWait_EachUnitSeparately(final CheckerErrorReceiver receiver,
 			final CheckerProgressMonitor monitor,
 			final EvaluationStatistic statistic) {
+		final List<CheckerError> unitErrors = new LinkedList<CheckerError>();
 		final CheckerErrorReceiver receiverWrapper =
 			new CheckerErrorReceiver() {
 				@Override
 				public void receive(final CheckerError error) {
-					receiver.receive(error);
+					unitErrors.add(error);
 				}
 			};
 		try {
@@ -141,8 +147,13 @@ public final class Configuration {
 					new SourceConfiguration(new FileListEnumerator(
 					Make.linkedList(fileName))),
 					getCheckerConfigurations()).evaluateWait(receiverWrapper, monitor, statistic);
+				int f = filterUnitErrors(unitErrors, receiver);
+				monitor.write("<-> " + Integer.toString(unitErrors.size()) +
+					" errors filtered down to " +
+					Integer.toString(f) + "\n");
 				statistic.fileEnd();
 				monitor.write("<-> --------------------------------\n");
+				unitErrors.clear();
 			}
 		} catch (final SourceCodeFilesException e) {
 			ClassLogger.error(Configuration.class,
@@ -150,6 +161,44 @@ public final class Configuration {
 				+ "due to this exception:\n", e);
 		}
 		receiver.onEnd();
+	}
+
+	private int filterUnitErrors(final List<CheckerError> unitErrors,
+			final CheckerErrorReceiver receiver) {
+		// final Map<Integer,Integer> errorCount = new HashMap<Integer, Integer>();
+		final Map<Pair<Integer, String>, CheckerError> uniq =
+			new HashMap<Pair<Integer, String>, CheckerError>();
+
+		for (CheckerError error : unitErrors) {
+			List<CheckerErrorTraceLocation> locs =
+				error.getTraces().get(0).getLocations();
+
+			CheckerErrorTraceLocation lastLoc = locs.get(locs.size() - 1);
+			Integer errorLine = lastLoc.getLineNumber();
+			Pair<Integer, String> uniqEntry = Pair.make(errorLine, lastLoc.getDescription());
+
+			/* we count only distinct errors below */
+			if (uniq.containsKey(uniqEntry)) {
+				CheckerError olderError = uniq.get(uniqEntry);
+				if (olderError.getTraces().get(0).getLocations().size()
+						> locs.size()) {
+					uniq.put(uniqEntry, error);
+				}
+				continue;
+			}
+
+			uniq.put(uniqEntry, error);
+			/* We don't count it yet, it should serve for "z-ranking"
+			Integer count = errorCount.get(errorLoc);
+			if (count == null)
+			errorCount.put(errorLoc, Integer.valueOf(1));
+			else
+			count++;
+			 */
+		}
+		for (CheckerError error : uniq.values())
+			receiver.receive(error);
+		return uniq.size();
 	}
 
 	public SourceConfiguration getSourceConfiguration() {
