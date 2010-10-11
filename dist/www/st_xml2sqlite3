@@ -29,7 +29,7 @@ my $croplen = length $crop;
 my $xp1 = XML::XPath->new();
 
 foreach my $error ($errors->get_nodelist) {
-	my ($loc) = $error->findnodes("traces/trace[1]/locations/location[1]");
+	my ($loc) = $error->findnodes("traces/trace[1]/locations/location[last()]");
 	my $unit = $loc->findvalue("unit");
 	if (substr($unit, 0, $croplen) eq $crop) {
 		$unit = substr($unit, $croplen);
