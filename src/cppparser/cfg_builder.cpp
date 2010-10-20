@@ -417,13 +417,13 @@ struct context
 			range_tag r = {};
 
 			clang::SourceRange sr = node.data->getSourceRange();
-			std::pair<clang::FileID, unsigned> locinfo = m_sm.getDecomposedInstantiationLoc(sr.getBegin());
-			r.fname = m_fnames.add(m_sm.getFileEntryForID(locinfo.first)->getName());
-			r.start_line = m_sm.getLineNumber(locinfo.first, locinfo.second);
-			r.start_col = m_sm.getColumnNumber(locinfo.first, locinfo.second);
-			locinfo = m_sm.getDecomposedInstantiationLoc(sr.getEnd());
-			r.end_line = m_sm.getLineNumber(locinfo.first, locinfo.second);
-			r.end_col = m_sm.getColumnNumber(locinfo.first, locinfo.second);
+			clang::PresumedLoc pl = m_sm.getPresumedLoc(sr.getBegin());
+			r.fname = m_fnames.add(pl.getFilename());
+			r.start_line = pl.getLine();
+			r.start_col = pl.getColumn();
+			pl = m_sm.getPresumedLoc(sr.getEnd());
+			r.end_line = pl.getLine();
+			r.end_col = pl.getColumn();
 
 			n.tags.insert(g.add_tag(r));
 		}
