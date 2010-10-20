@@ -130,7 +130,7 @@ private:
 					for (std::set<cfg::node_tag_ref>::const_iterator ci = node.tags.begin(); ci != node.tags.end(); ++ci)
 					{
 						std::size_t tagid = tag_map.insert(std::make_pair(*ci, tag_map.size())).first->second;
-						json_node[3].append(tagid);
+						json_node[3].append(Json::Int(tagid));
 					}
 				}
 
@@ -142,7 +142,10 @@ private:
 			Json::Value json_tags(Json::arrayValue);
 			json_tags.resize(tag_map.size());
 			for (std::map<cfg::node_tag_ref, std::size_t>::const_iterator ci = tag_map.begin(); ci != tag_map.end(); ++ci)
-				json_tags[ci->second] = c.tag(ci->first).apply_visitor(tag_visitor(*this));
+			{
+				tag_visitor v(*this);
+				json_tags[ci->second] = c.tag(ci->first).apply_visitor(v);
+			}
 			json_cfg["tags"] = json_tags;
 
 			json_cfg["params"] = Json::Value(Json::arrayValue);
@@ -173,7 +176,7 @@ private:
 		for (program::vfn_param_counts_type::const_iterator it = param_counts.begin();
 			it != param_counts.end(); ++it)
 		{
-			json_vfn_counts[it->first] = it->second;
+			json_vfn_counts[it->first] = Json::Int(it->second);
 		}
 		json_prog["_vfn_param_counts"] = json_vfn_counts;
 
@@ -207,7 +210,7 @@ private:
 
 			Json::Value res(Json::arrayValue);
 			res.append(Json::Value("source_range"));
-			res.append(t.fname);
+			res.append(Json::Int(t.fname));
 			res.append(t.start_line);
 			res.append(t.start_col);
 			res.append(t.end_line);

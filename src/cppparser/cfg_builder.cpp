@@ -1,7 +1,6 @@
 #include "cfg_builder.hpp"
 
 #include <boost/assert.hpp>
-#include <boost/range/algorithm/copy.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/utility.hpp>
 
@@ -1641,7 +1640,8 @@ struct context
 	void simplify()
 	{
 		std::vector<cfg::vertex_descriptor> unique_vertices;
-		boost::copy(vertices(g), std::back_inserter(unique_vertices));
+		std::pair<cfg::vertex_iterator, cfg::vertex_iterator> vertex_range = vertices(g);
+		std::copy(vertex_range.first, vertex_range.second, std::back_inserter(unique_vertices));
 
 		std::map<cfg::vertex_descriptor, cfg::vertex_descriptor> merges;
 		
