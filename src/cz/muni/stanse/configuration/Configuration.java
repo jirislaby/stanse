@@ -163,31 +163,60 @@ public final class Configuration {
 		receiver.onEnd();
 	}
 
+	private CheckerErrorTraceLocation getFirstRealLoc(
+			final List<CheckerErrorTraceLocation> locs) {
+		CheckerErrorTraceLocation loc;
+		int idx = 0;
+		do {
+			loc = locs.get(idx);
+			idx++;
+		} while (loc.getDescription().startsWith("<context>") &&
+			idx < locs.size());
+		return loc;
+	}
+
+	private boolean updateUniq(final Map<Pair<Integer, String>,
+			CheckerError> uniq, final CheckerErrorTraceLocation loc,
+			final CheckerError error, final int newSize) {
+		final Pair<Integer, String> uniqEntry =
+			Pair.make(loc.getLineNumber(),
+			loc.getDescription());
+		if (uniq.containsKey(uniqEntry)) {
+			final CheckerError olderError = uniq.get(uniqEntry);
+			if (olderError.getTraces().get(0).getLocations().size()
+					> newSize) {
+				uniq.put(uniqEntry, error);
+			}
+			return true;
+		}
+		uniq.put(uniqEntry, error);
+		return false;
+	}
+
 	private int filterUnitErrors(final List<CheckerError> unitErrors,
 			final CheckerErrorReceiver receiver) {
 		// final Map<Integer,Integer> errorCount = new HashMap<Integer, Integer>();
-		final Map<Pair<Integer, String>, CheckerError> uniq =
+		final Map<Pair<Integer, String>, CheckerError> uniqF =
+			new HashMap<Pair<Integer, String>, CheckerError>();
+		final Map<Pair<Integer, String>, CheckerError> uniqL =
 			new HashMap<Pair<Integer, String>, CheckerError>();
 
-		for (CheckerError error : unitErrors) {
-			List<CheckerErrorTraceLocation> locs =
+		for (final CheckerError error : unitErrors) {
+			final List<CheckerErrorTraceLocation> locs =
 				error.getTraces().get(0).getLocations();
 
-			CheckerErrorTraceLocation lastLoc = locs.get(locs.size() - 1);
-			Integer errorLine = lastLoc.getLineNumber();
-			Pair<Integer, String> uniqEntry = Pair.make(errorLine, lastLoc.getDescription());
+			final CheckerErrorTraceLocation firstLoc =
+				getFirstRealLoc(locs);
+			final CheckerErrorTraceLocation lastLoc =
+				locs.get(locs.size() - 1);
 
 			/* we count only distinct errors below */
-			if (uniq.containsKey(uniqEntry)) {
-				CheckerError olderError = uniq.get(uniqEntry);
-				if (olderError.getTraces().get(0).getLocations().size()
-						> locs.size()) {
-					uniq.put(uniqEntry, error);
-				}
-				continue;
-			}
+			boolean dupF = updateUniq(uniqF, firstLoc, error, locs.size());
+			boolean dupL = updateUniq(uniqL, lastLoc, error, locs.size());
 
-			uniq.put(uniqEntry, error);
+/*			if (!dupF && !dupL)
+				continue;*/
+
 			/* We don't count it yet, it should serve for "z-ranking"
 			Integer count = errorCount.get(errorLoc);
 			if (count == null)
@@ -196,9 +225,14 @@ public final class Configuration {
 			count++;
 			 */
 		}
-		for (CheckerError error : uniq.values())
-			receiver.receive(error);
-		return uniq.size();
+		int cnt = 0;
+		/* do intersection of minimums */
+		for (final CheckerError error : uniqL.values())
+			if (uniqF.containsValue(error)) {
+				receiver.receive(error);
+				cnt++;
+			}
+		return cnt;
 	}
 
 	public SourceConfiguration getSourceConfiguration() {
