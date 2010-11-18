@@ -4,14 +4,18 @@
 
 #include "GNUCaLexer.h"
 #include "GNUCaParser.h"
+#include "CFGEmitter.h"
 
 int main(int argc, char *argv[])
 {
 	pANTLR3_INPUT_STREAM input;
 	pANTLR3_COMMON_TOKEN_STREAM tstream;
+	pANTLR3_COMMON_TREE_NODE_STREAM tnstream;
 	GNUCaParser_translationUnit_return parseTree;
 	pGNUCaLexer lxr;
 	pGNUCaParser psr;
+	pCFGEmitter cfge;
+	pANTLR3_LIST cfg_list;
 	int ret = 1;
 
 	if (argc != 2)
@@ -36,10 +40,28 @@ int main(int argc, char *argv[])
 
 	parseTree = psr->translationUnit(psr);
 
-	puts((char *)parseTree.tree->toStringTree(parseTree.tree)->chars);
+//	puts((char *)parseTree.tree->toStringTree(parseTree.tree)->chars);
+
+	ret++;
+	tnstream = antlr3CommonTreeNodeStreamNewTree(parseTree.tree, ANTLR3_SIZE_HINT);
+	if (!tnstream)
+		goto err_psr;
+
+	ret++;
+	cfge = CFGEmitterNew(tnstream);
+	if (!cfge)
+		goto err_tnstream;
+
+	cfg_list = cfge->translationUnit(cfge);
 
 	ret = 0;
 
+	cfg_list->free(cfg_list);
+
+	cfge->free(cfge);
+err_tnstream:
+	tnstream->free(tnstream);
+err_psr:
 	psr->free(psr);
 err_tstream:
 	tstream->free(tstream);
