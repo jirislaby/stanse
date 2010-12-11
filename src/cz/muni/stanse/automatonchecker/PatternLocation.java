@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import cz.muni.stanse.codestructures.CFGNode;
+import java.util.Stack;
+import java.util.Vector;
 
 final class PatternLocation {
 
@@ -121,11 +123,11 @@ final class PatternLocation {
     private boolean wasProcessed(final AutomatonState state) {
         if (getProcessedAutomataStates().contains(state))
             return true;
-        final java.util.Stack<CFGNode> stateContext =
+        final Stack<CFGNode> stateContext =
                 AutomatonStateCFGcontextAlgo.getContext(state);
         for (final AutomatonState processedOne : getProcessedAutomataStates())
             if (processedOne.getSymbol().equals(state.getSymbol())) {
-                final java.util.Stack<CFGNode> processedOneContext =
+                final Stack<CFGNode> processedOneContext =
                     AutomatonStateCFGcontextAlgo.getContext(
                         processedOne.getContext());
                 AutomatonStateCFGcontextAlgo.firstIsSubcontextOfSecond(
@@ -177,10 +179,10 @@ final class PatternLocation {
     }
 
     private static void reduceStateSet(final HashSet<AutomatonState> set) {
-        final java.util.Vector<AutomatonState> stateVec =
-            new java.util.Vector<AutomatonState>();
-        final java.util.Vector<java.util.Stack<CFGNode>> contextVec =
-            new java.util.Vector<java.util.Stack<CFGNode>>();
+        final Vector<AutomatonState> stateVec =
+            new Vector<AutomatonState>();
+        final Vector<Stack<CFGNode>> contextVec =
+            new Vector<Stack<CFGNode>>();
         for (final AutomatonState state : set) {
             stateVec.add(state);
             contextVec.add(AutomatonStateCFGcontextAlgo
