@@ -23,6 +23,7 @@ import cz.muni.stanse.checker.CheckingSuccess;
 import cz.muni.stanse.checker.CheckingFailed;
 import cz.muni.stanse.utils.Make;
 import cz.muni.stanse.utils.Pair;
+import cz.muni.stanse.utils.TimeManager;
 
 import java.util.Map;
 import java.util.List;
@@ -65,12 +66,11 @@ final class CheckerErrorBuilder {
                    final String automatonName) {
         CheckingResult result = new CheckingSuccess();
         int numErrors = 0;
-        final long startTracingTime = System.currentTimeMillis();
+	final TimeManager tmgr = new TimeManager();
+	tmgr.measureStart();
         for (Pair<PatternLocation,PatternLocation> locationsPair :
                                                edgeLocationDictionary.values()){
-            final long tracingTime =
-                System.currentTimeMillis() - startTracingTime;
-            if (tracingTime > 60000)
+            if (tmgr.measureElapsed() > 60000000000L)
                 return result;
             if (locationsPair.getFirst() != null) {
                 final Pair<Integer,CheckingResult> locBuildResult =
@@ -115,14 +115,13 @@ final class CheckerErrorBuilder {
 
         CheckingResult result = new CheckingSuccess();
         int numErrors = 0;
-        final long startLocationTracingTime = System.currentTimeMillis();
+	final TimeManager tmgr = new TimeManager();
+	tmgr.measureStart();
         for (final ErrorRule rule : location.getErrorRules())
             for (final java.util.Stack<CFGNode> cfgContext :
                                 AutomatonStateCFGcontextAlgo.getContexts(
-                                        location.getProcessedAutomataStates())){
-                final long locationTracingTime =
-                    System.currentTimeMillis() - startLocationTracingTime;
-                if (locationTracingTime > 10000)
+                                        location.getProcessedAutomataStates())) {
+                if (tmgr.measureElapsed() > 10000000000L)
                     return Pair.make(numErrors,result);
                 if (rule.checkForError(AutomatonStateCFGcontextAlgo.
                             filterStatesByContext(

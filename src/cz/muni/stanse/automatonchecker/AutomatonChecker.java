@@ -22,6 +22,7 @@ import cz.muni.stanse.checker.CheckingFailed;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.ClassLogger;
+import cz.muni.stanse.utils.TimeManager;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -153,7 +154,8 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
             if (location.hasUnprocessedAutomataStates())
                 progressQueue.add(location);
         }
-        final long startFixPointComputationTime = System.currentTimeMillis();
+	final TimeManager tmgr = new TimeManager();
+        tmgr.measureStart();
         while (!progressQueue.isEmpty()) {
             final PatternLocation currentLocation = progressQueue.remove();
             if (!currentLocation.hasUnprocessedAutomataStates())
@@ -168,12 +170,9 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                     progressQueue.add(
                            currentLocation.getLocationForCallNotPassedStates());
             }
-            final long FixPointComputationTime =
-                    System.currentTimeMillis() - startFixPointComputationTime;
+            final long time = tmgr.measureElapsed() / 1000000000L;
 	    /* 60 s is hard limit, 10 s when there are many locations */
-            if (FixPointComputationTime > 60000 ||
-			(FixPointComputationTime > 10000 &&
-				nodeLocationDictionary.size() > 500)) {
+            if (time > 60 || (time > 10 && nodeLocationDictionary.size() > 500)) {
                 monitor.pushTab();
                 final String errMsg =
                     "*** FAILED: fix-point computation FAILED, " +
