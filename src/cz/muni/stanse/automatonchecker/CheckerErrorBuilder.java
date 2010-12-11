@@ -60,7 +60,7 @@ final class CheckerErrorBuilder {
                                                        edgeLocationDictionary,
                    final LazyInternalStructures internals,
                    final java.util.List<FalsePositivesDetector> detectors,
-                   final CheckerErrorReceiver errReciver,
+                   final CheckerErrorReceiver errReceiver,
                    final AutomatonCheckerLogger monitor,
                    final String automatonName) {
         CheckingResult result = new CheckingSuccess();
@@ -76,7 +76,7 @@ final class CheckerErrorBuilder {
                 final Pair<Integer,CheckingResult> locBuildResult =
                     buildErrorsInLocation(locationsPair.getFirst(),
                                           edgeLocationDictionary,internals,
-                                          detectors,errReciver,monitor,
+                                          detectors,errReceiver,monitor,
                                           automatonName);
                 numErrors += locBuildResult.getFirst();
                 if (result instanceof CheckingSuccess)
@@ -96,8 +96,8 @@ final class CheckerErrorBuilder {
             final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
                                                        edgeLocationDictionary,
             final LazyInternalStructures internals,
-            final java.util.List<FalsePositivesDetector> detectors,
-            final CheckerErrorReceiver errReciver,
+            final List<FalsePositivesDetector> detectors,
+            final CheckerErrorReceiver errReceiver,
             final AutomatonCheckerLogger monitor,
             final String automatonName) {
         final CallSiteDetector callDetector =
@@ -144,11 +144,11 @@ final class CheckerErrorBuilder {
                                 getLocationUnitName(location,internals));
 
                     // Next condition eliminates cyclic dependances of two
-                    // error locations (diferent). These locations have same
-                    // error rule and theirs methods checkForError() returns
+                    // (different) error locations. These locations have same
+                    // error rule and their checkForError() methods return
                     // true (so  they are both error locations). But their
-                    // cyclic dependancy disables to find starting nodes of
-                    // theirs error traces -> both error traces returned will
+                    // cyclic dependency disallows to find starting nodes of
+                    // their error traces -> both error traces returned will
                     // be empty.
                     if (traces.isEmpty())
                         continue;
@@ -171,7 +171,7 @@ final class CheckerErrorBuilder {
                             + "' "
                             + shortDesc
                             + " [traces: " + traces.size() + "]";
-                    errReciver.receive(
+                    errReceiver.receive(
                        new CheckerError(shortDesc,fullDesc,
                                         rule.getErrorLevel() +
                                             creator.getTotalImportance(),

@@ -132,7 +132,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     private CheckingResult
     check(final XMLAutomatonDefinition xmlAutomatonDefinition,
           final LazyInternalStructures internals,
-          final CheckerErrorReceiver errReciver,
+          final CheckerErrorReceiver errReceiver,
           final AutomatonCheckerLogger monitor)
           throws XMLAutomatonSyntaxErrorException {
         monitor.phaseLog("building pattern locations");
@@ -197,7 +197,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         monitor.pushTab();
         final CheckingResult result =
             CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,internals,
-                                               detectors,errReciver,monitor,
+                                               detectors,errReceiver,monitor,
                                                getName());
         monitor.popTab();
 
