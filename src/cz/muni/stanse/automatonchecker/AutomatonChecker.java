@@ -175,7 +175,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
             if (time > 60 || (time > 10 && nodeLocationDictionary.size() > 500)) {
                 monitor.pushTab();
                 final String errMsg =
-                    "*** FAILED: fix-point computation FAILED, " +
+                    "*** WARNING: fix-point computation TERMINATED " +
                     "because of timeout. Location set is extremely " +
                     "large: " + nodeLocationDictionary.size();
                 monitor.note(errMsg);
