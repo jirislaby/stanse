@@ -39,7 +39,7 @@ public class RAG {
     }
 
     /**
-     * Function analyse Cycle and tell, whether deadlock can happen.
+     * Analyses Cycle and tells, whether a deadlock may happen.
      * @param cycle Cycle representing assignment and requirement edges
      * @return CheckerError
      */

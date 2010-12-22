@@ -70,18 +70,18 @@ public class ThreadChecker extends Checker {
 
 
         //Parser somehow creates empty unit - prevent throwing expcetion
-        if(units.size()==1 && internals.getCFGHandles().isEmpty()) {
+        if (units.size()==1 && internals.getCFGHandles().isEmpty()) {
             return new CheckingSuccess();
         }
 
         startFunctions = settings.getStartFunctions();
 
 
-        this.analyseFunctions(startFunctions);
-        graphs = this.generateDependencyGraphs();
-        errors = this.findErrors(graphs);
+        analyseFunctions(startFunctions);
+        graphs = generateDependencyGraphs();
+        errors = findErrors(graphs);
 
-        if(errors.size()>0) {
+        if (errors.size() > 0) {
             logger.warn("\nError result in file:"+
                         units.iterator().next().getName()+"\n"+errors);
         }
@@ -96,19 +96,19 @@ public class ThreadChecker extends Checker {
     }
     
     /**
-     * Method pick startFunctions, create ThreadInfo instance which execute
+     * Method picks startFunctions, creates ThreadInfo instance which executes
      * CFG analysis on every of those threads.
      * @param startFunctions List<String> of function names
     */
-    private void analyseFunctions(List<String> startFunctions) {
+    private void analyseFunctions(final List<String> startFunctions) {
         CFGHandle cfg;
         ThreadInfo thread;
 
         logger.debug("Start functions are:"+startFunctions);
 
-        for(String functionName : startFunctions) {
+        for (final String functionName : startFunctions) {
             cfg = settings.getCFG(functionName);
-            if(cfg == null) {
+            if (cfg == null) {
                 logger.warn("Can't found CFG with startName "+functionName);
                 continue;
             }
@@ -123,7 +123,7 @@ public class ThreadChecker extends Checker {
      * @param graphs Set<DependencyGraph> of dependency graphs
      * @return List<CheckerErrors> founded errors
      */
-    private List<CheckerError> findErrors(Set<DependencyGraph> graphs){
+    private static List<CheckerError> findErrors(Set<DependencyGraph> graphs){
         List<CheckerError> errors = new Vector<CheckerError>();
         CheckerError error;
         DependencyCycleDetector detector
@@ -155,13 +155,13 @@ public class ThreadChecker extends Checker {
      */
     private Set<DependencyGraph> generateDependencyGraphs() {
             ThreadInfo thread;
-            Set<DependencyGraph> graphs = null;
+            Set<DependencyGraph> graphs;
             Iterator<ThreadInfo> it = settings.getThreads().iterator();
             if(!it.hasNext())
                 return new HashSet<DependencyGraph>();
 
             graphs = it.next().getDependencyGraphs();
-            for(;it.hasNext();) {
+            while (it.hasNext()) {
                 thread = it.next();
                 graphs = joinGraphs(graphs, thread.getDependencyGraphs());
             }
@@ -175,7 +175,7 @@ public class ThreadChecker extends Checker {
      * @param second Set<DependencyGraph>
      * @return Set<DependencyGraph>
      */
-    private Set<DependencyGraph> joinGraphs(Set<DependencyGraph> first,
+    private static Set<DependencyGraph> joinGraphs(Set<DependencyGraph> first,
                                                 Set<DependencyGraph> second) {
        Set<DependencyGraph> graphResult = new HashSet<DependencyGraph>();
        if(first.isEmpty())

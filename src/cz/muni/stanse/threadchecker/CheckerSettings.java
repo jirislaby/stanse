@@ -182,7 +182,7 @@ public class CheckerSettings {
     }
 
     /**
-     * Function insert new thread into Map threads by its function name.
+     * Function inserts new thread into thread Map by its function name.
      * @param thread ThreadInfo representing thread run
      */
     public void addThread(ThreadInfo thread) {
@@ -193,12 +193,12 @@ public class CheckerSettings {
     }
 
     /**
-     * Function tries to find thread which has function equals with arg name.
-     * @param name
-     * @return Thread or null if thread with this function isn't already in.
+     * Function tries to find thread which has function equal to name.
+     * @param name the name of function to find
+     * @return Thread or null if thread with this function isn't in yet.
      */
     public ThreadInfo getThread(String name) {
-        if(threads.containsKey(name)) {
+        if (threads.containsKey(name)) {
             return threads.get(name);
         }
         return null;
@@ -224,12 +224,12 @@ public class CheckerSettings {
     }
     
     /**
-     * Procedure add function to global Map of all functions.
-     * @param function
-     * @param cfg 
+     * Adds function to global Map of all functions.
+     * @param function Function to add
+     * @param cfg CFG of the function
      */
     public void addFunction(Function function, CFGHandle cfg) {
-        if(function == null) {
+        if (function == null) {
             throw new NullPointerException("Function is null");
         }
 
@@ -237,17 +237,16 @@ public class CheckerSettings {
         Element idNode;
         String functionName;
 
-        
-        idNode = (Element) definition.selectSingleNode(
+        idNode = (Element)definition.selectSingleNode(
                                         "./declarator/descendant-or-self::id");
-        if(idNode == null) {
+        if (idNode == null) {
             throw new NullPointerException("idNode is null");
         } else {
             functionName = idNode.getText();
         }
 
-        if(functions.containsKey(functionName)) {
-            logger.error("Function "+functionName+" already in set!");
+        if (functions.containsKey(functionName)) {
+            logger.error("Function "+functionName+" already in the set!");
         }
         function.setActualNode(new CFGNode());//insert an empty node
         functions.put(functionName, function);
@@ -257,12 +256,12 @@ public class CheckerSettings {
     /**
      * Function creates from all CFG Call graph and then it finds all functions,
      * which aren't callee in whole Unit.
-     * @return List<String> containg names of start functions.
+     * @return List of start function names.
      */
     private List<String> findStartFunctions() {
-        List<String> foundedStartFunctions = new Vector<String>();
+        List<String> foundStartFunctions = new Vector<String>();
         for (final CFGHandle cfg: getInternals().getStartFunctions())
-            foundedStartFunctions.add(cfg.getFunctionName());
-        return foundedStartFunctions;
+            foundStartFunctions.add(cfg.getFunctionName());
+        return foundStartFunctions;
     }
 }

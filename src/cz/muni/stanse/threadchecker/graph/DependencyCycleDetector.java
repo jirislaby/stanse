@@ -72,7 +72,7 @@ public class DependencyCycleDetector {
     }
 
     /**
-     * Function gets list of dependency rules and return list of simple cycles.
+     * Gets list of dependency rules and returns list of simple cycles.
      * @param rules List<AbstractDependencyRule> list of all rules in graph
      * @return List<Cycle> list of simple cycles.
      */
@@ -94,7 +94,7 @@ public class DependencyCycleDetector {
     }
 
     /**
-     * Function analyse strongly connected components and return simple cycles.
+     * Analyses strongly connected components and returns simple cycles.
      * @param cycle Set<ResourceVertex> Set of strongly connected components
      * @return List<Cycle> list of simple cycles.
      */
