@@ -275,7 +275,7 @@ public class CFGTransit {
             if(predecessor.getSuccessors().size()>1 && !startTrack.equals(node)
                     && !predecessor.equals(node)) {
                 data.getBackTrack().addLast(new BackTrack(
-                                node.getNumber(),node.getColumn(),node.getLine()
+                                node.getNumber(),node.getLine(),node.getColumn()
                                 ,"nothing important here - already locked: "
                                 +data.getLockStack(),function.getFileName()));
             } else {
