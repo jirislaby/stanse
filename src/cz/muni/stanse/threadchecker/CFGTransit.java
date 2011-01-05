@@ -291,20 +291,22 @@ public class CFGTransit {
 	 * @param node CFGNode contains Element describing source code
 	 * @param function Function with actual state of analysis
 	 */
-	public static void chooseAction(CFGNode node, Function function) {
-		Element element = node.getElement();
+	public static void chooseAction(final CFGNode node, final Function function) {
+		final Element element = node.getElement();
 		Element parameter;
-		String funcName;
-		List<XMLPattern> patterns = new Vector<XMLPattern>();
+		final List<XMLPattern> patterns = new Vector<XMLPattern>();
 		//Did match any pattern - now just try to find functionCalls
-		List<Node> functionCalls = (List<Node>) element.selectNodes(
+		final List<Node> functionCalls = (List<Node>) element.selectNodes(
 			"descendant-or-self::functionCall/id[1]");
 
-		for (Node functionId : functionCalls)
-			if (CFGTransit.patternMap.get(functionId.getText()) != null)
-				patterns.addAll(CFGTransit.patternMap.get(functionId.getText()));
+		for (final Node functionId : functionCalls) {
+			final List<XMLPattern> pats =
+				CFGTransit.patternMap.get(functionId.getText());
+			if (pats != null)
+				patterns.addAll(pats);
+		}
 
-		for (XMLPattern pattern : patterns) {
+		for (final XMLPattern pattern : patterns) {
 			final Pair<Boolean, XMLPatternVariablesAssignment> result =
 				pattern.matchesXMLElement(element);
 			if (result.getFirst().booleanValue()) {
@@ -331,9 +333,8 @@ public class CFGTransit {
 
 		//No match with patterns try analyse normal functions
 		for (int index = functionCalls.size() - 1; index >= 0; index--) {
-			if (!(functionCalls.get(index) instanceof Element)) {
+			if (!(functionCalls.get(index) instanceof Element))
 				continue;
-			}
 			parameter = (Element) functionCalls.get(index);
 			CodeAnalyzer.analyzeFunction(node, function, parameter);
 		}
