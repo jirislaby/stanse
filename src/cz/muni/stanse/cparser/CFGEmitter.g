@@ -52,15 +52,19 @@ import cz.muni.stanse.utils.Triple;
 	private static DocumentFactory xmlFactory =
 		DocumentFactory.getInstance();
 
-	private CFGPart createCFG(Element e) {
-		CFGPart cfg = new CFGPart();
-		CFGNode n = new CFGNode(e);
+	private CFGPart createCFG(final Element e, final String c) {
+		final CFGPart cfg = new CFGPart();
+		final CFGNode n = new CFGNode(e, c);
 		cfg.setStartNode(n);
 		cfg.setEndNode(n);
 		return cfg;
 	}
 
-	private void addSwitchDefaultAssert(CFGBranchNode branch,
+	private CFGPart createCFG(final Element e) {
+		return createCFG(e, null);
+	}
+
+	private void addSwitchDefaultAssert(CFGBranchNode branch, String code,
 			CFGNode breakNode, Element lineElem) {
 		CFGNode parent = branch;
 		boolean pin = false;
@@ -76,7 +80,7 @@ import cz.muni.stanse.utils.Triple;
 			cond.add(branch.getElement().createCopy());
 			cond.add(caseLabel.createCopy());
 			parent = CFGEvaluator.addAssert(parent, defaultLabel,
-					null, cond, true, lineElem);
+					null, cond, code + " == " + caseLabel.asXML(), true, lineElem);
 		}
 		if (pin)
 			parent.addEdge(breakNode);
@@ -187,7 +191,7 @@ initDeclarator returns [CFGPart g]
 	: ^(INIT_DECLARATOR declarator initializer?) {
 		if ($initializer.start != null) {
 			$g = new CFGPart();
-			$g.append(new CFGNode($initDeclarator.start.getElement()));
+			$g.append(new CFGNode($initDeclarator.start.getElement(), $initDeclarator.text));
 		}
 	}
 	;
@@ -413,7 +417,7 @@ selectionStatementIf returns [CFGPart g]
 }
 	: ^('if' expression {
 		evalExpr = CFGEvaluator.evaluateExpr(
-			$expression.start.getElement());
+			$expression.start.getElement(), $expression.text);
 	} s1=statement {
 		s1Last = $Function::lastStatement;
 	} s2=statement?) {
@@ -445,7 +449,7 @@ scope IterSwitch;
 	CFGBranchNode n;
 }
 	: ^('switch' expression {
-		n = new CFGBranchNode($expression.start.getElement());
+		n = new CFGBranchNode($expression.start.getElement(), $expression.text);
 	} statement) {
 		$g = new CFGPart();
 		$g.setStartNode(n);
@@ -454,8 +458,8 @@ scope IterSwitch;
 		for (Pair<Element, CFGNode> pair: $IterSwitch::cases) {
 			Element caseLabel = pair.getFirst();
 			if (caseLabel.getName().equals("default")) {
-				addSwitchDefaultAssert(n, pair.getSecond(),
-					caseLabel);
+				addSwitchDefaultAssert(n, $expression.text,
+					pair.getSecond(), caseLabel);
 			} else {
 				Element cond = xmlFactory.
 					createElement("binaryExpression").
@@ -463,13 +467,14 @@ scope IterSwitch;
 				cond.add(n.getElement().createCopy());
 				cond.add(caseLabel.createCopy());
 				CFGEvaluator.addAssert(n, caseLabel,
-						pair.getSecond(), cond, false,
-						caseLabel);
+					pair.getSecond(), cond,
+					$expression.text + " == " + caseLabel.asXML(),
+					false, caseLabel);
 			}
 		}
 		/* add default if not present */
 		if (!$IterSwitch::haveDefault)
-			addSwitchDefaultAssert(n, breakNode, n.getElement());
+			addSwitchDefaultAssert(n, null, breakNode, n.getElement());
 
 		/* backpatch break */
 		for (CFGBreakNode c: $IterSwitch::breaks)
@@ -505,7 +510,7 @@ scope IterSwitch;
 }
 	: ^('while' expression { /* to preserve sequential numbers */
 		evalExpr = CFGEvaluator.evaluateExpr(
-			$expression.start.getElement());
+			$expression.start.getElement(), $expression.text);
 	} statement) {
 		statementCFG = $statement.g;
 		breakNode = new CFGJoinNode();
@@ -525,6 +530,7 @@ scope IterSwitch;
 		$g.setEndNode(breakNode);
 		contNode = CFGEvaluator.evaluateExprConnect(
 				$expression.start.getElement(),
+				$expression.text,
 				statementCFG.getStartNode(), breakNode);
 		statementType = $statement.start.getType();
 	}
@@ -535,7 +541,8 @@ scope IterSwitch;
 		$g.setStartNode(n1);
 		$g.setEndNode(breakNode);
 		evalExpr = CFGEvaluator.evaluateExpr($e2.g == null ?
-			newEmptyStatement($f) : $e2.start.getElement());
+			newEmptyStatement($f) : $e2.start.getElement(),
+			$e2.g == null ? null : $e2.text);
 	} ^(E3 e3=expression?) statement) {
 		statementCFG = $statement.g;
 		n2 = ExprEvaluator.connect(evalExpr,
@@ -577,7 +584,7 @@ jumpStatement returns [CFGPart g]
 	;
 
 asmStatement returns [CFGPart g]
-	: ASM		{ $g = createCFG($asmStatement.start.getElement()); }	;
+	: ASM		{ $g = createCFG($asmStatement.start.getElement(), $asmStatement.text); }	;
 
 /* STATEMENTS END */
 
@@ -591,12 +598,12 @@ expression returns [CFGPart g]
 }
 @after {
 	if ($g == null)
-		$g = createCFG($expression.start.getElement());
+		$g = createCFG($expression.start.getElement(), $expression.text);
 }
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) { /*$g = $e2.g; do nothing so far XXX to be fixed */  }
 	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression) {
 		evalExpr = CFGEvaluator.evaluateExpr(
-			$e1.start.getElement());
+			$e1.start.getElement(), $e1.text);
 	} ^(E2 e2=expression?) {
 		if (e2 == null)
 			trueNode = new CFGNode($e1.start.getElement());

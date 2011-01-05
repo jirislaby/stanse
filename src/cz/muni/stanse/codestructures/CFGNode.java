@@ -19,6 +19,7 @@ import org.dom4j.Element;
 public class CFGNode {
     private int number;
     private Element element;
+    private String code;
     private List<CFGNode> preds = new ArrayList<CFGNode>();
     private List<CFGNode> succs = new ArrayList<CFGNode>();
     private List<CFGNode> optPreds = new ArrayList<CFGNode>();
@@ -29,6 +30,16 @@ public class CFGNode {
      */
     public CFGNode() {
 	number = CFGNodeNumber.getNext();
+    }
+
+    /**
+     * Creates a new instance of CFGNode
+     * @param e element to assign to this node
+     */
+    public CFGNode(Element e, String code) {
+	number = CFGNodeNumber.getNext();
+	element = e;
+	this.code = code;
     }
 
     /**
@@ -46,6 +57,14 @@ public class CFGNode {
      */
     public int getNumber() {
 	return number;
+    }
+
+    /**
+     * Get element corresponding to this node
+     * @return element
+     */
+    public String getCode() {
+	return code;
     }
 
     /**
@@ -233,6 +252,7 @@ public class CFGNode {
 	optSuccs.clear();
 	element.clearContent();
 	element = null;
+	code = null;
     }
 
     @Override

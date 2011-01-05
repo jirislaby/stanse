@@ -25,8 +25,17 @@ public class CFGBranchNode extends CFGNode {
      *
      * @param e element to assign to this node
      */
-    public CFGBranchNode(Element e) {
+    public CFGBranchNode(final Element e) {
 	super(e);
+    }
+
+    /**
+     * Creates an instance of the CFGBranchNode with assigned element
+     *
+     * @param e element to assign to this node
+     */
+    public CFGBranchNode(final Element e, final String c) {
+	super(e, c);
     }
 
     /**
