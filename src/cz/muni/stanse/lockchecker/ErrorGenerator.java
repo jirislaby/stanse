@@ -35,7 +35,6 @@ class ErrorGenerator {
 	private Map<String, Occurrences> occurrences = new HashMap<String, Occurrences>();
 	private Map<CFGNode, CFGHandle> dictionary;
 	private CFGNode startNode;
-	private State outputState;
 	private State startState;
 	// do we want to count flows or just occurrecnes
 	// if set to false we count number of nodes, if set to true we count also how many times the node is visited
@@ -78,7 +77,6 @@ class ErrorGenerator {
 		this.occurrences = summary.getVarOccurrences();
 		this.dictionary = summary.getDictionary();
 		this.startState = summary.getStartState();
-		this.outputState = summary.getOutputState();
 		this.startNode = summary.getStartNode();
 		this.countFlows = countFlows;
 		this.countPairs = countPairs;

@@ -327,17 +327,21 @@ public class CodeAnalyzer {
         }
 
         if(node.getName().equals("functionCall")) {
-            Node funcName = node.selectSingleNode("id[1]");
-            List<Node> paramsNodes = node.selectNodes("*[position()!=1]");
-            String params = "";
+            final Node funcName = node.selectSingleNode("id[1]");
+            final List<Node> paramsNodes = node.selectNodes("*[position()!=1]");
+            final StringBuilder fun = new StringBuilder(funcName.getText());
+	    boolean first = true;
 
-            if(!paramsNodes.isEmpty()) { //First argument is without comma
-                params = parseStringVariable(paramsNodes.get(0));
+	    fun.append('(');
+            for (final Node param : paramsNodes) {
+		    if (!first)
+			    fun.append(',');
+		    fun.append(parseStringVariable(param));
+		    first = false;
             }
-            for(int index=1; index < paramsNodes.size(); index++) {
-                params += ","+parseStringVariable(paramsNodes.get(index));
-            }
-            return funcName.getText()+"("+params+")";
+	    fun.append(')');
+
+            return fun.toString();
         }
 
         return null;

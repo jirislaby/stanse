@@ -154,9 +154,8 @@ public class Function implements Cloneable {
         }
     }
 
-    @Override
-    public Function clone() {
-      final Function clone = new Function(this);
-      return clone;
-    }
+	@Override
+	public Function clone() {
+		return new Function(this);
+	}
 }

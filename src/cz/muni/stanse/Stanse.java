@@ -76,7 +76,7 @@ public final class Stanse {
 	return stanse != null ? stanse : createSingleInstance();
     }
 
-    public Configuration getConfiguration() {
+    public synchronized Configuration getConfiguration() {
 	return configuration;
     }
 

@@ -63,8 +63,7 @@ final class AutomatonStateTransferManager {
             !AutomatonStateContextAlgo
                 .canPush(state.getContext(),from,transformedID))
             return null;
-        return (transformedID == null) ? null :
-                    new AutomatonState(state.getSymbol(),
+        return new AutomatonState(state.getSymbol(),
                             AutomatonStateContextAlgo.push(state.getContext(),
                                                            from,transformedID));
     }
