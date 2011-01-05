@@ -239,7 +239,7 @@ public class CFGTransit {
 	}
 
 	/**
-	 * Method determine, whether this node should be memorized in backTrack.
+	 * Determines, whether this node should be memorized in backTrack.
 	 * @param node Node which should be analyzed
 	 * @param function Function where CodeAnalyzer will insert all changes.
 	 * @param graphState represent state of analysed graph

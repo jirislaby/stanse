@@ -95,9 +95,9 @@ public class CodeAnalyzer {
 
 
     /**
-     * Function get callee's name and look up, whether it's already analysed,
-     * if not, function executes analyseCFG and results is stitched with caller.
-     * @param node CFGNode where function get Element
+     * Gets callee's name and looks up whether it's already analysed,
+     * if not, it executes analyseCFG and result is stitched with caller.
+     * @param node CFGNode where function gets an Element
      * @param caller Function which CFGNode represents callee's execution
      * @param parameter Element  where callee name is included.
      */
