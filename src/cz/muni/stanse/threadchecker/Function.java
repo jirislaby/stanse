@@ -85,13 +85,14 @@ public class Function implements Cloneable {
 
     @Override
     public String toString() {
-        String result = states.toString();
-        return result;
+        return states.toString();
     }
 
     public void join(Function other) {
-        logger.debug("Joining:\n\t"+this.getFunctionStates()+"\n and \n\t"
-                                                    +other.getFunctionStates());
+        logger.debug("Joining:\n\t(" + getActualNode().getNumber() + "): " +
+		getFunctionStates()+"\n and \n\t(" +
+		other.getActualNode().getNumber() + "): " +
+		other.getFunctionStates());
         for(FunctionState data : other.states) {
             if(!states.contains(data)) {
                 states.add(data);
