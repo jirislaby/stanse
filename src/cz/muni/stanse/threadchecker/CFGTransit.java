@@ -103,6 +103,7 @@ public class CFGTransit {
 		List<CFGNode> waitForNodes;
 		settings.addOnStack(cfg);
 		Function actualState = new Function(cfg);
+		Function exitState = new Function(cfg);
 		Function clonedState;
 		CFGNode actualNode;
 
@@ -114,6 +115,9 @@ public class CFGTransit {
 		while (!queue.isEmpty()) {
 			actualState = queue.poll();
 			actualNode = actualState.getActualNode();
+
+			if (actualNode.getElement().getName().equals("exit"))
+				exitState = actualState;
 
 			showProgress(actualState, graphState, queue);
 			if (graphState.getVisitedNodes().contains(actualNode))
@@ -154,9 +158,9 @@ public class CFGTransit {
 		}
 		settings.removeFromOnStack(cfg); //Remove cfg from Stack
 		logger.debug("\n===============");
-		logger.debug("CFG " + cfg.getFunctionName() + " result:\n" + actualState);
+		logger.debug("CFG " + cfg.getFunctionName() + " result:\n" + exitState);
 		logger.debug("===============\n");
-		return actualState;
+		return exitState;
 	}
 
 	/**
