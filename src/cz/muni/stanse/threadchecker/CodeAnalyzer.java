@@ -77,9 +77,9 @@ public class CodeAnalyzer {
         logger.info("Unlocking function detected - unlocking "+lockName);
 
         for(FunctionState data : function.getFunctionStates()) {
+            data.lockDown(lockName);
             description = "unlocking "+lockName
                                     + " - still locked: "+data.getLockStack();
-            data.lockDown(lockName);
 
             backTrackNode = data.getBackTrack().peekLast();
             if(backTrackNode.getCFGNodeID().equals(node.getNumber())) {
