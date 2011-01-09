@@ -32,7 +32,7 @@ public final class CppUnit extends Unit {
 
     public void parse() throws ParserException {
 	String command = Stanse.getInstance().getRootDirectory()
-		+ File.separator + "bin" + File.separator + "cppparser";
+		+ File.separator + "bin" + File.separator + "cpp2sir";
 	List<String> parserArgs = new ArrayList<String>();
 	parserArgs.add(command);
 	parserArgs.add("-J");
