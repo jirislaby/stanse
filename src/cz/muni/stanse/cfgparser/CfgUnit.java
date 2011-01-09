@@ -153,8 +153,8 @@ public final class CfgUnit extends Unit {
     }
 
     private static CFG parseCfg(String cfgName, JSONObject jsonCfg, File[] filenames) throws JSONException, ParserException {
-        // TODO: Do not ignore non-normal control flow paths
-        // (i.e. succs that have succ index other than 0).
+        // TODO: Teach automaton checker about exit indexes
+        // and remove dummy edges between exit nodes.
 
         JSONArray tags = jsonCfg.getJSONArray("tags");
 
@@ -175,6 +175,7 @@ public final class CfgUnit extends Unit {
 
         int entryNode = jsonCfg.getInt("entry");
         int exitNode = -1;
+        List<Integer> exitNodes = new ArrayList<Integer>();
 
         for (int i = 0; i < jsonNodes.length(); ++i)
             nodes[i] = new CFGNode();
@@ -188,8 +189,8 @@ public final class CfgUnit extends Unit {
             JSONArray jsonSuccs = jsonNode.getJSONArray(1);
             for (int j = 0; j < jsonSuccs.length(); ++j) {
                 JSONArray jsonSucc = jsonSuccs.getJSONArray(j);
-                if (jsonSucc.getInt(1) == 0)
-                    node.addEdge(nodes[jsonSucc.getInt(0)], jsonSucc.get(2));
+                if (jsonSucc.getInt(1) != 2)
+                    node.addEdge(nodes[jsonSucc.getInt(0)], jsonSucc.getInt(1), jsonSucc.get(2));
             }
 
             JSONArray jsonOps = jsonNode.getJSONArray(2);
@@ -221,17 +222,31 @@ public final class CfgUnit extends Unit {
 
             if (node.getNodeType() == CFGNode.NodeType.exit) {
                 // Exit nodes must have at least one operand. The operand must be "const" and have an integer value.
-                if (node.getOperands().isEmpty() || node.getOperands().get(0).type != CFGNode.OperandType.constant)
+                if (node.getOperands().isEmpty()
+                        || node.getOperands().get(0).type != CFGNode.OperandType.constant)
                     throw new ParserException("Invalid exit node in the JSON-encoded CFG.");
                 int exitId = Integer.parseInt((String)node.getOperands().get(0).id);
                 if (exitId == 0)
                     exitNode = i;
+                else
+                    exitNodes.add(i);
             }
         }
 
         // TODO: Maybe we should create a dummy exit node for now?
         if (exitNode < 0)
             throw new ParserException("No appropriate exit node found.");
+
+        // This adds a dummy edge from all non-zero exit nodes to exit node 0.
+        // This makes sure the automaton checker will correctly walk exception paths,
+        // even though it currently ignores path indexes.
+        for (Integer i : exitNodes) {
+            nodes[i].addEdge(nodes[exitNode]);
+
+            // Clear the node's source location
+            // so that the right brace does not show up twice.
+            nodes[i].setLocation(null, -1, -1);
+        }
 
         CFG cfg = new CFG(nodes[entryNode], nodes[exitNode], cfgName);
         cfg.setParams(params);
