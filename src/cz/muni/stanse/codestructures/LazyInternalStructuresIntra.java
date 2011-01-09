@@ -1,6 +1,7 @@
 package cz.muni.stanse.codestructures;
 
 import java.util.Collection;
+import java.util.Map;
 
 public final class LazyInternalStructuresIntra
 			extends LazyInternalStructures {

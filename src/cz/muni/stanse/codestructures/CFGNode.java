@@ -19,11 +19,34 @@ import org.dom4j.Element;
  * package)
  */
 public class CFGNode {
+
+    public static class EdgeLabel
+    {
+        public int edgeIndex = 0;
+        public Object cond = null;
+
+        EdgeLabel()
+        {
+        }
+
+        EdgeLabel(int edgeIndex, Object cond)
+        {
+            this.edgeIndex = edgeIndex;
+            this.cond = cond;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return "(" + Integer.toString(edgeIndex) + ", " + cond.toString() + ")";
+        }
+    }
+
     private int number;
     private Element element;
     private List<CFGNode> preds = new ArrayList<CFGNode>();
     private List<CFGNode> succs = new ArrayList<CFGNode>();
-    private List<Object> edgeLabels = new ArrayList<Object>();
+    private List<EdgeLabel> edgeLabels = new ArrayList<EdgeLabel>();
     private List<CFGNode> optPreds = new ArrayList<CFGNode>();
     private List<CFGNode> optSuccs = new ArrayList<CFGNode>();
 
@@ -56,6 +79,7 @@ public class CFGNode {
 	    this.id = id;
 	}
 
+        @Override
 	public String toString() {
 	    return type.toString() + " " + id.toString();
 	}
@@ -239,7 +263,7 @@ public class CFGNode {
      */
     public void addEdge(CFGNode to) {
 	succs.add(to);
-	edgeLabels.add(null);
+	edgeLabels.add(new EdgeLabel());
 	to.addPred(this);
     }
 
@@ -249,7 +273,17 @@ public class CFGNode {
      */
     public void addEdge(CFGNode to, Object label) {
         succs.add(to);
-        edgeLabels.add(label);
+        edgeLabels.add(new EdgeLabel(0, label));
+        to.addPred(this);
+    }
+
+    /**
+     * Adds an edge between two nodes
+     * @param to which node to add the edge to
+     */
+    public void addEdge(CFGNode to, int edgeIndex, Object label) {
+        succs.add(to);
+        edgeLabels.add(new EdgeLabel(edgeIndex, label));
         to.addPred(this);
     }
 

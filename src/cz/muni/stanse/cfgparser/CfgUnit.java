@@ -21,11 +21,12 @@ import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.codestructures.Unit;
+import java.util.HashMap;
 
 /**
  * Holds all the code-related data for JSON-encoded CFG files.
  */
-public final class CfgUnit extends Unit {
+public class CfgUnit extends Unit {
     public CfgUnit(List<String> args) {
         if (args.size() != 1)
             throw new IllegalArgumentException("JSON CFG parser accepts a single argument -- the name of the file to parse.");
@@ -39,7 +40,7 @@ public final class CfgUnit extends Unit {
             JSONTokener jsonTokener = new JSONTokener(r);
             JSONObject jsonUnit = new JSONObject(jsonTokener);
             r.close();
-            CFGs = parseUnit(this.fileName.getParentFile(), jsonUnit);
+            parseUnit(this.fileName.getParentFile(), jsonUnit);
         } catch (FileNotFoundException e) {
             throw new ParserException("Failed to open the input file.", e);
         } catch (JSONException e) {
@@ -47,14 +48,24 @@ public final class CfgUnit extends Unit {
         } catch (IOException e) {
             throw new ParserException("Failed to read the input file.", e);
         }
-
-        CFGHs = new ArrayList<CFGHandle>();
-        for (CFG cfg : CFGs)
-            CFGHs.add(new CFGHandle(this, cfg));
     }
 
-    public static List<CFG> parseUnit(File basePath, JSONObject jsonUnit) throws JSONException, ParserException {
+    public void parseUnit(File basePath, JSONObject jsonUnit) throws JSONException, ParserException {
         List<CFG> cfgs = new ArrayList<CFG>();
+
+        aliases = new HashMap<String, String>();
+        JSONObject jsonAliases = jsonUnit.optJSONObject("aliases");
+        if (jsonAliases != null)
+        {
+            Iterator aliasIterator = jsonAliases.keys();
+            while (aliasIterator.hasNext())
+            {
+                String aliasName = (String)aliasIterator.next();
+                JSONArray aliasList = jsonAliases.getJSONArray(aliasName);
+                if (aliasList.length() > 0)
+                    aliases.put(aliasName, aliasList.getString(0));
+            }
+        }
 
         File[] filenames = null;
         JSONArray jsonFilenames = jsonUnit.optJSONArray("filenames");
@@ -94,7 +105,10 @@ public final class CfgUnit extends Unit {
             }
         }
 
-        return cfgs;
+        CFGs = cfgs;
+        CFGHs = new ArrayList<CFGHandle>();
+        for (CFG cfg : CFGs)
+            CFGHs.add(new CFGHandle(this, cfg));
     }
 
     private static CFG lateBind(String cfgName, JSONArray overrides, int paramCount) throws JSONException {

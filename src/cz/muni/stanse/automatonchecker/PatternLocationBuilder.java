@@ -8,6 +8,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.codestructures.AliasResolver;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.traversal.CFGTraversal;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 final class PatternLocationBuilder {
 
@@ -28,6 +30,7 @@ final class PatternLocationBuilder {
 
     static HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
     buildPatternLocations(final Collection<CFGHandle> cfgs,
+                          final AliasResolver aliasResolver,
                           final XMLAutomatonDefinition automatonDefinition,
                           final ArgumentPassingManager passingManager,
                           final CFGsNavigator navigator,
@@ -43,6 +46,7 @@ final class PatternLocationBuilder {
     		final Pair<HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>,
                        HashSet<SimpleAutomatonID>> locationsAndStates =
                 buildPatternLocationsAndStatesForOneCFG(cfg,
+                        aliasResolver,
                         automatonDefinition, navigator,
                         startFunctions.contains(cfg));
     		nodeLocationDictionary.putAll(locationsAndStates.getFirst());
@@ -77,12 +81,13 @@ final class PatternLocationBuilder {
     private static Pair<HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>,
                         HashSet<SimpleAutomatonID>>
     buildPatternLocationsAndStatesForOneCFG(final CFGHandle cfg,
+                               final AliasResolver aliasResolver,
                                final XMLAutomatonDefinition automatonDefinition,
                                final CFGsNavigator navigator,
                                final boolean isStartFunction)
                                        throws XMLAutomatonSyntaxErrorException {
         final PatternLocationCreator patternLocationCreator =
-            new PatternLocationCreator(cfg, automatonDefinition,navigator);
+            new PatternLocationCreator(cfg, automatonDefinition,navigator, aliasResolver);
 
         final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
             nodeLocationsDictionary = CFGTraversal.traverseCFGToBreadthForward(

@@ -8,6 +8,7 @@
  */
 package cz.muni.stanse.utils.xmlpatterns;
 
+import cz.muni.stanse.codestructures.AliasResolver;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Pair;
 
@@ -76,10 +77,10 @@ public final class XMLPattern {
     }
 
     public Pair<Boolean,XMLPatternVariablesAssignment>
-    matchesNode(final CFGNode node) {
+    matchesNode(final CFGNode node, AliasResolver aliasResolver) {
 	Element xmlPivot = getPatternXMLelement();
         if (xmlPivot.getName().equals("node")) {
-            return matchesNode(node, getPatternXMLelement());
+            return matchesNode(node, getPatternXMLelement(), aliasResolver);
         } else if (node.getElement() != null)
             return matchesXMLElement(node.getElement());
         else
@@ -87,7 +88,7 @@ public final class XMLPattern {
     }
 
     private Pair<Boolean,XMLPatternVariablesAssignment>
-    matchesNode(final CFGNode node, Element xmlPivot) {
+    matchesNode(final CFGNode node, Element xmlPivot, AliasResolver aliasResolver) {
 	if (!node.getNodeType().toString().equals(xmlPivot.attributeValue("type")))
 	    return Pair.make(false, null);
 
@@ -115,23 +116,13 @@ public final class XMLPattern {
 		return Pair.make(false, null);
 
 	    if (op.type == CFGNode.OperandType.nodeval) {
-		Pair<Boolean, XMLPatternVariablesAssignment> nested = matchesNode((CFGNode)op.id, elem);
+		Pair<Boolean, XMLPatternVariablesAssignment> nested
+                        = matchesNode((CFGNode)op.id, elem, aliasResolver);
 		if (!nested.getFirst())
 		    return nested;
 		varsAssignment.merge(nested.getSecond());
 	    } else {
-		if (elem.getText().startsWith("r:"))
-		{
-		    String patternStr = elem.getText().substring(2);
-		    java.util.regex.Pattern pattern = compiledRegexes.get(patternStr);
-		    if (pattern == null) {
-			pattern = java.util.regex.Pattern.compile(patternStr);
-			compiledRegexes.put(patternStr, pattern);
-		    }
-		    if (!pattern.matcher(op.id.toString()).matches())
-			return Pair.make(false, null);
-		}
-		else if (!op.id.toString().equals(elem.getText()))
+		if (!aliasResolver.match(elem.getText(), op.id.toString()))
 		    return Pair.make(false, null);
 	    }
 	}

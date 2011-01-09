@@ -139,6 +139,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
             nodeLocationDictionary = PatternLocationBuilder
                    .buildPatternLocations(internals.getCFGHandles(),
+                                          internals.getAliasResolver(),
                                           xmlAutomatonDefinition,
                                           internals.getArgumentPassingManager(),
                                           internals.getNavigator(),

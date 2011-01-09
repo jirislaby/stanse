@@ -5,21 +5,21 @@
 
     <pattern name="lock">
         <node type="call">
-            <function>mutex::acquire()</function>
+            <function>mutex::acquire</function>
             <var name="P1"/>
         </node>
     </pattern>
 
     <pattern name="unlock">
         <node type="call">
-            <function>mutex::release()</function>
+            <function>mutex::release</function>
             <var name="P1"/>
         </node>
     </pattern>
 
     <pattern name="safe-unlock">
         <node type="call">
-            <function>mutex::~mutex()</function>
+            <function>mutex::~mutex</function>
             <var name="P1"/>
         </node>
     </pattern>
