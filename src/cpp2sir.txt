@@ -1,0 +1,5 @@
+The cpp2sir parser (originally known as cppparser) is now available
+as a separate project on github.[1] Download it, make a binary
+and copy it to the Stanse's dist/bin directory to enable C++ support.
+
+  [1]: https://github.com/avakar/cpp2sir
