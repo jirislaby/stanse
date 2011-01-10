@@ -7,13 +7,10 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
-import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.ArgumentPassingManager;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.CFGsNavigator;
-import cz.muni.stanse.props.Properties.VerbosityLevel;
-
 
 /**
  * Class used to build summaries
@@ -137,8 +134,7 @@ class SummariesBuilder {
 		if(output == null)
 			output = originalStartState;
 		summary.setOutputState(output);	
-		if(Stanse.getInstance().getVerbosityLevel().equals(VerbosityLevel.HIGH))
-			printCfgStates(dictionary.get(startNode).getFunctionName(), startState, summary.getOutputState(), cfgStates);
+		printCfgStates(dictionary.get(startNode).getFunctionName(), startState, summary.getOutputState(), cfgStates);
 		return summary;
 	}
 
@@ -151,16 +147,13 @@ class SummariesBuilder {
 	 * @param cfgStates
 	 */
 	private static void printCfgStates(String functionName, State startState, State endState, CFGStates cfgStates) {
-		StringBuilder sb = new StringBuilder("/////////////////////////////////////////////");
-		sb.append("\n");
-		sb.append("/////////////////////////////////////////////");
-		sb.append("\n");
-		sb.append("Function " + functionName + " CFG states");
-		sb.append("\n");
-		sb.append("Function entered in state: " + startState);
-		sb.append("\n");
-		sb.append("Function left in state: " + endState);
-		sb.append("\n");
+		if (!logger.isDebugEnabled())
+			return;
+		final StringBuilder sb = new StringBuilder("/////////////////////////////////////////////\n");
+		sb.append("/////////////////////////////////////////////\n");
+		sb.append("Function ").append(functionName).append(" CFG states\n");
+		sb.append("Function entered in state: ").append(startState).append('\n');
+		sb.append("Function left in state: ").append(endState).append('\n');
 		sb.append(cfgStates);
 		logger.info(sb.toString());
 	}	

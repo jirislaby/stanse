@@ -2,7 +2,6 @@ package cz.muni.stanse.lockchecker;
 
 import org.apache.log4j.Logger;
 
-import cz.muni.stanse.Stanse;
 import cz.muni.stanse.checker.Checker;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerException;
@@ -11,8 +10,6 @@ import cz.muni.stanse.checker.CheckingResult;
 import cz.muni.stanse.checker.CheckingSuccess;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
-import cz.muni.stanse.props.Properties.VerbosityLevel;
-
 
 /**
  * Lock Checker class used to find possible locking errors
@@ -74,8 +71,7 @@ public class LockChecker extends Checker {
     	
     	filter.generateErrors(errReciver);
     	
-    	if(Stanse.getInstance().getVerbosityLevel().equals(VerbosityLevel.HIGH))
-    		logger.info(sum);
+	logger.debug(sum);
     	
         return new CheckingSuccess();
     }    

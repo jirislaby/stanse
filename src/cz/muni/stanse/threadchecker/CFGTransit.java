@@ -1,9 +1,7 @@
 package cz.muni.stanse.threadchecker;
 
-import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
-import cz.muni.stanse.props.Properties.VerbosityLevel;
 import cz.muni.stanse.threadchecker.graph.CFGGraphState;
 import cz.muni.stanse.threadchecker.locks.BackTrack;
 import cz.muni.stanse.utils.Pair;
@@ -18,7 +16,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
@@ -55,8 +52,6 @@ public class CFGTransit {
 	private static CheckerSettings settings = CheckerSettings.getInstance();
 	private static Map<String, List<XMLPattern>> patternMap =
 		new HashMap<String, List<XMLPattern>>();
-	private static VerbosityLevel verbLevel =
-		Stanse.getInstance().getVerbosityLevel();
 
 	/*
 	 * This static code fills patterMap with function names for faster searching
@@ -107,9 +102,9 @@ public class CFGTransit {
 		Function clonedState;
 		CFGNode actualNode;
 
-		logger.info("\n===============");
+		logger.info("===============");
 		logger.info("Analyzing CFG: " + cfg.getFunctionName());
-		logger.info("===============\n");
+		logger.info("===============");
 		queue.add(actualState);
 
 		while (!queue.isEmpty()) {
@@ -157,9 +152,9 @@ public class CFGTransit {
 			}
 		}
 		settings.removeFromOnStack(cfg); //Remove cfg from Stack
-		logger.debug("\n===============");
+		logger.debug("===============");
 		logger.debug("CFG " + cfg.getFunctionName() + " result:\n" + exitState);
-		logger.debug("===============\n");
+		logger.debug("===============");
 		return exitState;
 	}
 
@@ -223,10 +218,9 @@ public class CFGTransit {
 	 */
 	private static void showProgress(Function function,
 		CFGGraphState graphState, LinkedList<Function> queue) {
-		if ((!logger.isEnabledFor(Priority.DEBUG))
-			|| (!verbLevel.equals(VerbosityLevel.HIGH))) {
+		if (!logger.isDebugEnabled())
 			return;
-		}
+
 		CFGNode actualNode = function.getActualNode();
 		StringBuilder result = new StringBuilder("Actual:");
 		result.append(actualNode.getNumber()).

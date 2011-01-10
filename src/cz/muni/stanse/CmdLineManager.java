@@ -18,6 +18,7 @@ import static java.util.Arrays.asList;
 import joptsimple.OptionParser;
 import joptsimple.OptionSpec;
 import joptsimple.OptionSet;
+import org.apache.log4j.Level;
 
 final class CmdLineManager {
 
@@ -248,20 +249,23 @@ final class CmdLineManager {
                                              null;
     }
 
-    cz.muni.stanse.props.Properties.VerbosityLevel getVerbosityLevel() {
-        if (!getOptions().has(debugLevel))
-            return cz.muni.stanse.props.Properties.VerbosityLevel.LOW;
-        switch (getOptions().valueOf(debugLevel)) {
-            case 0:return cz.muni.stanse.props.Properties.VerbosityLevel.SILENT;
-            case 1:return cz.muni.stanse.props.Properties.VerbosityLevel.LOW;
-            case 2:return cz.muni.stanse.props.Properties.VerbosityLevel.MIDDLE;
-            case 3:return cz.muni.stanse.props.Properties.VerbosityLevel.HIGH;
-            default:
-                System.err.println("Illegal verbosity level. Falling " +
-                                   "back to default - 1");
-                return cz.muni.stanse.props.Properties.VerbosityLevel.LOW;
-        }
-    }
+	Level getVerbosityLevel() {
+		if (!getOptions().has(debugLevel))
+			return Level.INFO;
+		switch (getOptions().valueOf(debugLevel)) {
+		case 0:
+			return Level.ERROR;
+		case 1:
+			return Level.WARN;
+		default:
+			System.err.println("Illegal verbosity level. Falling "
+				+ "back to the default - 2");
+		case 2:
+			return Level.INFO;
+		case 3:
+			return Level.DEBUG;
+		}
+	}
 
     boolean infoMode() {
         return numArgs == 0 || getOptions().has(help)

@@ -135,23 +135,27 @@ public class Function implements Cloneable {
             }
         }
 
-        for(int i = 0; i < getFunctionStates().size(); i++) {
-            if(i == markedIndex)
-                continue;
-            if(selectedState.isSubset(getFunctionStates().get(i))) {
-                toRemove.add(getFunctionStates().get(i));
-            }
-        }
+	    for (int i = 0; i < getFunctionStates().size(); i++) {
+		    if (i == markedIndex)
+			    continue;
+		    if (selectedState.isSubset(getFunctionStates().get(i)))
+			    toRemove.add(getFunctionStates().get(i));
+	    }
 
-        logger.info("Merging:");
-        for(FunctionState state : getFunctionStates()) {
-            logger.info("\t"+state.toString());
-        }
-        getFunctionStates().removeAll(toRemove);
-        logger.info("To this:");
-        for(FunctionState state : getFunctionStates()) {
-            logger.info("\t"+state.toString());
-        }
+	    if (logger.isDebugEnabled()) {
+		    logger.debug("Merging:");
+		    for (final FunctionState state : getFunctionStates())
+			    logger.debug("\t" + state.toString());
+	    }
+
+	    getFunctionStates().removeAll(toRemove);
+
+	    if (logger.isDebugEnabled()) {
+		    logger.debug("To this:");
+		    for (final FunctionState state : getFunctionStates()) {
+			    logger.debug("\t" + state.toString());
+		    }
+	    }
     }
 
 	@Override

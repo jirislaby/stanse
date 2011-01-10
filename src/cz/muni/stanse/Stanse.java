@@ -16,7 +16,6 @@ import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.UnitManager;
 import cz.muni.stanse.codestructures.UnitManagerLRU;
 import cz.muni.stanse.gui.MainWindow;
-import cz.muni.stanse.props.Properties.VerbosityLevel;
 import cz.muni.stanse.statistics.CheckerErrorsGuiTracing;
 import cz.muni.stanse.statistics.ErrorMessagesStatsBuilder;
 import cz.muni.stanse.statistics.MergeDocuments;
@@ -33,6 +32,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import joptsimple.OptionException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * Class containing the main() method. Not supposed to be instantiated.
@@ -100,13 +101,9 @@ public final class Stanse {
 	outputDirectory = dir;
     }
 
-    public VerbosityLevel getVerbosityLevel() {
-	return verbosityLevel;
-    }
-
-    public void setVerbosityLevel(final VerbosityLevel level) {
-	verbosityLevel = level;
-    }
+	public void setVerbosityLevel(final Level level) {
+		Logger.getRootLogger().setLevel(level);
+	}
 
     public synchronized void dumpAST() {
 	assert(getConfiguration() != null);
@@ -167,7 +164,6 @@ public final class Stanse {
 	configuration = null;
 	outputDirectory = ".";
 	rootDirectory = buildRootDirectory();
-	verbosityLevel = VerbosityLevel.LOW;
     }
 
     private static synchronized Stanse createSingleInstance() {
@@ -360,6 +356,5 @@ public final class Stanse {
     private Configuration configuration;
     private String outputDirectory;
     private final String rootDirectory;
-    private VerbosityLevel verbosityLevel;
     private static Stanse stanse = null;
 }

@@ -104,12 +104,12 @@ public class ThreadChecker extends Checker {
         CFGHandle cfg;
         ThreadInfo thread;
 
-        logger.debug("Start functions are:"+startFunctions);
+        logger.debug("Start functions are: " + startFunctions);
 
         for (final String functionName : startFunctions) {
             cfg = settings.getCFG(functionName);
             if (cfg == null) {
-                logger.warn("Can't found CFG with startName "+functionName);
+                logger.error("Can't find CFG with startName " + functionName);
                 continue;
             }
             thread = new ThreadInfo(cfg);
