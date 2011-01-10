@@ -33,6 +33,7 @@ public class ThreadChecker extends Checker {
     private final static Logger logger =
                                 Logger.getLogger(ThreadChecker.class.getName());
     private static CheckerSettings settings = CheckerSettings.getInstance();
+    private CheckerProgressMonitor monitor;
 
     /**
      * Function pick choose starting CFG and build their dependency graphs, then
@@ -53,6 +54,9 @@ public class ThreadChecker extends Checker {
         Set<DependencyGraph> graphs = null;
         List<String> startFunctions;
 
+	this.monitor = monitor;
+
+	monitor.write("Parsing");
         settings.setInternals(internals);
 
         Collection<Unit> units = internals.getUnits();
@@ -65,7 +69,7 @@ public class ThreadChecker extends Checker {
 //            settings.addAllCFGs(unit);
 //            Utils.showGraph(unit);
 //        }
-        
+
         settings.addAllCFGs();
 
 
@@ -74,19 +78,22 @@ public class ThreadChecker extends Checker {
             return new CheckingSuccess();
         }
 
+	monitor.write("Collecting starting functions");
         startFunctions = settings.getStartFunctions();
-
-
+	monitor.write("Analysing starting functions");
         analyseFunctions(startFunctions);
+	monitor.write("Generating dependency graphs");
         graphs = generateDependencyGraphs();
-        errors = findErrors(graphs);
+	monitor.write("Finding errors");
+        errors = findErrors(graphs, getMonitor());
 
         if (errors.size() > 0) {
-            logger.warn("\nError result in file:"+
+            monitor.write("Error result in file: " +
                         units.iterator().next().getName()+"\n"+errors);
         }
         Collections.sort(errors);
 
+	monitor.write("Reporting errors");
         for (final CheckerError err : errors)
             errReceiver.receive(err);
 
@@ -112,7 +119,7 @@ public class ThreadChecker extends Checker {
                 logger.error("Can't find CFG with startName " + functionName);
                 continue;
             }
-            thread = new ThreadInfo(cfg);
+            thread = new ThreadInfo(cfg, getMonitor());
             settings.addThread(thread);
         }
     }
@@ -123,7 +130,8 @@ public class ThreadChecker extends Checker {
      * @param graphs Set<DependencyGraph> of dependency graphs
      * @return List<CheckerErrors> founded errors
      */
-    private static List<CheckerError> findErrors(Set<DependencyGraph> graphs){
+    private static List<CheckerError> findErrors(Set<DependencyGraph> graphs,
+	    final CheckerProgressMonitor mon) {
         List<CheckerError> errors = new Vector<CheckerError>();
         CheckerError error;
         DependencyCycleDetector detector
@@ -135,13 +143,13 @@ public class ThreadChecker extends Checker {
         if(graphs == null)
             return errors;
 
-        logger.info("Graph:\n"+graphs);
+        mon.write("Graph:\n\t" + graphs);
         Utils.showDependencyGraphs(graphs);
         for(DependencyGraph rules : graphs) {
             cycles.addAll(detector.detect(rules));
         }
         for(Cycle cycle : cycles) {
-            logger.info("Cycle detected:"+cycle);
+            mon.write("Cycle detected: " + cycle);
             error = rag.detectDeadlock(cycle);
             errors.add(error);
         }
@@ -192,6 +200,10 @@ public class ThreadChecker extends Checker {
             }
        }
        return graphResult;
+    }
+
+    protected CheckerProgressMonitor getMonitor() {
+	    return monitor;
     }
 
     @Override

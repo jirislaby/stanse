@@ -1,5 +1,6 @@
 package cz.muni.stanse.threadchecker;
 
+import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.threadchecker.graph.CFGGraphState;
@@ -92,7 +93,8 @@ public class CFGTransit {
 	 * @param cfg CFG representing C function
 	 * @return Function generated from traversing CFG graph
 	 */
-	public static Function analyseCFG(CFGHandle cfg) {
+	public static Function analyseCFG(CFGHandle cfg,
+		final CheckerProgressMonitor mon) {
 		final LinkedList<Function> queue = new LinkedList<Function>();
 		final CFGGraphState graphState = new CFGGraphState(cfg);
 		List<CFGNode> waitForNodes;
@@ -103,7 +105,7 @@ public class CFGTransit {
 		CFGNode actualNode;
 
 		logger.info("===============");
-		logger.info("Analyzing CFG: " + cfg.getFunctionName());
+		logger.info("Analysing CFG: " + cfg.getFunctionName());
 		logger.info("===============");
 		queue.add(actualState);
 
@@ -119,7 +121,7 @@ public class CFGTransit {
 				continue;
 
 			if (actualNode.getPredecessors().size() < 2) {
-				processState(actualNode, actualState, graphState, queue);
+				processState(actualNode, actualState, graphState, queue, mon);
 				continue;
 			}
 
@@ -127,7 +129,7 @@ public class CFGTransit {
 
 			if (waitForNodes.isEmpty()) {
 				joinNodesInQueue(actualState, queue);
-				processState(actualNode, actualState, graphState, queue);
+				processState(actualNode, actualState, graphState, queue, mon);
 				continue;
 			} else {
 				Set<CFGNode> cycles = graphState.detectCycles(actualNode, waitForNodes);
@@ -143,11 +145,11 @@ public class CFGTransit {
 				//Analyse node without marking it as visited or adding succesors
 				//to queue. They will be added after returning from the cycle.
 
-				analyseStatement(actualNode, clonedState, graphState);
+				analyseStatement(actualNode, clonedState, graphState, mon);
 
 				for (CFGNode branchNode : cycles)
 					if (!graphState.getVisitedNodes().contains(branchNode))
-						processState(branchNode, clonedState, graphState, queue);
+						processState(branchNode, clonedState, graphState, queue, mon);
 				continue;
 			}
 		}
@@ -189,7 +191,8 @@ public class CFGTransit {
 	 * @param queue nodes prepared to be processed in next round
 	 */
 	private static void processState(CFGNode actualNode, Function function,
-		CFGGraphState graphState, LinkedList<Function> queue) {
+		CFGGraphState graphState, LinkedList<Function> queue,
+		final CheckerProgressMonitor mon) {
 		graphState.getVisitedNodes().add(actualNode);
 		logger.debug("Processing node " + actualNode + " with lockset!");
 
@@ -199,7 +202,7 @@ public class CFGTransit {
 			}
 			return;
 		} else {
-			analyseStatement(actualNode, function, graphState);
+			analyseStatement(actualNode, function, graphState, mon);
 		}
 
 		for (CFGNode succ : actualNode.getSuccessors())
@@ -243,7 +246,7 @@ public class CFGTransit {
 	 * @param graphState represent state of analysed graph
 	 */
 	private static void analyseStatement(CFGNode node, Function function,
-		CFGGraphState graphState) {
+		CFGGraphState graphState, final CheckerProgressMonitor mon) {
 
 		CFGNode startTrack;
 		CFGNode predecessor;
@@ -280,7 +283,7 @@ public class CFGTransit {
 			}
 		}
 
-		CFGTransit.chooseAction(node, function);
+		CFGTransit.chooseAction(node, function, mon);
 	}
 
 	/**
@@ -289,7 +292,8 @@ public class CFGTransit {
 	 * @param node CFGNode contains Element describing source code
 	 * @param function Function with actual state of analysis
 	 */
-	public static void chooseAction(final CFGNode node, final Function function) {
+	public static void chooseAction(final CFGNode node, final Function function,
+		final CheckerProgressMonitor mon) {
 		final Element element = node.getElement();
 		Element parameter;
 		final List<XMLPattern> patterns = new Vector<XMLPattern>();
@@ -320,7 +324,7 @@ public class CFGTransit {
 					return;
 				} else if (pattern.getName().equals("createThreadFunction")) {
 					parameter = result.getSecond().getVarsMap().get("function");
-					CodeAnalyzer.analyzeThreadFunction(node, function, parameter);
+					CodeAnalyzer.analyzeThreadFunction(node, function, parameter, mon);
 					return;
 				} else {
 					logger.error("Wrong type in choosing action: "
@@ -334,7 +338,7 @@ public class CFGTransit {
 			if (!(functionCalls.get(index) instanceof Element))
 				continue;
 			parameter = (Element) functionCalls.get(index);
-			CodeAnalyzer.analyzeFunction(node, function, parameter);
+			CodeAnalyzer.analyzeFunction(node, function, parameter, mon);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package cz.muni.stanse.threadchecker;
 
+import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import org.apache.log4j.Logger;
  */
 public class ThreadInfo {
     private static int actualId=0;
+    private CheckerProgressMonitor monitor;
     private final int id;
     private final String functionName;
     private Function function;
@@ -24,10 +26,11 @@ public class ThreadInfo {
                                                 = CheckerSettings.getInstance();
 
     @SuppressWarnings("static-access")
-    public ThreadInfo(CFGHandle cfg) {
+    public ThreadInfo(CFGHandle cfg, final CheckerProgressMonitor mon) {
         if(cfg == null) {
             throw new NullPointerException("CFG is null");
         }
+	this.monitor = mon;
         this.id = this.actualId;
         this.actualId++;
         this.functionName = cfg.getFunctionName();
@@ -85,9 +88,10 @@ public class ThreadInfo {
      */
     private void buildInitialGraph(CFGHandle cfg) {
         DependencyGraph graph;
-        logger.info("===============");
-        logger.info("Analyzing thread: "+this.getFunctionName());
-        logger.info("===============");
+	logger.debug("===============");
+	logger.debug("Analysing thread: " + getFunctionName());
+	logger.debug("===============");
+	monitor.write("Analysing thread: " + getFunctionName());
 
         if(this.function == null) {
             this.function = checkerSettings.getFunction(cfg);
@@ -95,7 +99,7 @@ public class ThreadInfo {
 
         //Checker settings hasn't function already processed
         if(this.function == null) {
-            this.function = CFGTransit.analyseCFG(cfg);
+            this.function = CFGTransit.analyseCFG(cfg, monitor);
             checkerSettings.addFunction(function, cfg);
         }
 

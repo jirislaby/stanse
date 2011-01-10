@@ -1,7 +1,7 @@
 
 package cz.muni.stanse.threadchecker;
 
-import cz.muni.stanse.Stanse;
+import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.threadchecker.locks.BackTrack;
@@ -103,7 +103,7 @@ public class CodeAnalyzer {
      * @param parameter Element  where callee name is included.
      */
     public static void analyzeFunction(CFGNode node, Function caller,
-                                                            Element parameter) {
+	    Element parameter, final CheckerProgressMonitor mon) {
         Function callee = null;
         BackTrack backTrackNode;
         FunctionState dataBeforeStitch = null;
@@ -112,7 +112,7 @@ public class CodeAnalyzer {
         String description;
         boolean alreadyInserted = false;
         
-        callee = CodeAnalyzer.getCallee(parameter, caller.getName());
+        callee = CodeAnalyzer.getCallee(parameter, caller.getName(), mon);
         if(callee == null) {
             String functionCall = CodeAnalyzer.parseStringVariable(parameter);
             logger.info("Can't find CFG for functionCall "+functionCall
@@ -194,30 +194,31 @@ public class CodeAnalyzer {
      * @return Function callee
      * @throws NoCFGException whether CFG for callee doesn't exist
      */
-    private static Function getCallee(Element parameter, String callerName) {
+    private static Function getCallee(Element parameter, String callerName,
+	    final CheckerProgressMonitor mon) {
         String functionCall;
         Function callee;
         CFGHandle cfg;
 
         functionCall = CodeAnalyzer.parseStringVariable(parameter);
-        logger.info("Analyzing functionCall: " + functionCall);
+        logger.info("Analysing functionCall: " + functionCall);
         callee = settings.getFunction(functionCall);
 
         if(callee == null) {
-            logger.debug("Callee " + functionCall +
+            logger.info("Callee " + functionCall +
 		    " is a new function, analysing CFG");
             cfg = settings.getCFG(functionCall);
             if(cfg == null) {
                 return null;
             }
             if(!settings.isOnStack(cfg)) {
-                callee = CFGTransit.analyseCFG(cfg);
+                callee = CFGTransit.analyseCFG(cfg, mon);
                 settings.addFunction(callee,cfg);
             } else {
                 callee = new Function(cfg);
             }
         } else {
-            logger.debug("Using function cache for callee " + functionCall);
+            logger.info("Using function cache for callee " + functionCall);
         }
         return callee;
     }
@@ -231,7 +232,7 @@ public class CodeAnalyzer {
      * @param parameter Element
      */
     static void analyzeThreadFunction(CFGNode node, Function function,
-                                                            Element parameter) {
+	    Element parameter, final CheckerProgressMonitor mon) {
         ThreadInfo thread;
         String threadFunction;
         BackTrack backTrackNode;
@@ -247,7 +248,7 @@ public class CodeAnalyzer {
                                                                +threadFunction);
                 return;
             }
-            thread = new ThreadInfo(cfg);
+            thread = new ThreadInfo(cfg, mon);
             settings.addThread(thread);
         }
 
