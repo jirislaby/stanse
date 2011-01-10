@@ -45,7 +45,7 @@ public class ThreadChecker extends Checker {
     @Override
     public CheckingResult check(
                         final LazyInternalStructures internals,
-                        final CheckerErrorReceiver errReciver,
+                        final CheckerErrorReceiver errReceiver,
                         final CheckerProgressMonitor monitor)
                                                        throws CheckerException {
         List<CheckerError> errors;
@@ -88,7 +88,7 @@ public class ThreadChecker extends Checker {
         Collections.sort(errors);
 
         for (final CheckerError err : errors)
-            errReciver.receive(err);
+            errReceiver.receive(err);
 
         settings.setInternals(null);
 
