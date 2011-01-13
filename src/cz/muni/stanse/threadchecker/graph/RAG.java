@@ -24,7 +24,7 @@ import org.jgrapht.graph.DirectedMultigraph;
 
 /**
  * Class represents RAG graph which determines, whether deadlock can happen
- * @author Jan Kučera
+ * @author Jan Kucera
  */
 public class RAG {
     private DirectedMultigraph<Vertex, Edge> graph;
@@ -33,7 +33,7 @@ public class RAG {
     private final static Logger logger = Logger.getLogger(RAG.class);
 
     public RAG() {
-        this. graph = new DirectedMultigraph<Vertex, Edge>(
+        this.graph = new DirectedMultigraph<Vertex, Edge>(
                 new ClassBasedEdgeFactory<Vertex, Edge>(Edge.class));
         this.detector = new CycleDetector<Vertex, Edge>(graph);
     }
@@ -139,8 +139,8 @@ public class RAG {
      * can happen
      */
     public void addRule(DependencyRule rule) throws RAGException {
-        ThreadInfo thread = rule.getThread();
-        String name = String.valueOf(thread.getId());
+        final ThreadInfo thread = rule.getThread();
+        final String name = String.valueOf(thread.getId());
         Vertex process = this.vertexes.get(name);
         Vertex resource;
         Request request;
@@ -194,53 +194,50 @@ public class RAG {
         }
     }
 
-    /**
-     * Function tries to insert edge to graph and also respects RAG rules
-     * @param edge
-     * @throws RAGException whether RAG can't be build - resource would be
-     * held by two processes.
-     */
-    private void addEdge(Edge edge) throws RAGException {
-        Vertex resource;
-        Vertex process;
-        String reason;
+	/**
+	 * Function tries to insert an edge to the graph and also respects RAG rules
+	 * @param edge
+	 * @throws RAGException if RAG can't be built - resource would be
+	 * held by two processes.
+	 */
+	private void addEdge(final Edge edge) throws RAGException {
+		final Vertex resource = edge.getResource();
+		final Vertex process = edge.getProcess();
+		String reason;
 
-        resource = edge.getResource();
-        process = edge.getProcess();
-        if(edge instanceof Assignment) {
-            if(graph.outgoingEdgesOf(resource).size()>0) {
-                //Can't add edge because resource is already held by other
-                //process -> deadlock can't happen
-                //Edge is created only for showing, where algorithm stopped
-                reason = "deadlock can't happen - thread "+process.getName()+
-                            " requires "+resource.getName()
-                            +" which is already held by "
-                            +graph.outgoingEdgesOf(resource).iterator().next()
-                                            .getProcess().getName();
-                graph.addEdge(resource, process, edge);
-                throw new RAGException(reason);
-            }
-            graph.addEdge(resource, process, edge);
-            return;
-        } else {
-            graph.addEdge(process, resource, edge);
-            return;
-        }
-    }
+		if (edge instanceof Assignment) {
+			if (graph.outgoingEdgesOf(resource).size() > 0) {
+				/*
+				 * Can't add edge because resource is already held by other
+				 * process -> deadlock can't happen
+				 * Edge is created only for showing, where algorithm stopped
+				 */
+				reason = "deadlock can't happen - thread " + process.getName()
+					+ " requires " + resource.getName()
+					+ " which is already held by "
+					+ graph.outgoingEdgesOf(resource).iterator().next().getProcess().getName();
+				graph.addEdge(resource, process, edge);
+				throw new RAGException(reason);
+			}
+			graph.addEdge(resource, process, edge);
+		} else {
+			graph.addEdge(process, resource, edge);
+		}
+	}
 
-    /**
-     * Returns string representation of graph in toDot format
-     * @return
-     */
-    public String toDot() {
-        StringBuilder result = new StringBuilder("digraph CFG {");
-        for (Vertex vertex : vertexes.values())
-            result.append(vertex.toDot()).append('\n');
-        for (Edge edge : graph.edgeSet())
-            result.append(edge.toDot()).append('\n');
-        result.append('}');
-        return result.toString();
-    }
+	/**
+	 * Returns string representation of graph in toDot format
+	 * @return graph in toDot format
+	 */
+	public String toDot() {
+		final StringBuilder result = new StringBuilder("digraph CFG {");
+		for (final Vertex vertex : vertexes.values())
+			result.append(vertex.toDot()).append('\n');
+		for (final Edge edge : graph.edgeSet())
+			result.append(edge.toDot()).append('\n');
+		result.append('}');
+		return result.toString();
+	}
 
     /**
      * Clear this graph - erase vertexes, create new grap and detector
