@@ -40,6 +40,14 @@ final class ComposedAutomatonID {
         return getSimpleAutomataIDs().equals(other.getSimpleAutomataIDs());
     }
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (SimpleAutomatonID id : automataIDs) {
+            sb.append("(").append(id).append(")");
+        }
+        return sb.toString();
+    }
+
     // private section
 
     private final Vector<SimpleAutomatonID> automataIDs;

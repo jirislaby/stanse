@@ -83,7 +83,11 @@ final class AutomatonState {
     }
 
     public String toString() {
-	return symbol;
+        StringBuilder sb = new StringBuilder();
+        sb.append(symbol);
+        for (AutomatonStateContextItem ctxitem : context)
+            sb.append("[").append(ctxitem.getAutomatonID()).append("]");
+        return sb.toString();
     }
 
     // private section

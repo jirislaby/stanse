@@ -56,6 +56,16 @@ final class SimpleAutomatonID {
         return new Vector<String>(new TreeMap<String, String>(varsAssignment.makeArgumentMap()).values());
     }
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (isGlobal)
+            sb.append("g");
+        for (String ass : varsAssignment) {
+            sb.append("(").append(ass).append(")");
+        }
+        return sb.toString();
+    }
+
     private final Vector<String> varsAssignment;
     private final boolean isGlobal;
 }
