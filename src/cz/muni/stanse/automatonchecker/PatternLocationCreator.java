@@ -8,6 +8,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.codestructures.AliasResolver;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.CFGsNavigator;
@@ -23,6 +24,7 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.dom4j.Element;
 
@@ -36,7 +38,7 @@ final class PatternLocationCreator extends CFGvisitor {
             matchings = new LinkedList<Pair<XMLPattern,SimpleAutomatonID>>();
         for (XMLPattern pattern : getXMLAutomatonDefinition().getXMLpatterns()){
             final Pair<Boolean,XMLPatternVariablesAssignment>
-                matchResult = pattern.matchesNode(node);
+                matchResult = pattern.matchesNode(node, aliasResolver);
             if (matchResult.getFirst()) {
                 final XMLPatternVariablesAssignment assign =
                         matchResult.getSecond();
@@ -72,7 +74,8 @@ final class PatternLocationCreator extends CFGvisitor {
 
     PatternLocationCreator(final CFGHandle cfg,
                            final XMLAutomatonDefinition XMLdefinition,
-                           final CFGsNavigator navigator) {
+                           final CFGsNavigator navigator,
+                           final AliasResolver aliasResolver) {
         super();
         automatonDefinition = XMLdefinition;
         nodeLocationDictionary = new HashMap<CFGNode,Pair<PatternLocation,
@@ -80,6 +83,7 @@ final class PatternLocationCreator extends CFGvisitor {
         automataIDs = new HashSet<SimpleAutomatonID>();
         this.navigator = navigator;
         this.cfg = cfg;
+        this.aliasResolver = aliasResolver;
 
         createStartEndPatternLocations();
     }
@@ -176,4 +180,5 @@ final class PatternLocationCreator extends CFGvisitor {
     private final HashSet<SimpleAutomatonID> automataIDs;
     private final CFGsNavigator navigator;
     private final CFGHandle cfg;
+    private final AliasResolver aliasResolver;
 }

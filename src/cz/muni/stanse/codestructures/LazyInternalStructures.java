@@ -19,6 +19,12 @@ public abstract class LazyInternalStructures {
                 final Collection<CFGHandle> cfgs) {
         this.units = units;
         this.cfgs = cfgs;
+        this.aliasResolver = new AliasResolver();
+
+        for (Unit unit : units) {
+            if (unit.getAliases() != null)
+                this.aliasResolver.addAliasMapping(unit.getAliases());
+        }
 
         startFunctions = null;
         callGraph = null;
@@ -27,6 +33,10 @@ public abstract class LazyInternalStructures {
         returnValuePassingManager = null;
         nodeToCFGdictionary = null;
         elementToCFGdictionary = null;
+    }
+
+    public AliasResolver getAliasResolver() {
+        return this.aliasResolver;
     }
 
     public Collection<Unit> getUnits() {
@@ -154,6 +164,7 @@ public abstract class LazyInternalStructures {
 
     private final Collection<Unit> units;
     private final Collection<CFGHandle> cfgs;
+    private final AliasResolver aliasResolver;
 
     private Set<CFGHandle> startFunctions;
     private DefaultDirectedGraph<CFGHandle,DefaultEdge> callGraph;

@@ -17,6 +17,7 @@ import java.util.List;
 import org.dom4j.Document;
 
 import cz.muni.stanse.utils.ClassLogger;
+import java.util.Map;
 
 /**
  * @brief Holds all the relevant data about the code in one compilation unit (usually a file).
@@ -48,6 +49,11 @@ public abstract class Unit {
      * Already available/parsed?
      */
     protected boolean available = false;
+
+    /**
+     * A mapping from machine-readable names to human-readable ones.
+     */
+    protected Map<String, String> aliases = null;
 
     // constructors
     /**
@@ -136,5 +142,9 @@ public abstract class Unit {
                 return c;
         assert(false);
         return null;
+    }
+
+    public Map<String, String> getAliases() {
+        return aliases;
     }
 }

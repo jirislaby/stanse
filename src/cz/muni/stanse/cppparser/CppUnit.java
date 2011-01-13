@@ -14,25 +14,23 @@ import org.json.JSONTokener;
 
 import cz.muni.stanse.Stanse;
 import cz.muni.stanse.cfgparser.CfgUnit;
-import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
-import cz.muni.stanse.codestructures.CFG;
-import cz.muni.stanse.codestructures.CFGHandle;
 
 /**
  * Holds all the code-related data for C++ compilation units (files).
  */
-public final class CppUnit extends Unit {
+public class CppUnit extends CfgUnit {
     private List<String> args = null;
 
     public CppUnit(List<String> args) {
+        super(args);
 	this.args = args;
 	this.fileName = new File(args.get(0));
     }
 
     public void parse() throws ParserException {
 	String command = Stanse.getInstance().getRootDirectory()
-		+ File.separator + "bin" + File.separator + "cppparser";
+		+ File.separator + "bin" + File.separator + "cpp2sir";
 	List<String> parserArgs = new ArrayList<String>();
 	parserArgs.add(command);
 	parserArgs.add("-J");
@@ -62,15 +60,11 @@ public final class CppUnit extends Unit {
 	    JSONTokener jsonTokener = new JSONTokener(sr);
 	    JSONObject jsonUnit = new JSONObject(jsonTokener);
 
-	    CFGs = CfgUnit.parseUnit(this.fileName.getParentFile(), jsonUnit);
+	    super.parseUnit(this.fileName.getParentFile(), jsonUnit);
 	} catch (IOException e) {
 	    throw new ParserException("parser: " + e.getLocalizedMessage(), e);
 	} catch (JSONException e) {
 	    throw new ParserException("parser: " + e.getLocalizedMessage(), e);
 	}
-
-	this.CFGHs = new ArrayList<CFGHandle>();
-	for (CFG cfg : CFGs)
-	    CFGHs.add(new CFGHandle(this, cfg));
     }
 }
