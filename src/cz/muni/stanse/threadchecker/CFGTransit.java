@@ -104,9 +104,9 @@ public class CFGTransit {
 		Function clonedState;
 		CFGNode actualNode;
 
-		logger.info("===============");
-		logger.info("Analysing CFG: " + cfg.getFunctionName());
-		logger.info("===============");
+		logger.debug("===============");
+		logger.debug("Analysing CFG: " + cfg.getFunctionName());
+		logger.debug("===============");
 		queue.add(actualState);
 
 		while (!queue.isEmpty()) {

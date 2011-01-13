@@ -39,7 +39,7 @@ public class CodeAnalyzer {
         BackTrack backTrackNode;
 
         lockName = CodeAnalyzer.parseStringVariable(parameter);
-        logger.info("Locking function detected - locking "+lockName);
+        logger.debug("Locking function detected - locking "+lockName);
 
         //Add new lock to every possibilty Data state
         for(FunctionState data : function.getFunctionStates()) {
@@ -75,7 +75,7 @@ public class CodeAnalyzer {
         String description;
         BackTrack backTrackNode;
         lockName = CodeAnalyzer.parseStringVariable(parameter);
-        logger.info("Unlocking function detected - unlocking "+lockName);
+        logger.debug("Unlocking function detected - unlocking "+lockName);
 
         for(FunctionState data : function.getFunctionStates()) {
             data.lockDown(lockName);
@@ -115,8 +115,8 @@ public class CodeAnalyzer {
         callee = CodeAnalyzer.getCallee(parameter, caller.getName(), mon);
         if(callee == null) {
             String functionCall = CodeAnalyzer.parseStringVariable(parameter);
-            logger.info("Can't find CFG for functionCall "+functionCall
-                                            +" in function: "+caller.getName());
+            logger.debug("Can't find CFG for functionCall " + functionCall +
+		    " in function: " + caller.getName());
             return;
         }
 
@@ -201,11 +201,11 @@ public class CodeAnalyzer {
         CFGHandle cfg;
 
         functionCall = CodeAnalyzer.parseStringVariable(parameter);
-        logger.info("Analysing functionCall: " + functionCall);
+        logger.debug("Analysing functionCall: " + functionCall);
         callee = settings.getFunction(functionCall);
 
         if(callee == null) {
-            logger.info("Callee " + functionCall +
+            logger.debug("Callee " + functionCall +
 		    " is a new function, analysing CFG");
             cfg = settings.getCFG(functionCall);
             if(cfg == null) {
@@ -218,7 +218,7 @@ public class CodeAnalyzer {
                 callee = new Function(cfg);
             }
         } else {
-            logger.info("Using function cache for callee " + functionCall);
+            logger.debug("Using function cache for callee " + functionCall);
         }
         return callee;
     }

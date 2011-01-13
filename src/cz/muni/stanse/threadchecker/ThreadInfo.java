@@ -91,7 +91,6 @@ public class ThreadInfo {
 	logger.debug("===============");
 	logger.debug("Analysing thread: " + getFunctionName());
 	logger.debug("===============");
-	monitor.write("Analysing thread: " + getFunctionName());
 
         if(this.function == null) {
             this.function = checkerSettings.getFunction(cfg);
