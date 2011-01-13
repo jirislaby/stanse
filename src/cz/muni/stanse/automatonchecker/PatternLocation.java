@@ -203,7 +203,7 @@ final class PatternLocation {
         }
     }
 
-    private LinkedList<AutomatonState> getUnprocessedAutomataStates() {
+    public LinkedList<AutomatonState> getUnprocessedAutomataStates() {
         return unprocessedAutomataStates;
     }
 
