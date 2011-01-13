@@ -1,6 +1,7 @@
 
 package cz.muni.stanse.threadchecker;
 
+import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
@@ -103,7 +104,8 @@ public class CodeAnalyzer {
      * @param parameter Element  where callee name is included.
      */
     public static void analyzeFunction(CFGNode node, Function caller,
-	    Element parameter, final CheckerProgressMonitor mon) {
+	    Element parameter, final CheckerProgressMonitor mon)
+	    throws CheckerException {
         Function callee = null;
         BackTrack backTrackNode;
         FunctionState dataBeforeStitch = null;
@@ -130,6 +132,13 @@ public class CodeAnalyzer {
         *locked locks) function executes stitchFunctions on dataCalle and 
         * dataCaller and also generate proper backTrack nodes
         */
+	long states = caller.getFunctionStates().size() *
+		callee.getFunctionStates().size();
+	if (states > 5000) {
+		throw new CheckerException("Too many states (" + states +
+			") when trying to stitch " + callee.getName() + " into " +
+			caller.getName() + ".\nIsn't there a locking imbalance?\n");
+	}
         for(FunctionState dataCaller : caller.getFunctionStates()) {
             for(FunctionState dataCallee : callee.getFunctionStates()) {
                 if(dataCallee.isEmpty()) {
@@ -195,7 +204,7 @@ public class CodeAnalyzer {
      * @throws NoCFGException whether CFG for callee doesn't exist
      */
     private static Function getCallee(Element parameter, String callerName,
-	    final CheckerProgressMonitor mon) {
+	    final CheckerProgressMonitor mon) throws CheckerException {
         String functionCall;
         Function callee;
         CFGHandle cfg;

@@ -1,5 +1,6 @@
 package cz.muni.stanse.threadchecker;
 
+import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
@@ -96,11 +97,15 @@ public class ThreadInfo {
             this.function = checkerSettings.getFunction(cfg);
         }
 
-        //Checker settings hasn't function already processed
-        if(this.function == null) {
-            this.function = CFGTransit.analyseCFG(cfg, monitor);
-            checkerSettings.addFunction(function, cfg);
-        }
+	    //Checker settings hasn't function already processed
+	    if (this.function == null) {
+		    try {
+			    this.function = CFGTransit.analyseCFG(cfg, monitor);
+		    } catch (CheckerException e) {
+			    monitor.write(e.getLocalizedMessage());
+		    }
+		    checkerSettings.addFunction(function, cfg);
+	    }
 
         this.dependencyGraphs = new HashSet<DependencyGraph>();
 

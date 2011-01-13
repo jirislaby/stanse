@@ -1,5 +1,6 @@
 package cz.muni.stanse.threadchecker;
 
+import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
@@ -94,7 +95,8 @@ public class CFGTransit {
 	 * @return Function generated from traversing CFG graph
 	 */
 	public static Function analyseCFG(CFGHandle cfg,
-		final CheckerProgressMonitor mon) {
+			final CheckerProgressMonitor mon)
+			throws CheckerException {
 		final LinkedList<Function> queue = new LinkedList<Function>();
 		final CFGGraphState graphState = new CFGGraphState(cfg);
 		List<CFGNode> waitForNodes;
@@ -190,9 +192,11 @@ public class CFGTransit {
 	 * @param graphState represent state of analysed graph
 	 * @param queue nodes prepared to be processed in next round
 	 */
-	private static void processState(CFGNode actualNode, Function function,
-		CFGGraphState graphState, LinkedList<Function> queue,
-		final CheckerProgressMonitor mon) {
+	private static void processState(final CFGNode actualNode,
+			final Function function, final CFGGraphState graphState,
+			final LinkedList<Function> queue,
+			final CheckerProgressMonitor mon)
+			throws CheckerException {
 		graphState.getVisitedNodes().add(actualNode);
 		logger.debug("Processing node " + actualNode + " with lockset!");
 
@@ -245,9 +249,10 @@ public class CFGTransit {
 	 * @param function Function where CodeAnalyzer will insert all changes.
 	 * @param graphState represent state of analysed graph
 	 */
-	private static void analyseStatement(CFGNode node, Function function,
-		CFGGraphState graphState, final CheckerProgressMonitor mon) {
-
+	private static void analyseStatement(final CFGNode node,
+			final Function function, final CFGGraphState graphState,
+			final CheckerProgressMonitor mon)
+			throws CheckerException {
 		CFGNode startTrack;
 		CFGNode predecessor;
 		Integer nodeID;
@@ -293,7 +298,7 @@ public class CFGTransit {
 	 * @param function Function with actual state of analysis
 	 */
 	public static void chooseAction(final CFGNode node, final Function function,
-		final CheckerProgressMonitor mon) {
+			final CheckerProgressMonitor mon) throws CheckerException {
 		final Element element = node.getElement();
 		Element parameter;
 		final List<XMLPattern> patterns = new Vector<XMLPattern>();
