@@ -20,7 +20,7 @@ public final class UnitManagerLRU implements UnitManager {
     private int water = 10;
     private int elements = 0;
     private static Logger logger = Logger.getLogger(
-	    UnitManagerLRU.class.getName());
+	    UnitManager.class.getName());
 
     public Collection<CFGHandle> getCFGHandles(Unit unit) {
 	return touchUnit(unit).getCFGHandles();
