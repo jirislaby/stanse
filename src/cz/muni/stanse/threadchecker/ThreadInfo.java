@@ -15,151 +15,144 @@ import org.apache.log4j.Logger;
  * @author Jan Kučera
  */
 public class ThreadInfo {
-    private static int actualId=0;
-    private CheckerProgressMonitor monitor;
-    private final int id;
-    private final String functionName;
-    private Function function;
-    private Set<DependencyGraph> dependencyGraphs;
-    private final static Logger logger =
-                                Logger.getLogger(ThreadChecker.class.getName());
-    private static CheckerSettings checkerSettings
-                                                = CheckerSettings.getInstance();
+	private static int actualId = 0;
+	private CheckerProgressMonitor monitor;
+	private final int id;
+	private final String functionName;
+	private Function function;
+	private Set<DependencyGraph> dependencyGraphs;
+	private final static Logger logger =
+		Logger.getLogger(ThreadChecker.class.getName());
+	private static CheckerSettings checkerSettings =
+		CheckerSettings.getInstance();
 
-    @SuppressWarnings("static-access")
-    public ThreadInfo(CFGHandle cfg, final CheckerProgressMonitor mon) {
-        if(cfg == null) {
-            throw new NullPointerException("CFG is null");
-        }
-	this.monitor = mon;
-        this.id = this.actualId;
-        this.actualId++;
-        this.functionName = cfg.getFunctionName();
-        this.buildInitialGraph(cfg);
-    }
+	@SuppressWarnings("static-access")
+	public ThreadInfo(CFGHandle cfg, final CheckerProgressMonitor mon) {
+		if (cfg == null)
+			throw new NullPointerException("CFG is null");
 
-    public int getId() {
-        return id;
-    }
+		this.monitor = mon;
+		this.id = this.actualId;
+		this.actualId++;
+		this.functionName = cfg.getFunctionName();
+		this.buildInitialGraph(cfg);
+	}
 
-    public String getFunctionName() {
-        return this.functionName;
-    }
+	public int getId() {
+		return id;
+	}
 
-    public Function getFunction() {
-        return function;
-    }
+	public String getFunctionName() {
+		return functionName;
+	}
 
-    /**
-     * Function return string representation of thread showing ID and Datalist.
-     * @return String
-     */
-    @Override
-    public String toString() {
-        String result = "Thread "+id+": with "+function.getFunctionStates();
-        return result;
-    }
+	public Function getFunction() {
+		return function;
+	}
 
-    public Set<DependencyGraph> getDependencyGraphs() {
-        return this.dependencyGraphs;
-    }
+	/**
+	 * Function return string representation of thread showing ID and Datalist.
+	 * @return String
+	 */
+	@Override
+	public String toString() {
+		String result = "Thread " + id + ": with " + function.getFunctionStates();
+		return result;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final ThreadInfo other = (ThreadInfo) obj;
-        return(id == other.getId());
-    }
+	public Set<DependencyGraph> getDependencyGraphs() {
+		return dependencyGraphs;
+	}
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash *= id;
-        return hash;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final ThreadInfo other = (ThreadInfo) obj;
+		return id == other.getId();
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 7;
+		hash *= id;
+		return hash;
+	}
     
-    /**
-     * Method builds Function from CFG and stores it to checkerSettings
-     * @param cfg CFG
-     */
-    private void buildInitialGraph(CFGHandle cfg) {
-        DependencyGraph graph;
-	logger.debug("===============");
-	logger.debug("Analysing thread: " + getFunctionName());
-	logger.debug("===============");
+	/**
+	 * Builds a Function from CFG and stores it into checkerSettings
+	 * @param cfg CFG to build a Function from
+	 */
+	private void buildInitialGraph(CFGHandle cfg) {
+		DependencyGraph graph;
+		logger.debug("===============");
+		logger.debug("Analysing thread: " + getFunctionName());
+		logger.debug("===============");
 
-        if(this.function == null) {
-            this.function = checkerSettings.getFunction(cfg);
-        }
+		if (function == null)
+			function = checkerSettings.getFunction(cfg);
 
-	    dependencyGraphs = new HashSet<DependencyGraph>();
+		dependencyGraphs = new HashSet<DependencyGraph>();
 
-	    //Checker settings hasn't function already processed
-	    if (this.function == null) {
-		    try {
-			    this.function = CFGTransit.analyseCFG(cfg, monitor);
-		    } catch (CheckerException e) {
-			    monitor.write(e.getLocalizedMessage());
-			    return;
-		    }
-		    checkerSettings.addFunction(function, cfg);
-	    }
+		//Checker settings hasn't function already processed
+		if (function == null) {
+			try {
+				function = CFGTransit.analyseCFG(cfg, monitor);
+			} catch (CheckerException e) {
+				monitor.write(e.getLocalizedMessage());
+				return;
+			}
+			checkerSettings.addFunction(function, cfg);
+		}
 
-        //Add to every rule thread where it created
-        //Create temporary dependencyGraph for avoiding dependency deadlock
-        for(FunctionState currentState : function.getFunctionStates()) {
-            graph = currentState.generateGraph(this);
-            //Insert only new FunctionState
-            this.dependencyGraphs.add(graph);
-        }
-        this.reduceDependencyGraphs();
-    }
+		/*
+		 * Add to every rule a thread where it was created
+		 * Create a temporary dependencyGraph to avoid dependency deadlock
+		 */
+		for (FunctionState currentState : function.getFunctionStates()) {
+			graph = currentState.generateGraph(this);
+			// insert only a new FunctionState
+			dependencyGraphs.add(graph);
+		}
+		reduceDependencyGraphs();
+	}
 
-    /**
-     * Method erase same or subset graph in dependencyGraphs.
-     */
-    private void reduceDependencyGraphs() {
-        if(dependencyGraphs.size()<2)
-            return;
+	/**
+	 * Erases same or subset graph in dependencyGraphs.
+	 */
+	private void reduceDependencyGraphs() {
+		if (dependencyGraphs.size() < 2)
+			return;
 
-        Iterator<DependencyGraph> mainIterator
-                                            = this.dependencyGraphs.iterator();
-        Iterator<DependencyGraph> cycleIt;
-        DependencyGraph selectedGraph;
-        DependencyGraph otherGraph;
-        Set<DependencyGraph> graphsToRemove = new HashSet<DependencyGraph>();
-        while(mainIterator.hasNext()) {
-            selectedGraph = mainIterator.next();
-            if(graphsToRemove.contains(selectedGraph))
-                continue;
-            
-            cycleIt = this.getDependencyGraphs().iterator();
-            while(cycleIt.hasNext()) {
-                if(selectedGraph == cycleIt.next())
-                    break;
-            }
-            while(cycleIt.hasNext()) {
-                otherGraph = cycleIt.next();
-                if(selectedGraph.size()>otherGraph.size()){
-                    if(selectedGraph.isSubset(otherGraph)) {
-                        graphsToRemove.add(otherGraph);
-                        continue;
-                    }
-                } else {
-                    if(otherGraph.isSubset(selectedGraph)) {
-                        graphsToRemove.add(selectedGraph);
-                        break;
-                    }
-                }
-            }
-        }
-        if(!graphsToRemove.isEmpty()) {
-            dependencyGraphs.removeAll(graphsToRemove);
-        }
-    }
+		Iterator<DependencyGraph> cycleIt;
+		Set<DependencyGraph> graphsToRemove = new HashSet<DependencyGraph>();
+		for (final DependencyGraph selectedGraph : dependencyGraphs) {
+			if (graphsToRemove.contains(selectedGraph))
+				continue;
+
+			cycleIt = this.getDependencyGraphs().iterator();
+			while (cycleIt.hasNext())
+				if (selectedGraph == cycleIt.next())
+					break;
+
+			while (cycleIt.hasNext()) {
+				final DependencyGraph otherGraph = cycleIt.next();
+				if (selectedGraph.size() > otherGraph.size()) {
+					if (selectedGraph.isSubset(otherGraph)) {
+						graphsToRemove.add(otherGraph);
+						continue;
+					}
+				} else {
+					if (otherGraph.isSubset(selectedGraph)) {
+						graphsToRemove.add(selectedGraph);
+						break;
+					}
+				}
+			}
+		}
+		if (!graphsToRemove.isEmpty())
+			dependencyGraphs.removeAll(graphsToRemove);
+	}
 }
