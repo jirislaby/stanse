@@ -87,15 +87,10 @@ public class ThreadChecker extends Checker {
 	monitor.write("Finding errors");
         errors = findErrors(graphs, getMonitor());
 
-        if (errors.size() > 0) {
-            monitor.write("Error result in file: " +
-                        units.iterator().next().getName()+"\n"+errors);
-        }
         Collections.sort(errors);
 
 	monitor.write("Reporting errors");
-        for (final CheckerError err : errors)
-            errReceiver.receive(err);
+	errReceiver.receiveAll(errors);
 
         settings.setInternals(null);
 
@@ -143,7 +138,7 @@ public class ThreadChecker extends Checker {
         if(graphs == null)
             return errors;
 
-        mon.write("Graph:\n\t" + graphs);
+        logger.debug("Graph:\n\t" + graphs);
         Utils.showDependencyGraphs(graphs);
         for(DependencyGraph rules : graphs) {
             cycles.addAll(detector.detect(rules));
