@@ -111,51 +111,54 @@ public class CFGTransit {
 		logger.debug("===============");
 		queue.add(actualState);
 
-		while (!queue.isEmpty()) {
-			actualState = queue.poll();
-			actualNode = actualState.getActualNode();
+		try {
+			while (!queue.isEmpty()) {
+				actualState = queue.poll();
+				actualNode = actualState.getActualNode();
 
-			if (actualNode.getElement().getName().equals("exit"))
-				exitState = actualState;
+				if (actualNode.getElement().getName().equals("exit"))
+					exitState = actualState;
 
-			showProgress(actualState, graphState, queue);
-			if (graphState.getVisitedNodes().contains(actualNode))
-				continue;
+				showProgress(actualState, graphState, queue);
+				if (graphState.getVisitedNodes().contains(actualNode))
+					continue;
 
-			if (actualNode.getPredecessors().size() < 2) {
-				processState(actualNode, actualState, graphState, queue, mon);
-				continue;
-			}
-
-			waitForNodes = graphState.waitingFor(actualNode);
-
-			if (waitForNodes.isEmpty()) {
-				joinNodesInQueue(actualState, queue);
-				processState(actualNode, actualState, graphState, queue, mon);
-				continue;
-			} else {
-				Set<CFGNode> cycles = graphState.detectCycles(actualNode, waitForNodes);
-				if (cycles.isEmpty()) {
-					queue.offer(actualState);
+				if (actualNode.getPredecessors().size() < 2) {
+					processState(actualNode, actualState, graphState, queue, mon);
 					continue;
 				}
 
-				joinNodesInQueue(actualState, queue);
-				queue.offer(actualState);
+				waitForNodes = graphState.waitingFor(actualNode);
 
-				clonedState = new Function(actualState);
-				//Analyse node without marking it as visited or adding succesors
-				//to queue. They will be added after returning from the cycle.
+				if (waitForNodes.isEmpty()) {
+					joinNodesInQueue(actualState, queue);
+					processState(actualNode, actualState, graphState, queue, mon);
+					continue;
+				} else {
+					Set<CFGNode> cycles = graphState.detectCycles(actualNode, waitForNodes);
+					if (cycles.isEmpty()) {
+						queue.offer(actualState);
+						continue;
+					}
 
-				analyseStatement(actualNode, clonedState, graphState, mon);
+					joinNodesInQueue(actualState, queue);
+					queue.offer(actualState);
 
-				for (CFGNode branchNode : cycles)
-					if (!graphState.getVisitedNodes().contains(branchNode))
-						processState(branchNode, clonedState, graphState, queue, mon);
-				continue;
+					clonedState = new Function(actualState);
+					//Analyse node without marking it as visited or adding succesors
+					//to queue. They will be added after returning from the cycle.
+
+					analyseStatement(actualNode, clonedState, graphState, mon);
+
+					for (CFGNode branchNode : cycles)
+						if (!graphState.getVisitedNodes().contains(branchNode))
+							processState(branchNode, clonedState, graphState, queue, mon);
+					continue;
+				}
 			}
+		} finally {
+			settings.removeFromOnStack(cfg); //Remove cfg from Stack
 		}
-		settings.removeFromOnStack(cfg); //Remove cfg from Stack
 		logger.debug("===============");
 		logger.debug("CFG " + cfg.getFunctionName() + " result:\n" + exitState);
 		logger.debug("===============");

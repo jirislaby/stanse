@@ -97,17 +97,18 @@ public class ThreadInfo {
             this.function = checkerSettings.getFunction(cfg);
         }
 
+	    dependencyGraphs = new HashSet<DependencyGraph>();
+
 	    //Checker settings hasn't function already processed
 	    if (this.function == null) {
 		    try {
 			    this.function = CFGTransit.analyseCFG(cfg, monitor);
 		    } catch (CheckerException e) {
 			    monitor.write(e.getLocalizedMessage());
+			    return;
 		    }
 		    checkerSettings.addFunction(function, cfg);
 	    }
-
-        this.dependencyGraphs = new HashSet<DependencyGraph>();
 
         //Add to every rule thread where it created
         //Create temporary dependencyGraph for avoiding dependency deadlock
