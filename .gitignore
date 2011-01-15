@@ -1,8 +1,5 @@
 /build/
-/dist/bin/stcparser-c
-/dist/stanse.jar
 /manifest.mf
-/src/cparser-c/GNUCa*.[ch]
-/src/cz/muni/stanse/cparser/*Emitter.java
-/src/cz/muni/stanse/cparser/GNUCa*.java
 *.tokens
+*.preproc
+.*.swp
