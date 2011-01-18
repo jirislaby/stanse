@@ -43,6 +43,55 @@ class SummariesBuilder {
 		this.conf = conf;
 	}
 
+	private CFGNode traverseCall(final CFGsNavigator navigator,
+			final FunctionStateSummary summary,
+			final CFGStates cfgStates, final CFGNode parent) {
+		CFGNode propagationNode = parent;
+		final CFGNode child = navigator.getCalleeStart(parent);
+		cfgStates.propagate(propagationNode, child);
+
+		final VarTransformations varTrans = new VarTransformations();
+		for (final Element el : Util.getArguments(parent.getElement())) {
+			final String id = VarTransformations.makeArgument(el);
+			// TODO change this if you change VarTransformations.makeArgument
+			final String newId = passingManager.pass(parent, id,
+				child);
+			varTrans.addTransformation(newId, id);
+		}
+
+		// get entering state for a callee
+		State enterState = State.getRenamedCFGState(
+			cfgStates.get(child), varTrans, true);
+		// remove unusable state
+		cfgStates.remove(child);
+
+		/*
+		 * do this only if it is not a recursive call, otherwise normal
+		 * propagation takes place
+		 */
+		if (!callStack.contains(child, enterState)) {
+			final FunctionStateSummary sum =
+				traverse(child, navigator,
+					enterState);
+			/*
+			 * join callee's summary with the caller's - transfer to
+			 * caller's namespace
+			 */
+			summary.join(sum, varTrans);
+
+			// propagate from callee's exit
+			propagationNode = navigator.getCalleeEnd(parent);
+			/*
+			 * save a callee's exit state transferred to the
+			 * caller's namespace
+			 */
+			cfgStates.put(propagationNode,
+				State.getRenamedCFGState(sum.getOutputState(),
+				varTrans, false));
+		}
+		return propagationNode;
+	}
+
 	/**
 	 * Traverses CFG from the start node using the start state as a starting
 	 * state
@@ -81,47 +130,19 @@ class SummariesBuilder {
 			CFGNode propagationNode = parent;
 
 			if (navigator.isCallNode(parent)) {
-				CFGNode child = navigator.getCalleeStart(parent);
-				cfgStates.propagate(propagationNode, child);
-
-				VarTransformations varTrans = new VarTransformations();
-				for (Element el : Util.getArguments(parent.getElement())) {
-					String id = VarTransformations.makeArgument(el);
-					// TODO change this if you change VarTransformations.makeArgument
-					String newId = passingManager.pass(parent, id, child);
-					varTrans.addTransformation(newId, id);
-				}
-
-				// get entering state for a callee
-				State enterState = State.getRenamedCFGState(
-					cfgStates.get(child), varTrans, true);
-				// remove unusable state
-				cfgStates.remove(child);
-
-				// do this only if it is not a recursive call, otherwise normal propagation takes place
-				if (!callStack.contains(child, enterState)) {
-					final FunctionStateSummary sum =
-						traverse(child, navigator,
-							enterState);
-					// join callee's summary with the caller's - transfer to caller's namespace
-					summary.join(sum, varTrans);
-
-					// propagate from callee's exit
-					propagationNode = navigator.getCalleeEnd(parent);
-					// save callee's exit state transfered to caller's namespace
-					cfgStates.put(propagationNode, State
-							.getRenamedCFGState(sum.getOutputState(), varTrans, false));
-				}
+				propagationNode = traverseCall(navigator,
+					summary, cfgStates, parent);
 			}
-			// propagate state to children and change occurrences count
-			for (final CFGNode child : parent.getSuccessors()) {
 
-				// save old state
+			/*
+			 * propagate the state to children and change the
+			 * occurrences count
+			 */
+			for (final CFGNode child : parent.getSuccessors()) {
 				State oldState = null;
 				if (cfgStates.get(child)!= null)
 					oldState = new State(cfgStates.get(child));
 
-				// propagate
 				if (cfgStates.propagate(propagationNode, child))
 					stack.addFirst(child);
 
