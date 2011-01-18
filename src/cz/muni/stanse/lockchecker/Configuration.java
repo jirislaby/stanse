@@ -41,63 +41,47 @@ class Configuration {
 	 */
 	@SuppressWarnings("unchecked")
 	public Configuration(File file) throws DocumentException {
-		List<Element> elements;
-
 		final Document configDocument = (new org.dom4j.io.SAXReader()).
 			read(file);
 		final Element rootElement = configDocument.getRootElement();
+		List<Element> elements;
+		Element element;
 
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"lock\"]");
-		for(Element el : elements)
-			locks.add(new XMLPattern(el.asXML()));
+		for (final Element el : elements)
+			locks.add(new XMLPattern(el));
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"unlock\"]");
-		for(Element el : elements)
-			unlocks.add(new XMLPattern(el.asXML()));
+		for (final Element el : elements)
+			unlocks.add(new XMLPattern(el));
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"assertLocked\"]");
-		for (Element el : elements)
-			assertLocked.add(new XMLPattern(el.asXML()));
+		for (final Element el : elements)
+			assertLocked.add(new XMLPattern(el));
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"assertUnlocked\"]");
-		for (Element el : elements)
-			assertUnlocked.add(new XMLPattern(el.asXML()));
+		for (final Element el : elements)
+			assertUnlocked.add(new XMLPattern(el));
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"skipOccurrence\"]");
-		for (Element el : elements)
-			skipOccurrences.add(new XMLPattern(el.asXML()));
+		for (final Element el : elements)
+			skipOccurrences.add(new XMLPattern(el));
 		elements = rootElement.selectNodes("expressions/expression");
-		for (Element el : elements)
+		for (final Element el : elements)
 			exprs.add(el.getText());
 
-		elements = rootElement.selectNodes("countFlows");
-		for(Element el : elements) {
-			countFlows = el.getText().equals("1");
-		}
-		elements = rootElement.selectNodes("countSubvars");
-		for(Element el : elements) {
-			countSubvars = el.getText().equals("1");
-		}
-		elements = rootElement.selectNodes("countPairs");
-		for(Element el : elements) {
-			countPairs = el.getText().equals("1");
-		}
-		elements = rootElement.selectNodes("countFunctions");
-		for(Element el : elements) {
-			countFunctions = el.getText().equals("1");
-		}
-		elements = rootElement.selectNodes("onlyTopFunctions");
-		for(Element el : elements) {
-			onlyTopFunctions = el.getText().equals("1");
-		}
-		elements = rootElement.selectNodes("generateDoubleErrors");
-		for(Element el : elements) {
-			generateDoubleErrors = el.getText().equals("1");
-		}
-		elements = rootElement.selectNodes("generateMoreLocksErrors");
-		for(Element el : elements) {
-			generateMoreLocksErrors = el.getText().equals("1");
-		}
-		elements = rootElement.selectNodes("threshold");
-		for(Element el : elements) {
-			threshold = Integer.valueOf(el.getText());
-		}
+		element = (Element)rootElement.selectSingleNode("countFlows");
+		countFlows = element.getText().equals("1");
+		element = (Element)rootElement.selectSingleNode("countSubvars");
+		countSubvars = element.getText().equals("1");
+		element = (Element)rootElement.selectSingleNode("countPairs");
+		countPairs = element.getText().equals("1");
+		element = (Element)rootElement.selectSingleNode("countFunctions");
+		countFunctions = element.getText().equals("1");
+		element = (Element)rootElement.selectSingleNode("onlyTopFunctions");
+		onlyTopFunctions = element.getText().equals("1");
+		element = (Element)rootElement.selectSingleNode("generateDoubleErrors");
+		generateDoubleErrors = element.getText().equals("1");
+		element = (Element)rootElement.selectSingleNode("generateMoreLocksErrors");
+		generateMoreLocksErrors = element.getText().equals("1");
+		element = (Element)rootElement.selectSingleNode("threshold");
+		threshold = Integer.valueOf(element.getText());
 	}
 
 	/**
