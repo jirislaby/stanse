@@ -204,16 +204,16 @@ class ErrorGenerator {
 	 * @param errTraces to save trace into
 	 * @param isGoodState is this common or wrong state?
 	 */
-	private void addTrace(String variable, State state, List<CheckerErrorTrace> errTraces, boolean isGoodState) {
-		if(isGoodState) {
-			Map<CFGNode, Counter> path = new HashMap<CFGNode, Counter>();
-			path.putAll(occurrences.get(variable).get(state));
-			addTrace(errTraces, path, "Occurrenes in common state: \"" + state + "\".", state);
-		} else {
-			Map<CFGNode, Counter> path = new HashMap<CFGNode, Counter>();
-			path.putAll(occurrences.get(variable).get(state));
-			addTrace(errTraces, path, "Occurrenes in wrong state: \"" + state + "\"." , state);
-		}
+	private void addTrace(final String variable, final State state,
+			final List<CheckerErrorTrace> errTraces,
+			boolean isGoodState) {
+		final Map<CFGNode, Counter> path =
+			new HashMap<CFGNode, Counter>();
+		path.putAll(occurrences.get(variable).get(state));
+		final StringBuilder desc = new StringBuilder("Occurrences in ");
+		desc.append(isGoodState ? "common" : "wrong").
+			append(" state: \"").append(state).append("\".");
+		addTrace(errTraces, path, desc.toString(), state);
 	}
 
 	/**
