@@ -148,49 +148,66 @@ class ErrorGenerator {
 	 * @param variable identifier
 	 * @param pair common state,z-statistic pair
 	 * @param zStatsSet all pairs
-	 * @return
+	 * @return error
 	 */
-	private CheckerErrorHolder generateError(String variable, Pair<State, Double> pair,
-			Set<Pair<State, Double>> zStatsSet) {
-		List<CheckerErrorTrace> errTraces = new ArrayList<CheckerErrorTrace>();
+	private CheckerErrorHolder generateError(final String variable,
+			final Pair<State, Double> pair,
+			final Set<Pair<State, Double>> zStatsSet) {
+		final List<CheckerErrorTrace> errTraces =
+			new ArrayList<CheckerErrorTrace>();
 
-		// the higher the z stat the higher possibility of error (multiply to convert to int)
-		int importance = (int) (Math.round((pair.getSecond()*1000.0)));
+		/*
+		 * the higher the z stat is the higher possibility of error
+		 * (multiply to convert to int)
+		 */
+		int importance = (int)Math.round(pair.getSecond()*1000.0);
 		// filter out errors under the threshold
-		if(importance < threshold) return null;
+		if (importance < threshold)
+			return null;
 
 		addTrace(variable, pair.getFirst(), errTraces, true);
 		State wrongState = null;
-		for(Pair<State, Double> ent : zStatsSet) {
-			if(!ent.equals(pair)) {
-				// when there is more locks in wrong state than in goodState
-				//it is not considered a problem
-				if(generateMoreLocksErrors || !ent.getFirst().contains(pair.getFirst())) {
-					addTrace(variable, ent.getFirst(), errTraces, false);
-					wrongState = ent.getFirst();
-				}
+		for (final Pair<State, Double> ent : zStatsSet) {
+			if (ent.equals(pair))
+				continue;
+			/*
+			 * when there are more locks in the wrong state
+			 * than in the goodState it is not considered a
+			 * problem
+			 */
+			if (generateMoreLocksErrors || !ent.getFirst().
+					contains(pair.getFirst())) {
+				addTrace(variable, ent.getFirst(), errTraces,
+					false);
+				wrongState = ent.getFirst();
 			}
 		}
-		// if we did not find really wrong state than return
-		if(!generateMoreLocksErrors && wrongState == null) return null;
-		String prettyVar = VarTransformations.prettyPrint(variable);
-		String description;
-		if(zStatsSet.size()<3) {
-			description = "Variable \"" + prettyVar + "\" is commonly in state: \"" + pair.getFirst() +
-								"\" but sometimes it is in state: \"" + wrongState + "\" when the function \"" + dictionary.get(startNode).getFunctionName() + "\" was entered" +
-								" in state \"" + startState + "\".";
-		} else {
-			description = "Variable \"" + prettyVar + "\" is commonly in state: \"" + pair.getFirst() +
-			"\" but sometimes it is in other states when the function \"" + dictionary.get(startNode).getFunctionName() + "\" was entered" +
-			" in state \"" + startState + "\".";
-		}
+		// if we did not find really a wrong state then return
+		if (!generateMoreLocksErrors && wrongState == null)
+			return null;
 
-		String shortDesc = "Probable locking error on variable \"" + prettyVar + "\" in function \"" + dictionary.get(startNode).getFunctionName() + "\".";
+		final String prettyVar = VarTransformations.prettyPrint(variable);
+		final StringBuilder desc = new StringBuilder("Variable \"");
+		desc.append(prettyVar).append("\" is commonly in state: \"").
+			append(pair.getFirst()).
+			append("\" but sometimes it is in ");
+		if (zStatsSet.size() < 3)
+			desc.append("state: \"").append(wrongState).append('"');
+		else
+			desc.append("other states");
+		desc.append(" when the function \"").
+			append(dictionary.get(startNode).getFunctionName()).
+			append("\" was entered in state \"").append(startState).
+			append("\".");
 
-		CheckerError error = new CheckerError(shortDesc, description, importance ,
-				"LockChecker", errTraces);
+		final String shortDesc = "Probable locking error on " +
+			"variable \"" + prettyVar + "\" in function \"" +
+			dictionary.get(startNode).getFunctionName() + "\".";
 
-		CheckerErrorHolder res = new CheckerErrorHolder();
+		final CheckerError error = new CheckerError(shortDesc,
+			desc.toString(), importance, "LockChecker", errTraces);
+
+		final CheckerErrorHolder res = new CheckerErrorHolder();
 		res.setError(error);
 		res.setVariable(variable);
 		return res;
