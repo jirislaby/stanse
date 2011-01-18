@@ -6,12 +6,12 @@ import cz.muni.stanse.codestructures.CFGNode;
  * @author Radim Cebis
  *
  */
-class LockError {	
+class LockError {
 	private String lockId;
 	private boolean isOnlyPossible;
 	private boolean isUnlock;
-	private CFGNode node;	
-	
+	private CFGNode node;
+
 	/**
 	 * Constructor of the lock error
 	 * @param lockId Id of the lock
@@ -24,24 +24,24 @@ class LockError {
 		this.isOnlyPossible = isOnlyPossible;
 		this.isUnlock = isUnlock;
 	}
-	
+
 	/**
 	 * @return lock id
 	 */
 	public String getLockId() {
 		return lockId;
-	}	
-	
+	}
+
 	/**
-	 * 
+	 *
 	 * @param isOnlyPossible is this only possible error (not certain error) to be set
 	 */
 	public void setOnlyPossible(boolean isOnlyPossible) {
 		this.isOnlyPossible = isOnlyPossible;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return is this unlock error?
 	 */
 	public boolean isUnlock() {
@@ -49,13 +49,13 @@ class LockError {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return is this only possible error (not certain error)?
 	 */
 	public boolean isOnlyPossible() {
 		return isOnlyPossible;
 	}
-	
+
 	/**
 	 * Get node in which this error happened
 	 * @return CFGNode
@@ -71,6 +71,6 @@ class LockError {
 	public void setNode(CFGNode node) {
 		this.node = node;
 	}
-	
-	
+
+
 }

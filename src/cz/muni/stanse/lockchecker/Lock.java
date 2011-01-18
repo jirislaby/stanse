@@ -3,7 +3,7 @@ package cz.muni.stanse.lockchecker;
 /**
  * Class representing a lock. Lock has ID
  * and two indicators if it is locked or unlocked which are independent.
- * Lock can be locked and unlocked in the same time (both state can be the case). 
+ * Lock can be locked and unlocked in the same time (both state can be the case).
  * @author Radim Cebis
  *
  */
@@ -13,8 +13,8 @@ class Lock {
 	// is this lock locked?
 	private boolean locked = false;
 	// is this lock unlocked?
-	private boolean unlocked = true;	
-		
+	private boolean unlocked = true;
+
 	/**
 	 * Copy constructor
 	 * @param lock Lock to be copied
@@ -22,9 +22,9 @@ class Lock {
 	public Lock(Lock lock) {
 		this.id = lock.id;
 		this.locked = lock.locked;
-		this.unlocked = lock.unlocked;		
+		this.unlocked = lock.unlocked;
 	}
-	
+
 	/**
 	 * Constructor
 	 * @param id of the lock
@@ -32,18 +32,18 @@ class Lock {
 	public Lock(String id) {
 		super();
 		this.id = id;
-	}	
-	
-	private void lock() {				
-		this.locked = true;
-		this.unlocked = false;		
 	}
 
-	private void unlock() {		
+	private void lock() {
+		this.locked = true;
+		this.unlocked = false;
+	}
+
+	private void unlock() {
 		this.locked = false;
 		this.unlocked = true;
 	}
-	
+
 	@Override
 	public String toString() {
 		String append = "CANNOT HAPPEN";
@@ -88,11 +88,11 @@ class Lock {
 	public String getId() {
 		return id;
 	}
-	
+
 	/**
-	 * Propagates argument lock to this lock. 
+	 * Propagates argument lock to this lock.
 	 * Executes boolean OR operation on lock/unlock indicators.
-	 * 
+	 *
 	 * @param lock Lock which is propagated to this lock
 	 * @return true if the propagation changed this lock
 	 */
@@ -115,15 +115,15 @@ class Lock {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return locked indicator
 	 */
-	public boolean isLocked() {		
+	public boolean isLocked() {
 		return locked;
 	}
 
 	/**
-	 * 
+	 *
 	 * @return unlock indicator
 	 */
 	public boolean isUnlocked() {
@@ -137,7 +137,7 @@ class Lock {
 	public void op(boolean isUnlock) {
 		if(isUnlock) this.unlock();
 		else this.lock();
-		
+
 	}
 
 	/**

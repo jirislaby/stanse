@@ -11,12 +11,10 @@ import org.dom4j.Element;
 
 import cz.muni.stanse.utils.xmlpatterns.XMLPattern;
 
-
 /**
  * Class representing Lock Checker's configuration
- * 
- * @author Radim Cebis
  *
+ * @author Radim Cebis
  */
 class Configuration {
 
@@ -34,47 +32,40 @@ class Configuration {
 	private boolean onlyTopFunctions = false;
 	private boolean generateDoubleErrors = false;
 	private boolean generateMoreLocksErrors = false;
-	
-	
-		
+
 	/**
 	 * Create the configuration from the file.
-	 * 
+	 *
 	 * @param file contains the configuration specification
 	 * @throws DocumentException
 	 */
 	@SuppressWarnings("unchecked")
 	public Configuration(File file) throws DocumentException {
-		Element rootElement;
 		List<Element> elements;
 
-		Document configDocument = (new org.dom4j.io.SAXReader()).read(file);
-		rootElement = configDocument.getRootElement();
-		
+		final Document configDocument = (new org.dom4j.io.SAXReader()).
+			read(file);
+		final Element rootElement = configDocument.getRootElement();
+
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"lock\"]");
-		for(Element el : elements) {
+		for(Element el : elements)
 			locks.add(new XMLPattern(el.asXML()));
-		}
-		
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"unlock\"]");
-		for(Element el : elements) {
+		for(Element el : elements)
 			unlocks.add(new XMLPattern(el.asXML()));
-		}
-		
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"assertLocked\"]");
-		for(Element el : elements) {
+		for (Element el : elements)
 			assertLocked.add(new XMLPattern(el.asXML()));
-		}
-		
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"assertUnlocked\"]");
-		for(Element el : elements) {
+		for (Element el : elements)
 			assertUnlocked.add(new XMLPattern(el.asXML()));
-		}
-		
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"skipOccurrence\"]");
-		for(Element el : elements) {
+		for (Element el : elements)
 			skipOccurrences.add(new XMLPattern(el.asXML()));
-		}
+		elements = rootElement.selectNodes("expressions/expression");
+		for (Element el : elements)
+			exprs.add(el.getText());
+
 		elements = rootElement.selectNodes("countFlows");
 		for(Element el : elements) {
 			countFlows = el.getText().equals("1");
@@ -82,14 +73,10 @@ class Configuration {
 		elements = rootElement.selectNodes("countSubvars");
 		for(Element el : elements) {
 			countSubvars = el.getText().equals("1");
-		}	
+		}
 		elements = rootElement.selectNodes("countPairs");
 		for(Element el : elements) {
 			countPairs = el.getText().equals("1");
-		}	
-		elements = rootElement.selectNodes("expressions/expression");
-		for(Element el : elements) {
-			exprs.add(el.getText());
 		}
 		elements = rootElement.selectNodes("countFunctions");
 		for(Element el : elements) {
@@ -99,25 +86,20 @@ class Configuration {
 		for(Element el : elements) {
 			onlyTopFunctions = el.getText().equals("1");
 		}
-		
 		elements = rootElement.selectNodes("generateDoubleErrors");
 		for(Element el : elements) {
 			generateDoubleErrors = el.getText().equals("1");
 		}
-		
 		elements = rootElement.selectNodes("generateMoreLocksErrors");
 		for(Element el : elements) {
 			generateMoreLocksErrors = el.getText().equals("1");
 		}
-		
 		elements = rootElement.selectNodes("threshold");
 		for(Element el : elements) {
 			threshold = Integer.valueOf(el.getText());
 		}
-		
-	}	
-	
-	
+	}
+
 	/**
 	 * @return assert locked patterns
 	 */
@@ -159,7 +141,7 @@ class Configuration {
 	public boolean countFlows() {
 		return countFlows;
 	}
-	
+
 	/**
 	 * @return true if we should count sub-variables
 	 */
@@ -185,21 +167,21 @@ class Configuration {
 	 * @return true if we should count z-statistic using pairs
 	 */
 	public boolean countPairs() {
-		return countPairs ;
+		return countPairs;
 	}
 
 	/**
 	 * @return threshold - minimal importance value for possible locking errors
 	 */
 	public int getThreshold() {
-		return threshold ;
+		return threshold;
 	}
 
 	/**
 	 * @return true if we should generate errors only for top functions
 	 */
 	public boolean onlyTopFunctions() {
-		return onlyTopFunctions ;
+		return onlyTopFunctions;
 	}
 
 	/**
@@ -208,12 +190,11 @@ class Configuration {
 	public boolean generateDoubleErrors() {
 		return generateDoubleErrors;
 	}
-	
+
 	/**
 	 * @return true if we should generate errors for states which have more locks held than in common state
 	 */
 	public boolean generateMoreLocksErrors() {
 		return generateMoreLocksErrors;
 	}
-	
 }

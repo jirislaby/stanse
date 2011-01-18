@@ -13,12 +13,12 @@ import cz.muni.stanse.codestructures.CFGNode;
 
 /**
  * Class holding all FunctionSummary instances for the check run
- * 
+ *
  * @author Radim Cebis
  *
  */
 class Summaries {
-	
+
 	private Map<CFGNode, FunctionSummary> map = new HashMap<CFGNode, FunctionSummary>();
 	private Map<CFGNode, CFGHandle> dictionary;
 	private StateRepository repos = new StateRepository();
@@ -32,17 +32,18 @@ class Summaries {
 	 */
 	public FunctionStateSummary get(CFGNode startNode, State startState) {
 		FunctionSummary fs = map.get(startNode);
-		if(fs!=null) return fs.get(startState);
+		if (fs!=null)
+			return fs.get(startState);
 		return null;
 	}
-	
+
 	/**
 	 * @return state repository
 	 */
 	public StateRepository getRepos() {
 		return repos;
 	}
-	
+
 	/**
 	 * Constructs repository with given configuration
 	 * @param dictionary to translate nodes to handles
@@ -53,17 +54,16 @@ class Summaries {
 		this.dictionary = dictionary;
 		this.conf = conf;
 	}
-		
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("/////////////////  SUMMARY  /////////////////\n");
-		builder.append("/////////////////////////////////////////////\n");
-		for(Entry<CFGNode, FunctionSummary> ent: map.entrySet()) {
-			builder.append(ent.getValue());
-		}
-		return builder.toString();
-	}	
+		StringBuilder sb = new StringBuilder();
+		sb.append("/////////////////  SUMMARY  /////////////////\n");
+		sb.append("/////////////////////////////////////////////\n");
+		for (final Entry<CFGNode, FunctionSummary> ent : map.entrySet())
+			sb.append(ent.getValue());
+		return sb.toString();
+	}
 
 	/**
 	 * Get function summary for the given function
@@ -72,8 +72,9 @@ class Summaries {
 	 */
 	public FunctionSummary get(CFGNode startNode) {
 		FunctionSummary fs = map.get(startNode);
-		if(fs == null) {
-			fs = new FunctionSummary(repos, startNode, dictionary, conf);
+		if (fs == null) {
+			fs = new FunctionSummary(repos, startNode, dictionary,
+				conf);
 			map.put(startNode, fs);
 		}
 		return fs;
@@ -84,9 +85,8 @@ class Summaries {
 	 */
 	public Collection<FunctionStateSummary> getAllFunctionStateSummaries() {
 		Collection<FunctionStateSummary> res = new ArrayList<FunctionStateSummary>();
-		for(FunctionSummary fs : map.values()) {
+		for (final FunctionSummary fs : map.values())
 			res.addAll(fs.getFunctionStateSummaries());
-		}
-		return res;		
+		return res;
 	}
 }

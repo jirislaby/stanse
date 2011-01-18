@@ -5,16 +5,16 @@ import cz.muni.stanse.checker.CheckerError;
 
 /**
  * Class holding the CheckerError + some additional info needed
- * for filtering 
- * 
+ * for filtering
+ *
  * @author Radim Cebis
  *
  */
-class CheckerErrorHolder {	
-	
+class CheckerErrorHolder {
+
 	private CheckerError error;
 	private String variable;
-	
+
 	public CheckerError getError() {
 		return error;
 	}

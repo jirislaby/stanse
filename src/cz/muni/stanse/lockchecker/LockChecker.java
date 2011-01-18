@@ -13,19 +13,19 @@ import cz.muni.stanse.codestructures.LazyInternalStructures;
 
 /**
  * Lock Checker class used to find possible locking errors
- * 
- * 
+ *
+ *
  * @author Radim Cebis
  *
  */
 public class LockChecker extends Checker {
-   
-    private Configuration conf;
-    
-    private final static Logger logger =
-        Logger.getLogger(SummariesBuilder.class.getName());
 
-    
+    private Configuration conf;
+
+    private final static Logger logger =
+	Logger.getLogger(SummariesBuilder.class.getName());
+
+
 	/**
 	 * Constructs the Lock Checker using given configuration
 	 * @param conf Configuration
@@ -35,49 +35,59 @@ public class LockChecker extends Checker {
 	}
 
 	@Override
-    public CheckingResult check(
-                        final LazyInternalStructures internals,
-                        final CheckerErrorReceiver errReciver,
-                        final CheckerProgressMonitor monitor)
-                                                       throws CheckerException {
-    	
-    	SummariesBuilder summariesBuilder = new SummariesBuilder(internals.getNodeToCFGdictionary(), internals.getArgumentPassingManager(), conf);
-    	for(CFGHandle handle : internals.getStartFunctions()) {
-    		summariesBuilder.traverse(handle.getStartNode(), internals.getNavigator(), new State());
-    	}
-    	
-    	Summaries sum = summariesBuilder.getSummaries();
-    	CheckerErrorFilter filter = new CheckerErrorFilter();
-    	
-    	
-    	if(conf.onlyTopFunctions()) {
-    		for(CFGHandle handle : internals.getStartFunctions()) {
-	    		FunctionSummary functionSummary = sum.get(handle.getStartNode());
-	    		for( FunctionStateSummary fss : functionSummary.getFunctionStateSummaries()) {
-	    			ErrorGenerator generator = new ErrorGenerator(fss, conf.countFlows(), conf.countPairs(), conf.getThreshold(), conf.generateMoreLocksErrors());
-	        		generator.generateErrors(filter);
-	        		if(conf.generateDoubleErrors())
-	        			fss.getErrHolder().save(errReciver);
-	    		}
-	    	}
-    	} else {    		
-    		for(FunctionStateSummary fss : sum.getAllFunctionStateSummaries()) {
-	    		ErrorGenerator generator = new ErrorGenerator(fss, conf.countFlows(), conf.countPairs(), conf.getThreshold(), conf.generateMoreLocksErrors());
-	    		generator.generateErrors(filter);
-	    		if(conf.generateDoubleErrors())
-        			fss.getErrHolder().save(errReciver);
-	    	}	    	
-    	}
-    	
-    	filter.generateErrors(errReciver);
-    	
+    public CheckingResult check(final LazyInternalStructures internals,
+		final CheckerErrorReceiver errReceiver,
+		final CheckerProgressMonitor monitor) throws CheckerException {
+	final SummariesBuilder summariesBuilder = new SummariesBuilder(
+		internals.getNodeToCFGdictionary(),
+		internals.getArgumentPassingManager(), conf);
+
+	for(CFGHandle handle : internals.getStartFunctions()) {
+		summariesBuilder.traverse(handle.getStartNode(),
+			internals.getNavigator(), new State());
+	}
+
+	final Summaries sum = summariesBuilder.getSummaries();
+	final CheckerErrorFilter filter = new CheckerErrorFilter();
+
+	if (conf.onlyTopFunctions()) {
+		for (final CFGHandle handle : internals.getStartFunctions()) {
+			final FunctionSummary functionSummary =
+				sum.get(handle.getStartNode());
+			for (final FunctionStateSummary fss :
+				functionSummary.getFunctionStateSummaries()) {
+				final ErrorGenerator generator =
+					new ErrorGenerator(fss, conf.countFlows(),
+					conf.countPairs(), conf.getThreshold(),
+					conf.generateMoreLocksErrors());
+				generator.generateErrors(filter);
+				if (conf.generateDoubleErrors())
+					fss.getErrHolder().save(errReceiver);
+			}
+		}
+	} else {
+		for (final FunctionStateSummary fss :
+				sum.getAllFunctionStateSummaries()) {
+			final ErrorGenerator generator = new ErrorGenerator(
+				fss, conf.countFlows(), conf.countPairs(),
+				conf.getThreshold(),
+				conf.generateMoreLocksErrors());
+			generator.generateErrors(filter);
+			if (conf.generateDoubleErrors())
+				fss.getErrHolder().save(errReceiver);
+		}
+	}
+
+	filter.generateErrors(errReceiver);
+
 	logger.debug(sum);
-    	
-        return new CheckingSuccess();
-    }    
-    
+
+	return new CheckingSuccess();
+    }
+
     @Override
     public String getName() {
-        return "Lock Checker for finding variables which should be locked but are not";
+	return "Lock Checker for finding variables which should be locked " +
+		"but are not";
     }
 }

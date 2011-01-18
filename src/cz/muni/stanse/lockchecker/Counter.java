@@ -3,20 +3,20 @@ package cz.muni.stanse.lockchecker;
 
 /**
  * Mutable class holding integer. For use in Maps.
- * 
- * @author Radim Cebis 
+ *
+ * @author Radim Cebis
  */
 class Counter {
 	int count = 0;
-	
+
 	/**
-	 * 
+	 *
 	 * @param init initial value of the counter
 	 */
 	public Counter(int init) {
 		count = init;
 	}
-	
+
 	/**
 	 * Gets count of the counter
 	 * @return count
@@ -37,7 +37,7 @@ class Counter {
 	public String toString() {
 		return Integer.toString(count);
 	}
-	
-	
-	
+
+
+
 }
