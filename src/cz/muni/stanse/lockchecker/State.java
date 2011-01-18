@@ -44,6 +44,31 @@ class State {
 		return true;
 	}
 
+	private boolean propagateLock(final Lock lock) {
+		boolean changed = false;
+		if (locks != null && locks.containsKey(lock.getId())) {
+			if (locks.get(lock.getId()).propagate(lock))
+				changed = true;
+		} else {
+			final Lock newLock = new Lock(lock);
+			if (newLock.isLocked()) {
+				if (locks == null)
+					locks = new HashMap<String, Lock>();
+				locks.put(lock.getId(), newLock);
+				changed = true;
+				/*
+				 * if this node has been visited and we did not
+				 * save information about lock it means it was
+				 * on other path which is by default unlocked.
+				 */
+				if (wasVisited)
+					newLock.forceUnlocked();
+			}
+			changed = true;
+		}
+		return changed;
+	}
+
 	/**
 	 * Propagates From State to this state
 	 * @param from State to propagate from
@@ -52,26 +77,13 @@ class State {
 	public boolean propagate(State from) {
 		boolean changed = false;
 		// propagate and add all locks to the TO node
-		if (from.locks != null) {
-			for(final Lock lock : from.locks.values()) {
-				if (locks != null && locks.containsKey(lock.getId())) {
-					if (locks.get(lock.getId()).propagate(lock))
-						changed = true;
-				} else {
-					Lock newLock = new Lock(lock);
-					if(newLock.isLocked()) {
-						if(locks == null) locks = new HashMap<String, Lock>();
-						locks.put(lock.getId(), newLock);
-						changed = true;
-						// if this node has been visited and we did not save information about lock it means it was
-						// on other path which is by default unlocked.
-						if(wasVisited) newLock.forceUnlocked();
-					}
-					changed = true;
-				}
-			}
-		}
-		// all locks which are in this node and missing in FROM node -> means unlocked in FROM node
+		if (from.locks != null)
+			for(final Lock lock : from.locks.values())
+				changed = propagateLock(lock);
+		/*
+		 * all locks which are in this node and missing in FROM node ->
+		 * means unlocked in FROM node
+		 */
 		if (locks != null) {
 			for (final Lock lock : this.locks.values())
 				if (from.locks == null || !from.locks.containsKey(lock.getId()))
