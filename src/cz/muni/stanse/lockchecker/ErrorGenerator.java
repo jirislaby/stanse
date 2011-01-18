@@ -38,6 +38,7 @@ class ErrorGenerator {
 	private Map<String, Occurrences> occurrences =
 		new HashMap<String, Occurrences>();
 	private Map<CFGNode, CFGHandle> dictionary;
+	private CheckerErrorFilter errReceiver;
 	private CFGNode startNode;
 	private State startState;
 	/*
@@ -72,6 +73,7 @@ class ErrorGenerator {
 	 * Creates new error generator for the given summary and configuration
 	 * information
 	 *
+	 * @param errReceiver where to store found errors
 	 * @param summary from which errors should be generated
 	 * @param countFlows should we count using flows?
 	 * @param countPairs should we count using pairs?
@@ -80,9 +82,11 @@ class ErrorGenerator {
 	 * locks are held than in common state?
 	 * @see Configuration
 	 */
-	public ErrorGenerator(final FunctionStateSummary summary,
-			boolean countFlows, boolean countPairs, int threshold,
+	public ErrorGenerator(final CheckerErrorFilter errReceiver,
+			final FunctionStateSummary summary, boolean countFlows,
+			boolean countPairs, int threshold,
 			boolean generateMoreLocksErrors) {
+		this.errReceiver = errReceiver;
 		this.occurrences = summary.getVarOccurrences();
 		this.dictionary = summary.getDictionary();
 		this.startState = summary.getStartState();
@@ -97,7 +101,7 @@ class ErrorGenerator {
 	 * Generate errors.
 	 * @param errReceiver to put generated errors into
 	 */
-	public void generateErrors(CheckerErrorFilter errReceiver) {
+	public void generateErrors() {
 		for (Entry<String, Occurrences> entry: occurrences.entrySet()) {
 
 			if(countPairs) {

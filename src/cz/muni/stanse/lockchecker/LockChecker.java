@@ -72,11 +72,12 @@ public class LockChecker extends Checker {
 			final CheckerErrorReceiver errReceiver,
 			final CheckerErrorFilter filter) {
 		for (final FunctionStateSummary fss : sums) {
-			final ErrorGenerator generator = new ErrorGenerator(fss,
+			final ErrorGenerator generator = new ErrorGenerator(
+				filter, fss,
 				conf.countFlows(), conf.countPairs(),
 				conf.getThreshold(),
 				conf.generateMoreLocksErrors());
-			generator.generateErrors(filter);
+			generator.generateErrors();
 			if (conf.generateDoubleErrors())
 				fss.getErrHolder().save(errReceiver);
 		}
