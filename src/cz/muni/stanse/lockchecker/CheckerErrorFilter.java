@@ -43,7 +43,6 @@ class CheckerErrorFilter {
 			// add a new error
 			set.add(holder.getError());
 		} else {
-			boolean found = false;
 			for (final CheckerError err : set) {
 				/*
 				 * if the error has same importance and is on
@@ -52,10 +51,9 @@ class CheckerErrorFilter {
 				 */
 				if (err.getTraces().equals(
 						holder.getError().getTraces()))
-					found = true;
+					return;
 			}
-			if (!found)
-				set.add(holder.getError());
+			set.add(holder.getError());
 		}
 	}
 
