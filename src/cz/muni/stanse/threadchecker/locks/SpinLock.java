@@ -61,37 +61,25 @@ public class SpinLock implements Lock, Cloneable  {
         return clone;
     }
 
-    /**
-     * Method increments value state and return proper value.
-     * @return true whether before calling this method was semaphore unlocked
-     * and now is locked.
-     */
-    @Override
-    public boolean lockUp() {
-        if(this.state==0) {
-            this.state++;
-            return true;
-        } else {
-            this.state++;
-            return false;
-        }
-    }
+	/**
+	 * Increments value state and returns proper value.
+	 * @return true if the lock was unlocked before calling this method
+	 */
+	@Override
+	public boolean lockUp() {
+		assert(state >= 0);
+		return ++state == 1;
+	}
 
-    /**
-     * Method decrements value state and return proper value.
-     * @return true whether before calling this method was semaphore locked
-     * and now is unlocked.
-     */
-    @Override
-    public boolean lockDown() {
-        if(this.state==1) {
-            this.state--;
-            return true;
-        } else {
-            this.state--;
-            return false;
-        }
-    }
+	/**
+	 * Decrements value state and returns proper value.
+	 * @return true if the lock is unlocked after calling this method
+	 */
+	@Override
+	public boolean lockDown() {
+		assert(state > 0);
+		return --state == 0;
+	}
 
 
     /**
