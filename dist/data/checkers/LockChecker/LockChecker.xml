@@ -10,7 +10,7 @@
 	<generateDoubleErrors>0</generateDoubleErrors>
 	<generateMoreLocksErrors>0</generateMoreLocksErrors>
 
-	<threshold>-200</threshold>
+	<threshold>600</threshold>
 
 	<expressions>
 		<expression>id</expression>
