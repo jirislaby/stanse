@@ -2,7 +2,6 @@ package cz.muni.stanse.lockchecker;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -97,52 +96,77 @@ class ErrorGenerator {
 		this.generateMoreLocksErrors = generateMoreLocksErrors;
 	}
 
+	private void generateErrorsPaired(
+			final Entry<String, Occurrences> entry) {
+		final PairComparator pairComparator =
+			new Occurrences.PairComparator();
+
+		for (final Pair<Pair<State, Double>, Pair<State, Double>> pair :
+				entry.getValue().getZStatsPairs(countFlows)) {
+			Pair<State, Double> goodState;
+			Pair<State, Double> wrongState;
+			if (pairComparator.compare(pair.getFirst(),
+					pair.getSecond()) < 0) {
+				goodState = pair.getFirst();
+				wrongState = pair.getSecond();
+			} else {
+				goodState = pair.getSecond();
+				wrongState = pair.getFirst();
+			}
+			/*
+			 * do not generate errors for variables which are
+			 * commonly in unlocked state
+			 */
+			if (!goodState.getFirst().isUnlocked()) {
+				final Set<Pair<State,Double>> set =
+					new HashSet<Pair<State,Double>>();
+				set.add(goodState);
+				set.add(wrongState);
+				final CheckerErrorHolder err = generateError(
+					entry.getKey(), goodState, set);
+				if (err != null)
+					errReceiver.receive(err);
+			}
+		}
+	}
+
+	private void generateErrorsUnpaired(
+			final Entry<String, Occurrences> entry) {
+		// count pairs != true -> use set
+		final SortedSet<Pair<State, Double>> zStatsSet =
+			entry.getValue().getZStatsSet(countFlows);
+
+		if (zStatsSet.size() <= 1)
+			return;
+
+		/*
+		 * generate errors only for the most common state for this
+		 * variable
+		 */
+		final Pair<State, Double> common = zStatsSet.first();
+		/*
+		 * do not generate errors for variables which are commonly in
+		 * unlocked state
+		 */
+		if (!common.getFirst().isUnlocked()) {
+			final CheckerErrorHolder err = generateError(
+				entry.getKey(), common, zStatsSet);
+			if (err != null)
+				errReceiver.receive(err);
+		}
+	}
+
 	/**
 	 * Generate errors.
 	 * @param errReceiver to put generated errors into
 	 */
 	public void generateErrors() {
-		for (Entry<String, Occurrences> entry: occurrences.entrySet()) {
-
-			if(countPairs) {
-				Collection<Pair<Pair<State, Double>, Pair<State, Double>>> zStats = entry.getValue().getZStatsPairs(countFlows);
-				PairComparator pairComparator = new Occurrences.PairComparator();
-
-				for(Pair<Pair<State, Double>, Pair<State, Double>> pair: zStats) {
-					Pair<State, Double> goodState;
-					Pair<State, Double> wrongState;
-					if(pairComparator.compare(pair.getFirst(), pair.getSecond()) < 0) {
-						goodState = pair.getFirst();
-						wrongState = pair.getSecond();
-					} else {
-						goodState = pair.getSecond();
-						wrongState = pair.getFirst();
-					}
-					// do not generate errors for variables which are commonly in unlocked state
-					if(!goodState.getFirst().isUnlocked()) {
-						Set<Pair<State,Double>> set = new HashSet<Pair<State,Double>>();
-						set.add(goodState);
-						set.add(wrongState);
-						CheckerErrorHolder generatedError = generateError(entry.getKey(), goodState, set);
-						if(generatedError!=null)
-							errReceiver.receive(generatedError);
-					}
-				}
-			} else {
-				// count pairs != true -> use set
-				SortedSet<Pair<State, Double>> zStatsSet = entry.getValue().getZStatsSet(countFlows);
-
-				if(zStatsSet.size()>1) {
-					// generate errors only for the most common state for this variable
-					Pair<State, Double> common = zStatsSet.first();
-					// do not generate errors for variables which are commonly in unlocked state
-					if(!common.getFirst().isUnlocked()) {
-						CheckerErrorHolder generatedError = generateError(entry.getKey(), common, zStatsSet);
-						if(generatedError!=null)
-							errReceiver.receive(generatedError);
-					}
-				}
-			}
+		for (final Entry<String, Occurrences> entry :
+				occurrences.entrySet()) {
+			if (countPairs)
+				generateErrorsPaired(entry);
+			else
+				generateErrorsUnpaired(entry);
 		}
 	}
 
