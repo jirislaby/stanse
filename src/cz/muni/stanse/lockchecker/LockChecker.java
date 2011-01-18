@@ -30,7 +30,7 @@ public class LockChecker extends Checker {
 	 * Constructs the Lock Checker using given configuration
 	 * @param conf Configuration
 	 */
-	public LockChecker(Configuration conf) {
+	LockChecker(Configuration conf) {
 		this.conf = conf;
 	}
 

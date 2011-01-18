@@ -19,7 +19,7 @@ import cz.muni.stanse.utils.xmlpatterns.XMLPatternVariablesAssignment;
  * @author Radim Cebis
  *
  */
-public class CFGStates {
+class CFGStates {
 	// maps state to the node
 	private Map<CFGNode, State> cfgStates = new HashMap<CFGNode, State>();
 	// holds error holder used to report double un/locking errors
