@@ -43,12 +43,12 @@ class CFGStates {
 
 	/**
 	 * Propagation function.
-	 * Propagates state from from node to to node, transforms state
+	 * Propagates a state from @from node to @to node, transforms state
 	 * needed by the node's content
 	 *
-	 * @param from node to propagate state from
-	 * @param to node to propagate state to
-	 * @return true if the state of the TO node has changed
+	 * @param from node to propagate a state from
+	 * @param to node to propagate a state to
+	 * @return true if the state of the @to node has changed
 	 */
 	public boolean propagate(CFGNode from, CFGNode to) {
 		LockError res = null;

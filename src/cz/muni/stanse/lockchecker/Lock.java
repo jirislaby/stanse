@@ -3,13 +3,16 @@ package cz.muni.stanse.lockchecker;
 /**
  * Class representing a lock. Lock has ID
  * and two indicators if it is locked or unlocked which are independent.
- * Lock can be locked and unlocked in the same time (both state can be the case).
+ * Lock can be locked and unlocked in the same time (both state can be the
+ * case).
  * @author Radim Cebis
- *
  */
 class Lock {
 	private String id;
-	// lock has 2 states which are independent!!! b/c propagation when paths are joined
+	/*
+	 * lock has 2 states which are independent!!! b/c propagation when
+	 * paths are joined
+	 */
 	// is this lock locked?
 	private boolean locked = false;
 	// is this lock unlocked?
@@ -47,11 +50,18 @@ class Lock {
 	@Override
 	public String toString() {
 		String append = "CANNOT HAPPEN";
-		if(locked && !unlocked) append = "locked";
-		// this happens when two paths join and in one lock was locked and in other one unlocked
-		else if(locked && unlocked) append = "locked&unlocked";
-		else if(!locked && unlocked) append = "unlocked";
-		return "Lock \"" + VarTransformations.prettyPrint(id) + "\" " + append;
+		if(locked && !unlocked)
+			append = "locked";
+		else if(locked && unlocked) {
+			/*
+			 * this happens when two paths join and in one lock was
+			 * locked and in other one unlocked
+			 */
+			append = "locked&unlocked";
+		} else if(!locked && unlocked)
+			append = "unlocked";
+		return "Lock \"" + VarTransformations.prettyPrint(id) + "\" " +
+			append;
 	}
 
 	@Override
@@ -105,7 +115,8 @@ class Lock {
 	}
 
 	/**
-	 * Force this lock to be also unlocked. (does not change lock indicator - only unlock)
+	 * Force this lock to be also unlocked. (does not change lock indicator,
+	 * only unlock)
 	 * @return has this lock changed after operation?
 	 */
 	public boolean forceUnlocked() {

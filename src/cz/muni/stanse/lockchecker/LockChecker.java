@@ -34,8 +34,9 @@ public class LockChecker extends Checker {
 
 	@Override
 	public CheckingResult check(final LazyInternalStructures internals,
-		final CheckerErrorReceiver errReceiver,
-		final CheckerProgressMonitor monitor) throws CheckerException {
+			final CheckerErrorReceiver errReceiver,
+			final CheckerProgressMonitor monitor)
+			throws CheckerException {
 		final SummariesBuilder summariesBuilder = new SummariesBuilder(
 			internals.getNodeToCFGdictionary(),
 			internals.getArgumentPassingManager(), conf);

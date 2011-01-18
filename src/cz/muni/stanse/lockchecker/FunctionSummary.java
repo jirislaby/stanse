@@ -12,29 +12,28 @@ import cz.muni.stanse.codestructures.CFGNode;
  * Class holding all the FunctionStateSummary objects of the given function.
  *
  * @author Radim Cebis
- *
  */
 class FunctionSummary {
-
 	// entering state, functionStateSummary
-	private Map<State, FunctionStateSummary> stateSummary = new HashMap<State, FunctionStateSummary>();
+	private Map<State, FunctionStateSummary> stateSummary =
+		new HashMap<State, FunctionStateSummary>();
 	private StateRepository repos;
 	private CFGNode startNode;
 	private Map<CFGNode, CFGHandle> dictionary;
 	private Configuration conf;
 
-
-
 	/**
-	 * Constructs function summary for given function
+	 * Constructs a function summary for the given function
 	 *
 	 * @param repos state repository
 	 * @param startNode this functionsummary's start node
 	 * @param dictionary
 	 * @param conf Configuration
 	 */
-	public FunctionSummary(StateRepository repos, CFGNode startNode,
-			Map<CFGNode, CFGHandle> dictionary, Configuration conf) {
+	public FunctionSummary(final StateRepository repos,
+			final CFGNode startNode,
+			final Map<CFGNode, CFGHandle> dictionary,
+			final Configuration conf) {
 		super();
 		this.repos = repos;
 		this.startNode = startNode;
@@ -43,7 +42,7 @@ class FunctionSummary {
 	}
 
 	/**
-	 * Returns FunctionStateSummary for a given entered state
+	 * Returns FunctionStateSummary for the given entered state
 	 * If FSS is not found, it creates a new one
 	 *
 	 * @param state entered state
@@ -51,9 +50,10 @@ class FunctionSummary {
 	 */
 	public FunctionStateSummary get(State state) {
 		FunctionStateSummary fss = stateSummary.get(state);
-		if(fss == null) {
+		if (fss == null) {
 			state = repos.get(state);
-			fss = new FunctionStateSummary(dictionary, repos, startNode, state, conf);
+			fss = new FunctionStateSummary(dictionary, repos,
+				startNode, state, conf);
 			stateSummary.put(state, fss);
 		}
 		return fss;
@@ -61,10 +61,10 @@ class FunctionSummary {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		for(Entry<State, FunctionStateSummary> ent: stateSummary.entrySet()) {
+		final StringBuilder builder = new StringBuilder();
+		for (final Entry<State, FunctionStateSummary> ent :
+				stateSummary.entrySet())
 			builder.append(ent.getValue());
-		}
 		return builder.toString();
 	}
 
@@ -72,12 +72,12 @@ class FunctionSummary {
 	 * Returns FunctionStateSummary for a given entered state
 	 * If FSS for the given state does not exists null is returned
 	 * @param state entered state
-	 * @return FunctionStateSummary for the give entered state or null if not existing
+	 * @return FunctionStateSummary for the give entered state or null if
+	 * not existing
 	 */
 	public FunctionStateSummary getFromCache(State state) {
 		return stateSummary.get(state);
 	}
-
 
 	/**
 	 * @return all FunctionStateSummary held for this FunctionSummary

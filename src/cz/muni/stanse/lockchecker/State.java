@@ -81,7 +81,7 @@ class State {
 
 		boolean oldWasVisited = wasVisited;
 		wasVisited = true;
-		return changed || (oldWasVisited != wasVisited);
+		return changed || oldWasVisited != wasVisited;
 	}
 
 
@@ -110,8 +110,8 @@ class State {
 	 * @param state
 	 * @return LockError if one occurs, null otherwise
 	 */
-	public static LockError checkDoubles(boolean isUnlock, String lockId,
-			State state) {
+	public static LockError checkDoubles(boolean isUnlock,
+			final String lockId, final State state) {
 		LockError res = null;
 		if (state.locks != null && state.locks.containsKey(lockId)) {
 			Lock lock = state.locks.get(lockId);
@@ -119,13 +119,13 @@ class State {
 				res = new LockError(lock.getId(), false,
 					lock.isUnlocked());
 			}
-			if(isUnlock && lock.isUnlocked()) {
+			if (isUnlock && lock.isUnlocked()) {
 				res = new LockError(lock.getId(), true,
 					lock.isLocked());
 			}
 		}
 		if (state.locks == null || !state.locks.containsKey(lockId)) {
-			if(isUnlock)
+			if (isUnlock)
 				res = new LockError(lockId, true, false);
 		}
 
@@ -172,13 +172,14 @@ class State {
 	 * @param fromCallerToCallee should this rename from caller to callee?
 	 * @return renamed copy of the state
 	 */
-	public static State getRenamedCFGState(State state,
-			VarTransformations varTransformations, boolean fromCallerToCallee) {
+	public static State getRenamedCFGState(final State state,
+			final VarTransformations varTransformations,
+			boolean fromCallerToCallee) {
 		final State res = new State();
 		if (state.locks == null)
 			return res;
-		else
-			res.locks = new HashMap<String, Lock>();
+
+		res.locks = new HashMap<String, Lock>();
 
 		for (final Lock lock : state.locks.values()) {
 			String newId = varTransformations.transform(

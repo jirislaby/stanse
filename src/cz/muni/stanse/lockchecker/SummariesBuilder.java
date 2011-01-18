@@ -16,7 +16,6 @@ import cz.muni.stanse.codestructures.CFGsNavigator;
  * Class used to build summaries
  *
  * @author Radim Cebis
- *
  */
 class SummariesBuilder {
 	private ArgumentPassingManager passingManager;
@@ -26,7 +25,7 @@ class SummariesBuilder {
 	private Configuration conf;
 
 	private final static Logger logger =
-	Logger.getLogger(SummariesBuilder.class.getName());
+		Logger.getLogger(SummariesBuilder.class.getName());
 
 	/**
 	 * Constructs summaries builder
@@ -34,7 +33,9 @@ class SummariesBuilder {
 	 * @param passingManager passing manager
 	 * @param conf configuration
 	 */
-	public SummariesBuilder(Map<CFGNode, CFGHandle> dictionary, ArgumentPassingManager passingManager, Configuration conf) {
+	public SummariesBuilder(final Map<CFGNode, CFGHandle> dictionary,
+			final ArgumentPassingManager passingManager,
+			final Configuration conf) {
 		super();
 		this.summaries = new Summaries(dictionary, conf);
 		this.dictionary = dictionary;
@@ -43,33 +44,39 @@ class SummariesBuilder {
 	}
 
 	/**
-	 * Traverses CFG from start node using start state as starting state
+	 * Traverses CFG from the start node using the start state as a starting
+	 * state
 	 * @param startNode from which to start a traverse
 	 * @param navigator
 	 * @param startState initial state
 	 * @return computed FunctionStateSummary for given parameters
 	 */
-	public FunctionStateSummary traverse(CFGNode startNode, CFGsNavigator navigator, State startState) {
+	public FunctionStateSummary traverse(final CFGNode startNode,
+			final CFGsNavigator navigator, State startState) {
 		// use defensive copy
 		startState = new State(startState);
 
 		// hit the cache
-		FunctionSummary fs = summaries.get(startNode);
+		final FunctionSummary fs = summaries.get(startNode);
 		FunctionStateSummary summary = fs.getFromCache(startState);
-		if(summary != null) return summary;
-		else summary = fs.get(startState);
+		if (summary != null)
+			return summary;
 
-		State originalStartState = summaries.getRepos().get(startState);
+		summary = fs.get(startState);
+
+		final State originalStartState =
+			summaries.getRepos().get(startState);
 		callStack.add(startNode, originalStartState);
 
-		CFGStates cfgStates = new CFGStates(startNode, startState, summary.getErrHolder(), conf);
-		Deque<CFGNode> stack = new ArrayDeque<CFGNode>();
+		final CFGStates cfgStates = new CFGStates(startNode, startState,
+			summary.getErrHolder(), conf);
+		final Deque<CFGNode> stack = new ArrayDeque<CFGNode>();
 
 		stack.addFirst(startNode);
 		summary.changeVarsOccurrence(1, startNode, startState);
 
-		while(!stack.isEmpty()) {
-			CFGNode parent = stack.pollFirst();
+		while (!stack.isEmpty()) {
+			final CFGNode parent = stack.pollFirst();
 			// propagate from parent
 			CFGNode propagationNode = parent;
 
@@ -86,14 +93,15 @@ class SummariesBuilder {
 				}
 
 				// get entering state for a callee
-				State enterState = State.getRenamedCFGState(cfgStates
-						.get(child), varTrans, true);
+				State enterState = State.getRenamedCFGState(
+					cfgStates.get(child), varTrans, true);
 				// remove unusable state
 				cfgStates.remove(child);
 
 				// do this only if it is not a recursive call, otherwise normal propagation takes place
-				if(!callStack.contains(child, enterState)) {
-					FunctionStateSummary sum = traverse(child, navigator,
+				if (!callStack.contains(child, enterState)) {
+					final FunctionStateSummary sum =
+						traverse(child, navigator,
 							enterState);
 					// join callee's summary with the caller's - transfer to caller's namespace
 					summary.join(sum, varTrans);
@@ -106,35 +114,40 @@ class SummariesBuilder {
 				}
 			}
 			// propagate state to children and change occurrences count
-			for(CFGNode child : parent.getSuccessors()) {
+			for (final CFGNode child : parent.getSuccessors()) {
 
 				// save old state
 				State oldState = null;
-				if(cfgStates.get(child)!= null) oldState = new State(cfgStates.get(child));
+				if (cfgStates.get(child)!= null)
+					oldState = new State(cfgStates.get(child));
 
 				// propagate
-				if(cfgStates.propagate(propagationNode, child)) {
-						stack.addFirst(child);
-				}
+				if (cfgStates.propagate(propagationNode, child))
+					stack.addFirst(child);
 
-				if(oldState != null) {
+				if (oldState != null) {
 					// remove old occurrences
-					summary.changeVarsOccurrence(-1, child, oldState);
+					summary.changeVarsOccurrence(-1, child,
+						oldState);
 				}
 				// add new occurrences
-				summary.changeVarsOccurrence(1, child, cfgStates.get(child));
-
+				summary.changeVarsOccurrence(1, child,
+					cfgStates.get(child));
 			}
-
 		}
 		callStack.remove(startNode, originalStartState);
-		State output = cfgStates.get(dictionary.get(startNode).getEndNode());
-		// this is used when the end node is unreachable from start node (can happen because of compiler optimization)
-		// then just use originalStartState
-		if(output == null)
+		State output = cfgStates.get(
+			dictionary.get(startNode).getEndNode());
+		/*
+		 * this is used when the end node is unreachable from the start
+		 * node (it can happen because of compiler optimization).
+		 * Use originalStartState then
+		 */
+		if (output == null)
 			output = originalStartState;
 		summary.setOutputState(output);
-		printCfgStates(dictionary.get(startNode).getFunctionName(), startState, summary.getOutputState(), cfgStates);
+		printCfgStates(dictionary.get(startNode).getFunctionName(),
+			startState, summary.getOutputState(), cfgStates);
 		return summary;
 	}
 
@@ -146,16 +159,19 @@ class SummariesBuilder {
 	 * @param endState
 	 * @param cfgStates
 	 */
-	private static void printCfgStates(String functionName, State startState, State endState, CFGStates cfgStates) {
+	private static void printCfgStates(final String functionName,
+			final State startState, final State endState,
+			final CFGStates cfgStates) {
 		if (!logger.isDebugEnabled())
 			return;
-		final StringBuilder sb = new StringBuilder("/////////////////////////////////////////////\n");
+		final StringBuilder sb = new StringBuilder();
+		sb.append("/////////////////////////////////////////////\n");
 		sb.append("/////////////////////////////////////////////\n");
 		sb.append("Function ").append(functionName).append(" CFG states\n");
 		sb.append("Function entered in state: ").append(startState).append('\n');
 		sb.append("Function left in state: ").append(endState).append('\n');
 		sb.append(cfgStates);
-		logger.info(sb.toString());
+		logger.debug(sb.toString());
 	}
 
 	/**

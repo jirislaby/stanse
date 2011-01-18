@@ -18,7 +18,6 @@ import cz.muni.stanse.codestructures.CFGNode;
  * This class represents summary for a given function with given entered state
  *
  * @author Radim Cebis
- *
  */
 class FunctionStateSummary {
 	// var id, var state, map of occurrences with counters (how many times control flows through it
@@ -32,9 +31,7 @@ class FunctionStateSummary {
 	private Map<CFGNode, CFGHandle> dictionary;
 	private CFGNode startNode;
 	private State startState;
-
 	private Configuration conf;
-
 
 	/**
 	 * Constructs function state summary for a given startNode and startState
@@ -45,9 +42,11 @@ class FunctionStateSummary {
 	 * @param startState this summary's function start state
 	 * @param conf Configuration
 	 */
-	public FunctionStateSummary(Map<CFGNode, CFGHandle> dictionary, StateRepository repos,
-			CFGNode startNode, State startState, Configuration conf) {
-		this.errHolder = new ErrorHolder(dictionary, startState, startNode);
+	public FunctionStateSummary(final Map<CFGNode, CFGHandle> dictionary,
+			final StateRepository repos, final CFGNode startNode,
+			final State startState, final Configuration conf) {
+		this.errHolder = new ErrorHolder(dictionary, startState,
+			startNode);
 		this.dictionary = dictionary;
 		this.repos = repos;
 		this.startNode = startNode;
@@ -70,7 +69,6 @@ class FunctionStateSummary {
 		return outputState;
 	}
 
-
 	/**
 	 * Adds variable's occurrence
 	 *
@@ -79,9 +77,10 @@ class FunctionStateSummary {
 	 * @param state for which add an occurrence
 	 * @param node which contains the occurrence
 	 */
-	private void addVarOccurrence(int increment, String variable, State state, CFGNode node) {
+	private void addVarOccurrence(int increment, final String variable,
+			final State state, final CFGNode node) {
 		Occurrences stateOccurrence = varOccurrences.get(variable);
-		if(stateOccurrence == null) {
+		if (stateOccurrence == null) {
 			stateOccurrence = new Occurrences(repos);
 			varOccurrences.put(variable, stateOccurrence);
 		}
@@ -102,67 +101,73 @@ class FunctionStateSummary {
 	 * @param node containing the occurrence
 	 * @param state for which occurrence should be changed
 	 */
-	public void changeVarsOccurrence(int increment, CFGNode node, State state) {
+	public void changeVarsOccurrence(int increment,
+			final CFGNode node, final State state) {
 		// count occurrences
-		Element el = node.getElement();
+		final Element el = node.getElement();
 
-		for(String id : Util.getIDsInElement(el, conf)) {
-			this.addVarOccurrence(increment, id, state, node);
-		}
+		for(final String id : Util.getIDsInElement(el, conf))
+			addVarOccurrence(increment, id, state, node);
 	}
 
 	/**
 	 * @return all states of all variables in this summary
 	 */
 	private Set<State> getAllStates() {
-		Set<State> res = new HashSet<State>();
-		for(Occurrences occ : varOccurrences.values()) {
+		final Set<State> res = new HashSet<State>();
+		for(final Occurrences occ : varOccurrences.values())
 			res.addAll(occ.getAllStates());
-		}
 		return res;
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Function: " + dictionary.get(startNode).getFunctionName());
-		builder.append("\n");
-		builder.append("Function entered in state: " + startState);
-		builder.append("\n");
-		builder.append("Function left in state: " + outputState);
-		builder.append("\n");
+		final StringBuilder builder = new StringBuilder();
+		builder.append("Function: ").
+			append(dictionary.get(startNode).getFunctionName()).
+			append('\n');
+		builder.append("Function entered in state: ").
+			append(startState).append('\n');
+		builder.append("Function left in state: ").append(outputState).
+			append('\n');
 
-		Set<State> allStates = getAllStates();
+		final Set<State> allStates = getAllStates();
 
-		TableFormatter tf = new SimpleTableFormatter(true) // true = show border
-		.nextRow().nextCell().addLine("Variable/State")
-		;
-	for(State state : allStates) {
-		tf.nextCell().addLine(state.toString());
-	}
-	tf.nextCell().nextCell().addLine("SUM").nextRow();
-	for(Entry<String, Occurrences> entry : varOccurrences.entrySet()) {
-		tf.nextCell().addLine(entry.getKey());
-		int sum = 0;
-		for(State state : allStates) {
-			int occ = 0;
-			int flows = 0;
-			if(entry.getValue() != null && entry.getValue().get(state)!= null)
-			{
-				for(Counter i : entry.getValue().get(state).values()) flows += i.get();
-				occ += entry.getValue().get(state).keySet().size();
+		// true = show border
+		TableFormatter tf = new SimpleTableFormatter(true).nextRow().
+			nextCell().addLine("Variable/State");
+		for(final State state : allStates)
+			tf.nextCell().addLine(state.toString());
+
+		tf.nextCell().nextCell().addLine("SUM").nextRow();
+		for (final Entry<String, Occurrences> entry :
+				varOccurrences.entrySet()) {
+			tf.nextCell().addLine(entry.getKey());
+			int sum = 0;
+			for (final State state : allStates) {
+				int occ = 0;
+				int flows = 0;
+				if (entry.getValue() != null && entry.
+						getValue().get(state)!= null) {
+					for (final Counter i : entry.getValue().
+							get(state).values())
+						flows += i.get();
+					occ += entry.getValue().get(state).
+						keySet().size();
+				}
+				sum += occ;
+				tf.nextCell().addLine(Integer.toString(occ) +
+					" occurrences, " +
+					Integer.toString(flows) + " flows");
 			}
-			sum += occ;
-			tf.nextCell().addLine(Integer.toString(occ) + " occurrences, " + Integer.toString(flows) + " flows");
+			tf.nextCell().nextCell().addLine(String.valueOf(sum)).
+				nextRow();
 		}
-		tf.nextCell().nextCell().addLine(String.valueOf(sum)).nextRow();
-	}
 
-		String[] table = tf.getFormattedTable();
-		for (int i = 0, size = table.length; i < size; i++)
-		{
+		final String[] table = tf.getFormattedTable();
+		for (int i = 0, size = table.length; i < size; i++) {
 			builder.append(table[i]);
-			builder.append("\n");
+			builder.append('\n');
 		}
 		builder.append("/////////////////////////////////////////////\n");
 		return builder.toString();
@@ -177,24 +182,29 @@ class FunctionStateSummary {
 	 */
 	public void join(FunctionStateSummary summary,
 			VarTransformations varTransformations) {
-
-		for(Entry<String, Occurrences> entry: summary.varOccurrences.entrySet()) {
-
-			String varId = varTransformations.transform(entry.getKey(), false);
+		for (final Entry<String, Occurrences> entry :
+				summary.varOccurrences.entrySet()) {
+			String varId = varTransformations.transform(
+				entry.getKey(), false);
 			// this variable id needs to be changed when joined
-			if(varId != null) {
+			if (varId != null) {
 				add(varId, entry.getValue(), varTransformations);
-				// if it is not parameter and it is not a local variable then join it
-			} else if(!dictionary.get(summary.startNode).getSymbols().contains(entry.getKey())){
-				add(entry.getKey(), entry.getValue(), varTransformations);
+			/*
+			 * if it is not a parameter and it is not a local
+			 * variable then join it
+			 */
+			} else if(!dictionary.get(summary.startNode).
+					getSymbols().contains(entry.getKey())) {
+				add(entry.getKey(), entry.getValue(),
+					varTransformations);
 			}
 		}
 	}
 
-
-	private void add(String varId, Occurrences occurrencesToAdd, VarTransformations varTransformations) {
+	private void add(final String varId, final Occurrences occurrencesToAdd,
+			final VarTransformations varTransformations) {
 		Occurrences stateOccurrence = varOccurrences.get(varId);
-		if(stateOccurrence == null) {
+		if (stateOccurrence == null) {
 			stateOccurrence = new Occurrences(repos);
 			varOccurrences.put(varId, stateOccurrence);
 		}
