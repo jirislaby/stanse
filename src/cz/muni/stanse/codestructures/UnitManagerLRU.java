@@ -8,8 +8,8 @@ package cz.muni.stanse.codestructures;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.logging.Logger;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Document;
 
 /**
