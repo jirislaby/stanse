@@ -138,25 +138,15 @@ class Occurrences {
 		// count zStatistic all state pairs
 		for (final Entry<State, Map<CFGNode, Counter>> firstEntry :
 				occurrences.entrySet()) {
-			int firstChecks = 0;
-			if (countZStatisticUsingFlows) {
-				for(Counter i : firstEntry.getValue().values())
-					firstChecks += i.get();
-			} else
-				firstChecks = firstEntry.getValue().keySet().
-					size();
+			int firstChecks = countZStats(firstEntry.getValue(),
+				countZStatisticUsingFlows);
 
 			if (firstChecks != 0) {
 				for (Entry<State, Map<CFGNode, Counter>> secondEntry :
 						occurrences.entrySet()) {
 					if (!secondEntry.getKey().equals(firstEntry.getKey()) &&
 							!processedStates.contains(secondEntry.getKey())) {
-						int secondChecks = 0;
-						if (countZStatisticUsingFlows) {
-							for(Counter i : secondEntry.getValue().values())
-								secondChecks += i.get();
-						} else
-							secondChecks = secondEntry.getValue().keySet().size();
+						int secondChecks = countZStats(secondEntry.getValue(), countZStatisticUsingFlows);
 
 						if (secondChecks!=0) {
 							int allChecks = firstChecks + secondChecks;
@@ -172,6 +162,17 @@ class Occurrences {
 			processedStates.add(firstEntry.getKey());
 		}
 		return result;
+	}
+
+	private int countZStats(final Map<CFGNode, Counter> map,
+			boolean usingFlows) {
+		int stats = 0;
+		if (usingFlows) {
+			for (final Counter i : map.values())
+				stats += i.get();
+		} else
+			stats = map.keySet().size();
+		return stats;
 	}
 
 	/**
@@ -209,23 +210,15 @@ class Occurrences {
 		int allChecks = 0;
 		for (final Entry<State, Map<CFGNode, Counter>> firstEntry :
 				occurrences.entrySet()) {
-			if (countZStatisticUsingFlows) {
-				for(Counter i : firstEntry.getValue().values())
-					allChecks += i.get();
-			} else
-				allChecks += firstEntry.getValue().keySet().
-					size();
+			allChecks += countZStats(firstEntry.getValue(),
+				countZStatisticUsingFlows);
 		}
 
 		// count zStatistic all state pairs
 		for (final Entry<State, Map<CFGNode, Counter>> firstEntry :
 				occurrences.entrySet()) {
-			int firstChecks = 0;
-			if (countZStatisticUsingFlows) {
-				for (Counter i : firstEntry.getValue().values())
-					firstChecks += i.get();
-			} else
-				firstChecks = firstEntry.getValue().keySet().size();
+			int firstChecks = countZStats(firstEntry.getValue(),
+				countZStatisticUsingFlows);
 			result.add(new Pair<State,Double>(firstEntry.getKey(),
 				Util.zStat(firstChecks, allChecks)));
 		}
