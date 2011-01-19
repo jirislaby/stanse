@@ -8,9 +8,11 @@
  */
 package cz.muni.stanse.checker;
 
+import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 
+import java.io.File;
 import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
@@ -20,11 +22,11 @@ import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 
 /**
- * @brief Represent output from checkers, which is the error found in the
- *        source file (reprezented by set of CFGs). 
+ * @brief Represents output from checkers, which is the error found in the
+ *        source file (represented by a set of CFGs).
  *
- * Found error is described by short and full string description, level of
- * error importance and by list of error-traces. Each checker is under
+ * A found error is described by short and full string descriptions, level of
+ * error importance and by a list of error-traces. Each checker is under
  * obligation to report all its errors via instances of this class.  
  *
  * @see cz.muni.stanse.checker#Checker
@@ -78,12 +80,16 @@ public final class CheckerError implements Comparable<CheckerError> {
     @Override
     public String toString() {
         final CheckerErrorTraceLocation errorLocation = getErrorLocation();
-        return "[" + NumberFormat.getIntegerInstance().format(getImportance()) + "] "
-        		+ new java.io.File(errorLocation.getUnitName()).getAbsolutePath()
-                  .replaceFirst(cz.muni.stanse.Stanse.getInstance()
-                                                     .getRootDirectory()+'/',"")
-               + ", line " + errorLocation.getLineNumber() + ": "
-               + getShortDesc();
+	final StringBuilder sb = new StringBuilder("[");
+	sb.append(NumberFormat.getIntegerInstance().format(getImportance())).
+		append("] ");
+	final String path = new File(errorLocation.getUnitName()).
+		getAbsolutePath();
+	// relativize
+	path.replaceFirst(Stanse.getInstance().getRootDirectory() + '/', "");
+	sb.append(path).append(", line ").append(errorLocation.getLineNumber()).
+		append(": ").append(getShortDesc());
+	return sb.toString();
     }
 
     public String dump() {
@@ -102,10 +108,10 @@ public final class CheckerError implements Comparable<CheckerError> {
 	result.addElement("importance").addText(
 			Integer.toString(getImportance()));
 	result.addElement("checker_name").addText(getCheckerName());
-	Element traces = result.addElement("traces").addText(getCheckerName());
+	Element eTraces = result.addElement("traces").addText(getCheckerName());
 
         for (final CheckerErrorTrace trace: getTraces())
-            traces.add(trace.xmlDump());
+            eTraces.add(trace.xmlDump());
         return result;
     }
 
