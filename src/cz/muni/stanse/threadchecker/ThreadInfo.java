@@ -101,7 +101,8 @@ public class ThreadInfo {
 			try {
 				function = CFGTransit.analyseCFG(cfg, monitor);
 			} catch (CheckerException e) {
-				monitor.write(e.getLocalizedMessage());
+				monitor.write(cfg.getFunctionName() + ": " +
+					e.getLocalizedMessage());
 				return;
 			}
 			checkerSettings.addFunction(function, cfg);

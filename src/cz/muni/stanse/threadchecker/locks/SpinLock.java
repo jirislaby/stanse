@@ -66,8 +66,10 @@ public class SpinLock implements Lock, Cloneable  {
 	 * @return true if the lock was unlocked before calling this method
 	 */
 	@Override
-	public boolean lockUp() {
-		assert(state >= 0);
+	public boolean lockUp() throws LockingException {
+		if (state < 0)
+			throw new LockingException("state is negative: " +
+				state);
 		return ++state == 1;
 	}
 
@@ -76,8 +78,10 @@ public class SpinLock implements Lock, Cloneable  {
 	 * @return true if the lock is unlocked after calling this method
 	 */
 	@Override
-	public boolean lockDown() {
-		assert(state > 0);
+	public boolean lockDown() throws LockingException {
+		if (state <= 0)
+			throw new LockingException("state will become " +
+				"negative: " + state);
 		return --state == 0;
 	}
 

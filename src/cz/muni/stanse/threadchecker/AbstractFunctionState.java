@@ -8,6 +8,7 @@ import cz.muni.stanse.threadchecker.locks.BackTrack;
 import cz.muni.stanse.threadchecker.locks.JoinNode;
 import cz.muni.stanse.threadchecker.locks.Lock;
 import cz.muni.stanse.threadchecker.locks.LockStack;
+import cz.muni.stanse.threadchecker.locks.LockingException;
 import cz.muni.stanse.threadchecker.locks.SpinLock;
 import cz.muni.stanse.threadchecker.locks.UnlockSet;
 import java.util.Collection;
@@ -217,7 +218,7 @@ public class AbstractFunctionState {
      * to unlockSet.
      * @param lockName String name of semaphore
      */
-    public void lockDown(String lockName) {
+    public void lockDown(String lockName) throws LockingException {
         Lock lock;
         lock = this.getLock(lockName);
 
@@ -241,7 +242,7 @@ public class AbstractFunctionState {
      * @param lockName String name of lock
      * @param node CFGNode for setting spot where lock was set to locked state
      */
-    public void lockUp(String lockName, CFGNode node) {
+    public void lockUp(String lockName, CFGNode node) throws LockingException {
             Lock lock;
             Lock lastLock;
             ResourceVertex srcNode;

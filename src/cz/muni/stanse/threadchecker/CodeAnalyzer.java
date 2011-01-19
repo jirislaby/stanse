@@ -7,6 +7,7 @@ import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.threadchecker.locks.BackTrack;
 import cz.muni.stanse.threadchecker.locks.Lock;
+import cz.muni.stanse.threadchecker.locks.LockingException;
 import java.util.List;
 import java.util.Vector;
 import org.apache.log4j.Logger;
@@ -34,7 +35,7 @@ public class CodeAnalyzer {
      * @param parameter Element where lockname is included.
      */
     static void analyzeLockingFunction(CFGNode node, Function function,
-                                                            Element parameter) {
+	    Element parameter) throws CheckerException {
         String lockName;
         String description;
         BackTrack backTrackNode;
@@ -46,7 +47,12 @@ public class CodeAnalyzer {
         for(FunctionState data : function.getFunctionStates()) {
             description = "locking "+lockName
                                     +" - already locked:"+ data.getLockStack();
-            data.lockUp(lockName, node);
+	    try {
+		data.lockUp(lockName, node);
+	    } catch (final LockingException e) {
+		throw new CheckerException("A problem with unlocking " +
+			"detected. Probably an imbalanced lock.", e);
+	    }
             backTrackNode = data.getBackTrack().peekLast();
 
             //Set description to triple node (history of traversing)
@@ -71,7 +77,7 @@ public class CodeAnalyzer {
      * @param parameter Element where lockname is included.
      */
     static void analyzeUnlockingFunction(CFGNode node, Function function,
-                                    Element parameter) {
+	    Element parameter) throws CheckerException {
         String lockName;
         String description;
         BackTrack backTrackNode;
@@ -79,7 +85,12 @@ public class CodeAnalyzer {
         logger.debug("Unlocking function detected - unlocking "+lockName);
 
         for(FunctionState data : function.getFunctionStates()) {
-            data.lockDown(lockName);
+	    try {
+		data.lockDown(lockName);
+	    } catch (final LockingException e) {
+		throw new CheckerException("A problem with locking " +
+			"detected. Probably an imbalanced lock.", e);
+	    }
             description = "unlocking "+lockName
                                     + " - still locked: "+data.getLockStack();
 
