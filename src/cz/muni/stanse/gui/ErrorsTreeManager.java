@@ -244,14 +244,16 @@ final class ErrorsTreeManager {
         return errorsTree;
     }
 
-    private java.awt.Color
-    treeRowTextColour(final DefaultMutableTreeNode node) {
-        final CheckerError error = findCheckerErrorBy(node);
-        assert(error != null);
-        return isBug(error)         ? java.awt.Color.red    :
-               isFalsePos(error)    ? java.awt.Color.green.darker()  :
-                                      java.awt.Color.black  ;
-    }
+	private java.awt.Color treeRowTextColour(final DefaultMutableTreeNode node) {
+		// this has to be here to check an empty root node
+		if (JTreeAlgo.getData(node) == null)
+			return null;
+		final CheckerError error = findCheckerErrorBy(node);
+		assert (error != null);
+		return isBug(error) ? java.awt.Color.red
+			: isFalsePos(error) ? java.awt.Color.green.darker()
+			: java.awt.Color.black;
+	}
 
     private java.awt.Color
     treeRowBkgColour(final DefaultMutableTreeNode node) {
