@@ -114,6 +114,28 @@ class Occurrences {
 		}
 	}
 
+	private void doSecondChecks(List<Pair<Pair<State, Double>, Pair<State, Double>>> result,
+			final Set<State> processedStates,
+			final State firstState, int firstChecks,
+			boolean usingFlows) {
+		for (final Entry<State, Map<CFGNode, Counter>> secondEntry :
+				occurrences.entrySet()) {
+			final State state = secondEntry.getKey();
+			if (state.equals(firstState) ||
+					processedStates.contains(state))
+				continue;
+			int secondChecks = countZStats(secondEntry.getValue(),
+				usingFlows);
+			if (secondChecks == 0)
+				continue;
+			int allChecks = firstChecks + secondChecks;
+			final Pair<State,Double> fi = Pair.make(firstState,
+				Util.zStat(firstChecks, allChecks));
+			final Pair<State,Double> se = Pair.make(state,
+				Util.zStat(secondChecks, allChecks));
+			result.add(Pair.make(fi, se));
+		}
+	}
 	/**
 	 * Counts z-statistic using pairs.
 	 * Only two pairs are used to count z-statistic and to be compared.
@@ -134,7 +156,7 @@ class Occurrences {
 		 * this is a little bit ugly but iterators do not have to
 		 * return results in same order
 		 */
-		Set<State> processedStates = new HashSet<State>();
+		final Set<State> processedStates = new HashSet<State>();
 		// count zStatistic all state pairs
 		for (final Entry<State, Map<CFGNode, Counter>> firstEntry :
 				occurrences.entrySet()) {
@@ -142,22 +164,9 @@ class Occurrences {
 				countZStatisticUsingFlows);
 
 			if (firstChecks != 0) {
-				for (Entry<State, Map<CFGNode, Counter>> secondEntry :
-						occurrences.entrySet()) {
-					if (!secondEntry.getKey().equals(firstEntry.getKey()) &&
-							!processedStates.contains(secondEntry.getKey())) {
-						int secondChecks = countZStats(secondEntry.getValue(), countZStatisticUsingFlows);
-
-						if (secondChecks!=0) {
-							int allChecks = firstChecks + secondChecks;
-							Pair<Pair<State,Double>, Pair<State,Double>> entry =
-								new Pair<Pair<State,Double>, Pair<State,Double>>(
-								new Pair<State,Double>(firstEntry.getKey(), Util.zStat(firstChecks, allChecks)),
-								new Pair<State,Double>(secondEntry.getKey(), Util.zStat(secondChecks, allChecks)));
-							result.add(entry);
-						}
-					}
-				}
+				doSecondChecks(result, processedStates,
+					firstEntry.getKey(), firstChecks,
+					countZStatisticUsingFlows);
 			}
 			processedStates.add(firstEntry.getKey());
 		}
