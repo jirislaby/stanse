@@ -13,7 +13,6 @@
 	<threshold>600</threshold>
 
 	<expressions>
-		<expression>id</expression>
 		<expression>arrowExpression</expression>
 		<expression>derefExpression</expression>
 		<expression>arrayAccess</expression>
