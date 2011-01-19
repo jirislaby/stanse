@@ -41,6 +41,9 @@ public class LockChecker extends Checker {
 			internals.getNodeToCFGdictionary(),
 			internals.getArgumentPassingManager(), conf);
 
+		monitor.write("Starting LockChecker");
+		monitor.write("Building function summaries");
+
 		for (CFGHandle handle : internals.getStartFunctions()) {
 			summariesBuilder.traverse(handle.getStartNode(),
 				internals.getNavigator(), new State());
@@ -48,6 +51,8 @@ public class LockChecker extends Checker {
 
 		final Summaries sum = summariesBuilder.getSummaries();
 		final CheckerErrorFilter filter = new CheckerErrorFilter();
+
+		monitor.write("Checking");
 
 		if (conf.onlyTopFunctions()) {
 			for (final CFGHandle cfgh :
@@ -61,6 +66,8 @@ public class LockChecker extends Checker {
 			checkFunctions(sum.getAllFunctionStateSummaries(),
 				errReceiver, filter);
 		}
+
+		monitor.write("Generating errors");
 
 		filter.generateErrors(errReceiver);
 
