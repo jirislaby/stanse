@@ -24,14 +24,14 @@ class Configuration {
 	private final Set<XMLPattern> assertUnlocked = new HashSet<XMLPattern>();
 	private final Set<XMLPattern> skipOccurrences = new HashSet<XMLPattern>();
 	private final Set<String> exprs = new HashSet<String>();
-	private boolean countFlows = false;
-	private boolean countSubvars = false;
-	private boolean countFunctions = false;
-	private boolean countPairs = false;
+	private boolean countFlows;
+	private boolean countSubvars;
+	private boolean countFunctions;
+	private boolean countPairs;
 	private int threshold = -10000;
-	private boolean onlyTopFunctions = false;
-	private boolean generateDoubleErrors = false;
-	private boolean generateMoreLocksErrors = false;
+	private boolean onlyTopFunctions;
+	private boolean generateDoubleErrors;
+	private boolean generateMoreLocksErrors;
 
 	/**
 	 * Create the configuration from the file.
@@ -45,7 +45,7 @@ class Configuration {
 			read(file);
 		final Element rootElement = configDocument.getRootElement();
 		List<Element> elements;
-		Element element;
+		String eText;
 
 		elements = rootElement.selectNodes("patterns/pattern[@name=\"lock\"]");
 		for (final Element el : elements)
@@ -66,22 +66,23 @@ class Configuration {
 		for (final Element el : elements)
 			exprs.add(el.getText());
 
-		element = (Element)rootElement.selectSingleNode("countFlows");
-		countFlows = element.getText().equals("1");
-		element = (Element)rootElement.selectSingleNode("countSubvars");
-		countSubvars = element.getText().equals("1");
-		element = (Element)rootElement.selectSingleNode("countPairs");
-		countPairs = element.getText().equals("1");
-		element = (Element)rootElement.selectSingleNode("countFunctions");
-		countFunctions = element.getText().equals("1");
-		element = (Element)rootElement.selectSingleNode("onlyTopFunctions");
-		onlyTopFunctions = element.getText().equals("1");
-		element = (Element)rootElement.selectSingleNode("generateDoubleErrors");
-		generateDoubleErrors = element.getText().equals("1");
-		element = (Element)rootElement.selectSingleNode("generateMoreLocksErrors");
-		generateMoreLocksErrors = element.getText().equals("1");
-		element = (Element)rootElement.selectSingleNode("threshold");
-		threshold = Integer.valueOf(element.getText());
+		eText = rootElement.elementText("countFlows");
+		countFlows = eText != null && eText.equals("1");
+		eText = rootElement.elementText("countSubvars");
+		countSubvars = eText != null && eText.equals("1");
+		eText = rootElement.elementText("countPairs");
+		countPairs = eText != null && eText.equals("1");
+		eText = rootElement.elementText("countFunctions");
+		countFunctions = eText != null && eText.equals("1");
+		eText = rootElement.elementText("onlyTopFunctions");
+		onlyTopFunctions = eText != null && eText.equals("1");
+		eText = rootElement.elementText("generateDoubleErrors");
+		generateDoubleErrors = eText != null && eText.equals("1");
+		eText = rootElement.elementText("generateMoreLocksErrors");
+		generateMoreLocksErrors = eText != null && eText.equals("1");
+		eText = rootElement.elementText("threshold");
+		if (eText != null)
+			threshold = Integer.valueOf(eText);
 	}
 
 	/**
