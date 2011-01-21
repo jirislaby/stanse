@@ -113,16 +113,19 @@ public final class XMLPattern {
 	        continue;
 	    }
 
-	    if (!op.type.toString().equals(elem.getName()))
-		return Pair.make(false, null);
+            if (op.type == CFGNode.OperandType.nodeval) {
+                if (!elem.getName().equals("node"))
+                    return Pair.make(false, null);
 
-	    if (op.type == CFGNode.OperandType.nodeval) {
-		Pair<Boolean, XMLPatternVariablesAssignment> nested
+                Pair<Boolean, XMLPatternVariablesAssignment> nested
                         = matchesNode((CFGNode)op.id, elem, aliasResolver);
 		if (!nested.getFirst())
 		    return nested;
 		varsAssignment.merge(nested.getSecond());
 	    } else {
+                if (!op.type.toString().equals(elem.getName()))
+                    return Pair.make(false, null);
+
 		if (!aliasResolver.match(elem.getText(), op.id.toString()))
 		    return Pair.make(false, null);
 	    }

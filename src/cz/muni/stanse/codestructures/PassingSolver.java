@@ -22,7 +22,7 @@ public final class PassingSolver {
         case member:
         case constant:
         case varval:
-            result.append((String)op.id);
+            result.append(op.id.toString());
             break;
 
         case nodeval:
