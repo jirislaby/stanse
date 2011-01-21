@@ -23,9 +23,11 @@ import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.ClassLogger;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Collections;
+import java.util.List;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -129,6 +131,48 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     // private section
 
+    private Integer makePatternId(HashMap<PatternLocation, Integer> patternids, StringBuilder sb, PatternLocation pattern) {
+        if (!patternids.containsKey(pattern)) {
+            sb.append("n").append(patternids.size()).append("[label=\"");
+            for (AutomatonState state : pattern.getUnprocessedAutomataStates()){
+                sb.append("[").append(state.toString()).append("]");
+            }
+            for (AutomatonState state : pattern.getProcessedAutomataStates()){
+                sb.append("[").append(state.toString()).append("]");
+            }
+            sb.append(pattern.getCFGreferenceNode());
+            sb.append("\"]").append(";\n");
+            patternids.put(pattern, patternids.size());
+            return patternids.size() - 1;
+        } else
+            return patternids.get(pattern);
+    }
+
+    private void dumpNodeLocationGraph(Collection<Pair<PatternLocation, PatternLocation> > locs) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("digraph G {\n");
+
+        HashMap<PatternLocation, Integer> patternids = new HashMap<PatternLocation, Integer>();
+        for (Pair<PatternLocation, PatternLocation> loc : locs) {
+            Integer firstId = makePatternId(patternids, sb, loc.getFirst());
+            Integer secondId = makePatternId(patternids, sb, loc.getSecond());
+            for (PatternLocation succ : loc.getFirst().getSuccessorPatternLocations()) {
+                Integer succId = makePatternId(patternids, sb, succ);
+                sb.append("n").append(firstId).append("->").append("n").append(succId).append(";\n");
+            }
+            if (firstId != secondId) {
+                sb.append("n").append(firstId).append("->").append("n").append(secondId).append(";\n");
+                for (PatternLocation succ : loc.getSecond().getSuccessorPatternLocations()) {
+                    Integer succId = makePatternId(patternids, sb, succ);
+                    sb.append("n").append(secondId).append("->").append("n").append(succId).append(";\n");
+                }
+            }
+        }
+
+        sb.append("}");
+        System.out.print(sb);
+    }
+
     private CheckingResult
     check(final XMLAutomatonDefinition xmlAutomatonDefinition,
           final LazyInternalStructures internals,
@@ -156,6 +200,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         }
         final long startFixPointComputationTime = System.currentTimeMillis();
         while (!progressQueue.isEmpty()) {
+            //dumpNodeLocationGraph(nodeLocationDictionary.values());
             final PatternLocation currentLocation = progressQueue.remove();
             if (!currentLocation.hasUnprocessedAutomataStates())
                 continue;
