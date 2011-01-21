@@ -162,19 +162,19 @@ final class CheckerErrorBuilder {
 		    }
 
                     final String shortDesc = rule.getErrorDescription();
-                    final String fullDesc
-                            = "{" + automatonName + "} in function '"
-                            + internals.getNodeToCFGdictionary()
+		    final StringBuilder fullDesc = new StringBuilder("{");
+		    fullDesc.append(automatonName).append("} in function '").
+			    append(internals.getNodeToCFGdictionary()
                                        .get(location.getCFGreferenceNode())
-                                       .getFunctionName()
-                            + "' "
-                            + shortDesc
-                            + " [traces: " + traces.size() + "]";
+                                       .getFunctionName()).append("' ").
+			    append(shortDesc).append(" [traces: ").
+			    append(traces.size()).append(']');
                     errReceiver.receive(
-                       new CheckerError(shortDesc,fullDesc,
+                       new CheckerError(shortDesc, fullDesc.toString(),
                                         rule.getErrorLevel() +
                                             creator.getTotalImportance(),
-                                        automatonName, Make.linkedList(min_trace)));
+                                        automatonName,
+					Make.linkedList(min_trace)));
                     ++numErrors;
                     monitor.note("*** error found: " + shortDesc);
                 }
