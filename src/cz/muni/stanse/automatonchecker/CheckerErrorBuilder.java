@@ -182,21 +182,6 @@ final class CheckerErrorBuilder {
         return Pair.make(numErrors,result);
     }
 
-    @Deprecated
-    private static CheckerErrorTrace
-    builOneLocationTrace(final PatternLocation location, final ErrorRule rule,
-                         final LazyInternalStructures internals) {
-        final Vector<CheckerErrorTraceLocation> locs =
-            new Vector<CheckerErrorTraceLocation>();
-        final String unitName = getLocationUnitName(location,internals);
-        final int line = location.getCFGreferenceNode().getLine();
-        final int column = location.getCFGreferenceNode().getColumn();
-        final String desc =rule.getErrorDescription() +
-                           rule.getAutomatonID().getVarsAssignment().toString();
-        locs.add(new CheckerErrorTraceLocation(unitName,line,column,desc));
-        return new CheckerErrorTrace(locs,desc);
-    }
-
     private static String getNodeUnitName(final CFGNode node,
                                        final LazyInternalStructures internals) {
         return Stanse.getUnitManager().getUnitName(
