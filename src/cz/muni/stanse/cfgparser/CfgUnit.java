@@ -205,7 +205,7 @@ public class CfgUnit extends Unit {
             JSONArray jsonSuccs = jsonNode.getJSONArray(1);
             for (int j = 0; j < jsonSuccs.length(); ++j) {
                 JSONArray jsonSucc = jsonSuccs.getJSONArray(j);
-                if (jsonSucc.getInt(1) != 2)
+                if (jsonSucc.getInt(1) == 0)
                     node.addEdge(nodes[jsonSucc.getInt(0)], jsonSucc.getInt(1), jsonSucc.get(2));
             }
 
