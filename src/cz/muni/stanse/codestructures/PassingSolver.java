@@ -21,7 +21,6 @@ public final class PassingSolver {
         case function:
         case member:
         case constant:
-        case operator:
         case varval:
             result.append((String)op.id);
             break;
@@ -34,10 +33,10 @@ public final class PassingSolver {
     }
 
     public static String makeArgument(final CFGNode node) {
-        if (node.getNodeType() == CFGNode.NodeType.none)
+        if (node.getNodeType() == null)
             return makeArgument(node.getElement());
 
-        assert node.getNodeType() == CFGNode.NodeType.call;
+        assert node.getNodeType().equals("call");
 
         StringBuilder result = new StringBuilder();
         for (CFGNode.Operand op : node.getOperands())

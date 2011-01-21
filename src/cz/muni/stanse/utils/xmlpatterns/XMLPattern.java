@@ -89,7 +89,8 @@ public final class XMLPattern {
 
     private Pair<Boolean,XMLPatternVariablesAssignment>
     matchesNode(final CFGNode node, Element xmlPivot, AliasResolver aliasResolver) {
-	if (!node.getNodeType().toString().equals(xmlPivot.attributeValue("type")))
+	if (node.getNodeType() == null
+                || !node.getNodeType().equals(xmlPivot.attributeValue("type")))
 	    return Pair.make(false, null);
 
 	XMLPatternVariablesAssignment varsAssignment = new XMLPatternVariablesAssignment();

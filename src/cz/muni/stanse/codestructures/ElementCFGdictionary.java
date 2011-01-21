@@ -36,8 +36,8 @@ public final class ElementCFGdictionary {
 
     private static Pair<String,Integer>
     buildKey(final CFGNode node) {
-        if (node.getNodeType() != CFGNode.NodeType.none) {
-            if (node.getNodeType() == CFGNode.NodeType.call) {
+        if (node.getNodeType() != null) {
+            if (node.getNodeType().equals("call")) {
                 List<CFGNode.Operand> operands = node.getOperands();
                 assert operands.size() > 0;
                 if (operands.get(0).type == CFGNode.OperandType.function)

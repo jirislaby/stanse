@@ -224,10 +224,9 @@ final class PatternLocationBuilder {
             final CFGHandle cfg) {
         for (final CFGNode node : cfg.getEndNode().getPredecessors()) {
             Set<String> dependentVars = null;
-            if (node.getNodeType() == CFGNode.NodeType.call
-                    && ((String)node.getOperands().get(0).id).equals("=")
-                    && ((String)node.getOperands().get(1).id).equals(cfg.getRetVar())) {
-                CFGNode.Operand retop = node.getOperands().get(2);
+            if (node.getNodeType().equals("assign")
+                    && ((String)node.getOperands().get(0).id).equals(cfg.getRetVar())) {
+                CFGNode.Operand retop = node.getOperands().get(1);
                 dependentVars = CFGNode.getDependentVars(retop);
             } else if (node.getElement() != null && node.getElement().getName().equals("returnStatement")) {
                 dependentVars = new HashSet<String>();

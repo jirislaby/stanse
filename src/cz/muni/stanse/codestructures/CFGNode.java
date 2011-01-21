@@ -50,8 +50,7 @@ public class CFGNode {
     private List<CFGNode> optPreds = new ArrayList<CFGNode>();
     private List<CFGNode> optSuccs = new ArrayList<CFGNode>();
 
-    public enum NodeType { none, call, exit, value, phi };
-    public enum OperandType { none, operator, function, member, constant, varptr, varval, nodeval };
+    public enum OperandType { none, function, member, constant, varptr, varval, nodeval };
 
     public static class Operand {
 	public Operand(OperandType type, Object id) {
@@ -62,8 +61,6 @@ public class CFGNode {
 	public Operand(String type, Object id) {
 	    if (type.equals("func"))
 		this.type = OperandType.function;
-	    else if (type.equals("oper"))
-	        this.type = OperandType.operator;
 	    else if (type.equals("member"))
 		this.type = OperandType.member;
 	    else if (type.equals("const"))
@@ -88,7 +85,7 @@ public class CFGNode {
 	public Object id;
     }
 
-    NodeType nodeType = NodeType.none;
+    String nodeType;
     List<Operand> operands = new ArrayList<Operand>();
     File file;
     int line;
@@ -218,27 +215,12 @@ public class CFGNode {
 	operands.add(new Operand(type, id));
     }
 
-    public NodeType getNodeType() {
+    public String getNodeType() {
 	return nodeType;
     }
 
-    public void setNodeType(NodeType nodeType) {
-	this.nodeType = nodeType;
-    }
-
     public void setNodeType(String nodeType) {
-        if (nodeType.equals("none"))
-            this.nodeType = NodeType.none;
-        else if (nodeType.equals("call"))
-	    this.nodeType = NodeType.call;
-	else if (nodeType.equals("value"))
-	    this.nodeType = NodeType.value;
-	else if (nodeType.equals("exit"))
-	    this.nodeType = NodeType.exit;
-	else if (nodeType.equals("phi"))
-	    this.nodeType = NodeType.phi;
-	else
-	    throw new IllegalArgumentException("Unknown node type: " + nodeType);
+	this.nodeType = nodeType;
     }
 
     /**

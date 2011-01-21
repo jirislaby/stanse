@@ -127,7 +127,7 @@ public class CfgUnit extends Unit {
             String overrideName = overrides.getString(i);
 
             CFGNode overrideCall = new CFGNode();
-            overrideCall.setNodeType(CFGNode.NodeType.call);
+            overrideCall.setNodeType("call");
             overrideCall.addOperand(CFGNode.OperandType.function, overrideName);
 
             for (int j = 0; j < paramCount; ++j)
@@ -137,6 +137,7 @@ public class CfgUnit extends Unit {
         }
 
         CFGNode exit = new CFGNode();
+        exit.setNodeType("exit");
         exit.addOperand(CFGNode.OperandType.constant, "0");
 
         CFG cfg;
@@ -147,8 +148,9 @@ public class CfgUnit extends Unit {
             cfg = new CFG(oc, exit, cfgName);
         } else {
             CFGNode entry = new CFGNode();
+            entry.setNodeType("none");
             CFGNode phi = new CFGNode();
-            phi.setNodeType(CFGNode.NodeType.phi);
+            phi.setNodeType("phi");
             phi.addEdge(exit);
 
             for (CFGNode oc : overrideCalls) {
@@ -234,7 +236,7 @@ public class CfgUnit extends Unit {
                 }
             }
 
-            if (node.getNodeType() == CFGNode.NodeType.exit) {
+            if (node.getNodeType().equals("exit")) {
                 // Exit nodes must have at least one operand. The operand must be "const" and have an integer value.
                 if (node.getOperands().isEmpty()
                         || node.getOperands().get(0).type != CFGNode.OperandType.constant)

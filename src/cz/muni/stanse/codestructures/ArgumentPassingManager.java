@@ -62,7 +62,7 @@ public final class ArgumentPassingManager {
         final LinkedList<Pair<String,String>> result =
             new LinkedList<Pair<String,String>>();
 
-        if (caller.getNodeType() != CFGNode.NodeType.none) {
+        if (caller.getNodeType() != null) {
             Iterator<CFGNode.Operand> opIter = caller.getOperands().iterator();
             opIter.next();
             Iterator<String> paramIter = callee.getParams().iterator();
