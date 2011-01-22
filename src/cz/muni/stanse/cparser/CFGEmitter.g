@@ -63,6 +63,17 @@ import cz.muni.stanse.utils.Triple;
 		return createCFG(e, null);
 	}
 
+	private void iterSwitchAddCase(final Element e, final CFGNode node,
+			boolean isDefault) {
+		int a = 0;
+		// find the top-most switch () { }
+		while ($IterSwitch[-a]::cases == null)
+			a++;
+		$IterSwitch[-a]::cases.add(Pair.make(e, node));
+		if (isDefault)
+			$IterSwitch[-a]::haveDefault = true;
+	}
+
 	private void addSwitchDefaultAssert(CFGBranchNode branch, String code,
 			CFGNode breakNode, Element lineElem) {
 		CFGNode parent = branch;
@@ -367,13 +378,12 @@ labeledStatement returns [CFGPart g]
 	}
 	| ^('case' expression statement) {
 		$g = $statement.g;
-		$IterSwitch::cases.add(new Pair($expression.start.getElement(),
-			$g.getStartNode()));
+		iterSwitchAddCase($expression.start.getElement(),
+				$g.getStartNode(), false);
 	}
 	| ^('default' statement) {
 		$g = $statement.g;
-		$IterSwitch::cases.add(new Pair(defaultLabel, $g.getStartNode()));
-		$IterSwitch::haveDefault = true;
+		iterSwitchAddCase(defaultLabel, $g.getStartNode(), true);
 	}
 	;
 
