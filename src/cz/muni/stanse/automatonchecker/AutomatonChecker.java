@@ -170,7 +170,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                     progressQueue.add(
                            currentLocation.getLocationForCallNotPassedStates());
             }
-            final long time = tmgr.measureElapsed() / 1000000000L;
+            final long time = tmgr.measureElapsedMs() / 1000L;
 	    /* 60 s is hard limit, 10 s when there are many locations */
             if (time > 60 || (time > 10 && nodeLocationDictionary.size() > 500)) {
                 monitor.pushTab();

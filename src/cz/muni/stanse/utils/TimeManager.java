@@ -32,6 +32,15 @@ public class TimeManager {
 	/**
 	 * Get (possibly) CPU time since measureStart
 	 *
+	 * @return elapsed time in ms since measureStart
+	 */
+	public long measureElapsedMs() {
+		return measureElapsed() / 1000000L;
+	}
+
+	/**
+	 * Get (possibly) CPU time since measureStart
+	 *
 	 * @return elapsed time in ns since measureStart
 	 */
 	public long measureElapsed() {

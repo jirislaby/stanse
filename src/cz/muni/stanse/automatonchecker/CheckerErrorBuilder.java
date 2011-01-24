@@ -69,7 +69,7 @@ final class CheckerErrorBuilder {
 	tmgr.measureStart();
         for (Pair<PatternLocation,PatternLocation> locationsPair :
                                                edgeLocationDictionary.values()){
-            if (tmgr.measureElapsed() > 60000000000L)
+            if (tmgr.measureElapsedMs() > 60000L)
                 return result;
             if (locationsPair.getFirst() != null) {
                 final Pair<Integer,CheckingResult> locBuildResult =
@@ -120,7 +120,7 @@ final class CheckerErrorBuilder {
             for (final Stack<CFGNode> cfgContext :
 			AutomatonStateCFGcontextAlgo.getContexts(
                                         location.getProcessedAutomataStates())) {
-                if (tmgr.measureElapsed() > 10000000000L)
+                if (tmgr.measureElapsedMs() > 10000L)
                     return Pair.make(numErrors,result);
                 if (rule.checkForError(AutomatonStateCFGcontextAlgo.
                             filterStatesByContext(
