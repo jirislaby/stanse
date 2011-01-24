@@ -118,12 +118,8 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         this.nodeLocationDictionary = nodeLocationDictionary;
         this.startNode = startNode;
         this.internals = internals;
-        errorTracesList = new Vector<CheckerErrorTrace>();
         this.detectors = detectors;
         this.monitor = monitor;
-        totalImportance = FalsePositivesDetector.getBugDefaultImportance();
-        failMsg = null;
-        numRejectedMeasure = 0;
     }
 
     Vector<CheckerErrorTrace> getErrorTracesList() {
@@ -246,27 +242,18 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         failMsg = msg;
     }
 
-    private int getNodeLine(final CFGNode node) {
-	// TODO: following lines can be removed, when there are no CFGNodes
-	// without XML element and each XML element has 'bl' attribute.
-	if (node.getElement() == null)
-	    return 1;
-	String attr = node.getElement().attributeValue("bl");
-	if (attr == null)
-	    return 1;
-	return Integer.parseInt(attr);
-    }
-
-    private ErrorRule rule;
-    private final AutomatonStateTransferManager transferor;
-    private final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
-                                                         nodeLocationDictionary;
-    private final CFGNode startNode;
-    private final LazyInternalStructures internals;
-    private final Vector<CheckerErrorTrace> errorTracesList;
-    private final java.util.List<FalsePositivesDetector> detectors;
-    private final AutomatonCheckerLogger monitor;
-    private int totalImportance;
-    private String failMsg;
-    private int numRejectedMeasure;
+	private ErrorRule rule;
+	private final AutomatonStateTransferManager transferor;
+	private final Map<CFGNode, Pair<PatternLocation, PatternLocation>>
+		nodeLocationDictionary;
+	private final CFGNode startNode;
+	private final LazyInternalStructures internals;
+	private final Vector<CheckerErrorTrace> errorTracesList =
+		new Vector<CheckerErrorTrace>();
+	private final java.util.List<FalsePositivesDetector> detectors;
+	private final AutomatonCheckerLogger monitor;
+	private int totalImportance =
+		FalsePositivesDetector.getBugDefaultImportance();
+	private String failMsg = null;
+	private int numRejectedMeasure = 0;
 }
