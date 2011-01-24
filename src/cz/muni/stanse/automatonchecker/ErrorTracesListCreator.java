@@ -19,6 +19,7 @@ import cz.muni.stanse.utils.Pair;
 import java.util.List;
 import java.util.Vector;
 import java.util.Map;
+import java.util.Stack;
 
 final class ErrorTracesListCreator extends CFGPathVisitor {
 
@@ -26,7 +27,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
 
     @Override
     public boolean visit(final List<CFGNode> path,
-                         final java.util.Stack<CFGNode> cfgContext) {
+                         final Stack<CFGNode> cfgContext) {
         if (getErrorTracesList().size() >= 20 || path.size() > 100
                 || isLimitOfRejectedMeasureExceeded())
             return false;
@@ -140,7 +141,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     // private section
 
     private int getTraceImportance(final List<CFGNode> path,
-                                   final java.util.Stack<CFGNode> cfgContext) {
+                                   final Stack<CFGNode> cfgContext) {
         int importance = FalsePositivesDetector.getBugDefaultImportance();
         for (final FalsePositivesDetector detector : detectors) {
             final int currImportance =
@@ -158,7 +159,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                                        final String innerMsg,
                                        final String endMsg,
                                        final List<CFGNode> path,
-                                       final java.util.Stack<CFGNode> context) {
+                                       final Stack<CFGNode> context) {
         final Vector<CheckerErrorTraceLocation> trace =
                                         new Vector<CheckerErrorTraceLocation>();
         for (final CFGNode node : context)

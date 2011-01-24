@@ -16,7 +16,6 @@ import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.codestructures.traversal.CFGTraversal;
 import cz.muni.stanse.checker.CheckerError;
 import cz.muni.stanse.checker.CheckerErrorTrace;
-import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckingResult;
 import cz.muni.stanse.checker.CheckingSuccess;
@@ -27,7 +26,7 @@ import cz.muni.stanse.utils.TimeManager;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Vector;
+import java.util.Stack;
 
 /**
  * @brief Provides static method buildErrorList which compute the checker-errors
@@ -118,8 +117,8 @@ final class CheckerErrorBuilder {
 	final TimeManager tmgr = new TimeManager();
 	tmgr.measureStart();
         for (final ErrorRule rule : location.getErrorRules())
-            for (final java.util.Stack<CFGNode> cfgContext :
-                                AutomatonStateCFGcontextAlgo.getContexts(
+            for (final Stack<CFGNode> cfgContext :
+			AutomatonStateCFGcontextAlgo.getContexts(
                                         location.getProcessedAutomataStates())) {
                 if (tmgr.measureElapsed() > 10000000000L)
                     return Pair.make(numErrors,result);
