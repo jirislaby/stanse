@@ -168,8 +168,8 @@ declarationSpecifiers
 	: ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER typeSpecifier*) ^(XTYPE_QUALIFIER typeQualifier*) ^(XSTORAGE_CLASS (storageClassSpecifier|functionSpecifier)*))
 	;
 
-declarator
-	: ^(DECLARATOR pointer? directDeclarator)
+declarator returns [String ddText]
+	: ^(DECLARATOR pointer? directDeclarator) { $ddText = $directDeclarator.text; }
 	;
 
 directDeclarator
@@ -190,7 +190,12 @@ initDeclarator returns [CFGPart g]
 	: ^(INIT_DECLARATOR declarator initializer?) {
 		if ($initializer.start != null) {
 			$g = new CFGPart();
-			$g.append(new CFGNode($initDeclarator.start.getElement(), $initDeclarator.text));
+			/*
+			 * let's construct the code manually, because
+			 * declarator may contain pointer (an asterisk)
+			 */
+			$g.append(new CFGNode($initDeclarator.start.getElement(),
+				$declarator.ddText + " = " + $initializer.text));
 		}
 	}
 	;
