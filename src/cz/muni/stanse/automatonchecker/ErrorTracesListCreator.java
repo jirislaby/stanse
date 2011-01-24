@@ -210,12 +210,10 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                 getNodeToCFGdictionary().get(node));
     }
 
-    private void updateTotalImportance(final int traceImportance) {
-        assert(traceImportance !=
-                    FalsePositivesDetector.getBugDefaultImportance());
-        totalImportance = totalImportance > traceImportance ?
-                                totalImportance : traceImportance ;
-    }
+	private void updateTotalImportance(final int traceImportance) {
+		if (totalImportance <= traceImportance)
+			totalImportance = traceImportance;
+	}
 
     private boolean isLimitOfRejectedMeasureExceeded() {
         return numRejectedMeasure > 1000;
