@@ -10,12 +10,10 @@ import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
-import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.threadchecker.graph.Cycle;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
 import cz.muni.stanse.threadchecker.graph.RAG;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,72 +28,55 @@ import org.apache.log4j.Logger;
  * @author Jan Kučera
  */
 public class ThreadChecker extends Checker {
-    private final static Logger logger =
-                                Logger.getLogger(ThreadChecker.class.getName());
-    private static CheckerSettings settings = CheckerSettings.getInstance();
-    private CheckerProgressMonitor monitor;
+	private final static Logger logger =
+		Logger.getLogger(ThreadChecker.class.getName());
+	private static CheckerSettings settings = CheckerSettings.getInstance();
+	private CheckerProgressMonitor monitor;
 
-    /**
-     * Function pick choose starting CFG and build their dependency graphs, then
-     * find possible cycles and generate RAG and create appropriate errors
-     * or warnings.
-     * @param units List<Unit> representing all files intended to check
-     * @return List<PresentableError> representing all errors that checker found
-     * @throws cz.muni.stanse.checker.CheckerException
-     */
-    @Override
-    public CheckingResult check(
-                        final LazyInternalStructures internals,
-                        final CheckerErrorReceiver errReceiver,
-                        final CheckerProgressMonitor monitor)
-                                                       throws CheckerException {
-        List<CheckerError> errors;
-        CheckerError error;
-        Set<DependencyGraph> graphs = null;
-        List<String> startFunctions;
+	/**
+	 * Function pick choose starting CFG and build their dependency graphs
+	 * then find possible cycles and generate RAG and create appropriate
+	 * errors or warnings.
+	 * @param units List<Unit> representing all files intended to check
+	 * @return List<PresentableError> representing all errors that checker
+	 * found
+	 * @throws cz.muni.stanse.checker.CheckerException
+	 */
+	@Override
+	public CheckingResult check(
+		final LazyInternalStructures internals,
+		final CheckerErrorReceiver errReceiver,
+		final CheckerProgressMonitor monitor)
+		throws CheckerException {
+		this.monitor = monitor;
 
-	this.monitor = monitor;
+		monitor.write("Starting ThreadChecker");
 
-	monitor.write("Parsing");
-        settings.setInternals(internals);
+		settings.setInternals(internals);
+		settings.clearData();
+		settings.addAllCFGs();
 
-        Collection<Unit> units = internals.getUnits();
+		//Parser somehow creates empty unit - prevent throwing expcetion
+		if (internals.getUnits().size() == 1 &&
+				internals.getCFGHandles().isEmpty())
+			return new CheckingSuccess();
 
-        settings.clearData();
-//        for(Unit unit : units) {
-//            logger.info("===============");
-//            logger.info("Analysing file: "+unit.getName());
-//            logger.info("===============");
-//            settings.addAllCFGs(unit);
-//            Utils.showGraph(unit);
-//        }
+		monitor.write("Analysing starting functions");
+		analyseFunctions(settings.getStartFunctions());
+		monitor.write("Generating dependency graphs");
+		final Set<DependencyGraph> graphs = generateDependencyGraphs();
+		monitor.write("Finding errors");
+		final List<CheckerError> errors = findErrors(graphs, getMonitor());
 
-        settings.addAllCFGs();
+		Collections.sort(errors);
 
+		monitor.write("Reporting errors");
+		errReceiver.receiveAll(errors);
 
-        //Parser somehow creates empty unit - prevent throwing expcetion
-        if (units.size()==1 && internals.getCFGHandles().isEmpty()) {
-            return new CheckingSuccess();
-        }
+		settings.setInternals(null);
 
-	monitor.write("Collecting starting functions");
-        startFunctions = settings.getStartFunctions();
-	monitor.write("Analysing starting functions");
-        analyseFunctions(startFunctions);
-	monitor.write("Generating dependency graphs");
-        graphs = generateDependencyGraphs();
-	monitor.write("Finding errors");
-        errors = findErrors(graphs, getMonitor());
-
-        Collections.sort(errors);
-
-	monitor.write("Reporting errors");
-	errReceiver.receiveAll(errors);
-
-        settings.setInternals(null);
-
-        return new CheckingSuccess();
-    }
+		return new CheckingSuccess();
+	}
     
     /**
      * Method picks startFunctions, creates ThreadInfo instance which executes
