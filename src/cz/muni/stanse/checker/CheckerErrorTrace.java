@@ -105,6 +105,14 @@ public final class CheckerErrorTrace {
         return description;
     }
 
+	public String getLinearCode() {
+		return linearCode;
+	}
+
+	public void setLinearCode(final String lc) {
+		linearCode = lc;
+	}
+
     // private section
 
     private static Vector<CheckerErrorTraceLocation>
@@ -140,4 +148,5 @@ public final class CheckerErrorTrace {
 
     private final List<CheckerErrorTraceLocation> locations;
     private final String description;
+    private String linearCode = null;
 }
