@@ -35,6 +35,7 @@ public class CFGNode {
     /**
      * Creates a new instance of CFGNode
      * @param e element to assign to this node
+     * @param code corresponding (original) code
      */
     public CFGNode(Element e, String code) {
 	number = CFGNodeNumber.getNext();

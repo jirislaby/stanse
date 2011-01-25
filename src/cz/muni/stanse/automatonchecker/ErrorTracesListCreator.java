@@ -134,8 +134,6 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         return failMsg;
     }
 
-    // private section
-
     private int getTraceImportance(final List<CFGNode> path,
                                    final Stack<CFGNode> cfgContext) {
         int importance = FalsePositivesDetector.getBugDefaultImportance();
@@ -150,6 +148,15 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         }
         return importance;
     }
+
+	private void buildLinearCode(final Stack<CFGNode> context,
+			final List<CFGNode> path,
+			final CheckerErrorTrace eTrace) {
+		final StringBuilder sb = new StringBuilder();
+		for (final CFGNode node : path)
+			sb.append(node.getCode()).append(";\n");
+		eTrace.setLinearCode(sb.toString());
+	}
 
     private CheckerErrorTrace buildErrorTrace(final String beginMsg,
                                        final String innerMsg,
@@ -176,8 +183,10 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                         path.get(path.size() - 1).getColumn(),
                         endMsg + getRule().getAutomatonID().getVarsAssignment()
                                           .toString()));
-        return new CheckerErrorTrace(trace,
-                       "error-trace [" + (getErrorTracesList().size()+1) + "]");
+	final CheckerErrorTrace eTrace = new CheckerErrorTrace(trace,
+		"error-trace [" + (getErrorTracesList().size()+1) + "]");
+	buildLinearCode(context, path, eTrace);
+	return eTrace;
     }
 
     private ErrorRule getRule() {
