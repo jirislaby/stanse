@@ -20,13 +20,17 @@ import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckingResult;
 import cz.muni.stanse.checker.CheckingSuccess;
 import cz.muni.stanse.checker.CheckingFailed;
+import cz.muni.stanse.codestructures.LinearCode;
 import cz.muni.stanse.utils.Make;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.TimeManager;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import java.util.Map;
 import java.util.List;
 import java.util.Stack;
+import org.apache.log4j.Logger;
 
 /**
  * @brief Provides static method buildErrorList which compute the checker-errors
@@ -191,7 +195,6 @@ final class CheckerErrorBuilder {
                                        final LazyInternalStructures internals) {
         return getNodeUnitName(location.getCFGreferenceNode(),internals);
     }
-
 
     private CheckerErrorBuilder() {
     }

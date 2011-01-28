@@ -11,6 +11,7 @@ import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGNode;
 
 import cz.muni.stanse.codestructures.LazyInternalStructures;
+import cz.muni.stanse.codestructures.LinearCode;
 import java.util.List;
 import java.util.Vector;
 import java.util.Collections;
@@ -105,11 +106,11 @@ public final class CheckerErrorTrace {
         return description;
     }
 
-	public String getLinearCode() {
+	public LinearCode getLinearCode() {
 		return linearCode;
 	}
 
-	public void setLinearCode(final String lc) {
+	public void setLinearCode(final LinearCode lc) {
 		linearCode = lc;
 	}
 
@@ -148,5 +149,5 @@ public final class CheckerErrorTrace {
 
     private final List<CheckerErrorTraceLocation> locations;
     private final String description;
-    private String linearCode = null;
+    private LinearCode linearCode = null;
 }

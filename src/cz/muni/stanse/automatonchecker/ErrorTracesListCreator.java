@@ -13,6 +13,7 @@ import cz.muni.stanse.checker.CheckerErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
+import cz.muni.stanse.codestructures.LinearCode;
 import cz.muni.stanse.codestructures.traversal.CFGPathVisitor;
 import cz.muni.stanse.utils.Pair;
 
@@ -149,15 +150,6 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         return importance;
     }
 
-	private void buildLinearCode(final Stack<CFGNode> context,
-			final List<CFGNode> path,
-			final CheckerErrorTrace eTrace) {
-		final StringBuilder sb = new StringBuilder();
-		for (final CFGNode node : path)
-			sb.append(node.getCode()).append(";\n");
-		eTrace.setLinearCode(sb.toString());
-	}
-
     private CheckerErrorTrace buildErrorTrace(final String beginMsg,
                                        final String innerMsg,
                                        final String endMsg,
@@ -185,7 +177,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                                           .toString()));
 	final CheckerErrorTrace eTrace = new CheckerErrorTrace(trace,
 		"error-trace [" + (getErrorTracesList().size()+1) + "]");
-	buildLinearCode(context, path, eTrace);
+	eTrace.setLinearCode(new LinearCode(context, path));
 	return eTrace;
     }
 
