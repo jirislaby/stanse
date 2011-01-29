@@ -686,7 +686,7 @@ binaryExpression returns [CFGPart g]
 	;
 
 primaryExpression returns [CFGPart g]
-	: IDENTIFIER { puts((char *)$IDENTIFIER->getText($IDENTIFIER)->chars); }
+	: IDENTIFIER
 	| constant
 	| sTRING_LITERAL
 	| compoundStatement { $g=$compoundStatement.g; }

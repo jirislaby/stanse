@@ -3,7 +3,7 @@
 GNUC grammar for ANTLR v3
 
 AUTHOR:	Jan Obdrzalek, 2007-2009
-	Jiri Slaby (modifications), 2008-2009
+	Jiri Slaby (modifications), 2008-2011
 	Typedef handling taken from C.g distributed with ANTLR v3,  (c) Terence Parr
 
 TODO:
@@ -263,7 +263,8 @@ initDeclaratorList
 	;
 
 initDeclarator		// (6.7)
-	:	d=declarator simpleAsmExpr? ( '=' initializer )? -> ^(INIT_DECLARATOR[$d.start] $d initializer?)
+	/* see declarator */
+	:	d=declarator simpleAsmExpr? ( '=' initializer )? -> ^(INIT_DECLARATOR[$d.start,$d.start->getText($d.start)->chars] $d initializer?)
 	;
 
 storageClassSpecifier	// (6.7.1)
@@ -283,14 +284,14 @@ typeSpecifier		// (6.7.2)
         |       'long'			-> ^(BASETYPE 'long')
         |       'float'			-> ^(BASETYPE 'float')
         |       'double'		-> ^(BASETYPE 'double')
-        |       s='signed'		-> ^(BASETYPE SIGNED[$s])
-        |       s='__signed'		-> ^(BASETYPE SIGNED[$s])
-        |       s='__signed__'		-> ^(BASETYPE SIGNED[$s])
+        |       s='signed'		-> ^(BASETYPE SIGNED[$s,"signed"])
+        |       s='__signed'		-> ^(BASETYPE SIGNED[$s,"signed"])
+        |       s='__signed__'		-> ^(BASETYPE SIGNED[$s,"signed"])
         |       'unsigned'		-> ^(BASETYPE 'unsigned')
         |	'_Bool'			-> ^(BASETYPE '_Bool')
-        |	c='_Complex'		-> ^(BASETYPE COMPLEX[$c])
-        |	c='__complex'		-> ^(BASETYPE COMPLEX[$c])
-        |	c='__complex__'		-> ^(BASETYPE COMPLEX[$c])
+        |	c='_Complex'		-> ^(BASETYPE COMPLEX[$c,"_Complex"])
+        |	c='__complex'		-> ^(BASETYPE COMPLEX[$c,"_Complex"])
+        |	c='__complex__'		-> ^(BASETYPE COMPLEX[$c,"_Complex"])
         |	'_Imaginary'		-> ^(BASETYPE '_Imaginary')		// TODO removed in C99 TC2
         |       structOrUnionSpecifier
         |       enumSpecifier
@@ -368,7 +369,8 @@ functionSpecifier
 	;
 
 declarator
-	:	pointer? dd=directDeclarator -> ^(DECLARATOR[$dd.start] pointer? $dd)
+	/* has to be that way to propagate properly. Only C target... */
+	:	pointer? dd=directDeclarator -> ^(DECLARATOR[$dd.start,$dd.start->getText($dd.start)->chars] pointer? $dd)
 	;
 
 directDeclarator
@@ -415,11 +417,19 @@ pointer
 	;
 
 parameterTypeList
-	:	(parameterList -> parameterList) ((',' '...') -> parameterList VARARGS)?
+	:	parameterList varArgs
+	;
+
+varArgs
+	:	(',' elip='...' -> VARARGS[$elip,"VARARGS"])?
 	;
 
 parameterList
-	:	parameterDeclaration ( ',' parameterDeclaration )* -> parameterDeclaration+
+	:	parameterDeclaration parameterDeclarationRest
+	;
+
+parameterDeclarationRest
+	: ( ','! parameterDeclaration )*
 	;
 
 parameterDeclaration
@@ -668,8 +678,8 @@ labeledStatement
 compoundStatement
 scope Symbols; // blocks are scopes
 @init { $Symbols::types = antlr3HashTableNew(HASH_SIZE); SCOPE_TOP(Symbols)->free = freetypes; }
-	:	'{' blockItem* end='}' -> ^(COMPOUND_STATEMENT CS_END[$end] blockItem*)
-	|	'{' labelDeclaration+ blockItem* end='}' -> ^(COMPOUND_STATEMENT CS_END[$end] blockItem*)	// GNU // TODO labels AST
+	:	'{' blockItem* end='}' -> ^(COMPOUND_STATEMENT CS_END[$end,$end.text->chars] blockItem*)
+	|	'{' labelDeclaration+ blockItem* end='}' -> ^(COMPOUND_STATEMENT CS_END[$end,$end.text->chars] blockItem*)	// GNU // TODO labels AST
 	;
 
 blockItem
@@ -684,7 +694,7 @@ labelDeclaration
 	;
 
 expressionStatement
-	:	expression? sc=';' -> ^(EXPRESSION_STATEMENT[$sc] expression?)
+	:	expression? sc=';' -> ^(EXPRESSION_STATEMENT[$sc,$sc.text->chars] expression?)
 	;
 
 selectionStatement
@@ -708,7 +718,7 @@ jumpStatement
 	;
 
 asmStatement	// GNU
-	:	(a='asm'|a='__asm'|a='__asm__') typeQualifier? 'goto'? '(' asmArgument ')' ';' -> ^(ASM[$a]) // TODO
+	:	(a='asm'|a='__asm'|a='__asm__') typeQualifier? 'goto'? '(' asmArgument ')' ';' -> ^(ASM[$a,"asm"]) // TODO
 	;
 
 asmArgument	// GNU
