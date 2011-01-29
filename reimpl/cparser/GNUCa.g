@@ -72,7 +72,6 @@ options {
 
 // list of imaginary nodes
 tokens{
-	KK;
 	BRACKET_DESIGNATOR;
 	SIGNED;
 	COMPLEX;
@@ -187,51 +186,7 @@ scope Typedef {
 			}
 		}
 	}
-#if 0
-	private List<String> externalTypedefs = null;
-
-	@Override
-	public String getErrorMessage(RecognitionException e, String[] tokenNames) {
-		List stack = getRuleInvocationStack(e, this.getClass().getName());
-		String msg = null;
-		if ( e instanceof NoViableAltException ) {
-			NoViableAltException nvae = (NoViableAltException)e;
-			msg = " no viable alt; token="+e.token+
-				" (decision="+nvae.decisionNumber+
-				" state "+nvae.stateNumber+")"+
-				" decision=<<"+nvae.grammarDecisionDescription+">>";
-		} else {
-			msg = super.getErrorMessage(e, tokenNames);
-		}
-		return stack+" "+msg;
-	}
-
-	@Override
-	public String getTokenErrorDisplay(Token t) {
-		return t.toString();
-	}
-
-	@Override
-    	protected Object recoverFromMismatchedToken(IntStream input, int ttype,
-			BitSet follow) throws RecognitionException {
-		throw new MismatchedTokenException(ttype, input);
-	}
-
-	@Override
-	public Object recoverFromMismatchedSet(IntStream input,
-			RecognitionException e, BitSet follow)
-			throws RecognitionException {
-		throw e;
-	}
-#endif
 }
-
-/*@rulecatch {
-catch (RecognitionException e) {
-	reportError(e);
-	throw e;
-}
-}*/
 
 /** The grammar starts here */
 
