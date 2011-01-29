@@ -2,6 +2,7 @@ CC=gcc
 CFLAGS=-Wall -O2 -Wno-unused -march=core2
 LDFLAGS=-O2
 LIBS=-lantlr3c
+ANTLR=../../tools/antlr-3.2.jar
 
 all: test
 
@@ -13,12 +14,12 @@ main.c: GNUCaParser.h GNUCaLexer.h CFGEmitter.h
 GNUCaParser.c GNUCaLexer.c GNUCaParser.h GNUCaLexer.h: .GNUCa_g
 
 .%_g: %.g
-	java -jar ../tools/antlr-3.2.jar -depend $^ >.$^.u
-	java -jar ../tools/antlr-3.2.jar $^
+	java -jar $(ANTLR) -depend $^ >.$^.u
+	java -jar $(ANTLR) $^
 	touch $@
 
 CFGEmitter.c CFGEmitter.h: CFGEmitter.g
-	java -jar ../tools/antlr-3.2.jar $^
+	java -jar $(ANTLR) $^
 
 clean:
 	rm -f *.o *Parser.[ch] *Lexer.[ch] *Emitter.[ch] *.tokens .*_g .*.u
