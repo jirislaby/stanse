@@ -6,10 +6,10 @@ ANTLR=../../tools/antlr-3.2.jar
 
 all: test
 
-test: main.o GNUCaLexer.o GNUCaParser.o CFGEmitter.o
+test: main.o GNUCaLexer.o GNUCaParser.o ASTEmitter.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
-main.c: GNUCaParser.h GNUCaLexer.h CFGEmitter.h
+main.c: GNUCaParser.h GNUCaLexer.h ASTEmitter.h
 
 GNUCaParser.c GNUCaLexer.c GNUCaParser.h GNUCaLexer.h: .GNUCa_g
 
@@ -18,7 +18,7 @@ GNUCaParser.c GNUCaLexer.c GNUCaParser.h GNUCaLexer.h: .GNUCa_g
 	java -jar $(ANTLR) $^
 	touch $@
 
-CFGEmitter.c CFGEmitter.h: CFGEmitter.g
+ASTEmitter.c ASTEmitter.h: ASTEmitter.g
 	java -jar $(ANTLR) $^
 
 clean:

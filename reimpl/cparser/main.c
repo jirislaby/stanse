@@ -4,7 +4,7 @@
 
 #include "GNUCaLexer.h"
 #include "GNUCaParser.h"
-#include "CFGEmitter.h"
+#include "ASTEmitter.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,8 +14,8 @@ int main(int argc, char *argv[])
 	GNUCaParser_translationUnit_return parseTree;
 	pGNUCaLexer lxr;
 	pGNUCaParser psr;
-	pCFGEmitter cfge;
-	pANTLR3_LIST cfg_list;
+	pASTEmitter ASTe;
+	pANTLR3_LIST AST_list;
 	int ret = 1;
 
 	if (argc != 2)
@@ -48,17 +48,17 @@ int main(int argc, char *argv[])
 		goto err_psr;
 
 	ret++;
-	cfge = CFGEmitterNew(tnstream);
-	if (!cfge)
+	ASTe = ASTEmitterNew(tnstream);
+	if (!ASTe)
 		goto err_tnstream;
 
-	cfg_list = cfge->translationUnit(cfge);
+	AST_list = ASTe->translationUnit(ASTe);
 
 	ret = 0;
 
-	cfg_list->free(cfg_list);
+	AST_list->free(AST_list);
 
-	cfge->free(cfge);
+	ASTe->free(ASTe);
 err_tnstream:
 	tnstream->free(tnstream);
 err_psr:
