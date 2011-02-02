@@ -1,11 +1,6 @@
 #ifndef COMMON_H
 #define COMMON_H
-typedef struct CFG {
-} *CFG;
 
-typedef struct CFGPart {
-} *CFGPart;
+extern int parse(const char *file);
 
-typedef struct CFGNode {
-} *CFGNode;
 #endif

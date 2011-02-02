@@ -1,4 +1,7 @@
 *.o
+*.so
+*.class
 .GNUCa*
 GNUCa*.[ch]
-test
+*Emitter.[ch]
+/cparser_CParser.h

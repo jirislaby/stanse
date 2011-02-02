@@ -5,8 +5,9 @@
 #include "GNUCaLexer.h"
 #include "GNUCaParser.h"
 #include "ASTEmitter.h"
+#include "common.h"
 
-int main(int argc, char *argv[])
+int parse(const char *file)
 {
 	pANTLR3_INPUT_STREAM input;
 	pANTLR3_COMMON_TOKEN_STREAM tstream;
@@ -18,11 +19,7 @@ int main(int argc, char *argv[])
 	pANTLR3_LIST AST_list;
 	int ret = 1;
 
-	if (argc != 2)
-		goto err;
-
-	ret++;
-	input = antlr3AsciiFileStreamNew((unsigned char *)argv[1]);
+	input = antlr3AsciiFileStreamNew((unsigned char *)file);
 	if (!input)
 		goto err;
 	ret++;
@@ -52,11 +49,9 @@ int main(int argc, char *argv[])
 	if (!ASTe)
 		goto err_tnstream;
 
-	AST_list = ASTe->translationUnit(ASTe);
+	ASTe->translationUnit(ASTe);
 
 	ret = 0;
-
-	AST_list->free(AST_list);
 
 	ASTe->free(ASTe);
 err_tnstream:
