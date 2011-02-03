@@ -223,7 +223,7 @@ scope Symbols {
 	}
 }
 
-translationUnit //returns [AST d]
+translationUnit[void *priv] returns [my_jobject d]
 scope Symbols;
 @init {
 	$Symbols::variables = antlr3ListNew(LIST_SIZE);
@@ -231,8 +231,7 @@ scope Symbols;
 	SCOPE_TOP(Symbols)->free = free_symbols;
 }
 	: ^(TRANSLATION_UNIT (eds=externalDeclaration {/*root.add(eds.e);*/} )*) {
-/*		xmlDocument.setRootElement(root);
-		d = xmlDocument;*/
+		$d = newTranslationUnit($priv);
 	}
 	;
 

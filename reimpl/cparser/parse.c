@@ -7,7 +7,7 @@
 #include "ASTEmitter.h"
 #include "common.h"
 
-int parse(const char *file)
+int parse(const char *file, void *priv, my_jobject *AST)
 {
 	pANTLR3_INPUT_STREAM input;
 	pANTLR3_COMMON_TOKEN_STREAM tstream;
@@ -49,7 +49,7 @@ int parse(const char *file)
 	if (!ASTe)
 		goto err_tnstream;
 
-	ASTe->translationUnit(ASTe);
+	*AST = ASTe->translationUnit(ASTe, priv);
 
 	ret = 0;
 

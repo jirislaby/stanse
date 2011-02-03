@@ -26,8 +26,8 @@ public class BinaryOperation extends Node {
 	private static final Map<BIN_OP, String> opsStr;
 
 	static {
-		strOps = new HashMap();
-		opsStr = new HashMap();
+		strOps = new HashMap<String, BIN_OP>();
+		opsStr = new HashMap<BIN_OP, String>();
 		fill("==", BIN_OP.EQ);
 		fill("+", BIN_OP.PLUS);
 		fill("-", BIN_OP.MINUS);
@@ -47,6 +47,8 @@ public class BinaryOperation extends Node {
 		return ret;
 	}
 
+	private BinaryOperation() { throw new UnsupportedOperationException(); }
+
 	public BinaryOperation(final String op) {
 		this.op = strToOp(op);
 	}
@@ -54,5 +56,10 @@ public class BinaryOperation extends Node {
 	@Override
 	public String toString() {
 		return super.toString() + " (" + opsStr.get(op) + ")";
+	}
+
+	@Override
+	void XMLattributes(final StringBuilder sb) {
+		sb.append(" op=\"").append(opsStr.get(op)).append('"');
 	}
 }
