@@ -15,13 +15,14 @@ options {
 }
 
 scope Symbols {
-/*	List<String> variables;
-	List<String> variablesOld;*/
-	char a;
+	pANTLR3_LIST variables;
+	pANTLR3_LIST variablesOld;
 }
 
 @header {
 #include "common.h"
+
+#define LIST_SIZE	20
 }
 
 @members {
@@ -215,14 +216,19 @@ scope Symbols {
 		return old; /* throw an exception? */
 	}
 #endif
+	void ANTLR3_CDECL free_symbols(SCOPE_TYPE(Symbols) symbols)
+	{
+		symbols->variables->free(symbols->variables);
+		symbols->variablesOld->free(symbols->variablesOld);
+	}
 }
 
 translationUnit //returns [AST d]
 scope Symbols;
 @init {
-/*	Element root = xmlDocument.addElement("translationUnit");
-	Symbols::variables = new LinkedList<String>();
-	Symbols::variablesOld = new LinkedList<String>();*/
+	$Symbols::variables = antlr3ListNew(LIST_SIZE);
+	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
+	SCOPE_TOP(Symbols)->free = free_symbols;
 }
 	: ^(TRANSLATION_UNIT (eds=externalDeclaration {/*root.add(eds.e);*/} )*) {
 /*		xmlDocument.setRootElement(root);
@@ -256,9 +262,10 @@ functionDefinition //returns [Element e]
 functionDefinitionBody//[Element fd]
 scope Symbols;
 @init {
+	$Symbols::variables = antlr3ListNew(LIST_SIZE);
+	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
+	SCOPE_TOP(Symbols)->free = free_symbols;
 /*	List<Element> ds = new LinkedList<Element>();
-	Symbols::variables = new LinkedList<String>();
-	Symbols::variablesOld = new LinkedList<String>();
 	processFunParams();*/
 }
 	: (d=declaration {/*ds.add(d.e);*/})* compoundStatement {
@@ -408,9 +415,10 @@ designator//returns [Element e]
 compoundStatement//returns [Element e]
 scope Symbols;
 @init {
-/*	List<Element> els = new LinkedList<Element>();
-	Symbols::variables = new LinkedList<String>();
-	Symbols::variablesOld = new LinkedList<String>();*/
+	$Symbols::variables = antlr3ListNew(LIST_SIZE);
+	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
+	SCOPE_TOP(Symbols)->free = free_symbols;
+//	List<Element> els = new LinkedList<Element>();
 }
 	: ^(COMPOUND_STATEMENT CS_END (d=declaration {/*els.add(d.e);*/}|fd=functionDefinition{/*els.add(fd.e);*/}|st=statement{/*els.add(st.e);*/})*) {
 /*		e = newElement("compoundStatement", compoundStatement.start);
