@@ -3,7 +3,7 @@
 GNUC grammar for ANTLR v3
 
 AUTHOR:	Jan Obdrzalek, 2007-2009
-	Jiri Slaby (modifications), 2008-2011
+	Jiri Slaby, 2008-2011
 	Typedef handling taken from C.g distributed with ANTLR v3,  (c) Terence Parr
 
 TODO:
