@@ -13,16 +13,27 @@
 enum class_ID {
 	cls_CParser,
 	cls_Node,
-	cls_TranslationUnit,
+
 	cls_BinaryOperation,
+	cls_CompoundStatement,
+	cls_Declaration,
+	cls_DeclarationSpecifiers,
+	cls_Declarator,
+	cls_ExternalDeclaration,
+	cls_FunctionDefinition,
+	cls_TranslationUnit,
+
 	/* has to be the last one */
 	cid_count
 };
 
 enum method_ID {
+	FunctionDefinition_setEndLine,
+
 	Node_addChild,
 	Node_setColumn,
 	Node_setLine,
+
 	/* has to be the last one */
 	mid_count
 };
@@ -51,11 +62,20 @@ static void cleanup_class_ids(JNIEnv *env)
 
 static int get_class_ids(JNIEnv *env)
 {
+#define AST_CLASS(class) [cls_ ## class] = "cparser/AST/" #class
 	static const char *classes_spec[] = {
 		[cls_CParser] = "cparser/CParser",
-		[cls_Node] = "cparser/AST/Node",
-		[cls_TranslationUnit] = "cparser/AST/TranslationUnit",
-		[cls_BinaryOperation] = "cparser/AST/BinaryOperation",
+		AST_CLASS(Node),
+
+		AST_CLASS(BinaryOperation),
+		AST_CLASS(CompoundStatement),
+		AST_CLASS(Declaration),
+		AST_CLASS(DeclarationSpecifiers),
+		AST_CLASS(Declarator),
+		AST_CLASS(ExternalDeclaration),
+		AST_CLASS(FunctionDefinition),
+		AST_CLASS(TranslationUnit),
+
 		NULL
 	};
 	const char * const *src;
@@ -93,9 +113,12 @@ static void cleanup_method_ids(JNIEnv *env)
 static int get_method_ids(JNIEnv *env)
 {
 	static const struct fm_spec methods_spec[] = {
+		FM(FunctionDefinition, setEndLine, "(I)V"),
+
 		FM(Node, addChild, "(Lcparser/AST/Node;)V"),
 		FM(Node, setColumn, "(I)V"),
 		FM(Node, setLine, "(I)V"),
+
 		{ }
 	};
 	const struct fm_spec *src;
@@ -231,24 +254,46 @@ static jobject new_obj(JNIEnv *env, enum class_ID cid,
 	return object;
 }
 
-static inline void set_line(JNIEnv *env, jobject obj, jint line)
-{
-	if (obj)
-		(*env)->CallVoidMethod(env, obj, methods[Node_setLine], line);
-}
-
-my_jobject newTranslationUnit(void *priv)
+void setLine(void *priv, my_jobject obj, int line)
 {
 	struct jni_data *jni = priv;
-	JNIEnv *env = jni->env;
-	jobject tu;
-
-	tu = new_obj(env, cls_TranslationUnit, "()V");
-
-	set_line(env, tu, 5);
-
-	return tu;
+	(*jni->env)->CallVoidMethod(jni->env, obj, methods[Node_setLine], line);
 }
+
+/* FunctionDefinition only */
+void setEndLine(void *priv, my_jobject obj, int line)
+{
+	struct jni_data *jni = priv;
+	(*jni->env)->CallVoidMethod(jni->env, obj,
+			methods[FunctionDefinition_setEndLine], line);
+}
+
+void setColumn(void *priv, my_jobject obj, int column)
+{
+	struct jni_data *jni = priv;
+	(*jni->env)->CallVoidMethod(jni->env, obj, methods[Node_setColumn],
+			column);
+}
+
+void addChild(void *priv, my_jobject parent, my_jobject child)
+{
+	struct jni_data *jni = priv;
+	(*jni->env)->CallVoidMethod(jni->env, parent, methods[Node_addChild],
+			child);
+}
+
+/*
+ * ===================================
+ * ***            AST              ***
+ * ===================================
+ */
+
+#define VOID_NODE(name) \
+	my_jobject new ## name(void *priv)				\
+	{ 								\
+		struct jni_data *jni = priv;				\
+		return new_obj(jni->env, cls_ ## name, "()V");		\
+	}
 
 my_jobject newBinaryOperation(void *priv, const char *op)
 {
@@ -264,3 +309,11 @@ my_jobject newBinaryOperation(void *priv, const char *op)
 
 	return bop;
 }
+
+VOID_NODE(CompoundStatement);
+VOID_NODE(Declaration);
+VOID_NODE(DeclarationSpecifiers);
+VOID_NODE(Declarator);
+VOID_NODE(ExternalDeclaration);
+VOID_NODE(FunctionDefinition);
+VOID_NODE(TranslationUnit);

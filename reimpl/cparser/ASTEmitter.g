@@ -216,7 +216,14 @@ scope Symbols {
 		return old; /* throw an exception? */
 	}
 #endif
-	void ANTLR3_CDECL free_symbols(SCOPE_TYPE(Symbols) symbols)
+	static my_jobject fill_attr(void *priv, my_jobject obj,
+			pANTLR3_BASE_TREE start)
+	{
+		setLine(priv, obj, start->getLine(start));
+		setColumn(priv, obj, start->getCharPositionInLine(start));
+		return obj;
+	}
+	static void ANTLR3_CDECL free_symbols(SCOPE_TYPE(Symbols) symbols)
 	{
 		symbols->variables->free(symbols->variables);
 		symbols->variablesOld->free(symbols->variablesOld);
@@ -229,58 +236,54 @@ scope Symbols;
 	$Symbols::variables = antlr3ListNew(LIST_SIZE);
 	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
 	SCOPE_TOP(Symbols)->free = free_symbols;
+	$d = newTranslationUnit($priv);
 }
-	: ^(TRANSLATION_UNIT (eds=externalDeclaration {/*root.add(eds.e);*/} )*) {
-		$d = newTranslationUnit($priv);
-	}
+	: ^(TRANSLATION_UNIT (eds=externalDeclaration[$priv] { addChild($priv, $d, $eds.d); } )*)
 	;
 
-externalDeclaration //returns [Element e]
-@init {
-//	e = newElement("externalDeclaration", externalDeclaration.start);
-}
-@after {
+externalDeclaration[void *priv] returns [my_jobject d]
+@init	{ $d = newExternalDeclaration($priv); }
+@after	{
+	fill_attr($priv, $d, $externalDeclaration.start);
 //	clearFunParams();
 }
-	: functionDefinition	//{ e.add(functionDefinition.e); }
-	| declaration		//{ e.add(declaration.e); }
+	: functionDefinition[$priv]	{ addChild($priv, $d, $functionDefinition.d); }
+	| declaration[$priv]		{ addChild($priv, $d, $declaration.d); }
 	;
 
-functionDefinition //returns [Element e]
+functionDefinition[void *priv] returns [my_jobject d]
 @init {
-/*	e = newElement("functionDefinition", functionDefinition.start);
-	functionDefinition.start.setElement(e);*/
+	$d = newFunctionDefinition($priv);
+//	functionDefinition.start.setElement(e);*/
 }
-	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator {
-/*		e.add(declarationSpecifiers.e);
-		e.add(declarator.e);*/
-	} functionDefinitionBody) //[e])
+@after	{ fill_attr($priv, $d, $functionDefinition.start); }
+	: ^(FUNCTION_DEFINITION declarationSpecifiers[$priv] declarator[$priv] {
+		addChild($priv, $d, $declarationSpecifiers.d);
+		addChild($priv, $d, $declarator.d);
+	} functionDefinitionBody[$priv, $d])
 	;
 
 /* we need a scope even here */
-functionDefinitionBody//[Element fd]
+functionDefinitionBody[void *priv, my_jobject fd]
 scope Symbols;
 @init {
 	$Symbols::variables = antlr3ListNew(LIST_SIZE);
 	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
 	SCOPE_TOP(Symbols)->free = free_symbols;
-/*	List<Element> ds = new LinkedList<Element>();
-	processFunParams();*/
+//	processFunParams();
 }
-	: (d=declaration {/*ds.add(d.e);*/})* compoundStatement {
-/*		addAllElements(fd, ds);
-		fd.add(compoundStatement.e);
-		fd.addAttribute("el", Integer.toString(
-			compoundStatement.start.getChild(0).getLine()));*/
+	: (d=declaration[$priv] {addChild($priv, $fd, $d.d);})* compoundStatement[$priv] {
+		addChild($priv, $fd, $compoundStatement.d);
+		pANTLR3_BASE_TREE t = $compoundStatement.start;
+		t = t->getChild(t, 0);
+		setEndLine($priv, $fd, t->getLine(t));
 	}
 	;
 
-declaration //returns [Element e]
-@init {
-/*	List<Element> ids = new LinkedList<Element>();
-	e = newElement("declaration", declaration.start);*/
-}
-	: ^('typedef' declarationSpecifiers? (id=initDeclarator {/*ids.add(id.e);*/})*) {
+declaration[void *priv] returns [my_jobject d]
+@init	{ $d = newDeclaration($priv); }
+@after	{ fill_attr($priv, $d, $declaration.start); }
+	: ^('typedef' declarationSpecifiers[$priv]? (id=initDeclarator {/*ids.add(id.e);*/})*) {
 /*		Element ds;
 		if (declarationSpecifiers.e != null)
 			e.add(ds = declarationSpecifiers.e);
@@ -289,23 +292,27 @@ declaration //returns [Element e]
 		ds.addAttribute("storageClass", "typedef");
 		addAllElements(e, ids);*/
 	}
-	| ^(DECLARATION declarationSpecifiers (id=initDeclarator {/*ids.add(id.e);*/})*) {
+	| ^(DECLARATION declarationSpecifiers[$priv] (id=initDeclarator {/*ids.add(id.e);*/})*) {
 /*		e.add(declarationSpecifiers.e);
 		addAllElements(e, ids);*/
 	}
 	;
 
-declarationSpecifiers//returns [Element e]
-@init {
+declarationSpecifiers[void *priv] returns [my_jobject d]
+@init	{
+	$d = newDeclarationSpecifiers($priv);
 /*	List<Element> tss = new LinkedList<Element>();
 	List<String> tqs = new LinkedList<String>();
 	List<String> scs = new LinkedList<String>();
 	List<String> fss = new LinkedList<String>();*/
 }
-	: ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER (ts=typeSpecifier {/*tss.add(ts.e);*/})*) ^(XTYPE_QUALIFIER (tq=typeQualifier {/*tqs.add(tq.s);*/})*) ^(XSTORAGE_CLASS (sc=storageClassSpecifier {/*scs.add(sc.s);*/}|fs=functionSpecifier {/*fss.add(fs.s);*/})*)) {
-/*		e = newElement("declarationSpecifiers",
-				declarationSpecifiers.start);
-		addAllElements(e, typeNormalize(tss));
+@after	{ fill_attr($priv, $d, $declarationSpecifiers.start); }
+	: ^(DECLARATION_SPECIFIERS
+		^(XTYPE_SPECIFIER (ts=typeSpecifier {/*tss.add(ts.e);*/})*)
+		^(XTYPE_QUALIFIER (tq=typeQualifier {/*tqs.add(tq.s);*/})*)
+		^(XSTORAGE_CLASS (sc=storageClassSpecifier {/*scs.add(sc.s);*/} |
+				fs=functionSpecifier {/*fss.add(fs.s);*/})*)) {
+/*		addAllElements(e, typeNormalize(tss));
 		for (String str: tqs)
 			e.addAttribute(str, "1");
 		for (String str: scs)
@@ -315,10 +322,10 @@ declarationSpecifiers//returns [Element e]
 	}
 	;
 
-declarator//returns [Element e]
+declarator[void *priv] returns [my_jobject d]
 	: ^(DECLARATOR pointer? directDeclarator) {
-/*		e = newElement("declarator", declarator.start);
-		addAllElements(e, pointer.els);
+		$d = fill_attr($priv, newDeclarator($priv), $declarator.start);
+/*		addAllElements(e, pointer.els);
 		addAllElements(e, directDeclarator.els);*/
 	}
 	;
@@ -334,7 +341,7 @@ directDeclarator//returns [List<Element> els]
 		newListElement(els, "id").addText(newName);
 		pushSymbol(IDENTIFIER.text, newName);*/
 	}
-	| declarator /*{ newListElement(els, "declarator", declarator.start).
+	| declarator[NULL] /*{ newListElement(els, "declarator", declarator.start).
 			add(declarator.e); }*/
 	| directDeclarator1 //{ els = directDeclarator1.els; } /* XXX is here the + needed? */
 	;
@@ -360,7 +367,7 @@ directDeclarator1//returns [List<Element> els]
 			newListElement(els, "oldId").addText(IDENTIFIER.text);
 		newListElement(els, "id").addText(newName);
 		pushSymbol(IDENTIFIER.text, newName);*/
-	}|declarator) {/*isFunParam = true;*/} (pl=parameterTypeList|(i=identifier {/*l.add(i);*/})*)) {
+	}|declarator[NULL]) {/*isFunParam = true;*/} (pl=parameterTypeList|(i=identifier {/*l.add(i);*/})*)) {
 /*		isFunParam = false;
 		if (IDENTIFIER == null)
 			els.add(declarator.e);
@@ -370,7 +377,7 @@ directDeclarator1//returns [List<Element> els]
 	;
 
 initDeclarator//returns [Element e]
-	: ^(INIT_DECLARATOR declarator initializer?) {
+	: ^(INIT_DECLARATOR declarator[NULL] initializer?) {
 /*		e = newElement("initDeclarator", initDeclarator.start);
 		initDeclarator.start.setElement(e);
 		e.add(declarator.e);
@@ -411,15 +418,16 @@ designator//returns [Element e]
 	| IDENTIFIER			//{ e.addElement("id").addText(IDENTIFIER.text); }
 	;
 
-compoundStatement//returns [Element e]
+compoundStatement[void *priv] returns [my_jobject d]
 scope Symbols;
-@init {
+@init	{
 	$Symbols::variables = antlr3ListNew(LIST_SIZE);
 	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
 	SCOPE_TOP(Symbols)->free = free_symbols;
+	$d = newCompoundStatement($priv);
 //	List<Element> els = new LinkedList<Element>();
 }
-	: ^(COMPOUND_STATEMENT CS_END (d=declaration {/*els.add(d.e);*/}|fd=functionDefinition{/*els.add(fd.e);*/}|st=statement{/*els.add(st.e);*/})*) {
+	: ^(COMPOUND_STATEMENT CS_END (dc=declaration[$priv] {/*els.add(d.e);*/}|fd=functionDefinition[$priv]{/*els.add(fd.e);*/}|st=statement{/*els.add(st.e);*/})*) {
 /*		e = newElement("compoundStatement", compoundStatement.start);
 		addAllElements(e, els);
 		if (els.size() == 0)
@@ -442,7 +450,7 @@ parameterTypeList//returns [List<Element> els]
 	;
 
 parameterDeclaration//returns [Element e]
-	: ^(PARAMETER declarationSpecifiers declarator? abstractDeclarator?) {
+	: ^(PARAMETER declarationSpecifiers[NULL] declarator[NULL]? abstractDeclarator?) {
 /*		e = newElement("parameter", parameterDeclaration.start);
 		e.add(declarationSpecifiers.e);
 		addElementCond(e, declarator.e);
@@ -590,7 +598,7 @@ structDeclaration//returns [Element e]
 	;
 
 structDeclarator//returns [Element e]
-	: ^(STRUCT_DECLARATOR declarator? expression?) {
+	: ^(STRUCT_DECLARATOR declarator[NULL]? expression?) {
 /*		e = newElement("structDeclarator", structDeclarator.start);
 		addElementCond(e, declarator.e);
 		addElementCond(e, expression.e);*/
@@ -617,8 +625,8 @@ enumerator//returns [Element e]
 	}
 	;
 
-typedefName//returns [String s]
-	: IDENTIFIER	//{ s = IDENTIFIER.text; }
+typedefName returns [pANTLR3_STRING s]
+	: IDENTIFIER	{ $s = $IDENTIFIER.text; }
 	;
 
 typeofSpecifier
@@ -626,16 +634,16 @@ typeofSpecifier
 	| ^(TYPEOF typeName)
 	;
 
-storageClassSpecifier//returns [String s]
-	: 'extern'	//{ s = "extern"; }
-	| 'static'	//{ s = "static"; }
-	| 'auto'	//{ s = "auto"; }
-	| 'register'	//{ s = "register"; }
-	| '__thread'	//{ s = "__thread"; }
+storageClassSpecifier returns [const char *s]
+	: 'extern'	{ $s = "extern"; }
+	| 'static'	{ $s = "static"; }
+	| 'auto'	{ $s = "auto"; }
+	| 'register'	{ $s = "register"; }
+	| '__thread'	{ $s = "__thread"; }
 	;
 
-functionSpecifier//returns [String s]
-	: 'inline'	//{ s = "inline"; }
+functionSpecifier returns [const char *s]
+	: 'inline'	{ $s = "inline"; }
 	;
 
 pointer//returns [List<Element> els]
@@ -662,7 +670,7 @@ statement//returns [Element e]
 //	setAttributes(statement.start, e);
 }
 	: labeledStatement	//{ e=labeledStatement.e; }
-	| compoundStatement	//{ e=compoundStatement.e; }
+	| compoundStatement[NULL]	//{ e=compoundStatement.e; }
 	| expressionStatement	//{ e=newElement("expressionStatement");e.add(expressionStatement.e != null ? expressionStatement.e : newEmptyStatement(expressionStatement.start)); }
 	| selectionStatement	//{ e=selectionStatement.e; }
 	| iterationStatement	//{ e=iterationStatement.e; }
@@ -718,7 +726,7 @@ iterationStatement//returns [Element e]
 		e.add(statement.e);
 		e.add(expression.e);*/
 	}
-	| ^('for' declaration? (^(E1 e1=expression))? ^(E2 e2=expression?) ^(E3 e3=expression?) statement) {
+	| ^('for' declaration[NULL]? (^(E1 e1=expression))? ^(E2 e2=expression?) ^(E3 e3=expression?) statement) {
 /*		e = newElement("forStatement", iterationStatement.start);
 		if (declaration.e != null)
 			e.add(declaration.e);
@@ -853,7 +861,7 @@ primaryExpression//returns [Element e]
 	: IDENTIFIER		//{ e = newElement("id"); e.addText(findVariable(IDENTIFIER.text)); }
 	| constant		//{ e = constant.e; }
 	| sTRING_LITERAL	//{ e = newElement("stringConst", sTRING_LITERAL.start); e.addText(sTRING_LITERAL.text); }
-	| compoundStatement	//{ e = compoundStatement.e; }
+	| compoundStatement[NULL]	//{ e = compoundStatement.e; }
 	| ^(BUILTIN_OFFSETOF typeName offsetofMemberDesignator) {
 /*		e = newElement("offsetofExpression", primaryExpression.start);
 		e.add(typeName.e);

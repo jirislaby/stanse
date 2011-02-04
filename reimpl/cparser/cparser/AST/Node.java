@@ -56,8 +56,12 @@ public abstract class Node {
 		else
 			sb.append(" nobc=\"1\"");
 		sb.append('>');
-		for (final Node n : children)
+		boolean terminate = children.size() > 1;
+		for (final Node n : children) {
 			sb.append(n.toXML());
+			if (terminate)
+				sb.append('\n');
+		}
 		sb.append("</").append(XMLname).append('>');
 		return sb.toString();
 	}
