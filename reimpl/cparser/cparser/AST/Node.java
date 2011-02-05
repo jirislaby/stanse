@@ -23,6 +23,10 @@ public abstract class Node {
 		this.column = column;
 	}
 
+	public void setAttr(final String attr, final String value) {
+		throw new UnsupportedOperationException();
+	}
+
 	public void addChild(final Node child) {
 		children.add(child);
 	}

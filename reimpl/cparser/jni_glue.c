@@ -4,8 +4,10 @@
  * Licensed under the GPLv2
  */
 
-#include <jni.h>
+#include <stdlib.h>
 #include <stdio.h>
+
+#include <jni.h>
 
 #include "cparser_CParser.h"
 #include "common.h"
@@ -14,14 +16,26 @@ enum class_ID {
 	cls_CParser,
 	cls_Node,
 
-	cls_BinaryOperation,
-	cls_CompoundStatement,
-	cls_Declaration,
-	cls_DeclarationSpecifiers,
-	cls_Declarator,
-	cls_ExternalDeclaration,
-	cls_FunctionDefinition,
+	cls_Union,
+	cls_TypeSpecifier,
 	cls_TranslationUnit,
+	cls_StructOrUnion,
+	cls_StructDeclarator,
+	cls_StructDeclaration,
+	cls_Struct,
+	cls_Parameter,
+	cls_InitDeclarator,
+	cls_Identifier,
+	cls_FunctionDefinition,
+	cls_FunctionDecl,
+	cls_ExternalDeclaration,
+	cls_Declarator,
+	cls_DeclarationSpecifiers,
+	cls_Declaration,
+	cls_CompoundStatement,
+	cls_BinaryExpression,
+	cls_BaseType,
+	cls_ArrayDecl,
 
 	/* has to be the last one */
 	cid_count
@@ -31,6 +45,7 @@ enum method_ID {
 	FunctionDefinition_setEndLine,
 
 	Node_addChild,
+	Node_setAttr,
 	Node_setColumn,
 	Node_setLine,
 
@@ -63,26 +78,42 @@ static void cleanup_class_ids(JNIEnv *env)
 static int get_class_ids(JNIEnv *env)
 {
 #define AST_CLASS(class) [cls_ ## class] = "cparser/AST/" #class
-	static const char *classes_spec[] = {
+	static const char *classes_spec[cid_count] = {
 		[cls_CParser] = "cparser/CParser",
 		AST_CLASS(Node),
 
-		AST_CLASS(BinaryOperation),
+		AST_CLASS(ArrayDecl),
+		AST_CLASS(BaseType),
+		AST_CLASS(BinaryExpression),
 		AST_CLASS(CompoundStatement),
 		AST_CLASS(Declaration),
 		AST_CLASS(DeclarationSpecifiers),
 		AST_CLASS(Declarator),
 		AST_CLASS(ExternalDeclaration),
+		AST_CLASS(FunctionDecl),
 		AST_CLASS(FunctionDefinition),
+		AST_CLASS(Identifier),
+		AST_CLASS(InitDeclarator),
+		AST_CLASS(Parameter),
+		AST_CLASS(Struct),
+		AST_CLASS(StructDeclaration),
+		AST_CLASS(StructDeclarator),
+		AST_CLASS(StructOrUnion),
 		AST_CLASS(TranslationUnit),
-
-		NULL
+		AST_CLASS(TypeSpecifier),
+		AST_CLASS(Union),
 	};
-	const char * const *src;
-	jclass *dst;
+	int pos;
 
-	for (src = classes_spec, dst = classes; *src; src++, dst++) {
-		jclass d = (*env)->FindClass(env, *src);
+	for (pos = 0; pos < cid_count; pos++) {
+		const char *src = classes_spec[pos];
+		jclass *dst = &classes[pos];
+		if (!src) {
+			fprintf(stderr, "class %d is NULL\n", pos);
+			fflush(stderr);
+			abort();
+		}
+		jclass d = (*env)->FindClass(env, src);
 		if (!d) {
 			cleanup_class_ids(env);
 			return -1;
@@ -116,15 +147,21 @@ static int get_method_ids(JNIEnv *env)
 		FM(FunctionDefinition, setEndLine, "(I)V"),
 
 		FM(Node, addChild, "(Lcparser/AST/Node;)V"),
+		FM(Node, setAttr,
+				"(Ljava/lang/String;Ljava/lang/String;)V"),
 		FM(Node, setColumn, "(I)V"),
 		FM(Node, setLine, "(I)V"),
-
-		{ }
 	};
-	const struct fm_spec *src;
-	jmethodID *dst;
+	int pos;
 
-	for (src = methods_spec, dst = methods; src->name; src++, dst++) {
+	for (pos = 0; pos < mid_count; pos++) {
+		const struct fm_spec *src = &methods_spec[pos];
+		jmethodID *dst = &methods[pos];
+		if (!src->name) {
+			fprintf(stderr, "method %d is NULL\n", pos);
+			fflush(stderr);
+			abort();
+		}
 		*dst = (*env)->GetMethodID(env, classes[src->class], src->name,
 				src->type);
 		if (!*dst) {
@@ -148,10 +185,16 @@ static int get_field_ids(JNIEnv *env)
 		FM(CParser, root, "Lcparser/AST/TranslationUnit;"),
 		{ }
 	};
-	const struct fm_spec *src;
-	jfieldID *dst;
+	int pos;
 
-	for (src = fields_spec, dst = fields; src->name; src++, dst++) {
+	for (pos = 0; pos < fid_count; pos++) {
+		const struct fm_spec *src = &fields_spec[pos];
+		jfieldID *dst = &fields[pos];
+		if (!src->name) {
+			fprintf(stderr, "field %d is NULL\n", pos);
+			fflush(stderr);
+			abort();
+		}
 		*dst = (*env)->GetFieldID(env, classes[src->class], src->name,
 				src->type);
 		if (!*dst) {
@@ -260,6 +303,20 @@ void setLine(void *priv, my_jobject obj, int line)
 	(*jni->env)->CallVoidMethod(jni->env, obj, methods[Node_setLine], line);
 }
 
+/* only some Nodes */
+void setAttr(void *priv, my_jobject obj, const char *name, const char *val)
+{
+	struct jni_data *jni = priv;
+	JNIEnv *env = jni->env;
+	jstring jname, jval;
+
+	jname = (*env)->NewStringUTF(env, name);
+	jval = (*env)->NewStringUTF(env, val);
+	(*env)->CallVoidMethod(env, obj, methods[Node_setAttr], jname, jval);
+	(*env)->DeleteLocalRef(env, jval);
+	(*env)->DeleteLocalRef(env, jname);
+}
+
 /* FunctionDefinition only */
 void setEndLine(void *priv, my_jobject obj, int line)
 {
@@ -295,25 +352,38 @@ void addChild(void *priv, my_jobject parent, my_jobject child)
 		return new_obj(jni->env, cls_ ## name, "()V");		\
 	}
 
-my_jobject newBinaryOperation(void *priv, const char *op)
-{
-	struct jni_data *jni = priv;
-	JNIEnv *env = jni->env;
-	jstring jstr;
-	jobject bop;
+#define STRING_NODE(name) \
+	my_jobject new ## name(void *priv, const char *cstr)		\
+	{								\
+		struct jni_data *jni = priv;				\
+		JNIEnv *env = jni->env;					\
+		jstring jstr;						\
+		jobject obj;						\
+									\
+		jstr = (*env)->NewStringUTF(env, cstr);			\
+		obj = new_obj(env, cls_ ## name,			\
+				"(Ljava/lang/String;)V", jstr);		\
+		(*env)->DeleteLocalRef(env, jstr);			\
+									\
+		return obj;						\
+	}
 
-	jstr = (*env)->NewStringUTF(env, op);
-	bop = new_obj(env, cls_BinaryOperation,
-			"(Ljava/lang/String;)V", jstr);
-	(*env)->DeleteLocalRef(env, jstr);
-
-	return bop;
-}
-
+VOID_NODE(ArrayDecl);
+STRING_NODE(BaseType);
+STRING_NODE(BinaryExpression);
 VOID_NODE(CompoundStatement);
 VOID_NODE(Declaration);
 VOID_NODE(DeclarationSpecifiers);
 VOID_NODE(Declarator);
 VOID_NODE(ExternalDeclaration);
+VOID_NODE(FunctionDecl);
 VOID_NODE(FunctionDefinition);
+STRING_NODE(Identifier);
+VOID_NODE(InitDeclarator);
+VOID_NODE(Parameter);
+VOID_NODE(Struct);
+VOID_NODE(StructDeclaration);
+VOID_NODE(StructDeclarator);
 VOID_NODE(TranslationUnit);
+VOID_NODE(TypeSpecifier);
+VOID_NODE(Union);
