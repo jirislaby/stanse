@@ -43,6 +43,9 @@ public class BaseType extends Node {
 		fill("double", BASE_TYPE.DOUBLE);
 		fill("signed", BASE_TYPE.SIGNED);
 		fill("unsigned", BASE_TYPE.UNSIGNED);
+		fill("_Bool", BASE_TYPE.BOOL);
+		fill("_Complex", BASE_TYPE.COMPLEX);
+		fill("_Imaginary", BASE_TYPE.IMAGINARY);
 	};
 
 	private static void fill(final String op, BASE_TYPE binop) {

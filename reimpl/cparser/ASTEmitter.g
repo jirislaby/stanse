@@ -219,6 +219,8 @@ scope Symbols {
 	static my_jobject fill_attr(void *priv, my_jobject obj,
 			pANTLR3_BASE_TREE start)
 	{
+		if (!obj)
+			abort();
 		setLine(priv, obj, start->getLine(start));
 		setColumn(priv, obj, start->getCharPositionInLine(start));
 		return obj;
@@ -228,10 +230,20 @@ scope Symbols {
 		symbols->variables->free(symbols->variables);
 		symbols->variablesOld->free(symbols->variablesOld);
 	}
-	static void addChildCond(void *priv, my_jobject parent, my_jobject child)
+	static my_jobject newNode1(void *priv, my_jobject (*creator)(void *),
+			my_jobject fi)
 	{
-		if (child)
-			addChild(priv, parent, child);
+		my_jobject ret = creator(priv);
+		addChild(priv, ret, fi);
+		return ret;
+	}
+	static my_jobject newNode2(void *priv, my_jobject (*creator)(void *),
+			my_jobject fi, my_jobject se)
+	{
+		my_jobject ret = creator(priv);
+		addChild(priv, ret, fi);
+		addChild(priv, ret, se);
+		return ret;
 	}
 }
 
@@ -333,7 +345,7 @@ declarator[void *priv] returns [my_jobject d]
 
 directDeclarator[void *priv, my_jobject d]
 	: IDENTIFIER {
-		addChild($priv, $d, newIdentifier($priv, (char *)$IDENTIFIER.text->chars));
+		addChild($priv, $d, newId($priv, (char *)$IDENTIFIER.text->chars));
 /*		String newName = renameVariable(IDENTIFIER.text);
 		if (!newName.equals(IDENTIFIER.text))
 			newListElement(els, "oldId").addText(IDENTIFIER.text);
@@ -358,7 +370,7 @@ directDeclarator1[void *priv, my_jobject d]
 	  (tq=typeQualifier {setAttr($priv, d1, $tq.s, "1");})*
 	  (e=expression[$priv] {addChild($priv, $d, $e.d);})?)
 	| ^(FUNCTION_DECLARATOR (IDENTIFIER { /* we need to process the id before params */
-		addChild($priv, $d, newIdentifier($priv, (char *)$IDENTIFIER.text->chars));
+		addChild($priv, $d, newId($priv, (char *)$IDENTIFIER.text->chars));
 		d1 = newFunctionDecl($priv);
 /*		String newName = renameVariable(IDENTIFIER.text);
 		if (!newName.equals(IDENTIFIER.text))
@@ -478,7 +490,7 @@ arrayOrFunctionDeclarator[void *priv] returns [my_jobject d]
 
 identifier[void *priv] returns [my_jobject d]
 	: ^(PARAMETER IDENTIFIER)	{
-		$d = fill_attr($priv, $d, newIdentifier($priv, (char *)$IDENTIFIER.text->chars));
+		$d = fill_attr($priv, $d, newId($priv, (char *)$IDENTIFIER.text->chars));
 /*		String newName = renameVariable(IDENTIFIER.text);
 		e = newElement("id");
 		if (!newName.equals(IDENTIFIER.text))
@@ -741,43 +753,33 @@ asmStatement[void *priv] returns [my_jobject d]
 expression[void *priv] returns [my_jobject d]
 	: otherExpression[$priv]	{ $d=$otherExpression.d; }
 	| binaryExpression[$priv]	{ $d=$binaryExpression.d; }
-	| primaryExpression	//{ e=primaryExpression.e; }
+	| primaryExpression[$priv]	{ $d=$primaryExpression.d; }
 	;
 
 otherExpression[void *priv] returns [my_jobject d]
-@after  { fill_attr($priv, $d, $otherExpression.start); }
+@init { $d = NULL; }
+@after  { if ($d == NULL) printf("\%s: \%d\n", __func__, $otherExpression.start->getLine($otherExpression.start)); fill_attr($priv, $d, $otherExpression.start); }
 /*	List<Element> exs = new LinkedList<Element>();
 	Element exp;*/
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression[$priv] e2=expression[$priv]) {
-		char my_op[5], *op = $assignmentOperator.text->chars;
-		$d = newAssignExpression($priv);
-		addChild($priv, $d, $e1.d);
-		addChild($priv, $d, $e2.d);
-		if (op[0] == "=" && op[1] == 0) {
-/*			strcpy(my_op, op);
-			my_op
-			setAttr($priv, $d, "op", my_op);*/
+		char my_op[5], *op = (char *)$assignmentOperator.text->chars;
+		$d = newNode2($priv, newAssignExpression, $e1.d, $e2.d);
+		if (op[0] == '=' && op[1] == 0) {
+			strcpy(my_op, op)[strlen(my_op) - 1] = 0;
+			setAttr($priv, $d, "op", my_op);
 		}
-/*		String op = assignmentOperator.text;
-		e = newElementBin("assignExpression", e1.e, e2.e);
-		if (!op.equals("="))
-			e.addAttribute("op", op.substring(0, op.length() - 1));*/
 	}
-	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression[$priv]) ^(E2 e2=expression[$priv]?) ^(E3 e3=expression[$priv])) {
-/*		e=newElement("conditionalExpression");
-		e.add(e1.e);
-		addElementCond(e, e2.e);
-		e.add(e3.e);*/
-	}
-	| ^(CAST_EXPRESSION tn=typeName[$priv] e1=expression[$priv]) //{ e=newElementBin("castExpression", tn.e, e1.e); }
-	| ^(ARRAY_ACCESS e1=expression[$priv] e2=expression[$priv]) //{ e=newElementBin("arrayAccess", e1.e, e2.e); }
-	| ^(FUNCTION_CALL e1=expression[$priv] (e2=expression[$priv] {/*exs.add(e2.e);*/})*) {
-/*		e=newElement("functionCall");
-		e.add(e1.e);
-		for (Element el: exs)
-			e.add(el);*/
-	}
-	| ^(COMPOUND_LITERAL tn=typeName[$priv] initializerList?) {
+	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression[$priv])	{ $d = newNode1($priv, newConditionalExpression, $e1.d); }
+				   ^(E2 (e2=expression[$priv]	{ addChild($priv, $d, $e2.d); })?)
+				   ^(E3 e3=expression[$priv]))	{ addChild($priv, $d, $e3.d); }
+	| ^(CAST_EXPRESSION tn=typeName[$priv] e1=expression[$priv]) { $d = newNode2($priv, newCastExpression, $tn.d, $e1.d); }
+	| ^(ARRAY_ACCESS e1=expression[$priv] e2=expression[$priv])  { $d = newNode2($priv, newArrayAccess, $e1.d, $e2.d); }
+	| ^(FUNCTION_CALL e1=expression[$priv] { $d = newNode1($priv, newFunctionCall, $e1.d); }
+			  (e2=expression[$priv] {addChild($priv, $d, $e2.d);})*)
+	| ^(COMPOUND_LITERAL tn=typeName[$priv] {
+		my_jobject me = newInitializer($priv);
+		$d = newNode2($priv, newCompoundLiteral, $tn.d, me);
+	} initializerList?) {
 /*		Element me = newElement("initializer");
 		e=newElementBin("compoundLiteral", tn.e, me);
 		addAllElements(me, initializerList.els);*/
@@ -786,7 +788,9 @@ otherExpression[void *priv] returns [my_jobject d]
 	| ^('++' e1=expression[$priv])		//{ e=newElement("prefixExpression");e.addAttribute("op", "++").add(e1.e); }
 	| ^('--' e1=expression[$priv])		//{ e=newElement("prefixExpression");e.addAttribute("op", "--").add(e1.e); }
 	| ^(unaryOp e1=expression[$priv])	//{ e=newElement("prefixExpression");e.addAttribute("op", unaryOp.op).add(e1.e); }
-	| ^('sizeof' (e1=expression[$priv]|tn=typeName[$priv]))	//{ e=newElement("sizeofExpression"); e.add(e1 != null ? e1.e : tn.e); }
+	| ^('sizeof' { $d = newSizeofExpression($priv); }
+			(e1=expression[$priv] {addChild($priv, $d, $e1.d);} |
+			 tn=typeName[$priv] {addChild($priv, $d, $tn.d);}))
 	| ^('__alignof__' (e1=expression[$priv]|tn=typeName[$priv]))	//{ e=newElement("allignofExpression"); e.add(e1 != null ? e1.e : tn.e); }
 	| ^('.' e1=expression[$priv] IDENTIFIER)	{
 /*		e=newElement("dotExpression");
@@ -831,15 +835,17 @@ binaryExpression[void *priv] returns [my_jobject d]
 	| ^(op='%' e1=expression[$priv] e2=expression[$priv])
 	;
 
-primaryExpression//returns [Element e]
-	: IDENTIFIER		//{ e = newElement("id"); e.addText(findVariable(IDENTIFIER.text)); }
-	| constant		//{ e = constant.e; }
-	| sTRING_LITERAL	//{ e = newElement("stringConst", sTRING_LITERAL.start); e.addText(sTRING_LITERAL.text); }
-	| compoundStatement[NULL]	//{ e = compoundStatement.e; }
-	| ^(BUILTIN_OFFSETOF typeName[NULL] offsetofMemberDesignator) {
-/*		e = newElement("offsetofExpression", primaryExpression.start);
-		e.add(typeName.e);
-		e.add(offsetofMemberDesignator.e);*/
+primaryExpression[void *priv] returns [my_jobject d]
+	: IDENTIFIER		{ $d = newId($priv, (char *)$IDENTIFIER.text->chars); }//e.addText(findVariable(IDENTIFIER.text)); }
+	| constant[$priv]	{ $d = $constant.d; }
+	| sTRING_LITERAL	{
+		$d = newStringConst($priv, (char *)$sTRING_LITERAL.text->chars);
+		fill_attr($priv, $d, $sTRING_LITERAL.start);
+	}
+	| compoundStatement[$priv]	{ $d = $compoundStatement.d; }
+	| ^(BUILTIN_OFFSETOF typeName[$priv] offsetofMemberDesignator[$priv]) {
+		$d = newNode2($priv, newOffsetofExpression, $typeName.d, $offsetofMemberDesignator.d);
+		fill_attr($priv, $d, $primaryExpression.start);
 	}
 	;
 
@@ -857,18 +863,18 @@ sTRING_LITERAL//returns [String text]
 	}
 	;
 
-constant//returns [Element e]
-	:	ICONSTANT //{ e = newElement("intConst"); e.addText(ICONSTANT.text); }
-	|	RCONSTANT //{ e = newElement("realConst"); e.addText(RCONSTANT.text); }
+constant[void *priv] returns [my_jobject d]
+	:	ICONSTANT { $d = newIntConst($priv, (char *)$ICONSTANT.text->chars); }
+	|	RCONSTANT { $d = newRealConst($priv, (char *)$RCONSTANT.text->chars); }
 	;
 
-offsetofMemberDesignator//returns [Element e]
+offsetofMemberDesignator[void *priv] returns [my_jobject d]
 @init {
 //	Element e1;
 }
 	: id1=IDENTIFIER {
-/*		e = newElement("expression");
-		e.addElement("id").addText(id1.getText());*/
+		my_jobject my_id = newId($priv, (char *)$id1.text->chars);
+		$d = newNode1($priv, newExpression, my_id);
 	}	( ('.' id2=IDENTIFIER {
 /*			e1 = newElement("dotExpression");
 			e1.add(e);
@@ -876,7 +882,7 @@ offsetofMemberDesignator//returns [Element e]
 			e = newElement("expression");
 			e.add(e1);*/
 		})
-		| ('[' expression[NULL] ']' {
+		| ('[' expression[$priv] ']' {
 /*			e1 = newElement("arrayAccess");
 			e1.add(e);
 			e1.add(expression.e);

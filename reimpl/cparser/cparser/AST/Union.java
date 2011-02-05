@@ -8,5 +8,4 @@ package cparser.AST;
  * @author Jiri Slaby
  */
 public class Union extends StructOrUnion {
-
 }

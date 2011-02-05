@@ -7,13 +7,13 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class Identifier extends Node {
+public class Id extends Node {
 	private String id;
 	private String oldId = null;
 
-	private Identifier() { throw new UnsupportedOperationException(); }
+	private Id() { throw new UnsupportedOperationException(); }
 
-	public Identifier(final String id) {
+	public Id(final String id) {
 		this.id = id;
 	}
 

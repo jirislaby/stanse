@@ -7,6 +7,6 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public abstract class Expression extends Node {
+public class Expression extends Node {
 
 }

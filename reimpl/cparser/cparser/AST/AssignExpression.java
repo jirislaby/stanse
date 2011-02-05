@@ -7,7 +7,7 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class StructOrUnion extends Node {
+public class AssignExpression extends Node {
 	@Override
 	public void setAttr(final String name, final String value) {
 	}

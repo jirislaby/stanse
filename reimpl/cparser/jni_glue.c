@@ -7,6 +7,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+
+
+#include <unistd.h> // sleep
+
+
+
+
 #include <jni.h>
 
 #include "cparser_CParser.h"
@@ -16,6 +24,12 @@ enum class_ID {
 	cls_CParser,
 	cls_Node,
 
+	cls_SizeofExpression,
+	cls_Expression,
+	cls_IntConst,
+	cls_OffsetofExpression,
+	cls_RealConst,
+	cls_StringConst,
 	cls_Union,
 	cls_TypeSpecifier,
 	cls_TypeName,
@@ -25,20 +39,27 @@ enum class_ID {
 	cls_StructDeclaration,
 	cls_Struct,
 	cls_Parameter,
+	cls_Initializer,
 	cls_InitDeclarator,
-	cls_Identifier,
+	cls_Id,
 	cls_FunctionDefinition,
 	cls_FunctionDecl,
+	cls_FunctionCall,
 	cls_ExternalDeclaration,
 	cls_Enumerator,
 	cls_Enum,
 	cls_Declarator,
 	cls_DeclarationSpecifiers,
 	cls_Declaration,
+	cls_ConditionalExpression,
 	cls_CompoundStatement,
+	cls_CompoundLiteral,
+	cls_CastExpression,
 	cls_BinaryExpression,
 	cls_BaseType,
+	cls_AssignExpression,
 	cls_ArrayDecl,
+	cls_ArrayAccess,
 	cls_AbstractDeclarator,
 
 	/* has to be the last one */
@@ -86,21 +107,34 @@ static int get_class_ids(JNIEnv *env)
 		[cls_CParser] = "cparser/CParser",
 		AST_CLASS(Node),
 
+		AST_CLASS(IntConst),
+		AST_CLASS(OffsetofExpression),
+		AST_CLASS(RealConst),
+		AST_CLASS(SizeofExpression),
+		AST_CLASS(StringConst),
 		AST_CLASS(AbstractDeclarator),
+		AST_CLASS(ArrayAccess),
 		AST_CLASS(ArrayDecl),
+		AST_CLASS(AssignExpression),
 		AST_CLASS(BaseType),
 		AST_CLASS(BinaryExpression),
+		AST_CLASS(CastExpression),
+		AST_CLASS(CompoundLiteral),
 		AST_CLASS(CompoundStatement),
+		AST_CLASS(ConditionalExpression),
 		AST_CLASS(Declaration),
 		AST_CLASS(DeclarationSpecifiers),
 		AST_CLASS(Declarator),
 		AST_CLASS(Enum),
 		AST_CLASS(Enumerator),
 		AST_CLASS(ExternalDeclaration),
+		AST_CLASS(Expression),
+		AST_CLASS(FunctionCall),
 		AST_CLASS(FunctionDecl),
 		AST_CLASS(FunctionDefinition),
-		AST_CLASS(Identifier),
+		AST_CLASS(Id),
 		AST_CLASS(InitDeclarator),
+		AST_CLASS(Initializer),
 		AST_CLASS(Parameter),
 		AST_CLASS(Struct),
 		AST_CLASS(StructDeclaration),
@@ -289,6 +323,25 @@ JNIEXPORT jint JNICALL Java_cparser_CParser_parse(JNIEnv *env, jobject obj)
 	return ret;
 }
 
+static void do_die(JNIEnv *env, const char *reason, const char *func, int line)
+{
+	char buf[128];
+	snprintf(buf, 128, "%s (%d): %s", func, line, reason);
+	(*env)->FatalError(env, buf);
+}
+
+#define die(env, reason) do_die(env, reason, __func__, __LINE__)
+
+static int check_exception(JNIEnv *env)
+{
+	int ret = (*env)->ExceptionCheck(env);
+
+	if (ret)
+		(*env)->ExceptionDescribe(env);
+
+	return ret;
+}
+
 static jobject new_obj(JNIEnv *env, enum class_ID cid,
 		const char *con_type, ...)
 {
@@ -299,13 +352,31 @@ static jobject new_obj(JNIEnv *env, enum class_ID cid,
 	constructor = (*env)->GetMethodID(env, classes[cid], "<init>",
 			con_type);
 	if (!constructor)
-		return NULL;
+		abort();
+
+	if (check_exception(env))
+		die(env, "no constructor");
 
 	va_start(args, con_type);
 	object = (*env)->NewObjectV(env, classes[cid], constructor, args);
 	va_end(args);
 
+	if (check_exception(env))
+		die(env, "constructor failed");
+
 	return object;
+}
+
+static my_jobject new_obj_str(JNIEnv *env, enum class_ID cid, const char *cstr)
+{
+	jstring jstr;
+	jobject obj;
+
+	jstr = (*env)->NewStringUTF(env, cstr);
+	obj = new_obj(env, cid, "(Ljava/lang/String;)V", jstr);
+	(*env)->DeleteLocalRef(env, jstr);
+
+	return obj;
 }
 
 void setLine(void *priv, my_jobject obj, int line)
@@ -326,30 +397,42 @@ void setAttr(void *priv, my_jobject obj, const char *name, const char *val)
 	(*env)->CallVoidMethod(env, obj, methods[Node_setAttr], jname, jval);
 	(*env)->DeleteLocalRef(env, jval);
 	(*env)->DeleteLocalRef(env, jname);
+
+	if (check_exception(env))
+		die(env, "setAttr failed");
+}
+
+static void call_void_method(struct jni_data *jni, my_jobject obj,
+		enum method_ID mid, ...)
+{
+	JNIEnv *env = jni->env;
+	va_list args;
+
+	va_start(args, mid);
+	(*env)->CallVoidMethodV(env, obj, methods[mid], args);
+	va_end(args);
+
+	if (check_exception(env))
+		die(env, "call_void_method failed");
 }
 
 /* FunctionDefinition only */
 void setEndLine(void *priv, my_jobject obj, int line)
 {
-	struct jni_data *jni = priv;
-	(*jni->env)->CallVoidMethod(jni->env, obj,
-			methods[FunctionDefinition_setEndLine], line);
+	call_void_method(priv, obj, FunctionDefinition_setEndLine, line);
 }
 
 void setColumn(void *priv, my_jobject obj, int column)
 {
-	struct jni_data *jni = priv;
-	(*jni->env)->CallVoidMethod(jni->env, obj, methods[Node_setColumn],
-			column);
+	call_void_method(priv, obj, Node_setColumn, column);
 }
 
 void addChild(void *priv, my_jobject parent, my_jobject child)
 {
 	struct jni_data *jni = priv;
 	if (!child)
-		abort();
-	(*jni->env)->CallVoidMethod(jni->env, parent, methods[Node_addChild],
-			child);
+		die(jni->env, "child is NULL");
+	call_void_method(priv, parent, Node_addChild, child);
 }
 
 /*
@@ -369,34 +452,55 @@ void addChild(void *priv, my_jobject parent, my_jobject child)
 	my_jobject new ## name(void *priv, const char *cstr)		\
 	{								\
 		struct jni_data *jni = priv;				\
-		JNIEnv *env = jni->env;					\
-		jstring jstr;						\
-		jobject obj;						\
-									\
-		jstr = (*env)->NewStringUTF(env, cstr);			\
-		obj = new_obj(env, cls_ ## name,			\
-				"(Ljava/lang/String;)V", jstr);		\
-		(*env)->DeleteLocalRef(env, jstr);			\
-									\
-		return obj;						\
+		return new_obj_str(jni->env, cls_ ## name, cstr);	\
 	}
+#if 0
+	my_jobject newBinaryExpression(void *priv, const char *cstr)
+	{
+		struct jni_data *jni = priv;
+		JNIEnv *env = jni->env;
+		jstring jstr;
+		jobject obj;
 
+		printf("%s: str=%s\n", __func__, cstr);
+		jstr = (*env)->NewStringUTF(env, cstr);
+		obj = new_obj(env, cls_BinaryExpression,
+				"(Ljava/lang/String;)V", jstr);
+		(*env)->DeleteLocalRef(env, jstr);
+		printf("%s: o=%p\n", __func__, obj);
+
+		return obj;
+	}
+#endif
 VOID_NODE(AbstractDeclarator);
+VOID_NODE(ArrayAccess);
 VOID_NODE(ArrayDecl);
+VOID_NODE(AssignExpression);
 STRING_NODE(BaseType);
 STRING_NODE(BinaryExpression);
+VOID_NODE(CastExpression);
+VOID_NODE(CompoundLiteral);
 VOID_NODE(CompoundStatement);
+VOID_NODE(ConditionalExpression);
 VOID_NODE(Declaration);
 VOID_NODE(DeclarationSpecifiers);
 VOID_NODE(Declarator);
 VOID_NODE(Enum);
 STRING_NODE(Enumerator);
 VOID_NODE(ExternalDeclaration);
+VOID_NODE(Expression);
+VOID_NODE(FunctionCall);
 VOID_NODE(FunctionDecl);
 VOID_NODE(FunctionDefinition);
-STRING_NODE(Identifier);
+STRING_NODE(Id);
+VOID_NODE(Initializer);
 VOID_NODE(InitDeclarator);
+STRING_NODE(IntConst);
+VOID_NODE(OffsetofExpression);
 VOID_NODE(Parameter);
+STRING_NODE(RealConst);
+VOID_NODE(SizeofExpression);
+STRING_NODE(StringConst);
 VOID_NODE(Struct);
 VOID_NODE(StructDeclaration);
 VOID_NODE(StructDeclarator);

@@ -7,8 +7,8 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class Parameter extends Node {
+public class Enum extends Node {
 	@Override
-	public void setAttr(final String attr, final String value) {
+	public void setAttr(final String name, final String value) {
 	}
 }
