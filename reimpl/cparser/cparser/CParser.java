@@ -36,7 +36,7 @@ public class CParser {
 		int ret = cp.parse();
 
 		if (ret != 0)
-			System.err.println("Parsing failed with error %d");
+			System.err.println("Parsing failed with error " + ret);
 
 		final Node n = cp.getRoot();
 		System.err.println("Node:\n\tcls=" + n.getClass().getName());

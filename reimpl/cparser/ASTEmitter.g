@@ -430,7 +430,7 @@ scope Symbols;
 @after  { fill_attr($priv, $d, $compoundStatement.start); }
 	: ^(COMPOUND_STATEMENT CS_END (dc=declaration[$priv] {addChild($priv, $d, $dc.d);} |
 				       fd=functionDefinition[$priv] {addChild($priv, $d, $fd.d);} |
-				       st=statement{/*els.add(st.e);*/})*) {
+				       st=statement[$priv]{addChild($priv, $d, $st.d);})*) {
 /*
 		if (els.size() == 0)
 			e.add(newEmptyStatement(compoundStatement.start));
@@ -490,22 +490,13 @@ identifier[void *priv] returns [my_jobject d]
 
 /* TYPES */
 
-typeName//returns [Element e]
-@init {
-//	List<specifierQualifier_return> sqs = new LinkedList<specifierQualifier_return>();
-}
-	: ^(TYPE_NAME (s=specifier[NULL] {/**/} | q=Qualifier {/*sqs.add(sq);*/})+ abstractDeclarator[NULL]?) {
-/*		List <Element> tss = new LinkedList<Element>();
-		e = newElement("typeName", typeName.start);
-		for (specifierQualifier_return sqr: sqs)
-			if (sqr.qual != null)
-				e.addAttribute(sqr.qual, "1");
-			else
-				tss.add(sqr.spec);
-		for (Element el: typeNormalize(tss))
-			e.add(el);
-		addElementCond(e, abstractDeclarator.e);*/
-	}
+typeName[void *priv] returns [my_jobject d]
+@init   { $d = newTypeName($priv); }
+@after  { fill_attr($priv, $d, $typeName.start); }
+	: ^(TYPE_NAME (s=specifier[$priv] {addChild($priv, $d, $s.d);} |
+		       q=qualifier {setAttr($priv, $d, $q.q, "1");})+
+		      (ad=abstractDeclarator[$priv] {addChild($priv, $d, $ad.d);})?)
+//		for (Element el: typeNormalize(tss))
 	;
 
 specifier[void *priv] returns [my_jobject d]
@@ -603,7 +594,7 @@ typedefName returns [pANTLR3_STRING s]
 
 typeofSpecifier
 	: ^(TYPEOF expression[NULL])
-	| ^(TYPEOF typeName)
+	| ^(TYPEOF typeName[NULL])
 	;
 
 storageClassSpecifier returns [const char *s]
@@ -637,68 +628,70 @@ pointer[void *priv, my_jobject d]
 
 /* STATEMENTS */
 
-statement//returns [Element e]
-@after {
-//	setAttributes(statement.start, e);
-}
-	: labeledStatement	//{ e=labeledStatement.e; }
-	| compoundStatement[NULL]	//{ e=compoundStatement.e; }
-	| expressionStatement	//{ e=newElement("expressionStatement");e.add(expressionStatement.e != null ? expressionStatement.e : newEmptyStatement(expressionStatement.start)); }
-	| selectionStatement	//{ e=selectionStatement.e; }
-	| iterationStatement	//{ e=iterationStatement.e; }
-	| jumpStatement		//{ e=jumpStatement.e; }
-	| asmStatement		//{ e=asmStatement.e; }
+statement[void *priv] returns [my_jobject d]
+@after  { fill_attr($priv, $d, $statement.start); }
+	: labeledStatement[$priv]	{ $d=$labeledStatement.d; }
+	| compoundStatement[$priv]	{ $d=$compoundStatement.d; }
+	| expressionStatement[$priv]	//{ e=newElement("expressionStatement");e.add(expressionStatement.e != null ? expressionStatement.e : newEmptyStatement(expressionStatement.start)); }
+	| selectionStatement[$priv]	{ $d=$selectionStatement.d; }
+	| iterationStatement[$priv]	{ $d=$iterationStatement.d; }
+	| jumpStatement[$priv]		{ $d=$jumpStatement.d; }
+	| asmStatement[$priv]		{ $d=$asmStatement.d; }
 	;
 
-labeledStatement//returns [Element e]
-	: ^(LABEL IDENTIFIER statement) {
+labeledStatement[void *priv] returns [my_jobject d]
+	: ^(LABEL IDENTIFIER statement[$priv]) {
 /*		e = newElement("labelStatement", labeledStatement.start);
 		e.add(statement.e);
 		e.addAttribute("id", IDENTIFIER.text);*/
 	}
-	| ^('case' expression[NULL] statement) {
+	| ^('case' expression[$priv] statement[$priv]) {
 /*		e = newElement("caseLabelStatement", labeledStatement.start);
 		e.add(expression.e);
 		e.add(statement.e);*/
 	}
-	| ^('default' statement) {
+	| ^('default' statement[$priv]) {
 /*		e = newElement("defaultLabelStatement",
 				labeledStatement.start);
 		e.add(statement.e);*/
 	}
 	;
 
-expressionStatement//returns [Element e]
-	: ^(EXPRESSION_STATEMENT expression[NULL]?) //{ e = expression.e; }
+expressionStatement[void *priv] returns [my_jobject d]
+	: ^(EXPRESSION_STATEMENT expression[$priv]?) { $d = $expression.d; }
 	;
 
-selectionStatement//returns [Element e]
-	: ^('if' expression[NULL] s1=statement s2=statement?) {
+selectionStatement[void *priv] returns [my_jobject d]
+	: ^('if' expression[$priv] s1=statement[$priv] s2=statement[$priv]?) {
 /*		e = newElement(s2 == null ? "ifStatement" : "ifElseStatement",
 				selectionStatement.start);
 		e.add(expression.e);
 		e.add(s1.e);
 		addElementCond(e, s2.e);*/
 	}
-	| ^('switch' expression[NULL] statement) {
+	| ^('switch' expression[$priv] statement[$priv]) {
 /*		e = newElement("switchStatement", selectionStatement.start);
 		e.add(expression.e);
 		e.add(statement.e);*/
 	}
 	;
 
-iterationStatement//returns [Element e]
-	: ^('while' expression[NULL] statement) {
+iterationStatement[void *priv] returns [my_jobject d]
+	: ^('while' expression[$priv] statement[$priv]) {
 /*		e = newElement("whileStatement", iterationStatement.start);
 		e.add(expression.e);
 		e.add(statement.e);*/
 	}
-	| ^('do' statement expression[NULL]) {
+	| ^('do' statement[$priv] expression[$priv]) {
 /*		e = newElement("doStatement", iterationStatement.start);
 		e.add(statement.e);
 		e.add(expression.e);*/
 	}
-	| ^('for' declaration[NULL]? (^(E1 e1=expression[NULL]))? ^(E2 e2=expression[NULL]?) ^(E3 e3=expression[NULL]?) statement) {
+	| ^('for' declaration[$priv]?
+			(^(E1 e1=expression[$priv]))?
+			 ^(E2 e2=expression[$priv]?)
+			 ^(E3 e3=expression[$priv]?)
+			 statement[$priv]) {
 /*		e = newElement("forStatement", iterationStatement.start);
 		if (declaration.e != null)
 			e.add(declaration.e);
@@ -718,12 +711,12 @@ iterationStatement//returns [Element e]
 	}
 	;
 
-jumpStatement//returns [Element e]
+jumpStatement[void *priv] returns [my_jobject d]
 	: ^('goto' IDENTIFIER) {
 /*		e = newElement("gotoStatement", jumpStatement.start);
 		e.addElement("expression").addElement("id").addText(IDENTIFIER.text);*/
 	}
-	| ^('goto' XU expression[NULL]) {
+	| ^('goto' XU expression[$priv]) {
 /*		e = newElement("gotoStatement", jumpStatement.start);
 		e.addElement("expression").addElement("derefExpression").add(expression.e);*/
 	}
@@ -731,13 +724,13 @@ jumpStatement//returns [Element e]
 			jumpStatement.start); }*/
 	| 'break'	/*{ e = newElement("breakStatement",
 			jumpStatement.start); }*/
-	| ^('return' expression[NULL]?) {
+	| ^('return' expression[$priv]?) {
 /*		e = newElement("returnStatement", jumpStatement.start);
 		addElementCond(e, expression.e);*/
 	}
 	;
 
-asmStatement//returns [Element e]
+asmStatement[void *priv] returns [my_jobject d]
 	: ASM		//{ e = newElement("gnuAssembler", asmStatement.start); }
 	;
 
@@ -746,10 +739,25 @@ asmStatement//returns [Element e]
 /* EXPRESSIONS */
 
 expression[void *priv] returns [my_jobject d]
-//@after  { fill_attr($priv, $d, $expression.start); }
+	: otherExpression[$priv]	{ $d=$otherExpression.d; }
+	| binaryExpression[$priv]	{ $d=$binaryExpression.d; }
+	| primaryExpression	//{ e=primaryExpression.e; }
+	;
+
+otherExpression[void *priv] returns [my_jobject d]
+@after  { fill_attr($priv, $d, $otherExpression.start); }
 /*	List<Element> exs = new LinkedList<Element>();
 	Element exp;*/
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression[$priv] e2=expression[$priv]) {
+		char my_op[5], *op = $assignmentOperator.text->chars;
+		$d = newAssignExpression($priv);
+		addChild($priv, $d, $e1.d);
+		addChild($priv, $d, $e2.d);
+		if (op[0] == "=" && op[1] == 0) {
+/*			strcpy(my_op, op);
+			my_op
+			setAttr($priv, $d, "op", my_op);*/
+		}
 /*		String op = assignmentOperator.text;
 		e = newElementBin("assignExpression", e1.e, e2.e);
 		if (!op.equals("="))
@@ -761,7 +769,7 @@ expression[void *priv] returns [my_jobject d]
 		addElementCond(e, e2.e);
 		e.add(e3.e);*/
 	}
-	| ^(CAST_EXPRESSION tn=typeName e1=expression[$priv]) //{ e=newElementBin("castExpression", tn.e, e1.e); }
+	| ^(CAST_EXPRESSION tn=typeName[$priv] e1=expression[$priv]) //{ e=newElementBin("castExpression", tn.e, e1.e); }
 	| ^(ARRAY_ACCESS e1=expression[$priv] e2=expression[$priv]) //{ e=newElementBin("arrayAccess", e1.e, e2.e); }
 	| ^(FUNCTION_CALL e1=expression[$priv] (e2=expression[$priv] {/*exs.add(e2.e);*/})*) {
 /*		e=newElement("functionCall");
@@ -769,7 +777,7 @@ expression[void *priv] returns [my_jobject d]
 		for (Element el: exs)
 			e.add(el);*/
 	}
-	| ^(COMPOUND_LITERAL tn=typeName initializerList?) {
+	| ^(COMPOUND_LITERAL tn=typeName[$priv] initializerList?) {
 /*		Element me = newElement("initializer");
 		e=newElementBin("compoundLiteral", tn.e, me);
 		addAllElements(me, initializerList.els);*/
@@ -778,8 +786,8 @@ expression[void *priv] returns [my_jobject d]
 	| ^('++' e1=expression[$priv])		//{ e=newElement("prefixExpression");e.addAttribute("op", "++").add(e1.e); }
 	| ^('--' e1=expression[$priv])		//{ e=newElement("prefixExpression");e.addAttribute("op", "--").add(e1.e); }
 	| ^(unaryOp e1=expression[$priv])	//{ e=newElement("prefixExpression");e.addAttribute("op", unaryOp.op).add(e1.e); }
-	| ^('sizeof' (e1=expression[$priv]|tn=typeName))	//{ e=newElement("sizeofExpression"); e.add(e1 != null ? e1.e : tn.e); }
-	| ^('__alignof__' (e1=expression[$priv]|tn=typeName))	//{ e=newElement("allignofExpression"); e.add(e1 != null ? e1.e : tn.e); }
+	| ^('sizeof' (e1=expression[$priv]|tn=typeName[$priv]))	//{ e=newElement("sizeofExpression"); e.add(e1 != null ? e1.e : tn.e); }
+	| ^('__alignof__' (e1=expression[$priv]|tn=typeName[$priv]))	//{ e=newElement("allignofExpression"); e.add(e1 != null ? e1.e : tn.e); }
 	| ^('.' e1=expression[$priv] IDENTIFIER)	{
 /*		e=newElement("dotExpression");
 		e.add(e1.e);
@@ -794,8 +802,6 @@ expression[void *priv] returns [my_jobject d]
 	| ^(XU e1=expression[$priv])	//{ e=newElement("derefExpression"); e.add(e1.e); }
 	| ^(PP e1=expression[$priv])	//{ e=newElement("postfixExpression"); e.addAttribute("op", "++").add(e1.e); }
 	| ^(MM e1=expression[$priv])	//{ e=newElement("postfixExpression"); e.addAttribute("op", "--").add(e1.e); }
-	| binaryExpression[$priv]	{ $d=$binaryExpression.d; }
-	| primaryExpression	//{ e=primaryExpression.e; }
 	;
 
 binaryExpression[void *priv] returns [my_jobject d]
@@ -830,7 +836,7 @@ primaryExpression//returns [Element e]
 	| constant		//{ e = constant.e; }
 	| sTRING_LITERAL	//{ e = newElement("stringConst", sTRING_LITERAL.start); e.addText(sTRING_LITERAL.text); }
 	| compoundStatement[NULL]	//{ e = compoundStatement.e; }
-	| ^(BUILTIN_OFFSETOF typeName offsetofMemberDesignator) {
+	| ^(BUILTIN_OFFSETOF typeName[NULL] offsetofMemberDesignator) {
 /*		e = newElement("offsetofExpression", primaryExpression.start);
 		e.add(typeName.e);
 		e.add(offsetofMemberDesignator.e);*/

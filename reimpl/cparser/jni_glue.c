@@ -18,6 +18,7 @@ enum class_ID {
 
 	cls_Union,
 	cls_TypeSpecifier,
+	cls_TypeName,
 	cls_TranslationUnit,
 	cls_StructOrUnion,
 	cls_StructDeclarator,
@@ -29,6 +30,8 @@ enum class_ID {
 	cls_FunctionDefinition,
 	cls_FunctionDecl,
 	cls_ExternalDeclaration,
+	cls_Enumerator,
+	cls_Enum,
 	cls_Declarator,
 	cls_DeclarationSpecifiers,
 	cls_Declaration,
@@ -36,6 +39,7 @@ enum class_ID {
 	cls_BinaryExpression,
 	cls_BaseType,
 	cls_ArrayDecl,
+	cls_AbstractDeclarator,
 
 	/* has to be the last one */
 	cid_count
@@ -82,6 +86,7 @@ static int get_class_ids(JNIEnv *env)
 		[cls_CParser] = "cparser/CParser",
 		AST_CLASS(Node),
 
+		AST_CLASS(AbstractDeclarator),
 		AST_CLASS(ArrayDecl),
 		AST_CLASS(BaseType),
 		AST_CLASS(BinaryExpression),
@@ -89,6 +94,8 @@ static int get_class_ids(JNIEnv *env)
 		AST_CLASS(Declaration),
 		AST_CLASS(DeclarationSpecifiers),
 		AST_CLASS(Declarator),
+		AST_CLASS(Enum),
+		AST_CLASS(Enumerator),
 		AST_CLASS(ExternalDeclaration),
 		AST_CLASS(FunctionDecl),
 		AST_CLASS(FunctionDefinition),
@@ -100,6 +107,7 @@ static int get_class_ids(JNIEnv *env)
 		AST_CLASS(StructDeclarator),
 		AST_CLASS(StructOrUnion),
 		AST_CLASS(TranslationUnit),
+		AST_CLASS(TypeName),
 		AST_CLASS(TypeSpecifier),
 		AST_CLASS(Union),
 	};
@@ -269,11 +277,14 @@ JNIEXPORT jint JNICALL Java_cparser_CParser_parse(JNIEnv *env, jobject obj)
 	cstr = (*env)->GetStringUTFChars(env, file, NULL);
 
 	ret = parse(cstr, &jni, &AST);
+	puts("ggg");
 
 	(*env)->ReleaseStringUTFChars(env, file, cstr);
 
+	puts("ggg1");
 	if (!ret)
 		(*env)->SetObjectField(env, obj, fields[CParser_root], AST);
+	puts("ggg2");
 
 	return ret;
 }
@@ -335,6 +346,8 @@ void setColumn(void *priv, my_jobject obj, int column)
 void addChild(void *priv, my_jobject parent, my_jobject child)
 {
 	struct jni_data *jni = priv;
+	if (!child)
+		abort();
 	(*jni->env)->CallVoidMethod(jni->env, parent, methods[Node_addChild],
 			child);
 }
@@ -368,6 +381,7 @@ void addChild(void *priv, my_jobject parent, my_jobject child)
 		return obj;						\
 	}
 
+VOID_NODE(AbstractDeclarator);
 VOID_NODE(ArrayDecl);
 STRING_NODE(BaseType);
 STRING_NODE(BinaryExpression);
@@ -375,6 +389,8 @@ VOID_NODE(CompoundStatement);
 VOID_NODE(Declaration);
 VOID_NODE(DeclarationSpecifiers);
 VOID_NODE(Declarator);
+VOID_NODE(Enum);
+STRING_NODE(Enumerator);
 VOID_NODE(ExternalDeclaration);
 VOID_NODE(FunctionDecl);
 VOID_NODE(FunctionDefinition);
@@ -385,5 +401,6 @@ VOID_NODE(Struct);
 VOID_NODE(StructDeclaration);
 VOID_NODE(StructDeclarator);
 VOID_NODE(TranslationUnit);
+VOID_NODE(TypeName);
 VOID_NODE(TypeSpecifier);
 VOID_NODE(Union);

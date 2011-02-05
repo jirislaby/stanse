@@ -33,6 +33,7 @@ extern my_jobject newStruct(void *priv);
 extern my_jobject newStructDeclaration(void *priv);
 extern my_jobject newStructDeclarator(void *priv);
 extern my_jobject newTranslationUnit(void *priv);
+extern my_jobject newTypeName(void *priv);
 extern my_jobject newTypeSpecifier(void *priv);
 extern my_jobject newUnion(void *priv);
 
