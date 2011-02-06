@@ -399,31 +399,26 @@ initializer[void *priv] returns [my_jobject d]
 @after	{ fill_attr($priv, $d, $initializer.start); }
 	: ^(INITIALIZER expression[$priv])	{ addChild($priv, $d, $expression.d); }
 	| INITIALIZER /* just <initializer/> */
-	| ^(INITIALIZER initializerList)//{ addAllElements(e, initializerList.els); }
+	| ^(INITIALIZER initializerList[$priv, $d])
 	;
 
-initializerList//returns [List<Element> els]
-@init {
-//	els = new LinkedList<Element>();
-}
-	: ((d=designator {/*els.add(d.e);*/})* initializer[NULL] {
-//		els.add(initializer.e);
+initializerList[void *priv, my_jobject d]
+	: ((de=designator[$priv] {addChild($priv, $d, $de.d);})* initializer[$priv] {
+		addChild($priv, $d, $initializer.d);
 	})+
 	;
 
-designator//returns [Element e]
-@init {
-//	e = newElement("designator", designator.start);
-}
-	: ^(DESIGNATOR ^('...' e1=expression[NULL] e2=expression[NULL])) {
-/*		Element range = e.addElement("expression").
-			addElement("rangeExpression");
-		range.add(e1.e);
-		range.add(e2.e);*/
+designator[void *priv] returns [my_jobject d]
+@init   { $d = newDesignator($priv); }
+@after  { fill_attr($priv, $d, $designator.start); }
+	: ^(DESIGNATOR ^('...' e1=expression[$priv] e2=expression[$priv])) {
+		my_jobject expr = newExpression($priv);
+		addChild($priv, expr, newNode2($priv, newRangeExpression, $e1.d, $e2.d));
+		addChild($priv, $d, expr);
 	}
-	| ^(DESIGNATOR ^(BRACKET_DESIGNATOR expression[NULL])) //{ e.add(expression.e); }
-	| ^(DESIGNATOR IDENTIFIER)	//{ e.addElement("id").addText(IDENTIFIER.text); }
-	| IDENTIFIER			//{ e.addElement("id").addText(IDENTIFIER.text); }
+	| ^(DESIGNATOR ^(BRACKET_DESIGNATOR expression[$priv])) { addChild($priv, $d, $expression.d); }
+	| ^(DESIGNATOR IDENTIFIER)	{ addChild($priv, $d, newId($priv, (char *)$IDENTIFIER.text->chars)); }
+	| IDENTIFIER			{ addChild($priv, $d, newId($priv, (char *)$IDENTIFIER.text->chars)); }
 	;
 
 compoundStatement[void *priv] returns [my_jobject d]
@@ -538,14 +533,13 @@ typeSpecifier[void *priv] returns [my_jobject d]
 	| ^(BASETYPE '_Imaginary')	{ addChild($priv, $d, newBaseType($priv, "_Imaginary")); }
 	| structOrUnionSpecifier[$priv] { addChild($priv, $d, $structOrUnionSpecifier.d); }
 	| enumSpecifier[$priv]		{ addChild($priv, $d, $enumSpecifier.d); }
-	| typedefName		//{ e.addElement("typedef").addElement("id").addText(typedefName.s); }
-	| typeofSpecifier
+	| typedefName			{ $d = newNode1($priv, newTypedef, newId($priv, (char *)$typedefName.s->chars)); }
+	| typeofSpecifier[$priv]
 	;
 
 structOrUnionSpecifier[void *priv] returns [my_jobject d]
 @init {
-/*	List<Element> sds = new LinkedList<Element>();
-	symbolsEnabled = false;*/
+//	symbolsEnabled = false;
 }
 	: ^(sou=structOrUnion {
 		if ($sou.un)
@@ -554,7 +548,6 @@ structOrUnionSpecifier[void *priv] returns [my_jobject d]
 			$d = newStruct($priv);
 	} ^(XID (IDENTIFIER {setAttr($priv, $d, "id", (char *)$IDENTIFIER.text->chars);})?)
 	(sd=structDeclaration[$priv] {addChild($priv, $d, $sd.d);})*) {
-//		addAllElements(e, sds);
 //		symbolsEnabled = true;
 	}
 	;
@@ -599,9 +592,9 @@ typedefName returns [pANTLR3_STRING s]
 	: IDENTIFIER	{ $s = $IDENTIFIER.text; }
 	;
 
-typeofSpecifier
-	: ^(TYPEOF expression[NULL])
-	| ^(TYPEOF typeName[NULL])
+typeofSpecifier[void *priv]
+	: ^(TYPEOF expression[$priv])
+	| ^(TYPEOF typeName[$priv])
 	;
 
 storageClassSpecifier returns [const char *s]
@@ -738,7 +731,7 @@ expression[void *priv] returns [my_jobject d]
 	;
 
 otherExpression[void *priv] returns [my_jobject d]
-@init { $d = NULL; }
+@init { $d = NULL; my_jobject init; }
 @after	{
 	if ($d == NULL)
 		printf("\%s: \%s\n", __func__, $otherExpression.start->getText($otherExpression.start)->chars);
@@ -762,13 +755,9 @@ otherExpression[void *priv] returns [my_jobject d]
 	| ^(FUNCTION_CALL e1=expression[$priv] { $d = newNode1($priv, newFunctionCall, $e1.d); }
 			  (e2=expression[$priv] {addChild($priv, $d, $e2.d);})*)
 	| ^(COMPOUND_LITERAL tn=typeName[$priv] {
-		my_jobject me = newInitializer($priv);
-		$d = newNode2($priv, newCompoundLiteral, $tn.d, me);
-	} initializerList?) {
-/*		Element me = newElement("initializer");
-		e=newElementBin("compoundLiteral", tn.e, me);
-		addAllElements(me, initializerList.els);*/
-	}
+		init = newInitializer($priv);
+		$d = newNode2($priv, newCompoundLiteral, $tn.d, init);
+	} initializerList[$priv, init]?)
 	| ^(',' e1=expression[$priv] e2=expression[$priv])	{ $d=newNode2($priv, newCommaExpression, $e1.d, $e2.d); }
 	| ^('++' e1=expression[$priv])		{ $d=newPrefixExpression($priv, "++"); addChild($priv, $d, $e1.d); }
 	| ^('--' e1=expression[$priv])		{ $d=newPrefixExpression($priv, "--"); addChild($priv, $d, $e1.d); }
