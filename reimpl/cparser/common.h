@@ -77,4 +77,8 @@ extern my_jobject newTypeSpecifier(void *priv);
 extern my_jobject newUnion(void *priv);
 extern my_jobject newWhileStatement(void *priv);
 
+extern void parser_do_die(void *priv, const char *reason, const char *func,
+		int line);
+#define parser_die(priv, reason) parser_do_die(priv, reason, __func__, __LINE__)
+
 #endif

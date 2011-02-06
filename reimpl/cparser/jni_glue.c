@@ -375,6 +375,13 @@ static void do_die(JNIEnv *env, const char *reason, const char *func, int line)
 
 #define die(env, reason) do_die(env, reason, __func__, __LINE__)
 
+void parser_do_die(void *priv, const char *reason, const char *func, int line)
+{
+	struct jni_data *jni = priv;
+
+	do_die(jni->env, reason, func, line);
+}
+
 static int check_exception(JNIEnv *env)
 {
 	int ret = (*env)->ExceptionCheck(env);
