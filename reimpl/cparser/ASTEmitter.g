@@ -338,8 +338,8 @@ declarationSpecifiers[void *priv] returns [my_jobject d]
 	;
 
 declarator[void *priv] returns [my_jobject d]
-@init   { $d = newDeclarator($priv); }
-@after  { fill_attr($priv, $d, $declarator.start); }
+@init	{ $d = newDeclarator($priv); }
+@after	{ fill_attr($priv, $d, $declarator.start); }
 	: ^(DECLARATOR pointer[$priv, $d]? directDeclarator[$priv, $d])
 	;
 
@@ -389,20 +389,15 @@ directDeclarator1[void *priv, my_jobject d]
 initDeclarator[void *priv] returns [my_jobject d]
 @init	{ $d = newInitDeclarator($priv); }
 @after	{ fill_attr($priv, $d, $initDeclarator.start); }
-	: ^(INIT_DECLARATOR declarator[$priv] initializer?) {
-		addChild($priv, $d, $declarator.d);
-//		addChildCond($priv, $d, nitializer.d);
-/*		initDeclarator.start.setElement(e);
-		e.add(declarator.e);
-		addElementCond(e, initializer.e);*/
-	}
+	: ^(INIT_DECLARATOR de=declarator[$priv] {addChild($priv, $d, $de.d);}
+			    (in=initializer[$priv] {addChild($priv, $d, $in.d);})?)
+//		initDeclarator.start.setElement(e);
 	;
 
-initializer//returns [Element e]
-@init {
-//	e = newElement("initializer", initializer.start);
-}
-	: ^(INITIALIZER expression[NULL])	//{ e.add(expression.e); }
+initializer[void *priv] returns [my_jobject d]
+@init	{ $d = newInitializer($priv); }
+@after	{ fill_attr($priv, $d, $initializer.start); }
+	: ^(INITIALIZER expression[$priv])	{ addChild($priv, $d, $expression.d); }
 	| INITIALIZER /* just <initializer/> */
 	| ^(INITIALIZER initializerList)//{ addAllElements(e, initializerList.els); }
 	;
@@ -411,7 +406,7 @@ initializerList//returns [List<Element> els]
 @init {
 //	els = new LinkedList<Element>();
 }
-	: ((d=designator {/*els.add(d.e);*/})* initializer {
+	: ((d=designator {/*els.add(d.e);*/})* initializer[NULL] {
 //		els.add(initializer.e);
 	})+
 	;
@@ -438,15 +433,15 @@ scope Symbols;
 	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
 	SCOPE_TOP(Symbols)->free = free_symbols;
 	$d = newCompoundStatement($priv);
+	int cnt = 0;
 }
-@after  { fill_attr($priv, $d, $compoundStatement.start); }
-	: ^(COMPOUND_STATEMENT CS_END (dc=declaration[$priv] {addChild($priv, $d, $dc.d);} |
-				       fd=functionDefinition[$priv] {addChild($priv, $d, $fd.d);} |
-				       st=statement[$priv]{addChild($priv, $d, $st.d);})*) {
-/*
-		if (els.size() == 0)
-			e.add(newEmptyStatement(compoundStatement.start));
-		compoundStatement.start.setElement(e);*/
+@after	{ fill_attr($priv, $d, $compoundStatement.start); }
+	: ^(COMPOUND_STATEMENT CS_END (dc=declaration[$priv] {cnt++; addChild($priv, $d, $dc.d);} |
+				       fd=functionDefinition[$priv] {cnt++; addChild($priv, $d, $fd.d);} |
+				       st=statement[$priv] {cnt++; addChild($priv, $d, $st.d);})*) {
+		if (cnt == 0)
+			addChild($priv, $d, fill_attr($priv, newEmptyStatement($priv), $compoundStatement.start));
+//		compoundStatement.start.setElement(e);*/
 	}
 	;
 
@@ -460,16 +455,16 @@ parameterTypeList[void *priv, my_jobject d]
 	;
 
 parameterDeclaration[void *priv] returns [my_jobject d]
-@init   { $d = newParameter($priv); }
-@after  { fill_attr($priv, $d, $parameterDeclaration.start); }
+@init	{ $d = newParameter($priv); }
+@after	{ fill_attr($priv, $d, $parameterDeclaration.start); }
 	: ^(PARAMETER ds=declarationSpecifiers[$priv] {addChild($priv, $d, $ds.d);}
 		      (de=declarator[$priv] {addChild($priv, $d, $de.d);})?
 		      (ad=abstractDeclarator[$priv] {addChild($priv, $d, $ad.d);})?)
 	;
 
 abstractDeclarator[void *priv] returns [my_jobject d]
-@init   { $d = newAbstractDeclarator($priv); }
-@after  { fill_attr($priv, $d, $abstractDeclarator.start); }  
+@init	{ $d = newAbstractDeclarator($priv); }
+@after	{ fill_attr($priv, $d, $abstractDeclarator.start); }
 	: ^(ABSTRACT_DECLARATOR pointer[$priv, $d] directAbstractDeclarator[$priv, $d]?)
 	| ^(ABSTRACT_DECLARATOR directAbstractDeclarator[$priv, $d])
 	;
@@ -481,7 +476,7 @@ directAbstractDeclarator[void *priv, my_jobject d]
 	;
 
 arrayOrFunctionDeclarator[void *priv] returns [my_jobject d]
-@after  { fill_attr($priv, $d, $arrayOrFunctionDeclarator.start); }  
+@after	{ fill_attr($priv, $d, $arrayOrFunctionDeclarator.start); }
 	: ^(ARRAY_DECLARATOR { $d = newArrayDecl($priv); }
 			((e=expression[$priv] {addChild($priv, $d, $e.d);})? |
 			 '*' { setAttr($priv, $d, "asterisk", "1"); }))
@@ -503,8 +498,8 @@ identifier[void *priv] returns [my_jobject d]
 /* TYPES */
 
 typeName[void *priv] returns [my_jobject d]
-@init   { $d = newTypeName($priv); }
-@after  { fill_attr($priv, $d, $typeName.start); }
+@init	{ $d = newTypeName($priv); }
+@after	{ fill_attr($priv, $d, $typeName.start); }
 	: ^(TYPE_NAME (s=specifier[$priv] {addChild($priv, $d, $s.d);} |
 		       q=qualifier {setAttr($priv, $d, $q.q, "1");})+
 		      (ad=abstractDeclarator[$priv] {addChild($priv, $d, $ad.d);})?)
@@ -527,7 +522,7 @@ typeQualifier returns [char *s]
 
 typeSpecifier[void *priv] returns [my_jobject d]
 @init	{ $d = newTypeSpecifier($priv); }
-@after  { fill_attr($priv, $d, $typeSpecifier.start); }
+@after	{ fill_attr($priv, $d, $typeSpecifier.start); }
 	: ^(BASETYPE 'void')	{ addChild($priv, $d, newBaseType($priv, "void")); }
 	| ^(BASETYPE 'char')	{ addChild($priv, $d, newBaseType($priv, "char")); }
 	| ^(BASETYPE 'short')	{ addChild($priv, $d, newBaseType($priv, "short")); }
@@ -570,8 +565,8 @@ structOrUnion returns [char un]
 	;
 
 structDeclaration[void *priv] returns [my_jobject d]
-@init   { $d = newStructDeclaration($priv); }
-@after  { fill_attr($priv, $d, $structDeclaration.start); }
+@init	{ $d = newStructDeclaration($priv); }
+@after	{ fill_attr($priv, $d, $structDeclaration.start); }
 	: ^(STRUCT_DECLARATION (s=specifier[$priv] {addChild($priv, $d, $s.d);} |
 				q=qualifier {setAttr($priv, $d, $q.q, "1");})+
 			       (sd=structDeclarator[$priv] {addChild($priv, $d, $sd.d);})*) {
@@ -580,21 +575,21 @@ structDeclaration[void *priv] returns [my_jobject d]
 	;
 
 structDeclarator[void *priv] returns [my_jobject d]
-@init   { $d = newStructDeclarator($priv); }
-@after  { fill_attr($priv, $d, $structDeclarator.start); }
+@init	{ $d = newStructDeclarator($priv); }
+@after	{ fill_attr($priv, $d, $structDeclarator.start); }
 	: ^(STRUCT_DECLARATOR (de=declarator[$priv] {addChild($priv, $d, $de.d);})?
 			      (ex=expression[$priv] {addChild($priv, $d, $ex.d);})?)
 	;
 
 enumSpecifier[void *priv] returns [my_jobject d]
-@init   { $d = newEnum($priv); }
-@after  { fill_attr($priv, $d, $enumSpecifier.start); }
+@init	{ $d = newEnum($priv); }
+@after	{ fill_attr($priv, $d, $enumSpecifier.start); }
 	: ^('enum' (^(XID IDENTIFIER {setAttr($priv, $d, "id", (char *)$IDENTIFIER.text->chars);}))?
 		   (en=enumerator[$priv] {addChild($priv, $d, $en.d);})*)
 	;
 
 enumerator[void *priv] returns [my_jobject d]
-@after  { fill_attr($priv, $d, $enumerator.start); }
+@after	{ fill_attr($priv, $d, $enumerator.start); }
 	: ^(ENUMERATOR IDENTIFIER {
 		$d = newEnumerator($priv, (char *)$IDENTIFIER.text->chars);
 	} (e=expression[$priv] {addChild($priv, $d, $e.d);})?)
@@ -641,10 +636,15 @@ pointer[void *priv, my_jobject d]
 /* STATEMENTS */
 
 statement[void *priv] returns [my_jobject d]
-@after  { fill_attr($priv, $d, $statement.start); }
+@init { $d = NULL; }
+@after	{
+	if ($d == NULL)
+		printf("\%s: \%s\n", __func__, $statement.start->getText($statement.start)->chars);
+    	fill_attr($priv, $d, $statement.start);
+}
 	: labeledStatement[$priv]	{ $d=$labeledStatement.d; }
 	| compoundStatement[$priv]	{ $d=$compoundStatement.d; }
-	| expressionStatement[$priv]	//{ e=newElement("expressionStatement");e.add(expressionStatement.e != null ? expressionStatement.e : newEmptyStatement(expressionStatement.start)); }
+	| expressionStatement[$priv]	{ $d=$expressionStatement.d; }
 	| selectionStatement[$priv]	{ $d=$selectionStatement.d; }
 	| iterationStatement[$priv]	{ $d=$iterationStatement.d; }
 	| jumpStatement[$priv]		{ $d=$jumpStatement.d; }
@@ -652,98 +652,79 @@ statement[void *priv] returns [my_jobject d]
 	;
 
 labeledStatement[void *priv] returns [my_jobject d]
+@after	{ fill_attr($priv, $d, $labeledStatement.start); }
 	: ^(LABEL IDENTIFIER statement[$priv]) {
-/*		e = newElement("labelStatement", labeledStatement.start);
-		e.add(statement.e);
-		e.addAttribute("id", IDENTIFIER.text);*/
+		$d = newLabelStatement($priv, (char *)$IDENTIFIER.text->chars);
+		addChild($priv, $d, $statement.d);
 	}
-	| ^('case' expression[$priv] statement[$priv]) {
-/*		e = newElement("caseLabelStatement", labeledStatement.start);
-		e.add(expression.e);
-		e.add(statement.e);*/
-	}
-	| ^('default' statement[$priv]) {
-/*		e = newElement("defaultLabelStatement",
-				labeledStatement.start);
-		e.add(statement.e);*/
-	}
+	| ^('case' expression[$priv] statement[$priv]) { $d = newNode2($priv, newCaseLabelStatement, $expression.d, $statement.d); }
+	| ^('default' statement[$priv]) { $d = newNode1($priv, newDefaultLabelStatement, $statement.d); }
 	;
 
 expressionStatement[void *priv] returns [my_jobject d]
-	: ^(EXPRESSION_STATEMENT expression[$priv]?) { $d = $expression.d; }
+@init	{ $d = newExpressionStatement($priv); my_jobject expr = NULL; }
+@after	{
+	addChild($priv, $d, expr ? : fill_attr($priv, newEmptyStatement($priv), $expressionStatement.start));
+	fill_attr($priv, $d, $expressionStatement.start);
+}
+	: ^(EXPRESSION_STATEMENT (expression[$priv] {expr = $expression.d;})?)
 	;
 
 selectionStatement[void *priv] returns [my_jobject d]
-	: ^('if' expression[$priv] s1=statement[$priv] s2=statement[$priv]?) {
-/*		e = newElement(s2 == null ? "ifStatement" : "ifElseStatement",
-				selectionStatement.start);
-		e.add(expression.e);
-		e.add(s1.e);
-		addElementCond(e, s2.e);*/
+@after	{ fill_attr($priv, $d, $selectionStatement.start); }
+	: ^('if' ex=expression[$priv] s1=statement[$priv] { $d = newNode2($priv, newIfStatement, $ex.d, $s1.d); }
+		 (s2=statement[$priv] {addChild($priv, $d, $s2.d);})?) {
+//		e = newElement(s2 == null ? "ifStatement" : "ifElseStatement",
 	}
-	| ^('switch' expression[$priv] statement[$priv]) {
-/*		e = newElement("switchStatement", selectionStatement.start);
-		e.add(expression.e);
-		e.add(statement.e);*/
-	}
+	| ^('switch' ex=expression[$priv] st=statement[$priv]) { $d = newNode2($priv, newSwitchStatement, $ex.d, $st.d); }
 	;
 
 iterationStatement[void *priv] returns [my_jobject d]
-	: ^('while' expression[$priv] statement[$priv]) {
-/*		e = newElement("whileStatement", iterationStatement.start);
-		e.add(expression.e);
-		e.add(statement.e);*/
-	}
-	| ^('do' statement[$priv] expression[$priv]) {
-/*		e = newElement("doStatement", iterationStatement.start);
-		e.add(statement.e);
-		e.add(expression.e);*/
-	}
-	| ^('for' declaration[$priv]?
-			(^(E1 e1=expression[$priv]))?
-			 ^(E2 e2=expression[$priv]?)
-			 ^(E3 e3=expression[$priv]?)
-			 statement[$priv]) {
-/*		e = newElement("forStatement", iterationStatement.start);
-		if (declaration.e != null)
-			e.add(declaration.e);
-		else if (e1 != null)
-			e.add(e1.e);
+@init	{ my_jobject ded = NULL, e1d = NULL, e2d = NULL, e3d = NULL; }
+@after	{ fill_attr($priv, $d, $iterationStatement.start); }
+	: ^('while' ex=expression[$priv] st=statement[$priv]) { $d = newNode2($priv, newWhileStatement, $ex.d, $st.d); }
+	| ^('do' st=statement[$priv] ex=expression[$priv]) { $d = newNode2($priv, newDoStatement, $st.d, $ex.d); }
+	| ^('for' {$d = newForStatement($priv);} (de=declaration[$priv] {ded=$de.d;})?
+			(^(E1 e1=expression[$priv]) {e1d=$e1.d;})?
+			 ^(E2 (e2=expression[$priv] {e2d=$e2.d;})?)
+			 ^(E3 (e3=expression[$priv] {e3d=$e3.d;})?)
+			 st=statement[$priv]) {
+		if (ded)
+			addChild($priv, $d, ded);
+		else if (e1d)
+			addChild($priv, $d, e1d);
 		else
-			e.addElement("expression");
-		if (e2 != null)
-			e.add(e2.e);
-		else
-			e.addElement("expression");
-		if (e3 != null)
-			e.add(e3.e);
-		else
-			e.addElement("expression");
-		e.add(statement.e);*/
+			addChild($priv, $d, newExpression($priv));
+		addChild($priv, $d, e2d ? : newExpression($priv));
+		addChild($priv, $d, e3d ? : newExpression($priv));
+		addChild($priv, $d, $st.d);
 	}
 	;
 
 jumpStatement[void *priv] returns [my_jobject d]
+@after	{ fill_attr($priv, $d, $jumpStatement.start); }
 	: ^('goto' IDENTIFIER) {
-/*		e = newElement("gotoStatement", jumpStatement.start);
-		e.addElement("expression").addElement("id").addText(IDENTIFIER.text);*/
+		my_jobject expr;
+		$d = newGotoStatement($priv);
+		expr = newNode1($priv, newExpression, newId($priv, (char *)$IDENTIFIER.text->chars));
+		addChild($priv, $d, expr);
 	}
 	| ^('goto' XU expression[$priv]) {
-/*		e = newElement("gotoStatement", jumpStatement.start);
-		e.addElement("expression").addElement("derefExpression").add(expression.e);*/
+		my_jobject expr, deref;
+		$d = newGotoStatement($priv);
+		expr = newExpression($priv);
+		deref = newNode1($priv, newDerefExpression, $expression.d);
+		addChild($priv, $d, expr);
+		addChild($priv, expr, deref);
 	}
-	| 'continue'	/*{ e = newElement("continueStatement",
-			jumpStatement.start); }*/
-	| 'break'	/*{ e = newElement("breakStatement",
-			jumpStatement.start); }*/
-	| ^('return' expression[$priv]?) {
-/*		e = newElement("returnStatement", jumpStatement.start);
-		addElementCond(e, expression.e);*/
-	}
+	| 'continue'	{ $d = newContinueStatement($priv); }
+	| 'break'	{ $d = newBreakStatement($priv); }
+	| ^('return'	{ $d = newReturnStatement($priv); }
+			(ex=expression[$priv] {addChild($priv, $d, $ex.d);})?)
 	;
 
 asmStatement[void *priv] returns [my_jobject d]
-	: ASM		//{ e = newElement("gnuAssembler", asmStatement.start); }
+	: ASM		{ $d = newGnuAssembler($priv); }
 	;
 
 /* STATEMENTS END */
@@ -758,7 +739,11 @@ expression[void *priv] returns [my_jobject d]
 
 otherExpression[void *priv] returns [my_jobject d]
 @init { $d = NULL; }
-@after  { if ($d == NULL) printf("\%s: \%d\n", __func__, $otherExpression.start->getLine($otherExpression.start)); fill_attr($priv, $d, $otherExpression.start); }
+@after	{
+	if ($d == NULL)
+		printf("\%s: \%s\n", __func__, $otherExpression.start->getText($otherExpression.start)->chars);
+	fill_attr($priv, $d, $otherExpression.start);
+}
 /*	List<Element> exs = new LinkedList<Element>();
 	Element exp;*/
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression[$priv] e2=expression[$priv]) {
@@ -784,28 +769,28 @@ otherExpression[void *priv] returns [my_jobject d]
 		e=newElementBin("compoundLiteral", tn.e, me);
 		addAllElements(me, initializerList.els);*/
 	}
-	| ^(',' e1=expression[$priv] e2=expression[$priv])	//{ e=newElementBin("commaExpression", e1.e, e2.e); }
-	| ^('++' e1=expression[$priv])		//{ e=newElement("prefixExpression");e.addAttribute("op", "++").add(e1.e); }
-	| ^('--' e1=expression[$priv])		//{ e=newElement("prefixExpression");e.addAttribute("op", "--").add(e1.e); }
-	| ^(unaryOp e1=expression[$priv])	//{ e=newElement("prefixExpression");e.addAttribute("op", unaryOp.op).add(e1.e); }
+	| ^(',' e1=expression[$priv] e2=expression[$priv])	{ $d=newNode2($priv, newCommaExpression, $e1.d, $e2.d); }
+	| ^('++' e1=expression[$priv])		{ $d=newPrefixExpression($priv, "++"); addChild($priv, $d, $e1.d); }
+	| ^('--' e1=expression[$priv])		{ $d=newPrefixExpression($priv, "--"); addChild($priv, $d, $e1.d); }
+	| ^(unaryOp e1=expression[$priv])	{ $d=newPrefixExpression($priv, $unaryOp.op); addChild($priv, $d, $e1.d); }
 	| ^('sizeof' { $d = newSizeofExpression($priv); }
 			(e1=expression[$priv] {addChild($priv, $d, $e1.d);} |
 			 tn=typeName[$priv] {addChild($priv, $d, $tn.d);}))
-	| ^('__alignof__' (e1=expression[$priv]|tn=typeName[$priv]))	//{ e=newElement("allignofExpression"); e.add(e1 != null ? e1.e : tn.e); }
+	| ^('__alignof__' { $d=newAllignofExpression($priv); }
+			(e1=expression[$priv]	{addChild($priv, $d, $e1.d);} |
+			 tn=typeName[$priv]	{addChild($priv, $d, $tn.d);}))
 	| ^('.' e1=expression[$priv] IDENTIFIER)	{
-/*		e=newElement("dotExpression");
-		e.add(e1.e);
-		e.addElement("member").addText(IDENTIFIER.text);*/
+		$d = newNode1($priv, newDotExpression, $e1.d);
+		addChild($priv, $d, newMember($priv, (char *)$IDENTIFIER.text->chars));
 	}
 	| ^('->' e1=expression[$priv] IDENTIFIER) {
-/*		e=newElement("arrowExpression");
-		e.add(e1.e);
-		e.addElement("member").addText(IDENTIFIER.text);*/
+		$d = newNode1($priv, newArrowExpression, $e1.d);
+		addChild($priv, $d, newMember($priv, (char *)$IDENTIFIER.text->chars));
 	}
-	| ^(AU e1=expression[$priv])	//{ e=newElement("addrExpression"); e.add(e1.e); }
-	| ^(XU e1=expression[$priv])	//{ e=newElement("derefExpression"); e.add(e1.e); }
-	| ^(PP e1=expression[$priv])	//{ e=newElement("postfixExpression"); e.addAttribute("op", "++").add(e1.e); }
-	| ^(MM e1=expression[$priv])	//{ e=newElement("postfixExpression"); e.addAttribute("op", "--").add(e1.e); }
+	| ^(AU e1=expression[$priv])	{ $d=newNode1($priv, newAddrExpression, $e1.d); }
+	| ^(XU e1=expression[$priv])	{ $d=newNode1($priv, newDerefExpression, $e1.d); }
+	| ^(PP e1=expression[$priv])	{ $d=newPostfixExpression($priv, "++"); addChild($priv, $d, $e1.d); }
+	| ^(MM e1=expression[$priv])	{ $d=newPostfixExpression($priv, "--"); addChild($priv, $d, $e1.d); }
 	;
 
 binaryExpression[void *priv] returns [my_jobject d]

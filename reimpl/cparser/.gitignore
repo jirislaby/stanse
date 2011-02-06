@@ -5,3 +5,4 @@
 GNUCa*.[ch]
 *Emitter.[ch]
 /cparser_CParser.h
+hs_err_pid*.log

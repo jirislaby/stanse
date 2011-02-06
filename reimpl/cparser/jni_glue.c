@@ -7,14 +7,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
-
-
-#include <unistd.h> // sleep
-
-
-
-
 #include <jni.h>
 
 #include "cparser_CParser.h"
@@ -24,6 +16,30 @@ enum class_ID {
 	cls_CParser,
 	cls_Node,
 
+	cls_CaseLabelStatement,
+	cls_DefaultLabelStatement,
+	cls_EmptyStatement,
+	cls_ExpressionStatement,
+	cls_LabelStatement,
+	cls_AllignofExpression,
+	cls_ArrowExpression,
+	cls_CommaExpression,
+	cls_DotExpression,
+	cls_Member,
+	cls_PrefixExpression,
+	cls_AddrExpression,
+	cls_PostfixExpression,
+	cls_BreakStatement,
+	cls_ContinueStatement,
+	cls_DerefExpression,
+	cls_DoStatement,
+	cls_ForStatement,
+	cls_GnuAssembler,
+	cls_GotoStatement,
+	cls_IfStatement,
+	cls_ReturnStatement,
+	cls_SwitchStatement,
+	cls_WhileStatement,
 	cls_SizeofExpression,
 	cls_Expression,
 	cls_IntConst,
@@ -107,6 +123,30 @@ static int get_class_ids(JNIEnv *env)
 		[cls_CParser] = "cparser/CParser",
 		AST_CLASS(Node),
 
+		AST_CLASS(CaseLabelStatement),
+		AST_CLASS(DefaultLabelStatement),
+		AST_CLASS(EmptyStatement),
+		AST_CLASS(ExpressionStatement),
+		AST_CLASS(LabelStatement),
+		AST_CLASS(AllignofExpression),
+		AST_CLASS(ArrowExpression),
+		AST_CLASS(CommaExpression),
+		AST_CLASS(DotExpression),
+		AST_CLASS(Member),
+		AST_CLASS(PrefixExpression),
+		AST_CLASS(AddrExpression),
+		AST_CLASS(PostfixExpression),
+		AST_CLASS(BreakStatement),
+		AST_CLASS(ContinueStatement),
+		AST_CLASS(DerefExpression),
+		AST_CLASS(DoStatement),
+		AST_CLASS(ForStatement),
+		AST_CLASS(GnuAssembler),
+		AST_CLASS(GotoStatement),
+		AST_CLASS(IfStatement),
+		AST_CLASS(ReturnStatement),
+		AST_CLASS(SwitchStatement),
+		AST_CLASS(WhileStatement),
 		AST_CLASS(IntConst),
 		AST_CLASS(OffsetofExpression),
 		AST_CLASS(RealConst),
@@ -311,14 +351,11 @@ JNIEXPORT jint JNICALL Java_cparser_CParser_parse(JNIEnv *env, jobject obj)
 	cstr = (*env)->GetStringUTFChars(env, file, NULL);
 
 	ret = parse(cstr, &jni, &AST);
-	puts("ggg");
 
 	(*env)->ReleaseStringUTFChars(env, file, cstr);
 
-	puts("ggg1");
 	if (!ret)
 		(*env)->SetObjectField(env, obj, fields[CParser_root], AST);
-	puts("ggg2");
 
 	return ret;
 }
@@ -351,10 +388,7 @@ static jobject new_obj(JNIEnv *env, enum class_ID cid,
 
 	constructor = (*env)->GetMethodID(env, classes[cid], "<init>",
 			con_type);
-	if (!constructor)
-		abort();
-
-	if (check_exception(env))
+	if (!constructor || check_exception(env))
 		die(env, "no constructor");
 
 	va_start(args, con_type);
@@ -454,57 +488,64 @@ void addChild(void *priv, my_jobject parent, my_jobject child)
 		struct jni_data *jni = priv;				\
 		return new_obj_str(jni->env, cls_ ## name, cstr);	\
 	}
-#if 0
-	my_jobject newBinaryExpression(void *priv, const char *cstr)
-	{
-		struct jni_data *jni = priv;
-		JNIEnv *env = jni->env;
-		jstring jstr;
-		jobject obj;
 
-		printf("%s: str=%s\n", __func__, cstr);
-		jstr = (*env)->NewStringUTF(env, cstr);
-		obj = new_obj(env, cls_BinaryExpression,
-				"(Ljava/lang/String;)V", jstr);
-		(*env)->DeleteLocalRef(env, jstr);
-		printf("%s: o=%p\n", __func__, obj);
-
-		return obj;
-	}
-#endif
 VOID_NODE(AbstractDeclarator);
+VOID_NODE(AddrExpression);
+VOID_NODE(AllignofExpression);
 VOID_NODE(ArrayAccess);
 VOID_NODE(ArrayDecl);
+VOID_NODE(ArrowExpression);
 VOID_NODE(AssignExpression);
 STRING_NODE(BaseType);
 STRING_NODE(BinaryExpression);
+VOID_NODE(BreakStatement);
+VOID_NODE(CaseLabelStatement);
 VOID_NODE(CastExpression);
+VOID_NODE(CommaExpression);
 VOID_NODE(CompoundLiteral);
 VOID_NODE(CompoundStatement);
 VOID_NODE(ConditionalExpression);
+VOID_NODE(ContinueStatement);
 VOID_NODE(Declaration);
 VOID_NODE(DeclarationSpecifiers);
 VOID_NODE(Declarator);
+VOID_NODE(DefaultLabelStatement);
+VOID_NODE(DerefExpression);
+VOID_NODE(DotExpression);
+VOID_NODE(DoStatement);
+VOID_NODE(EmptyStatement);
 VOID_NODE(Enum);
 STRING_NODE(Enumerator);
 VOID_NODE(ExternalDeclaration);
 VOID_NODE(Expression);
+VOID_NODE(ExpressionStatement);
+VOID_NODE(ForStatement);
 VOID_NODE(FunctionCall);
 VOID_NODE(FunctionDecl);
 VOID_NODE(FunctionDefinition);
+VOID_NODE(GnuAssembler);
+VOID_NODE(GotoStatement);
 STRING_NODE(Id);
+VOID_NODE(IfStatement);
 VOID_NODE(Initializer);
 VOID_NODE(InitDeclarator);
 STRING_NODE(IntConst);
+STRING_NODE(LabelStatement);
+STRING_NODE(Member);
 VOID_NODE(OffsetofExpression);
 VOID_NODE(Parameter);
+STRING_NODE(PostfixExpression);
+STRING_NODE(PrefixExpression);
 STRING_NODE(RealConst);
+VOID_NODE(ReturnStatement);
 VOID_NODE(SizeofExpression);
 STRING_NODE(StringConst);
 VOID_NODE(Struct);
 VOID_NODE(StructDeclaration);
 VOID_NODE(StructDeclarator);
+VOID_NODE(SwitchStatement);
 VOID_NODE(TranslationUnit);
 VOID_NODE(TypeName);
 VOID_NODE(TypeSpecifier);
 VOID_NODE(Union);
+VOID_NODE(WhileStatement);
