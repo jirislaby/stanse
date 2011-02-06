@@ -41,7 +41,16 @@ public abstract class Node {
 	 * XML attributes for this node
 	 * @param sb where to put the attributes
 	 */
-	void XMLattributes(final StringBuilder sb) {
+	void XMLAttributes(final StringBuilder sb) {
+	}
+
+	void XMLChildren(final StringBuilder sb) {
+		boolean terminate = children.size() > 1;
+		for (final Node n : children) {
+			sb.append(n.toXML());
+			if (terminate)
+				sb.append('\n');
+		}
 	}
 
 	public String toXML(){
@@ -50,7 +59,7 @@ public abstract class Node {
 		final String XMLname = Character.toLowerCase(name.charAt(0)) +
 			name.substring(1);
 		sb.append(XMLname);
-		XMLattributes(sb);
+		XMLAttributes(sb);
 		if (line > 0)
 			sb.append(" bl=\"").append(line).append('"');
 		else
@@ -60,12 +69,7 @@ public abstract class Node {
 		else
 			sb.append(" nobc=\"1\"");
 		sb.append('>');
-		boolean terminate = children.size() > 1;
-		for (final Node n : children) {
-			sb.append(n.toXML());
-			if (terminate)
-				sb.append('\n');
-		}
+		XMLChildren(sb);
 		sb.append("</").append(XMLname).append('>');
 		return sb.toString();
 	}

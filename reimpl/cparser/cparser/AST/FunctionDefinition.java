@@ -19,7 +19,7 @@ public class FunctionDefinition extends Node {
 	}
 
 	@Override
-	void XMLattributes(final StringBuilder sb) {
+	void XMLAttributes(final StringBuilder sb) {
 		if (endLine <= 0)
 			throw new RuntimeException("wrong endline value");
 		sb.append(" el=\"").append(endLine).append('"');

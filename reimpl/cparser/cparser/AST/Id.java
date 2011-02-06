@@ -23,7 +23,7 @@ public class Id extends Node {
 	}
 
 	@Override
-	void XMLattributes(final StringBuilder sb) {
-		sb.append(" id=\"").append(id).append('"');
+	void XMLChildren(final StringBuilder sb) {
+		sb.append(id);
 	}
 }

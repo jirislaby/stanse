@@ -4,13 +4,20 @@
 
 package cparser.AST;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Jiri Slaby
  */
 public class Member extends Node {
+	final String member;
+
+	private Member() { throw new UnsupportedOperationException(); }
+
 	public Member(final String member) {
+		this.member = member;
+	}
+
+	@Override
+	void XMLChildren(final StringBuilder sb) {
+		sb.append(member);
 	}
 }

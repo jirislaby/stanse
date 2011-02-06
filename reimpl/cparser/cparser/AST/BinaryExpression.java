@@ -83,8 +83,15 @@ public class BinaryExpression extends Expression {
 		return super.toString() + " (" + opsStr.get(op) + ")";
 	}
 
+	public static String encodeXML(String input){
+		return input.replace("&", "&amp;").
+			replace("<", "&lt;").
+			replace(">", "&gt;");
+	}
+
 	@Override
-	void XMLattributes(final StringBuilder sb) {
-		sb.append(" op=\"").append(opsStr.get(op)).append('"');
+	void XMLAttributes(final StringBuilder sb) {
+		sb.append(" op=\"").append(encodeXML(opsStr.get(op))).
+			append('"');
 	}
 }

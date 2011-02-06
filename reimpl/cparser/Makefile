@@ -5,7 +5,7 @@ CFLAGS=-g -Wall -O2 -Wno-unused -march=core2 -fPIC -I$(JAVA_HOME)/include \
 LDFLAGS=-g -O2 -fPIC
 LIBS=-lantlr3c
 ANTLR=../../tools/antlr-3.2.jar
-JFLAGS=-cp ../../dist/lib/log4j-1.2.16.jar
+JFLAGS=-cp ../../dist/lib/log4j-1.2.16.jar:../../dist/lib/dom4j-1.6.1.jar
 JSOURCES=$(wildcard cparser/AST/*.java) cparser/CParser.java
 JCLASSES=$(patsubst %.java,%.class,$(JSOURCES))
 

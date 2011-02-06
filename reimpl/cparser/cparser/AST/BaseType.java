@@ -72,7 +72,7 @@ public class BaseType extends Node {
 	}
 
 	@Override
-	void XMLattributes(final StringBuilder sb) {
-		sb.append(" type=\"").append(typeStr.get(type)).append('"');
+	void XMLChildren(final StringBuilder sb) {
+		sb.append(typeStr.get(type));
 	}
 }

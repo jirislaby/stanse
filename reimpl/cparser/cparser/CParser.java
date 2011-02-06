@@ -7,6 +7,15 @@ package cparser;
 import cparser.AST.Node;
 import cparser.AST.TranslationUnit;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
 /**
  * @author Jiri Slaby
@@ -41,7 +50,27 @@ public class CParser {
 		final Node n = cp.getRoot();
 		System.err.println("Node:\n\tcls=" + n.getClass().getName());
 		System.err.println("\tstr=" + n.toString());
-		System.err.println("\tXML=" + n.toXML());
+		System.err.println("\tXML:");
+		try {
+			Document doc = DocumentHelper.parseText(n.toXML());
+			OutputFormat format = OutputFormat.createPrettyPrint();
+			OutputStream os = new FileOutputStream("out.xml");
+			try {
+				XMLWriter writer = new XMLWriter(os, format);
+				writer.write(doc);
+				writer.close();
+				os.close();
+/*				writer = new XMLWriter(System.err, format);
+				writer.write(doc);
+				writer.close();*/
+			} catch (IOException ex) {
+			    ex.printStackTrace();
+			}
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 
 		fini();
 	}

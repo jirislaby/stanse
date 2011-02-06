@@ -4,13 +4,20 @@
 
 package cparser.AST;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Jiri Slaby
  */
 public class LabelStatement extends Node {
+	private String label;
+
+	private LabelStatement() { throw new UnsupportedOperationException(); }
+
 	public LabelStatement(final String label) {
+		this.label = label;
+	}
+
+	@Override
+	void XMLAttributes(final StringBuilder sb) {
+		sb.append(" id=\"").append(label).append('"');
 	}
 }
