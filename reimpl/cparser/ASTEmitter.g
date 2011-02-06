@@ -743,7 +743,6 @@ primaryExpression returns [my_jobject d]
 	| constant	{ $d = $constant.d; }
 	| sTRING_LITERAL	{
 		char *str = $sTRING_LITERAL.str;
-		printf("\%s: \%s\n", __func__, str);
 		$d = newStringConst(PRIV, str);
 		free(str);
 		fill_attr(PRIV, $d, $sTRING_LITERAL.start);
