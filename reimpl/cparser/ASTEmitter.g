@@ -258,43 +258,27 @@ scope Symbols;
 	;
 
 declaration returns [my_jobject d]
-@init	{ $d = newDeclaration(PRIV); }
+@init	{ $d = newDeclaration(PRIV); my_jobject dsd = NULL; }
 @after	{ fill_attr(PRIV, $d, $declaration.start); }
-	: ^('typedef' declarationSpecifiers? (id=initDeclarator {/*ids.add(id.e);*/})*) {
-/*		Element ds;
-		if (declarationSpecifiers.e != null)
-			e.add(ds = declarationSpecifiers.e);
-		else
-			ds = e.addElement("declarationSpecifiers");
-		ds.addAttribute("storageClass", "typedef");
-		addAllElements(e, ids);*/
-	}
+	: ^('typedef' (ds=declarationSpecifiers {dsd=$ds.d;})? {
+		if (!dsd)
+			dsd = newDeclarationSpecifiers(PRIV);
+		addChild(PRIV, $d, dsd);
+		setAttr(PRIV, dsd, "storageClass", "typedef");
+	} (id=initDeclarator {addChild(PRIV, $d, $id.d);})*)
 	| ^(DECLARATION ds=declarationSpecifiers {addChild(PRIV, $d, $ds.d);}
 			(id=initDeclarator {addChild(PRIV, $d, $id.d);})*)
 	;
 
 declarationSpecifiers returns [my_jobject d]
-@init	{
-	$d = newDeclarationSpecifiers(PRIV);
-/*	List<Element> tss = new LinkedList<Element>();
-	List<String> tqs = new LinkedList<String>();
-	List<String> scs = new LinkedList<String>();
-	List<String> fss = new LinkedList<String>();*/
-}
+@init	{ $d = newDeclarationSpecifiers(PRIV); }
 @after	{ fill_attr(PRIV, $d, $declarationSpecifiers.start); }
 	: ^(DECLARATION_SPECIFIERS
 		^(XTYPE_SPECIFIER (ts=typeSpecifier {addChild(PRIV, $d, $ts.d);})*)
-		^(XTYPE_QUALIFIER (tq=typeQualifier {/*tqs.add(tq.s);*/})*)
-		^(XSTORAGE_CLASS (sc=storageClassSpecifier {/*scs.add(sc.s);*/} |
-				fs=functionSpecifier {/*fss.add(fs.s);*/})*)) {
-/*		addAllElements(e, typeNormalize(tss));
-		for (String str: tqs)
-			e.addAttribute(str, "1");
-		for (String str: scs)
-			e.addAttribute("storageClass", str);
-		for (String str: fss)
-			e.addAttribute("function", str);*/
-	}
+		^(XTYPE_QUALIFIER (tq=typeQualifier {setAttr(PRIV, $d, $tq.s, "1");})*)
+		^(XSTORAGE_CLASS (sc=storageClassSpecifier {setAttr(PRIV, $d, "storageClass", $sc.s);} |
+				  fs=functionSpecifier {setAttr(PRIV, $d, "function", $fs.s);})*))
+//		addAllElements(e, typeNormalize(tss));
 	;
 
 declarator returns [my_jobject d]
@@ -312,17 +296,13 @@ directDeclarator[my_jobject d]
 		newListElement(els, "id").addText(newName);
 		pushSymbol(IDENTIFIER.text, newName);*/
 	}
-	| declarator { abort(); } /*{ newListElement(els, "declarator", declarator.start).
+	| declarator { parser_die(PRIV, "should never happen"); } /*{ newListElement(els, "declarator", declarator.start).
 			add(declarator.e); }*/
 	| directDeclarator1[$d] /* XXX is here the + needed? */
 	;
 
 directDeclarator1[my_jobject d]
-@init {
-/*	List<String> tqs = new LinkedList<String>();
-	List<Element> l = new LinkedList<Element>();*/
-	my_jobject d1;
-}
+@init { my_jobject d1; }
 	: ^(ARRAY_DECLARATOR (dd=directDeclarator[$d]) {
 		d1 = newArrayDecl(PRIV);
 		addChild(PRIV, $d, d1);
@@ -442,10 +422,8 @@ identifier returns [my_jobject d]
 	: ^(PARAMETER IDENTIFIER)	{
 		$d = fill_attr(PRIV, $d, newId(PRIV, (char *)$IDENTIFIER.text->chars));
 /*		String newName = renameVariable(IDENTIFIER.text);
-		e = newElement("id");
 		if (!newName.equals(IDENTIFIER.text))
 			e.addAttribute("oldId", IDENTIFIER.text);
-		e.addText(newName);
 		pushSymbol(IDENTIFIER.text, newName);*/
 	}
 	;
@@ -465,11 +443,11 @@ specifier returns [my_jobject d]
 	: ^(XTYPE_SPECIFIER typeSpecifier)	{ $d = $typeSpecifier.d; }
 	;
 
-qualifier returns [char *q]
+qualifier returns [const char *q]
 	: ^(XTYPE_QUALIFIER typeQualifier)	{ $q = $typeQualifier.s; }
 	;
 
-typeQualifier returns [char *s]
+typeQualifier returns [const char *s]
 	: 'const'	{ $s = "const"; }
 	| 'restrict'	{ $s = "restrict"; }
 	| 'volatile'	{ $s = "volatile"; }
@@ -491,9 +469,9 @@ typeSpecifier returns [my_jobject d]
 	| ^(BASETYPE COMPLEX)	{ addChild(PRIV, $d, newBaseType(PRIV, "_Complex")); }
 	| ^(BASETYPE XID)
 	| ^(BASETYPE '_Imaginary')	{ addChild(PRIV, $d, newBaseType(PRIV, "_Imaginary")); }
-	| structOrUnionSpecifier { addChild(PRIV, $d, $structOrUnionSpecifier.d); }
+	| structOrUnionSpecifier	{ addChild(PRIV, $d, $structOrUnionSpecifier.d); }
 	| enumSpecifier		{ addChild(PRIV, $d, $enumSpecifier.d); }
-	| typedefName			{ $d = newNode1(PRIV, newTypedef, newId(PRIV, (char *)$typedefName.s->chars)); }
+	| typedefName		{ $d = newNode1(PRIV, newTypedef, newId(PRIV, (char *)$typedefName.s->chars)); }
 	| typeofSpecifier
 	;
 
@@ -522,9 +500,8 @@ structDeclaration returns [my_jobject d]
 @after	{ fill_attr(PRIV, $d, $structDeclaration.start); }
 	: ^(STRUCT_DECLARATION (s=specifier {addChild(PRIV, $d, $s.d);} |
 				q=qualifier {setAttr(PRIV, $d, $q.q, "1");})+
-			       (sd=structDeclarator {addChild(PRIV, $d, $sd.d);})*) {
+			       (sd=structDeclarator {addChild(PRIV, $d, $sd.d);})*)
 //		for (Element el: typeNormalize(tss))
-	}
 	;
 
 structDeclarator returns [my_jobject d]
@@ -570,18 +547,12 @@ functionSpecifier returns [const char *s]
 	;
 
 pointer[my_jobject d]
-@init {
-/*	List<String> tqs = new LinkedList<String>();
-	els = new LinkedList<Element>();*/
+@init   {
+	my_jobject ptr = newPointer(PRIV);
+	addChild(PRIV, $d, ptr);
 }
-	: ^(POINTER (tq=typeQualifier {/*tqs.add(tq);*/})* ptr=pointer[$d]?) {
-/*		Element e = newElement("pointer");
-		for (String t: tqs)
-			e.addAttribute(t, "1");
-		els.add(e);
-		if (ptr.els != null)
-			els.addAll(ptr.els);*/
-	}
+@after  { fill_attr(PRIV, ptr, $pointer.start); }
+	: ^(POINTER (tq=typeQualifier {setAttr(PRIV, ptr, $tq.s, "1");})* pointer[$d]?)
 	;
 
 /* TYPES END */
@@ -697,8 +668,6 @@ otherExpression returns [my_jobject d]
 		printf("\%s: \%s\n", __func__, $otherExpression.start->getText($otherExpression.start)->chars);
 	fill_attr(PRIV, $d, $otherExpression.start);
 }
-/*	List<Element> exs = new LinkedList<Element>();
-	Element exp;*/
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) {
 		char my_op[5], *op = (char *)$assignmentOperator.text->chars;
 		$d = newNode2(PRIV, newAssignExpression, $e1.d, $e2.d);
@@ -773,7 +742,10 @@ primaryExpression returns [my_jobject d]
 	: IDENTIFIER		{ $d = newId(PRIV, (char *)$IDENTIFIER.text->chars); }//e.addText(findVariable(IDENTIFIER.text)); }
 	| constant	{ $d = $constant.d; }
 	| sTRING_LITERAL	{
-		$d = newStringConst(PRIV, (char *)$sTRING_LITERAL.text->chars);
+		char *str = $sTRING_LITERAL.str;
+		printf("\%s: \%s\n", __func__, str);
+		$d = newStringConst(PRIV, str);
+		free(str);
 		fill_attr(PRIV, $d, $sTRING_LITERAL.start);
 	}
 	| compoundStatement	{ $d = $compoundStatement.d; }
@@ -783,18 +755,23 @@ primaryExpression returns [my_jobject d]
 	}
 	;
 
-sTRING_LITERAL//returns [String text]
-@init {
-//	List<String> sls = new LinkedList<String>();
-}
-	: ^(STR_LITERAL (STRING_LITERAL {/*sls.add(STRING_LITERAL.text);*/})+) {
-#if 0
-		StringBuilder sb = new StringBuilder();
-		for (String str: sls) /* crop the quotation */
-			sb.append(str.substring(1, str.length() - 1));
-		text = sb.toString();
-#endif
-	}
+sTRING_LITERAL returns [char *str]
+@init { $str = NULL; unsigned long data = 0, size = 8; }
+	: ^(STR_LITERAL (STRING_LITERAL {
+		/* +1 and -2 means strip parentheses */
+		const char *sl = (char *)$STRING_LITERAL.text->chars + 1;
+		unsigned int len = $STRING_LITERAL.text->len - 2;
+		if (!$str || data + len + 1 >= size) {
+			while (data + len + 1 >= size)
+				size *= 2;
+			$str = realloc($str, size);
+			if (!$str)
+				parser_die(PRIV, "cannot allocate memory");
+		}
+		memcpy($str + data, sl, len);
+		data += len;
+		$str[data] = 0;
+	})+)
 	;
 
 constant returns [my_jobject d]
@@ -803,25 +780,18 @@ constant returns [my_jobject d]
 	;
 
 offsetofMemberDesignator returns [my_jobject d]
-@init {
-//	Element e1;
-}
-	: id1=IDENTIFIER {
-		my_jobject my_id = newId(PRIV, (char *)$id1.text->chars);
-		$d = newNode1(PRIV, newExpression, my_id);
-	}	( ('.' id2=IDENTIFIER {
-/*			e1 = newElement("dotExpression");
-			e1.add(e);
-			e1.addElement("member").addText(id2.getText());
-			e = newElement("expression");
-			e.add(e1);*/
+@init	{ $d = newExpression(PRIV); }
+@after	{ fill_attr(PRIV, $d, $offsetofMemberDesignator.start); }
+	: id1=IDENTIFIER { addChild(PRIV, $d, newId(PRIV, (char *)$id1.text->chars)); }
+	  ( ('.' id2=IDENTIFIER {
+			my_jobject dot = newNode1(PRIV, newDotExpression, $d);
+			addChild(PRIV, dot, newMember(PRIV, (char *)$id2.text->chars));
+			$d = newNode1(PRIV, newExpression, dot);
 		})
 		| ('[' expression ']' {
-/*			e1 = newElement("arrayAccess");
-			e1.add(e);
-			e1.add(expression.e);
-			e = newElement("expression");
-			e.add(e1);*/
+			my_jobject aa = newNode1(PRIV, newArrayAccess, $d);
+			addChild(PRIV, aa, $expression.d);
+			$d = newNode1(PRIV, newExpression, aa);
 		})
 		)*
 	;

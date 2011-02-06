@@ -62,6 +62,7 @@ enum class_ID {
 	cls_Member,
 	cls_OffsetofExpression,
 	cls_Parameter,
+	cls_Pointer,
 	cls_PostfixExpression,
 	cls_PrefixExpression,
 	cls_RangeExpression,
@@ -172,6 +173,7 @@ static int get_class_ids(JNIEnv *env)
 		AST_CLASS(Member),
 		AST_CLASS(OffsetofExpression),
 		AST_CLASS(Parameter),
+		AST_CLASS(Pointer),
 		AST_CLASS(PostfixExpression),
 		AST_CLASS(PrefixExpression),
 		AST_CLASS(RangeExpression),
@@ -548,6 +550,7 @@ STRING_NODE(LabelStatement);
 STRING_NODE(Member);
 VOID_NODE(OffsetofExpression);
 VOID_NODE(Parameter);
+VOID_NODE(Pointer);
 STRING_NODE(PostfixExpression);
 STRING_NODE(PrefixExpression);
 VOID_NODE(RangeExpression);

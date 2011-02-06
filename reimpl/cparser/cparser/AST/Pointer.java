@@ -7,7 +7,7 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class DeclarationSpecifiers extends Node {
+public class Pointer extends Node {
 	@Override
 	public void setAttr(final String attr, final String value) {
 	}

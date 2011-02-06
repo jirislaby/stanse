@@ -59,6 +59,7 @@ extern my_jobject newLabelStatement(void *priv, const char *label);
 extern my_jobject newMember(void *priv, const char *member);
 extern my_jobject newOffsetofExpression(void *priv);
 extern my_jobject newParameter(void *priv);
+extern my_jobject newPointer(void *priv);
 extern my_jobject newPostfixExpression(void *priv, const char *op);
 extern my_jobject newPrefixExpression(void *priv, const char *op);
 extern my_jobject newRangeExpression(void *priv);
