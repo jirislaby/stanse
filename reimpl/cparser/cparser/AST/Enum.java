@@ -8,7 +8,7 @@ package cparser.AST;
  * @author Jiri Slaby
  */
 public class Enum extends Node {
-	private String name;
+	private String name = null;
 
 	@Override
 	public void setAttr(final String name, final String value) {
@@ -17,7 +17,9 @@ public class Enum extends Node {
 		this.name = value;
 	}
 
+	@Override
 	void XMLAttributes(final StringBuilder sb) {
-		sb.append(" id=\"").append(name).append('"');
+		if (name != null)
+			sb.append(" id=\"").append(name).append('"');
 	}
 }

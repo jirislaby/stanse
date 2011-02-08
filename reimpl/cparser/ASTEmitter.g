@@ -303,21 +303,20 @@ directDeclarator[my_jobject d]
 
 directDeclarator1[my_jobject d]
 @init { my_jobject d1; }
-	: ^(ARRAY_DECLARATOR (dd=directDeclarator[$d]) {
+	: ^(ARRAY_DECLARATOR (directDeclarator[$d]) {
 		d1 = newArrayDecl(PRIV);
 		addChild(PRIV, $d, d1);
 	} ('static' {setAttr(PRIV, d1, "static", "1");} | asterisk='*' {setAttr(PRIV, d1, "asterisk", "1");})?
 	  (tq=typeQualifier {setAttr(PRIV, d1, $tq.s, "1");})*
-	  (e=expression {addChild(PRIV, $d, $e.d);})?)
+	  (e=expression {addChild(PRIV, d1, $e.d);})?)
 	| ^(FUNCTION_DECLARATOR (IDENTIFIER { /* we need to process the id before params */
 		addChild(PRIV, $d, newId(PRIV, (char *)$IDENTIFIER.text->chars));
-		d1 = newFunctionDecl(PRIV);
 /*		String newName = renameVariable(IDENTIFIER.text);
 		if (!newName.equals(IDENTIFIER.text))
 			newListElement(els, "oldId").addText(IDENTIFIER.text);
 		newListElement(els, "id").addText(newName);
 		pushSymbol(IDENTIFIER.text, newName);*/
-	}|declarator) {
+	}|declarator {addChild(PRIV, $d, $declarator.d);}) {
 //		isFunParam = true;
 		d1 = newFunctionDecl(PRIV);
 		addChild(PRIV, $d, d1);
@@ -471,7 +470,10 @@ typeSpecifier returns [my_jobject d]
 	| ^(BASETYPE '_Imaginary')	{ addChild(PRIV, $d, newBaseType(PRIV, "_Imaginary")); }
 	| structOrUnionSpecifier	{ addChild(PRIV, $d, $structOrUnionSpecifier.d); }
 	| enumSpecifier		{ addChild(PRIV, $d, $enumSpecifier.d); }
-	| typedefName		{ $d = newNode1(PRIV, newTypedef, newId(PRIV, (char *)$typedefName.s->chars)); }
+	| typedefName		{
+		my_jobject td = newNode1(PRIV, newTypedef, newId(PRIV, (char *)$typedefName.s->chars));
+		addChild(PRIV, $d, td);
+	}
 	| typeofSpecifier
 	;
 
@@ -671,7 +673,7 @@ otherExpression returns [my_jobject d]
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) {
 		char my_op[5], *op = (char *)$assignmentOperator.text->chars;
 		$d = newNode2(PRIV, newAssignExpression, $e1.d, $e2.d);
-		if (op[0] == '=' && op[1] == 0) {
+		if (op[0] != '=' || op[1] != 0) { /* not '=' */
 			strcpy(my_op, op)[strlen(my_op) - 1] = 0;
 			setAttr(PRIV, $d, "op", my_op);
 		}

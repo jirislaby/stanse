@@ -4,14 +4,12 @@
 
 package cparser.AST;
 
-import java.util.HashMap;
-import java.util.Map;
+import cparser.Table;
 
 /**
  * @author Jiri Slaby
  */
 public class BaseType extends Node {
-
 	enum BASE_TYPE {
 		VOID,
 		CHAR,
@@ -25,54 +23,43 @@ public class BaseType extends Node {
 		BOOL,
 		COMPLEX,
 		IMAGINARY,
+		BT_SIZE
 	};
-	final BASE_TYPE type;
 
-	private static final Map<String,BASE_TYPE> strType;
-	private static final Map<BASE_TYPE,String> typeStr;
+	private static final Table<BASE_TYPE> types;
+	private final BASE_TYPE type;
 
 	static {
-		strType = new HashMap<String,BASE_TYPE>();
-		typeStr = new HashMap<BASE_TYPE,String>();
-		fill("void", BASE_TYPE.VOID);
-		fill("char", BASE_TYPE.CHAR);
-		fill("short", BASE_TYPE.SHORT);
-		fill("int", BASE_TYPE.INT);
-		fill("long", BASE_TYPE.LONG);
-		fill("float", BASE_TYPE.FLOAT);
-		fill("double", BASE_TYPE.DOUBLE);
-		fill("signed", BASE_TYPE.SIGNED);
-		fill("unsigned", BASE_TYPE.UNSIGNED);
-		fill("_Bool", BASE_TYPE.BOOL);
-		fill("_Complex", BASE_TYPE.COMPLEX);
-		fill("_Imaginary", BASE_TYPE.IMAGINARY);
+		types = new Table<BASE_TYPE>(BASE_TYPE.BT_SIZE.ordinal());
+		types.fill("void", BASE_TYPE.VOID);
+		types.fill("char", BASE_TYPE.CHAR);
+		types.fill("short", BASE_TYPE.SHORT);
+		types.fill("int", BASE_TYPE.INT);
+		types.fill("long", BASE_TYPE.LONG);
+		types.fill("float", BASE_TYPE.FLOAT);
+		types.fill("double", BASE_TYPE.DOUBLE);
+		types.fill("signed", BASE_TYPE.SIGNED);
+		types.fill("unsigned", BASE_TYPE.UNSIGNED);
+		types.fill("_Bool", BASE_TYPE.BOOL);
+		types.fill("_Complex", BASE_TYPE.COMPLEX);
+		types.fill("_Imaginary", BASE_TYPE.IMAGINARY);
 	};
-
-	private static void fill(final String op, BASE_TYPE binop) {
-		strType.put(op, binop);
-		typeStr.put(binop, op);
-	}
-
-	private static BASE_TYPE strToType(final String op) {
-		final BASE_TYPE ret = strType.get(op);
-		if (ret == null)
-			throw new RuntimeException("Invalid type: " + op);
-		return ret;
-	}
 
 	private BaseType() { throw new UnsupportedOperationException(); }
 
 	public BaseType(final String type) {
-		this.type = strToType(type);
+		this.type = types.getVal(type);
+		if (this.type == null)
+			throw new RuntimeException("Invalid type: " + type);
 	}
 
 	@Override
 	public String toString() {
-		return super.toString() + " (" + typeStr.get(type) + ")";
+		return super.toString() + " (" + types.getStr(type) + ")";
 	}
 
 	@Override
 	void XMLChildren(final StringBuilder sb) {
-		sb.append(typeStr.get(type));
+		sb.append(types.getStr(type));
 	}
 }

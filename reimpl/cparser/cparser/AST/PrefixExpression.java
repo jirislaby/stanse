@@ -4,13 +4,18 @@
 
 package cparser.AST;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Jiri Slaby
  */
 public class PrefixExpression extends Node {
+	final String op;
+
 	public PrefixExpression(final String op) {
+		this.op = op;
+	}
+
+	@Override
+	void XMLAttributes(final StringBuilder sb) {
+		sb.append(" op=\"").append(op).append('"');
 	}
 }

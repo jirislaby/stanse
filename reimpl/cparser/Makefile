@@ -6,7 +6,7 @@ LDFLAGS=-g -O2 -fPIC
 LIBS=-lantlr3c
 ANTLR=../../tools/antlr-3.2.jar
 JFLAGS=-cp ../../dist/lib/log4j-1.2.16.jar:../../dist/lib/dom4j-1.6.1.jar
-JSOURCES=$(wildcard cparser/AST/*.java) cparser/CParser.java
+JSOURCES=$(wildcard cparser/AST/*.java cparser/*.java)
 JCLASSES=$(patsubst %.java,%.class,$(JSOURCES))
 
 all: libcparser.so $(JCLASSES)
