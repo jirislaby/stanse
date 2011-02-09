@@ -17,11 +17,12 @@ options {
 scope Private {
 	void *priv;
 
+	int symbolsEnabled;
+	int isFunParam;
 }
 
-/*	int uniqCnt;
-	boolean symbolsEnabled = true;
-	boolean isFunParam = false;
+/*
+	int uniqCnt;
 	List<String> params = new LinkedList<String>();
 	List<String> paramsOld = new LinkedList<String>();*/
 
@@ -202,6 +203,8 @@ translationUnit[void *priv] returns [my_jobject d]
 scope Private;
 @init {
 	$Private::priv = $priv;
+	$Private::symbolsEnabled = 1;
+	$Private::isFunParam = 0;
 }
 	: translationUnit1	{ $d = $translationUnit1.d; }
 	;
@@ -317,11 +320,11 @@ directDeclarator1[my_jobject d]
 		newListElement(els, "id").addText(newName);
 		pushSymbol(IDENTIFIER.text, newName);*/
 	}|declarator {addChild(PRIV, $d, $declarator.d);}) {
-//		isFunParam = true;
+		$Private::isFunParam = 1;
 		d1 = newFunctionDecl(PRIV);
 		addChild(PRIV, $d, d1);
 	} (pl=parameterTypeList[d1]|(i=identifier {addChild(PRIV, d1, $i.d);})*)) {
-//		isFunParam = false;
+		$Private::isFunParam = 0;
 	}
 	;
 
@@ -479,7 +482,7 @@ typeSpecifier returns [my_jobject d]
 
 structOrUnionSpecifier returns [my_jobject d]
 @init {
-//	symbolsEnabled = false;
+	$Private::symbolsEnabled = 0;
 }
 	: ^(sou=structOrUnion {
 		if ($sou.un)
@@ -488,7 +491,7 @@ structOrUnionSpecifier returns [my_jobject d]
 			$d = newStruct(PRIV);
 	} ^(XID (IDENTIFIER {setAttr(PRIV, $d, "id", (char *)$IDENTIFIER.text->chars);})?)
 	(sd=structDeclaration {addChild(PRIV, $d, $sd.d);})*) {
-//		symbolsEnabled = true;
+		$Private::symbolsEnabled = 1;
 	}
 	;
 
