@@ -17,6 +17,6 @@ public class Constant extends Node {
 
 	@Override
 	void XMLChildren(final StringBuilder sb) {
-		sb.append(val);
+		sb.append(BinaryExpression.encodeXML(val));
 	}
 }

@@ -17,6 +17,11 @@ public class DeclarationSpecifiers extends Node {
 				throw new RuntimeException(
 					"DeclSpec: invalid StorageClass: " +
 					value);
+		} else if (attr.equals("function")) {
+			if (!mods.setFS(value))
+				throw new RuntimeException(
+					"DeclSpec: invalid Function: " +
+					value);
 		} else if (!mods.setTQ(attr))
 			throw new RuntimeException(
 				"DeclSpec: invalid attribute: " + attr);
@@ -29,5 +34,8 @@ public class DeclarationSpecifiers extends Node {
 		if (mods.hasSC())
 			sb.append(" storageClass=\"").
 				append(mods.getSCString()).append('"');
+		if (mods.hasFS())
+			sb.append(" function=\"").
+				append(mods.getFSString()).append('"');
 	}
 }

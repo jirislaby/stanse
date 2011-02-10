@@ -5,7 +5,6 @@
 package cparser.AST;
 
 import cparser.Table;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,6 +46,7 @@ public class Modifiers {
 
 	private SC sc = SC.NONE;
 	private boolean tq[] = new boolean[TQ.TQ_SIZE.ordinal()];
+	private boolean fsInline = false;
 
 	public void setSC(final SC sc) {
 		this.sc = sc;
@@ -66,6 +66,21 @@ public class Modifiers {
 
 	public String getSCString() {
 		return SCs.getStr(sc);
+	}
+
+	public boolean setFS(final String fs) {
+		if (!fs.equals("inline"))
+			return false;
+		fsInline = true;
+		return true;
+	}
+
+	public boolean hasFS() {
+		return fsInline;
+	}
+
+	public String getFSString() {
+		return "inline";
 	}
 
 	public void setTQ(final TQ tq) {
