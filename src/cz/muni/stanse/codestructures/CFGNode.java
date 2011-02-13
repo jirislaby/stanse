@@ -50,7 +50,7 @@ public class CFGNode {
     private List<CFGNode> optPreds = new ArrayList<CFGNode>();
     private List<CFGNode> optSuccs = new ArrayList<CFGNode>();
 
-    public enum OperandType { none, function, member, constant, varptr, varval, nodeval };
+    public enum OperandType { none, function, constant, varptr, varval, nodeval };
 
     public static class Operand {
 	public Operand(OperandType type, Object id) {
@@ -61,8 +61,6 @@ public class CFGNode {
 	public Operand(String type, Object id) {
 	    if (type.equals("func"))
 		this.type = OperandType.function;
-	    else if (type.equals("member"))
-		this.type = OperandType.member;
 	    else if (type.equals("const"))
 		this.type = OperandType.constant;
 	    else if (type.equals("varptr"))

@@ -19,7 +19,6 @@ public final class PassingSolver {
             result.append("& ");
 
         case function:
-        case member:
         case constant:
         case varval:
             result.append(op.id.toString());
@@ -36,14 +35,10 @@ public final class PassingSolver {
         if (node.getNodeType() == null)
             return makeArgument(node.getElement());
 
-        assert node.getNodeType().equals("call");
-
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = new StringBuilder(parseNodeType(node.getNodeType()));
         for (CFGNode.Operand op : node.getOperands())
         {
-            if (result.length() != 0)
-        	result.append(' ');
-            result.append(makeArgument(op));
+            result.append(' ').append(makeArgument(op));
         }
         return result.toString();
     }
@@ -117,6 +112,12 @@ public final class PassingSolver {
         if (elem.getName().equals("functionCall")) return "(" +
                                                  (elem.elements().size()  - 1) +
                                                           ")";
+        return "";
+    }
+
+    private static String parseNodeType(final String type) {
+        if (type.equals("member")) return ".";
+        if (type.equals("deref")) return "*";
         return "";
     }
 
