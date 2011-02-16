@@ -53,6 +53,11 @@ public abstract class Node {
 		children.clear();
 	}
 
+	public void compute() {
+		for (final Node child : children)
+			child.compute();
+	}
+
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName();

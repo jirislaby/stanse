@@ -17,6 +17,10 @@ public class Id extends Node {
 		this.id = id;
 	}
 
+	public String getId() {
+		return id;
+	}
+
 	@Override
 	public String toString() {
 		return super.toString() + " (" + id + ")";

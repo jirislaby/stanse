@@ -56,6 +56,7 @@ public class CParser {
 			System.err.println("Parsing failed with error " + ret);
 
 		final Node n = cp.getRoot();
+		n.compute();
 		ASTTypeSimplifier.optimize(n);
 		System.out.println("Generating XML");
 		final String xml = n.toXML();

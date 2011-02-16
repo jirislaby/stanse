@@ -8,6 +8,7 @@ package cparser.AST;
  * @author Jiri Slaby
  */
 public class FunctionDefinition extends Node {
+	private Id name;
 	private int endLine = -1;
 
 	public void setEndLine(int line) {
@@ -16,6 +17,13 @@ public class FunctionDefinition extends Node {
 
 	public int getEndLine() {
 		return endLine;
+	}
+
+	@Override
+	public void compute() {
+		assert(children.size() >= 3); /* list of K&R declarations */
+		assert(getChild(1) instanceof Declarator);
+		name = (Id)getChild(1).getChild(0);
 	}
 
 	@Override
