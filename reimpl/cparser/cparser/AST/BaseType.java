@@ -10,7 +10,7 @@ import cparser.Table;
  * @author Jiri Slaby
  */
 public class BaseType extends Node {
-	enum BASE_TYPE {
+	public enum BASE_TYPE {
 		VOID,
 		CHAR,
 		SHORT,
@@ -51,6 +51,10 @@ public class BaseType extends Node {
 		this.type = types.getVal(type);
 		if (this.type == null)
 			throw new RuntimeException("Invalid type: " + type);
+	}
+
+	public BASE_TYPE getType() {
+		return type;
 	}
 
 	@Override

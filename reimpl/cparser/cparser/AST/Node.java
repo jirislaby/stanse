@@ -15,8 +15,16 @@ public abstract class Node {
 	final Vector<Node> children = new Vector<Node>();
 	int line = 0, column = 0;
 
+	public int getLine() {
+		return line;
+	}
+
 	public void setLine(int line) {
 		this.line = line;
+	}
+
+	public int getColumn() {
+		return column;
 	}
 
 	public void setColumn(int column) {
@@ -29,6 +37,20 @@ public abstract class Node {
 
 	public void addChild(final Node child) {
 		children.add(child);
+	}
+
+	public Vector<Node> getChildren() {
+		return children;
+	}
+
+	public Node getChild(int idx) {
+		return children.get(idx);
+	}
+
+	public void clearChildren() {
+		for (final Node child : children)
+			child.clearChildren();
+		children.clear();
 	}
 
 	@Override

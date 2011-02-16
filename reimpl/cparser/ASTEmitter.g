@@ -41,59 +41,11 @@ scope Symbols {
 
 @members {
 /* configuration */
-static const int normalizeTypes = 0;
 static const int uniqueVariables = 1;
 static const int uniqueVariablesDebug = 0;
 
 #if 0
-	/* TODO check bitfields */
-	private List<Element> typeNormalize(List<Element> tss) {
-		if (!normalizeTypes || tss.isEmpty())
-			return tss;
-
-		final String[][] rewrite = {
-			{ "signed short", "short" },
-			{ "short int", "short" },
-			{ "signed short int", "short" },
-			{ "unsigned short int", "unsigned short" },
-			{ "signed", "int" },
-			{ "signed int", "int" },
-			{ "unsigned int", "unsigned" },
-			{ "signed long", "long" },
-			{ "long int", "long" },
-			{ "signed long int", "long" },
-			{ "unsigned long int", "unsigned long" },
-			{ "signed long long", "long long" },
-			{ "long long int", "long long" },
-			{ "signed long long int", "long long" },
-			{ "unsigned long long int", "unsigned long long" },
-		};
-		StringBuilder sb = new StringBuilder();
-		Boolean hadBase = false;
-
-		for (Element ts: tss) {
-			if (ts.element("baseType") == null) {
-				if (hadBase)
-					throw new RuntimeException("non-baseType among baseType?");
-				continue;
-			}
-			hadBase = true;
-			sb.append(ts.element("baseType").getText()).append(" ");
-		}
-		if (sb.length() == 0) /* no baseType */
-			return tss;
-		sb.setLength(sb.length() - 1);
-
-		String type = sb.toString();
-		for (String[] rule: rewrite)
-			if (rule[0].equals(type)) {
-				tss = new LinkedList<Element>();
-				for (String baseType: rule[1].split(" "))
-					newListElement(tss, "typeSpecifier").addElement("baseType").addText(baseType);
-				break;
-			}
-		return tss;
-	}
+	private List<Element> typeNormalize(List<Element> tss)
 
 	private void processFunParams() {
 		$Symbols::variables.addAll(params);
@@ -281,7 +233,6 @@ declarationSpecifiers returns [my_jobject d]
 		^(XTYPE_QUALIFIER (tq=typeQualifier {setAttr(PRIV, $d, $tq.s, "1");})*)
 		^(XSTORAGE_CLASS (sc=storageClassSpecifier {setAttr(PRIV, $d, "storageClass", $sc.s);} |
 				  fs=functionSpecifier {setAttr(PRIV, $d, "function", $fs.s);})*))
-//		addAllElements(e, typeNormalize(tss));
 	;
 
 declarator returns [my_jobject d]
@@ -469,7 +420,7 @@ typeSpecifier returns [my_jobject d]
 	| ^(BASETYPE 'unsigned'){ addChild(PRIV, $d, newBaseType(PRIV, "unsigned")); }
 	| ^(BASETYPE '_Bool')	{ addChild(PRIV, $d, newBaseType(PRIV, "_Bool")); }
 	| ^(BASETYPE COMPLEX)	{ addChild(PRIV, $d, newBaseType(PRIV, "_Complex")); }
-	| ^(BASETYPE XID)
+	| ^(BASETYPE XID)	{ parser_die(PRIV, "XID"); }
 	| ^(BASETYPE '_Imaginary')	{ addChild(PRIV, $d, newBaseType(PRIV, "_Imaginary")); }
 	| structOrUnionSpecifier	{ addChild(PRIV, $d, $structOrUnionSpecifier.d); }
 	| enumSpecifier		{ addChild(PRIV, $d, $enumSpecifier.d); }
@@ -477,7 +428,7 @@ typeSpecifier returns [my_jobject d]
 		my_jobject td = newNode1(PRIV, newTypedef, newId(PRIV, (char *)$typedefName.s->chars));
 		addChild(PRIV, $d, td);
 	}
-	| typeofSpecifier
+	| typeofSpecifier	{ addChild(PRIV, $d, $typeofSpecifier.d); }
 	;
 
 structOrUnionSpecifier returns [my_jobject d]
@@ -534,9 +485,11 @@ typedefName returns [pANTLR3_STRING s]
 	: IDENTIFIER	{ $s = $IDENTIFIER.text; }
 	;
 
-typeofSpecifier
-	: ^(TYPEOF expression)
-	| ^(TYPEOF typeName)
+typeofSpecifier returns [my_jobject d]
+@init	{ $d = newTypeOfSpecifier(PRIV); }
+@after	{ fill_attr(PRIV, $d, $typeofSpecifier.start); }
+	: ^(TYPEOF expression)	{ addChild(PRIV, $d, $expression.d); }
+	| ^(TYPEOF typeName)	{ addChild(PRIV, $d, $typeName.d); }
 	;
 
 storageClassSpecifier returns [const char *s]

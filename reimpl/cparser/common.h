@@ -74,6 +74,7 @@ extern my_jobject newSwitchStatement(void *priv);
 extern my_jobject newTranslationUnit(void *priv);
 extern my_jobject newTypedef(void *priv);
 extern my_jobject newTypeName(void *priv);
+extern my_jobject newTypeOfSpecifier(void *priv);
 extern my_jobject newTypeSpecifier(void *priv);
 extern my_jobject newUnion(void *priv);
 extern my_jobject newWhileStatement(void *priv);

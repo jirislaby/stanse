@@ -78,6 +78,7 @@ enum class_ID {
 	cls_TranslationUnit,
 	cls_Typedef,
 	cls_TypeName,
+	cls_TypeOfSpecifier,
 	cls_TypeSpecifier,
 	cls_Union,
 	cls_WhileStatement,
@@ -189,6 +190,7 @@ static int get_class_ids(JNIEnv *env)
 		AST_CLASS(TranslationUnit),
 		AST_CLASS(Typedef),
 		AST_CLASS(TypeName),
+		AST_CLASS(TypeOfSpecifier),
 		AST_CLASS(TypeSpecifier),
 		AST_CLASS(Union),
 		AST_CLASS(WhileStatement),
@@ -565,6 +567,7 @@ VOID_NODE(SwitchStatement);
 VOID_NODE(TranslationUnit);
 VOID_NODE(Typedef);
 VOID_NODE(TypeName);
+VOID_NODE(TypeOfSpecifier);
 VOID_NODE(TypeSpecifier);
 VOID_NODE(Union);
 VOID_NODE(WhileStatement);

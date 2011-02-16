@@ -9,6 +9,26 @@ package cparser.AST;
  */
 public class DeclarationSpecifiers extends Node {
 	private Modifiers mods = new Modifiers();
+	private ComplexType ctype = null;
+
+	/**
+	 * We get rid of typeSpec midchild here. We always handle typeSpecs as
+	 * children. See also XMLChildren.
+	 *
+	 * @param child child to add
+	 */
+	@Override
+	public void addChild(final Node child) {
+		if (child.getChildren().size() != 1) {
+			System.err.println("Children: " + child.toXML());
+			assert(false);
+		}
+		children.add(child.getChild(0));
+	}
+
+	public void setComplexType(final ComplexType ct) {
+		ctype = ct;
+	}
 
 	@Override
 	public void setAttr(final String attr, final String value) {
@@ -37,5 +57,20 @@ public class DeclarationSpecifiers extends Node {
 		if (mods.hasFS())
 			sb.append(" function=\"").
 				append(mods.getFSString()).append('"');
+	}
+
+	@Override
+	void XMLChildren(final StringBuilder sb) {
+		if (ctype != null) {
+			for (final String t: ctype.getTypeStr().split(" ")) {
+				sb.append("<typeSpecifier><baseType>").
+					append(t).
+					append("</baseType></typeSpecifier>");
+			}
+			return;
+		}
+		for (final Node ch: children)
+			sb.append("<typeSpecifier>").append(ch.toXML()).
+				append("</typeSpecifier>");
 	}
 }
