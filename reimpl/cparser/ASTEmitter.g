@@ -373,7 +373,7 @@ arrayOrFunctionDeclarator returns [my_jobject d]
 
 identifier returns [my_jobject d]
 	: ^(PARAMETER IDENTIFIER)	{
-		$d = fill_attr(PRIV, $d, newId(PRIV, (char *)$IDENTIFIER.text->chars));
+		$d = fill_attr(PRIV, newId(PRIV, (char *)$IDENTIFIER.text->chars), $identifier.start);
 /*		String newName = renameVariable(IDENTIFIER.text);
 		if (!newName.equals(IDENTIFIER.text))
 			e.addAttribute("oldId", IDENTIFIER.text);
