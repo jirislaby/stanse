@@ -19,12 +19,12 @@ import java.util.List;
  * @author Jiri Slaby
  */
 public class ASTTypeSimplifier {
-	public static void optimize(Node n) {
+	public static void rewrite(final Node n) {
 		for (Node child: n.getChildren()) {
 			if (child instanceof DeclarationSpecifiers)
 				simplifyTypes(child);
 			else
-				optimize(child);
+				rewrite(child);
 		}
 	}
 

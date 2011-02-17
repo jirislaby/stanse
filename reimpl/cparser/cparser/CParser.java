@@ -7,17 +7,12 @@ package cparser;
 import cparser.AST.Node;
 import cparser.AST.TranslationUnit;
 import cparser.rewriter.ASTTypeSimplifier;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -57,7 +52,7 @@ public class CParser {
 
 		final Node n = cp.getRoot();
 		n.compute();
-		ASTTypeSimplifier.optimize(n);
+		ASTTypeSimplifier.rewrite(n);
 		System.out.println("Generating XML");
 		final String xml = n.toXML();
 		System.out.println("Writing XML text");
