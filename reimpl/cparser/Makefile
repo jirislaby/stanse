@@ -9,7 +9,10 @@ JFLAGS=-cp ../../dist/lib/log4j-1.2.16.jar:../../dist/lib/dom4j-1.6.1.jar
 JSOURCES=$(wildcard cparser/AST/*.java cparser/rewriter/*.java cparser/*.java)
 JCLASSES=$(patsubst %.java,%.class,$(JSOURCES))
 
-all: libcparser.so $(JCLASSES)
+all: libcparser.so test $(JCLASSES)
+
+test: main.o GNUCaLexer.o GNUCaParser.o ASTEmitter.o parse.o
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 libcparser.so: GNUCaLexer.o GNUCaParser.o ASTEmitter.o jni_glue.o parse.o
 	$(CC) -shared $(LDFLAGS) -o $@ $^ $(LIBS)

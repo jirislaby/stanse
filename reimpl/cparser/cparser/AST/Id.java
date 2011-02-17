@@ -22,6 +22,14 @@ public class Id extends Node {
 	}
 
 	@Override
+	public void setAttr(final String attr, final String val) {
+		if (!attr.equals("oldId"))
+			throw new RuntimeException(
+					"Id: invalid attr: " + attr);
+		oldId = val;
+	}
+
+	@Override
 	public String toString() {
 		return super.toString() + " (" + id + ")";
 	}
@@ -29,5 +37,11 @@ public class Id extends Node {
 	@Override
 	void XMLChildren(final StringBuilder sb) {
 		sb.append(id);
+	}
+
+	@Override
+	void XMLAttributes(final StringBuilder sb) {
+		if (oldId != null)
+			sb.append(" oldId=\"").append(oldId).append('"');
 	}
 }

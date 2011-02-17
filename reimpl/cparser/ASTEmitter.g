@@ -19,12 +19,10 @@ scope Private {
 
 	int symbolsEnabled;
 	int isFunParam;
+	unsigned int uniqCnt;
+	pANTLR3_LIST params;
+	pANTLR3_LIST paramsOld;
 }
-
-/*
-	int uniqCnt;
-	List<String> params = new LinkedList<String>();
-	List<String> paramsOld = new LinkedList<String>();*/
 
 scope Symbols {
 	pANTLR3_LIST variables;
@@ -44,82 +42,237 @@ scope Symbols {
 static const int uniqueVariables = 1;
 static const int uniqueVariablesDebug = 0;
 
-#if 0
-	private List<Element> typeNormalize(List<Element> tss)
-
-	private void processFunParams() {
-		$Symbols::variables.addAll(params);
-		$Symbols::variablesOld.addAll(paramsOld);
+	static int lastIndexOfStr(pANTLR3_LIST list, const char *str)
+	{
+		ANTLR3_UINT32 a, size = list->size(list);
+		for (a = size; a > 0; a--)
+			if (!strcmp(str, list->get(list, a)))
+				return a;
+		return -1;
+	}
+	static int indexOfStr(pANTLR3_LIST list, const char *str)
+	{
+		ANTLR3_UINT32 a, size = list->size(list);
+		for (a = 1; a <= size; a++)
+			if (!strcmp(str, list->get(list, a)))
+				return a;
+		return -1;
 	}
 
-	private String renameVariable(String old) {
-		if (!uniqueVariables)
-			return old;
-		if ($Symbols.size() == 1 && !isFunParam) { /* forward decls */
-			int idx = $Symbols[0]::variablesOld.lastIndexOf(old);
-			if (idx >= 0)
-				return $Symbols[0]::variables.get(idx);
-		}
-		String new_ = old;
+	static void dumpList(const pANTLR3_LIST list)
+	{
+		ANTLR3_UINT32 a, size = list->size(list);
+		putchar('[');
+		for (a = 1; a <= size; a++)
+			printf("\%s-\%p\%s", (char *)list->get(list, a), list->get(list, a),
+					a == size ? "" : ", ");
+		putchar(']');
+	}
 
-		while (true) {
+	static void ANTLR3_CDECL free_symbols(SCOPE_TYPE(Symbols) symbols)
+	{
+		symbols->variables->free(symbols->variables);
+		symbols->variablesOld->free(symbols->variablesOld);
+	}
+	static void alloc_symbols(SCOPE_TYPE(Symbols) symbols)
+	{
+		symbols->variablesOld = antlr3ListNew(LIST_SIZE);
+		symbols->variables = antlr3ListNew(LIST_SIZE);
+		symbols->variablesOld->table->doStrdup = ANTLR3_FALSE;
+		symbols->variables->table->doStrdup = ANTLR3_FALSE;
+		symbols->free = free_symbols;
+	}
+
+	static void ANTLR3_CDECL free_private(SCOPE_TYPE(Private) priv)
+	{
+		priv->params->free(priv->params);
+		priv->paramsOld->free(priv->paramsOld);
+	}
+	static void alloc_params(SCOPE_TYPE(Private) priv)
+	{
+		priv->paramsOld = antlr3ListNew(LIST_SIZE);
+		priv->params = antlr3ListNew(LIST_SIZE);
+		priv->paramsOld->table->doStrdup = ANTLR3_FALSE;
+		priv->params->table->doStrdup = ANTLR3_FALSE;
+		priv->free = free_private;
+	}
+
+	static void ANTLR3_CDECL free_string(void *entry)
+	{
+		free(entry);
+	}
+
+	static char *renameVariable(pASTEmitter ctx, const pANTLR3_STRING old, int *renamed) {
+		SCOPE_TYPE(Private) priv = SCOPE_TOP(Private);
+		const char *cold = (char *)old->chars;
+		ANTLR3_UINT32 oldlen = old->len;
+		char *new_;
+
+		*renamed = 0;
+
+		if (!uniqueVariables)
+			return strdup(cold);
+
+		if (SCOPE_SIZE(Symbols) == 1 && !priv->isFunParam) { /* forward decls */
+			SCOPE_TYPE(Symbols) symb = SCOPE_TOP(Symbols);
+			int idx = lastIndexOfStr(symb->variablesOld, cold);
+			if (idx >= 0)
+				return strdup(symb->variables->get(symb->variables, idx));
+		}
+
+		new_ = malloc(oldlen + 1 + 1 + 10); /* \0, _ and number */
+		if (!new_)
+			return NULL;
+		memcpy(new_, cold, oldlen);
+		new_[oldlen] = 0;
+
+		while (1) {
 			int a;
-			for (a = $Symbols.size() - 1; a >= 0; a--)
-				if ($Symbols[a]::variables.contains(new_))
+			for (a = SCOPE_SIZE(Symbols) - 1; a >= 0; a--) {
+				SCOPE_TYPE(Symbols) curr = SCOPE_INSTANCE(Symbols, a);
+				if (indexOfStr(curr->variables, new_) >= 0)
 					break;
+			}
 			if (a < 0)
 				break;
-			new_ = old + "_" + uniqCnt++;
+			sprintf(new_ + oldlen, "_\%u", priv->uniqCnt++);
+			*renamed = 1;
 		}
+
 		return new_;
 	}
 
-	private void pushSymbol(String old, String new_) {
-		if (!uniqueVariables || !symbolsEnabled)
-			return;
-		if (isFunParam) {
-			paramsOld.add(old);
-			params.add(new_);
+	static void pushSymbol(pASTEmitter ctx, char *old, char *new_) {
+		SCOPE_TYPE(Private) priv = SCOPE_TOP(Private);
+		SCOPE_TYPE(Symbols) symb = SCOPE_TOP(Symbols);
+
+		if (!uniqueVariables || !priv->symbolsEnabled)
+			goto free_new;
+		if (priv->isFunParam) {
+			priv->paramsOld->add(priv->paramsOld, old, NULL);
+			/* we remove them in process, so they are not freed, if we need them */
+			priv->params->add(priv->params, new_, free_string);
+			if (uniqueVariablesDebug > 2) {
+				putchar('P');
+				dumpList(priv->paramsOld);
+				putchar('\n');
+				putchar('P');
+				dumpList(priv->params);
+				printf(" added: \%s\n", new_);
+			}
 			return;
 		}
 		/* forward decl already pushed one */
-		if ($Symbols.size() == 1 && $Symbols::variables.contains(new_))
-			return;
+		if (SCOPE_SIZE(Symbols) == 1 && indexOfStr(symb->variables, new_) >= 0)
+			goto free_new;
 
-		$Symbols::variablesOld.add(old);
-		$Symbols::variables.add(new_);
+		symb->variablesOld->add(symb->variablesOld, old, NULL);
+		symb->variables->add(symb->variables, new_, free_string);
 
 		if (uniqueVariablesDebug) {
-			for (int a = 0; a < $Symbols.size() - 1; a++) {
-				System.out.print($Symbols[a]::variablesOld);
-				System.out.print(" ");
+			int a;
+			putchar('S');
+			for (a = 0; a < SCOPE_SIZE(Symbols) - 1; a++) {
+				dumpList($Symbols[a]::variablesOld);
+				putchar(' ');
 			}
-			System.out.println($Symbols::variablesOld);
-			for (int a = 0; a < $Symbols.size() - 1; a++) {
-				System.out.print($Symbols[a]::variables);
-				System.out.print(" ");
+			dumpList($Symbols::variablesOld);
+			putchar('\n');
+			putchar('S');
+			for (a = 0; a < SCOPE_SIZE(Symbols) - 1; a++) {
+				dumpList($Symbols[a]::variables);
+				putchar(' ');
 			}
-			System.out.println($Symbols::variables + " added: " +
-					new_);
+			dumpList($Symbols::variables);
+			printf(" added: \%s\n", new_);
+		}
+		return;
+free_new:
+		free(new_);
+	}
+
+	static const char *findVariable(pASTEmitter ctx, const pANTLR3_STRING old) {
+		const char *cold = (char *)old->chars;
+		int a;
+
+		if (!uniqueVariables)
+			return cold;
+		/* find topmost variable */
+		for (a = SCOPE_SIZE(Symbols) - 1; a >= 0; a--) {
+			int idx = lastIndexOfStr($Symbols[a]::variablesOld, cold);
+			if (idx >= 0)
+				return $Symbols[a]::variables->get($Symbols[a]::variables, idx);
+		}
+    		parser_die(SCOPE_TOP(Private)->priv, "can't find my variable");
+		return cold; /* throw an exception? */
+	}
+
+	static my_jobject createId(pASTEmitter ctx, pANTLR3_BASE_TREE tree, pANTLR3_STRING str)
+	{
+		SCOPE_TYPE(Private) priv = SCOPE_TOP(Private)->priv;
+		char *cstr = (char *)str->chars;
+		my_jobject id;
+		char *newName;
+		int renamed;
+
+		newName = renameVariable(ctx, str, &renamed);
+		if (!newName)
+			parser_die(priv, "not enough memory");
+
+		id = newId(priv, newName);
+
+		if (tree)
+			addChild(priv, tree, id);
+
+		if (renamed)
+			setAttr(priv, id, "oldId", cstr);
+
+		pushSymbol(ctx, cstr, newName);
+
+		return id;
+	}
+
+	static void processFunParams(pASTEmitter ctx)
+	{
+		pANTLR3_LIST p1 = $Private::paramsOld;
+		pANTLR3_LIST p2 = $Private::params;
+		pANTLR3_LIST s1 = $Symbols::variablesOld;
+		pANTLR3_LIST s2 = $Symbols::variables;
+		ANTLR3_UINT32 i, size = p1->size(p1);
+		if (uniqueVariablesDebug > 2) {
+			putchar('Y');
+			dumpList(p1);
+			putchar('\n');
+			putchar('Y');
+			dumpList(p2);
+			putchar('\n');
+		}
+		for (i = 1; i <= size; i++) {
+			char *s;
+			s = p1->remove(p1, i);
+			s1->add(s1, s, NULL);
+			s = p2->remove(p2, i);
+			s2->add(s2, s, free_string);
+		}
+		if (uniqueVariablesDebug > 2) {
+			putchar('X');
+			dumpList(s1);
+			putchar('\n');
+			putchar('X');
+			dumpList(s2);
+			putchar('\n');
 		}
 	}
 
-	private String findVariable(String old) {
-		if (!uniqueVariables)
-			return old;
-		/* find topmost variable */
-		for (int a = $Symbols.size() - 1; a >= 0; a--) {
-			int idx = $Symbols[a]::variablesOld.lastIndexOf(old);
-			if (idx >= 0)
-				return $Symbols[a]::variables.get(idx);
-		}
-		return old; /* throw an exception? */
+	static void clearFunParams(SCOPE_TYPE(Private) priv) {
+		/* workaround: keys get mangled otherwise */
+		priv->paramsOld->free(priv->paramsOld);
+		priv->params->free(priv->params);
+		alloc_params(priv);
+		if (uniqueVariablesDebug > 2)
+			puts("P pruned");
 	}
-	static void clearFunParams(void) {
-		params.clear();
-		paramsOld.clear();
-	}
-#endif
+
 	static my_jobject fill_attr(void *priv, my_jobject obj,
 			pANTLR3_BASE_TREE start)
 	{
@@ -129,11 +282,7 @@ static const int uniqueVariablesDebug = 0;
 		setColumn(priv, obj, start->getCharPositionInLine(start));
 		return obj;
 	}
-	static void ANTLR3_CDECL free_symbols(SCOPE_TYPE(Symbols) symbols)
-	{
-		symbols->variables->free(symbols->variables);
-		symbols->variablesOld->free(symbols->variablesOld);
-	}
+
 	static my_jobject newNode1(void *priv, my_jobject (*creator)(void *),
 			my_jobject fi)
 	{
@@ -157,6 +306,8 @@ scope Private;
 	$Private::priv = $priv;
 	$Private::symbolsEnabled = 1;
 	$Private::isFunParam = 0;
+	$Private::uniqCnt = 0;
+	alloc_params(SCOPE_TOP(Private));
 }
 	: translationUnit1	{ $d = $translationUnit1.d; }
 	;
@@ -165,9 +316,7 @@ scope Private;
 translationUnit1 returns [my_jobject d]
 scope Symbols;
 @init {
-	$Symbols::variables = antlr3ListNew(LIST_SIZE);
-	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
-	SCOPE_TOP(Symbols)->free = free_symbols;
+	alloc_symbols(SCOPE_TOP(Symbols));
 	$d = newTranslationUnit(PRIV);
 }
 	: ^(TRANSLATION_UNIT (eds=externalDeclaration { addChild(PRIV, $d, $eds.d); } )*)
@@ -177,7 +326,7 @@ externalDeclaration returns [my_jobject d]
 @init	{ $d = newExternalDeclaration(PRIV); }
 @after	{
 	fill_attr(PRIV, $d, $externalDeclaration.start);
-//	clearFunParams();
+	clearFunParams(SCOPE_TOP(Private));
 }
 	: functionDefinition	{ addChild(PRIV, $d, $functionDefinition.d); }
 	| declaration		{ addChild(PRIV, $d, $declaration.d); }
@@ -199,10 +348,8 @@ functionDefinition returns [my_jobject d]
 functionDefinitionBody[my_jobject fd]
 scope Symbols;
 @init {
-	$Symbols::variables = antlr3ListNew(LIST_SIZE);
-	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
-	SCOPE_TOP(Symbols)->free = free_symbols;
-//	processFunParams();
+	alloc_symbols(SCOPE_TOP(Symbols));
+	processFunParams(CTX);
 }
 	: (d=declaration {addChild(PRIV, $fd, $d.d);})* compoundStatement {
 		addChild(PRIV, $fd, $compoundStatement.d);
@@ -242,14 +389,7 @@ declarator returns [my_jobject d]
 	;
 
 directDeclarator[my_jobject d]
-	: IDENTIFIER {
-		addChild(PRIV, $d, newId(PRIV, (char *)$IDENTIFIER.text->chars));
-/*		String newName = renameVariable(IDENTIFIER.text);
-		if (!newName.equals(IDENTIFIER.text))
-			newListElement(els, "oldId").addText(IDENTIFIER.text);
-		newListElement(els, "id").addText(newName);
-		pushSymbol(IDENTIFIER.text, newName);*/
-	}
+	: IDENTIFIER { createId(CTX, $d, $IDENTIFIER.text); }
 	| declarator { parser_die(PRIV, "should never happen"); } /*{ newListElement(els, "declarator", declarator.start).
 			add(declarator.e); }*/
 	| directDeclarator1[$d] /* XXX is here the + needed? */
@@ -264,12 +404,7 @@ directDeclarator1[my_jobject d]
 	  (tq=typeQualifier {setAttr(PRIV, d1, $tq.s, "1");})*
 	  (e=expression {addChild(PRIV, d1, $e.d);})?)
 	| ^(FUNCTION_DECLARATOR (IDENTIFIER { /* we need to process the id before params */
-		addChild(PRIV, $d, newId(PRIV, (char *)$IDENTIFIER.text->chars));
-/*		String newName = renameVariable(IDENTIFIER.text);
-		if (!newName.equals(IDENTIFIER.text))
-			newListElement(els, "oldId").addText(IDENTIFIER.text);
-		newListElement(els, "id").addText(newName);
-		pushSymbol(IDENTIFIER.text, newName);*/
+		createId(CTX, $d, $IDENTIFIER.text);
 	}|declarator {addChild(PRIV, $d, $declarator.d);}) {
 		$Private::isFunParam = 1;
 		d1 = newFunctionDecl(PRIV);
@@ -317,9 +452,7 @@ designator returns [my_jobject d]
 compoundStatement returns [my_jobject d]
 scope Symbols;
 @init	{
-	$Symbols::variables = antlr3ListNew(LIST_SIZE);
-	$Symbols::variablesOld = antlr3ListNew(LIST_SIZE);
-	SCOPE_TOP(Symbols)->free = free_symbols;
+	alloc_symbols(SCOPE_TOP(Symbols));
 	$d = newCompoundStatement(PRIV);
 	int cnt = 0;
 }
@@ -373,11 +506,7 @@ arrayOrFunctionDeclarator returns [my_jobject d]
 
 identifier returns [my_jobject d]
 	: ^(PARAMETER IDENTIFIER)	{
-		$d = fill_attr(PRIV, newId(PRIV, (char *)$IDENTIFIER.text->chars), $identifier.start);
-/*		String newName = renameVariable(IDENTIFIER.text);
-		if (!newName.equals(IDENTIFIER.text))
-			e.addAttribute("oldId", IDENTIFIER.text);
-		pushSymbol(IDENTIFIER.text, newName);*/
+		$d = fill_attr(PRIV, createId(CTX, NULL, $IDENTIFIER.text), $identifier.start);
 	}
 	;
 
@@ -697,7 +826,7 @@ binaryExpression returns [my_jobject d]
 	;
 
 primaryExpression returns [my_jobject d]
-	: IDENTIFIER		{ $d = newId(PRIV, (char *)$IDENTIFIER.text->chars); }//e.addText(findVariable(IDENTIFIER.text)); }
+	: IDENTIFIER		{ $d = newId(PRIV, findVariable(CTX, $IDENTIFIER.text)); }
 	| constant	{ $d = $constant.d; }
 	| sTRING_LITERAL	{
 		char *str = $sTRING_LITERAL.str;
@@ -739,7 +868,7 @@ constant returns [my_jobject d]
 offsetofMemberDesignator returns [my_jobject d]
 @init	{ $d = newExpression(PRIV); }
 @after	{ fill_attr(PRIV, $d, $offsetofMemberDesignator.start); }
-	: id1=IDENTIFIER { addChild(PRIV, $d, newId(PRIV, (char *)$id1.text->chars)); }
+	: id1=IDENTIFIER { addChild(PRIV, $d, newId(PRIV, findVariable(CTX, $id1.text))); }
 	  ( ('.' id2=IDENTIFIER {
 			my_jobject dot = newNode1(PRIV, newDotExpression, $d);
 			addChild(PRIV, dot, newMember(PRIV, (char *)$id2.text->chars));
