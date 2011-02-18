@@ -390,8 +390,7 @@ declarator returns [my_jobject d]
 
 directDeclarator[my_jobject d]
 	: IDENTIFIER { createId(CTX, $d, $IDENTIFIER.text); }
-	| declarator { parser_die(PRIV, "should never happen"); } /*{ newListElement(els, "declarator", declarator.start).
-			add(declarator.e); }*/
+	| declarator { addChild(PRIV, $d, $declarator.d); }
 	| directDeclarator1[$d] /* XXX is here the + needed? */
 	;
 
