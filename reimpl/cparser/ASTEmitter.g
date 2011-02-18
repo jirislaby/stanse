@@ -203,8 +203,8 @@ free_new:
 			if (idx >= 0)
 				return $Symbols[a]::variables->get($Symbols[a]::variables, idx);
 		}
-    		parser_die(SCOPE_TOP(Private)->priv, "can't find my variable");
-		return cold; /* throw an exception? */
+		/* typedefs, enums, etc. */
+		return cold;
 	}
 
 	static my_jobject createId(pASTEmitter ctx, pANTLR3_BASE_TREE tree, pANTLR3_STRING str)
