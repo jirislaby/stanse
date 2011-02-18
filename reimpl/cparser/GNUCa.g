@@ -373,18 +373,23 @@ declarator
 	:	pointer? dd=directDeclarator -> ^(DECLARATOR[$dd.start,$dd.start->getText($dd.start)->chars] pointer? $dd)
 	;
 
+ident
+@after {
+	// $declaration.size() is 0 if declaration is currently not being evaluated
+	if ($Typedef->size($Typedef)>0 && $Typedef::isTypedef) {
+		pANTLR3_STRING idText = $ident.text;
+		$Symbols::types->put($Symbols::types, idText->chars, idText, NULL);
+		$ident.tree->u = (void *)1;
+	}
+}
+	: IDENTIFIER -> IDENTIFIER
+	;
+
 directDeclarator
 @init {_Bool wasTypedef=0;}
 @after {if (wasTypedef) $Typedef::isTypedef=1;}
-	:	 ( IDENTIFIER
-			{
-			// $declaration.size() is 0 if declaration is currently not being evaluated
-			if ($Typedef->size($Typedef)>0 && $Typedef::isTypedef) {
-				pANTLR3_STRING idText = $IDENTIFIER.text;
-				$Symbols::types->put($Symbols::types, idText->chars, idText, NULL);
-			}
-			} -> IDENTIFIER
-	|	'(' declarator ')' -> declarator
+	:	( ident -> ident
+		| '(' declarator ')' -> declarator
 		)
 	// prevents getting function parameters into types
 	{	if ($Typedef->size($Typedef)>0 && $Typedef::isTypedef) {

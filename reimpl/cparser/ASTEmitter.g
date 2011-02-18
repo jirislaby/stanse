@@ -207,27 +207,33 @@ free_new:
 		return cold;
 	}
 
-	static my_jobject createId(pASTEmitter ctx, pANTLR3_BASE_TREE tree, pANTLR3_STRING str)
+	static my_jobject createId(pASTEmitter ctx, pANTLR3_BASE_TREE tree,
+			pANTLR3_STRING str, int isTypedef)
 	{
 		SCOPE_TYPE(Private) priv = SCOPE_TOP(Private)->priv;
 		char *cstr = (char *)str->chars;
 		my_jobject id;
 		char *newName;
-		int renamed;
+		int renamed = 0;
 
-		newName = renameVariable(ctx, str, &renamed);
-		if (!newName)
-			parser_die(priv, "not enough memory");
+		if (!isTypedef) {
+			newName = renameVariable(ctx, str, &renamed);
+			if (!newName)
+				parser_die(priv, "not enough memory");
+		} else
+			newName = cstr;
 
 		id = newId(priv, newName);
 
 		if (tree)
 			addChild(priv, tree, id);
 
-		if (renamed)
-			setAttr(priv, id, "oldId", cstr);
+		if (!isTypedef) {
+			if (renamed)
+				setAttr(priv, id, "oldId", cstr);
 
-		pushSymbol(ctx, cstr, newName);
+			pushSymbol(ctx, cstr, newName);
+		}
 
 		return id;
 	}
@@ -389,7 +395,7 @@ declarator returns [my_jobject d]
 	;
 
 directDeclarator[my_jobject d]
-	: IDENTIFIER { createId(CTX, $d, $IDENTIFIER.text); }
+	: IDENTIFIER { createId(CTX, $d, $IDENTIFIER.text, (unsigned long)$IDENTIFIER->u); }
 	| declarator { addChild(PRIV, $d, $declarator.d); }
 	| directDeclarator1[$d] /* XXX is here the + needed? */
 	;
@@ -403,7 +409,7 @@ directDeclarator1[my_jobject d]
 	  (tq=typeQualifier {setAttr(PRIV, d1, $tq.s, "1");})*
 	  (e=expression {addChild(PRIV, d1, $e.d);})?)
 	| ^(FUNCTION_DECLARATOR (IDENTIFIER { /* we need to process the id before params */
-		createId(CTX, $d, $IDENTIFIER.text);
+		createId(CTX, $d, $IDENTIFIER.text, 0);
 	}|declarator {addChild(PRIV, $d, $declarator.d);}) {
 		$Private::isFunParam = 1;
 		d1 = newFunctionDecl(PRIV);
@@ -505,7 +511,7 @@ arrayOrFunctionDeclarator returns [my_jobject d]
 
 identifier returns [my_jobject d]
 	: ^(PARAMETER IDENTIFIER)	{
-		$d = fill_attr(PRIV, createId(CTX, NULL, $IDENTIFIER.text), $identifier.start);
+		$d = fill_attr(PRIV, createId(CTX, NULL, $IDENTIFIER.text, 0), $identifier.start);
 	}
 	;
 
