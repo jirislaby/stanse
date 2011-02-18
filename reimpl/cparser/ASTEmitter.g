@@ -64,7 +64,7 @@ static const int uniqueVariablesDebug = 0;
 		ANTLR3_UINT32 a, size = list->size(list);
 		putchar('[');
 		for (a = 1; a <= size; a++)
-			printf("\%s-\%p\%s", (char *)list->get(list, a), list->get(list, a),
+			printf("\%s\%s", (char *)list->get(list, a),
 					a == size ? "" : ", ");
 		putchar(']');
 	}
