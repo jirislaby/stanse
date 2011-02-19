@@ -88,8 +88,11 @@ static const int uniqueVariablesDebug = 0;
 		priv->params->free(priv->params);
 		priv->paramsOld->free(priv->paramsOld);
 	}
-	static void alloc_params(SCOPE_TYPE(Private) priv)
+	static void alloc_private(SCOPE_TYPE(Private) priv)
 	{
+		priv->symbolsEnabled = 1;
+		priv->isFunParam = 0;
+		priv->uniqCnt = 0;
 		priv->paramsOld = antlr3ListNew(LIST_SIZE);
 		priv->params = antlr3ListNew(LIST_SIZE);
 		priv->paramsOld->table->doStrdup = ANTLR3_FALSE;
@@ -271,10 +274,13 @@ free_new:
 	}
 
 	static void clearFunParams(SCOPE_TYPE(Private) priv) {
-		/* workaround: keys get mangled otherwise */
-		priv->paramsOld->free(priv->paramsOld);
-		priv->params->free(priv->params);
-		alloc_params(priv);
+		pANTLR3_LIST p1 = priv->paramsOld;
+		pANTLR3_LIST p2 = priv->params;
+		ANTLR3_UINT32 i, size = p1->size(p1);
+		for (i = 1; i <= size; i++) {
+			p1->del(p1, i);
+			p2->del(p2, i);
+		}
 		if (uniqueVariablesDebug > 1)
 			puts("P pruned");
 	}
@@ -310,10 +316,7 @@ translationUnit[void *priv] returns [my_jobject d]
 scope Private;
 @init {
 	$Private::priv = $priv;
-	$Private::symbolsEnabled = 1;
-	$Private::isFunParam = 0;
-	$Private::uniqCnt = 0;
-	alloc_params(SCOPE_TOP(Private));
+	alloc_private(SCOPE_TOP(Private));
 }
 	: translationUnit1	{ $d = $translationUnit1.d; }
 	;
