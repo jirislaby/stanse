@@ -11,7 +11,7 @@ public class StructDeclaration extends Node {
 	private Modifiers mods = new Modifiers();
 
 	@Override
-	public void setAttr(final String attr, final String value) {
+	public void setAttrSS(final String attr, final String value) {
 		if (!mods.setTQ(attr))
 			throw new RuntimeException(
 				"structDecl: invalid attribute: " + attr);

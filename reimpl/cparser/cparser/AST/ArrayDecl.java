@@ -13,7 +13,7 @@ public class ArrayDecl extends Node {
 	private boolean isAsterisk = false;
 
 	@Override
-	public void setAttr(final String attr, final String value) {
+	public void setAttrSS(final String attr, final String value) {
 		if (mods.setTQ(attr))
 			return;
 		if (attr.equals("static"))

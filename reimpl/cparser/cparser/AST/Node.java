@@ -31,7 +31,15 @@ public abstract class Node {
 		this.column = column;
 	}
 
-	public void setAttr(final String attr, final String value) {
+	public void setAttrSS(final String attr, final String value) {
+		throw new UnsupportedOperationException();
+	}
+
+	public void setAttrIS(final int key, final String value) {
+		throw new UnsupportedOperationException();
+	}
+
+	public void setAttrII(final int key, final int value) {
 		throw new UnsupportedOperationException();
 	}
 

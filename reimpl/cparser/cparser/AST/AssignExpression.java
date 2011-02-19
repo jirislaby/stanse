@@ -43,7 +43,7 @@ public class AssignExpression extends Node {
 	};
 
 	@Override
-	public void setAttr(final String name, final String value) {
+	public void setAttrSS(final String name, final String value) {
 		if (name.equals("op")) {
 			op = ops.getVal(value);
 			if (op == null)

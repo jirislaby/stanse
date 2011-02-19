@@ -22,7 +22,7 @@ public class Id extends Node {
 	}
 
 	@Override
-	public void setAttr(final String attr, final String val) {
+	public void setAttrSS(final String attr, final String val) {
 		if (!attr.equals("oldId"))
 			throw new RuntimeException(
 					"Id: invalid attr: " + attr);

@@ -11,7 +11,7 @@ public class Enum extends Node {
 	private String name = null;
 
 	@Override
-	public void setAttr(final String name, final String value) {
+	public void setAttrSS(final String name, final String value) {
 		if (!name.equals("id"))
 			throw new RuntimeException("invalid attr");
 		this.name = value;

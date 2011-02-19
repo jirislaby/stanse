@@ -242,7 +242,7 @@ free_new:
 
 		if (!isTypedef) {
 			if (renamed)
-				setAttr(priv, id, "oldId", cstr);
+				setAttrSS(priv, id, "oldId", cstr);
 
 			pushSymbol(ctx, cstr, newName);
 		}
@@ -376,7 +376,7 @@ declaration returns [my_jobject d]
 		if (!dsd)
 			dsd = newDeclarationSpecifiers(PRIV);
 		addChild(PRIV, $d, dsd);
-		setAttr(PRIV, dsd, "storageClass", "typedef");
+		setAttrSS(PRIV, dsd, "storageClass", "typedef");
 	} (id=initDeclarator {addChild(PRIV, $d, $id.d);})*)
 	| ^(DECLARATION ds=declarationSpecifiers {addChild(PRIV, $d, $ds.d);}
 			(id=initDeclarator {addChild(PRIV, $d, $id.d);})*)
@@ -387,9 +387,9 @@ declarationSpecifiers returns [my_jobject d]
 @after	{ fill_attr(PRIV, $d, $declarationSpecifiers.start); }
 	: ^(DECLARATION_SPECIFIERS
 		^(XTYPE_SPECIFIER (ts=typeSpecifier {addChild(PRIV, $d, $ts.d);})*)
-		^(XTYPE_QUALIFIER (tq=typeQualifier {setAttr(PRIV, $d, $tq.s, "1");})*)
-		^(XSTORAGE_CLASS (sc=storageClassSpecifier {setAttr(PRIV, $d, "storageClass", $sc.s);} |
-				  fs=functionSpecifier {setAttr(PRIV, $d, "function", $fs.s);})*))
+		^(XTYPE_QUALIFIER (tq=typeQualifier {setAttrSS(PRIV, $d, $tq.s, "1");})*)
+		^(XSTORAGE_CLASS (sc=storageClassSpecifier {setAttrSS(PRIV, $d, "storageClass", $sc.s);} |
+				  fs=functionSpecifier {setAttrSS(PRIV, $d, "function", $fs.s);})*))
 	;
 
 declarator returns [my_jobject d]
@@ -409,8 +409,8 @@ directDeclarator1[my_jobject d]
 	: ^(ARRAY_DECLARATOR (directDeclarator[$d]) {
 		d1 = newArrayDecl(PRIV);
 		addChild(PRIV, $d, d1);
-	} ('static' {setAttr(PRIV, d1, "static", "1");} | asterisk='*' {setAttr(PRIV, d1, "asterisk", "1");})?
-	  (tq=typeQualifier {setAttr(PRIV, d1, $tq.s, "1");})*
+	} ('static' {setAttrSS(PRIV, d1, "static", "1");} | asterisk='*' {setAttrSS(PRIV, d1, "asterisk", "1");})?
+	  (tq=typeQualifier {setAttrSS(PRIV, d1, $tq.s, "1");})*
 	  (e=expression {addChild(PRIV, d1, $e.d);})?)
 	| ^(FUNCTION_DECLARATOR (IDENTIFIER { /* we need to process the id before params */
 		createId(CTX, $d, $IDENTIFIER.text, 0);
@@ -479,7 +479,7 @@ parameterTypeList[my_jobject d]
 	: (p=parameterDeclaration {addChild(PRIV, $d, $p.d);})+
 	  (VARARGS {
 		my_jobject param = newParameter(PRIV);
-		setAttr(PRIV, param, "varArgs", "1");
+		setAttrSS(PRIV, param, "varArgs", "1");
 		addChild(PRIV, $d, param);
 	})?
 	;
@@ -509,7 +509,7 @@ arrayOrFunctionDeclarator returns [my_jobject d]
 @after	{ fill_attr(PRIV, $d, $arrayOrFunctionDeclarator.start); }
 	: ^(ARRAY_DECLARATOR { $d = newArrayDecl(PRIV); }
 			((e=expression {addChild(PRIV, $d, $e.d);})? |
-			 '*' { setAttr(PRIV, $d, "asterisk", "1"); }))
+			 '*' { setAttrSS(PRIV, $d, "asterisk", "1"); }))
 	| ^(FUNCTION_DECLARATOR { $d = newFunctionDecl(PRIV); } parameterTypeList[$d]?)
 	;
 
@@ -525,7 +525,7 @@ typeName returns [my_jobject d]
 @init	{ $d = newTypeName(PRIV); }
 @after	{ fill_attr(PRIV, $d, $typeName.start); }
 	: ^(TYPE_NAME (s=specifier {addChild(PRIV, $d, $s.d);} |
-		       q=qualifier {setAttr(PRIV, $d, $q.q, "1");})+
+		       q=qualifier {setAttrSS(PRIV, $d, $q.q, "1");})+
 		      (ad=abstractDeclarator {addChild(PRIV, $d, $ad.d);})?)
 //		for (Element el: typeNormalize(tss))
 	;
@@ -578,7 +578,7 @@ structOrUnionSpecifier returns [my_jobject d]
 			$d = newUnion(PRIV);
 		else
 			$d = newStruct(PRIV);
-	} ^(XID (IDENTIFIER {setAttr(PRIV, $d, "id", (char *)$IDENTIFIER.text->chars);})?)
+	} ^(XID (IDENTIFIER {setAttrSS(PRIV, $d, "id", (char *)$IDENTIFIER.text->chars);})?)
 	(sd=structDeclaration {addChild(PRIV, $d, $sd.d);})*) {
 		$Private::symbolsEnabled = 1;
 	}
@@ -593,7 +593,7 @@ structDeclaration returns [my_jobject d]
 @init	{ $d = newStructDeclaration(PRIV); }
 @after	{ fill_attr(PRIV, $d, $structDeclaration.start); }
 	: ^(STRUCT_DECLARATION (s=specifier {addChild(PRIV, $d, $s.d);} |
-				q=qualifier {setAttr(PRIV, $d, $q.q, "1");})+
+				q=qualifier {setAttrSS(PRIV, $d, $q.q, "1");})+
 			       (sd=structDeclarator {addChild(PRIV, $d, $sd.d);})*)
 //		for (Element el: typeNormalize(tss))
 	;
@@ -608,7 +608,7 @@ structDeclarator returns [my_jobject d]
 enumSpecifier returns [my_jobject d]
 @init	{ $d = newEnum(PRIV); }
 @after	{ fill_attr(PRIV, $d, $enumSpecifier.start); }
-	: ^('enum' (^(XID IDENTIFIER {setAttr(PRIV, $d, "id", (char *)$IDENTIFIER.text->chars);}))?
+	: ^('enum' (^(XID IDENTIFIER {setAttrSS(PRIV, $d, "id", (char *)$IDENTIFIER.text->chars);}))?
 		   (en=enumerator {addChild(PRIV, $d, $en.d);})*)
 	;
 
@@ -648,7 +648,7 @@ pointer[my_jobject d]
 	addChild(PRIV, $d, ptr);
 }
 @after  { fill_attr(PRIV, ptr, $pointer.start); }
-	: ^(POINTER (tq=typeQualifier {setAttr(PRIV, ptr, $tq.s, "1");})* pointer[$d]?)
+	: ^(POINTER (tq=typeQualifier {setAttrSS(PRIV, ptr, $tq.s, "1");})* pointer[$d]?)
 	;
 
 /* TYPES END */
@@ -769,7 +769,7 @@ otherExpression returns [my_jobject d]
 		$d = newNode2(PRIV, newAssignExpression, $e1.d, $e2.d);
 		if (op[0] != '=' || op[1] != 0) { /* not '=' */
 			strcpy(my_op, op)[strlen(my_op) - 1] = 0;
-			setAttr(PRIV, $d, "op", my_op);
+			setAttrSS(PRIV, $d, "op", my_op);
 		}
 	}
 	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression)	{ $d = newNode1(PRIV, newConditionalExpression, $e1.d); }

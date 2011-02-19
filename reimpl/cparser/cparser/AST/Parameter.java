@@ -11,7 +11,7 @@ public class Parameter extends Node {
 	private boolean varArgs = false;
 
 	@Override
-	public void setAttr(final String attr, final String value) {
+	public void setAttrSS(final String attr, final String value) {
 		if (!attr.equals("varArgs"))
 			throw new RuntimeException(
 				"parameter: invalid attribute: " + attr);

@@ -7,7 +7,11 @@ typedef void *my_jobject;
 extern int parse(const char *file, void *priv, my_jobject *AST);
 
 extern void addChild(void *priv, my_jobject parent, my_jobject child);
-extern void setAttr(void *priv, my_jobject parent, const char *name,
+extern void setAttrII(void *priv, my_jobject parent, const int key,
+		const int val);
+extern void setAttrIS(void *priv, my_jobject parent, const int key,
+		const char *val);
+extern void setAttrSS(void *priv, my_jobject parent, const char *name,
 		const char *val);
 extern void setColumn(void *priv, my_jobject obj, int column);
 extern void setEndLine(void *priv, my_jobject obj, int line);

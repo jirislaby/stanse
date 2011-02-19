@@ -91,7 +91,9 @@ enum method_ID {
 	FunctionDefinition_setEndLine,
 
 	Node_addChild,
-	Node_setAttr,
+	Node_setAttrII,
+	Node_setAttrIS,
+	Node_setAttrSS,
 	Node_setColumn,
 	Node_setLine,
 
@@ -239,7 +241,9 @@ static int get_method_ids(JNIEnv *env)
 		FM(FunctionDefinition, setEndLine, "(I)V"),
 
 		FM(Node, addChild, "(Lcparser/AST/Node;)V"),
-		FM(Node, setAttr,
+		FM(Node, setAttrII, "(II)V"),
+		FM(Node, setAttrIS, "(ILjava/lang/String;)V"),
+		FM(Node, setAttrSS,
 				"(Ljava/lang/String;Ljava/lang/String;)V"),
 		FM(Node, setColumn, "(I)V"),
 		FM(Node, setLine, "(I)V"),
@@ -437,7 +441,37 @@ void setLine(void *priv, my_jobject obj, int line)
 }
 
 /* only some Nodes */
-void setAttr(void *priv, my_jobject obj, const char *name, const char *val)
+void setAttrII(void *priv, my_jobject obj, const int key, const int val)
+{
+	struct jni_data *jni = priv;
+	JNIEnv *env = jni->env;
+	jint jkey, jval;
+
+	jkey = key;
+	jval = val;
+	(*env)->CallVoidMethod(env, obj, methods[Node_setAttrII], jkey, jval);
+
+	if (check_exception(env))
+		die(env, "setAttrII failed");
+}
+
+void setAttrIS(void *priv, my_jobject obj, const int key, const char *val)
+{
+	struct jni_data *jni = priv;
+	JNIEnv *env = jni->env;
+	jint jkey;
+	jstring jval;
+
+	jkey = key;
+	jval = (*env)->NewStringUTF(env, val);
+	(*env)->CallVoidMethod(env, obj, methods[Node_setAttrIS], jkey, jval);
+	(*env)->DeleteLocalRef(env, jval);
+
+	if (check_exception(env))
+		die(env, "setAttrIS failed");
+}
+
+void setAttrSS(void *priv, my_jobject obj, const char *name, const char *val)
 {
 	struct jni_data *jni = priv;
 	JNIEnv *env = jni->env;
@@ -445,12 +479,12 @@ void setAttr(void *priv, my_jobject obj, const char *name, const char *val)
 
 	jname = (*env)->NewStringUTF(env, name);
 	jval = (*env)->NewStringUTF(env, val);
-	(*env)->CallVoidMethod(env, obj, methods[Node_setAttr], jname, jval);
+	(*env)->CallVoidMethod(env, obj, methods[Node_setAttrSS], jname, jval);
 	(*env)->DeleteLocalRef(env, jval);
 	(*env)->DeleteLocalRef(env, jname);
 
 	if (check_exception(env))
-		die(env, "setAttr failed");
+		die(env, "setAttrSS failed");
 }
 
 static void call_void_method(struct jni_data *jni, my_jobject obj,

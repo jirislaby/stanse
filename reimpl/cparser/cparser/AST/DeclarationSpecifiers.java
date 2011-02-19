@@ -31,7 +31,7 @@ public class DeclarationSpecifiers extends Node {
 	}
 
 	@Override
-	public void setAttr(final String attr, final String value) {
+	public void setAttrSS(final String attr, final String value) {
 		if (attr.equals("storageClass")) {
 			if (!mods.setSC(value))
 				throw new RuntimeException(
