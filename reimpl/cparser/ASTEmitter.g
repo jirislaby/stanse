@@ -27,8 +27,7 @@ scope Private {
 }
 
 scope Symbols {
-	pANTLR3_LIST variables;
-	pANTLR3_LIST variablesOld;
+	pANTLR3_HASH_TABLE variables;
 }
 
 @header {
@@ -44,23 +43,6 @@ scope Symbols {
 /* configuration */
 static const int uniqueVariables = 1;
 static const int uniqueVariablesDebug = 0;
-
-	static int lastIndexOfStr(pANTLR3_LIST list, const char *str)
-	{
-		ANTLR3_UINT32 a, size = list->size(list);
-		for (a = size; a > 0; a--)
-			if (!strcmp(str, list->get(list, a)))
-				return a;
-		return -1;
-	}
-	static int indexOfStr(pANTLR3_LIST list, const char *str)
-	{
-		ANTLR3_UINT32 a, size = list->size(list);
-		for (a = 1; a <= size; a++)
-			if (!strcmp(str, list->get(list, a)))
-				return a;
-		return -1;
-	}
 
 	static void dumpList(const pANTLR3_LIST list)
 	{
@@ -101,14 +83,11 @@ static const int uniqueVariablesDebug = 0;
 	static void ANTLR3_CDECL free_symbols(SCOPE_TYPE(Symbols) symbols)
 	{
 		symbols->variables->free(symbols->variables);
-		symbols->variablesOld->free(symbols->variablesOld);
 	}
 	static void alloc_symbols(SCOPE_TYPE(Symbols) symbols)
 	{
-		symbols->variablesOld = antlr3ListNew(LIST_SIZE);
-		symbols->variables = antlr3ListNew(LIST_SIZE);
-		symbols->variablesOld->table->doStrdup = ANTLR3_FALSE;
-		symbols->variables->table->doStrdup = ANTLR3_FALSE;
+		symbols->variables = antlr3HashTableNew(HASH_SIZE);
+		symbols->variables->doStrdup = ANTLR3_FALSE;
 		symbols->free = free_symbols;
 	}
 
@@ -131,9 +110,9 @@ static const int uniqueVariablesDebug = 0;
 		priv->free = free_private;
 	}
 
-	static void ANTLR3_CDECL free_string(void *entry)
+	static void ANTLR3_CDECL free_param(void *param)
 	{
-		free(entry);
+		free(param);
 	}
 
 	static char *renameVariable(pASTEmitter ctx, const pANTLR3_STRING old, int *renamed)
@@ -141,7 +120,7 @@ static const int uniqueVariablesDebug = 0;
 		static const char nothing[] = "";
 		SCOPE_TYPE(Private) priv = SCOPE_TOP(Private);
 		pANTLR3_HASH_TABLE privVars = priv->variables;
-		const char *cold = (char *)old->chars;
+		char *cold = (char *)old->chars;
 		ANTLR3_UINT32 oldlen = old->len;
 		char *new_;
 
@@ -152,9 +131,9 @@ static const int uniqueVariablesDebug = 0;
 
 		if (SCOPE_SIZE(Symbols) == 1 && !priv->isFunParam) { /* forward decls */
 			SCOPE_TYPE(Symbols) symb = SCOPE_TOP(Symbols);
-			int idx = lastIndexOfStr(symb->variablesOld, cold);
-			if (idx >= 0)
-				return strdup(symb->variables->get(symb->variables, idx));
+			char *ret = $Symbols::variables->get($Symbols::variables, cold);
+			if (ret)
+				return strdup(ret);
 		}
 
 		new_ = malloc(oldlen + 1 + 1 + 10); /* \0, _ and number */
@@ -177,14 +156,16 @@ static const int uniqueVariablesDebug = 0;
 
 	static void pushSymbol(pASTEmitter ctx, char *old, char *new_) {
 		SCOPE_TYPE(Private) priv = SCOPE_TOP(Private);
-		SCOPE_TYPE(Symbols) symb = SCOPE_TOP(Symbols);
+		SCOPE_TYPE(Symbols) sym = SCOPE_TOP(Symbols);
+		pANTLR3_HASH_TABLE symVars = sym->variables;
+		char *str;
 
 		if (!uniqueVariables || !priv->symbolsEnabled)
 			goto free_new;
 		if (priv->isFunParam) {
 			priv->paramsOld->add(priv->paramsOld, old, NULL);
 			/* we remove them in process, so they are not freed, if we need them */
-			priv->params->add(priv->params, new_, free_string);
+			priv->params->add(priv->params, new_, free_param);
 			if (uniqueVariablesDebug > 1) {
 				putchar('P');
 				dumpList(priv->paramsOld);
@@ -196,29 +177,25 @@ static const int uniqueVariablesDebug = 0;
 			return;
 		}
 		/* forward decl already pushed one */
-		if (SCOPE_SIZE(Symbols) == 1 && indexOfStr(symb->variables, new_) >= 0)
+		if (SCOPE_SIZE(Symbols) == 1 && (str = symVars->get(symVars, old))) {
+			if (strcmp(str, new_))
+				parser_die(priv, "no string equality?");
 			goto free_new;
+		}
 
-		symb->variablesOld->add(symb->variablesOld, old, NULL);
-		symb->variables->add(symb->variables, new_, free_string);
+		symVars->put(symVars, old, new_, free_param);
 
 		if (uniqueVariablesDebug) {
 			int a;
 			putchar('G');
 			dumpHash(priv->variables);
-			putchar('S');
-			for (a = 0; a < SCOPE_SIZE(Symbols) - 1; a++) {
-				dumpList($Symbols[a]::variablesOld);
-				putchar(' ');
-			}
-			dumpList($Symbols::variablesOld);
 			putchar('\n');
 			putchar('S');
 			for (a = 0; a < SCOPE_SIZE(Symbols) - 1; a++) {
-				dumpList($Symbols[a]::variables);
+				dumpHash($Symbols[a]::variables);
 				putchar(' ');
 			}
-			dumpList($Symbols::variables);
+			dumpHash(symVars);
 			printf(" added: \%s\n", new_);
 		}
 		return;
@@ -227,16 +204,16 @@ free_new:
 	}
 
 	static const char *findVariable(pASTEmitter ctx, const pANTLR3_STRING old) {
-		const char *cold = (char *)old->chars;
+		char *cold = (char *)old->chars;
 		int a;
 
 		if (!uniqueVariables)
 			return cold;
 		/* find topmost variable */
 		for (a = SCOPE_SIZE(Symbols) - 1; a >= 0; a--) {
-			int idx = lastIndexOfStr($Symbols[a]::variablesOld, cold);
-			if (idx >= 0)
-				return $Symbols[a]::variables->get($Symbols[a]::variables, idx);
+			const char *ret = $Symbols[a]::variables->get($Symbols[a]::variables, cold);
+			if (ret)
+				return ret;
 		}
 		/* typedefs, enums, etc. */
 		return cold;
@@ -277,8 +254,7 @@ free_new:
 	{
 		pANTLR3_LIST p1 = $Private::paramsOld;
 		pANTLR3_LIST p2 = $Private::params;
-		pANTLR3_LIST s1 = $Symbols::variablesOld;
-		pANTLR3_LIST s2 = $Symbols::variables;
+		pANTLR3_HASH_TABLE s = $Symbols::variables;
 		ANTLR3_UINT32 i, size = p1->size(p1);
 		if (uniqueVariablesDebug > 1) {
 			putchar('Y');
@@ -288,19 +264,12 @@ free_new:
 			dumpList(p2);
 			putchar('\n');
 		}
-		for (i = 1; i <= size; i++) {
-			char *s;
-			s = p1->remove(p1, i);
-			s1->add(s1, s, NULL);
-			s = p2->remove(p2, i);
-			s2->add(s2, s, free_string);
-		}
+		for (i = 1; i <= size; i++)
+			s->put(s, p1->remove(p1, i), p2->remove(p2, i), free_param);
+
 		if (uniqueVariablesDebug > 1) {
 			putchar('X');
-			dumpList(s1);
-			putchar('\n');
-			putchar('X');
-			dumpList(s2);
+			dumpHash(s);
 			putchar('\n');
 		}
 	}
