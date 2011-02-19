@@ -16,6 +16,7 @@ public class PrefixExpression extends Node {
 
 	@Override
 	void XMLAttributes(final StringBuilder sb) {
-		sb.append(" op=\"").append(op).append('"');
+		sb.append(" op=\"").append(BinaryExpression.encodeXML(op)).
+			append('"');
 	}
 }
