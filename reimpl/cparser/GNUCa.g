@@ -374,16 +374,21 @@ declarator
 	;
 
 ident
+@init { long user = -1; }
 @after {
-	// $declaration.size() is 0 if declaration is currently not being evaluated
-	if ($Typedef->size($Typedef)>0 && $Typedef::isTypedef) {
-		pANTLR3_STRING idText = $ident.text;
-		$Symbols::types->put($Symbols::types, idText->chars, idText, NULL);
-		$ident.tree->u = (void *)1;
-	} else
-		$ident.tree->u = (void *)0;
+	/* OK, if we backtrack, skip */
+	if (user >= 0)
+		$ident.tree->u = (void *)user;
 }
-	: IDENTIFIER -> IDENTIFIER
+	: IDENTIFIER {
+		// $declaration.size() is 0 if declaration is currently not being evaluated
+		if ($Typedef->size($Typedef)>0 && $Typedef::isTypedef) {
+			pANTLR3_STRING idText = $ident.text;
+			$Symbols::types->put($Symbols::types, idText->chars, idText, NULL);
+			user = 1;
+		} else
+			user = 0;
+	} -> IDENTIFIER
 	;
 
 directDeclarator
