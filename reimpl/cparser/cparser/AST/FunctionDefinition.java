@@ -22,8 +22,22 @@ public class FunctionDefinition extends Node {
 	@Override
 	public void compute() {
 		assert(children.size() >= 3); /* list of K&R declarations */
-		assert(getChild(1) instanceof Declarator);
-		name = (Id)getChild(1).getChild(0);
+		final Node decl = getChild(1);
+		Node id;
+		int idx = 0;
+
+		assert(decl instanceof Declarator);
+
+		do {
+			id = decl.getChild(idx++);
+		} while (id instanceof Pointer);
+
+		if (!(id instanceof Id)) {
+			System.err.println("FunctionDef: no ID in child 1:");
+			System.err.println(toXML());
+			assert(false);
+		}
+		name = (Id)id;
 	}
 
 	@Override
