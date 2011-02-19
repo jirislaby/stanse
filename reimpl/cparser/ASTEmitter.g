@@ -22,6 +22,8 @@ scope Private {
 	unsigned int uniqCnt;
 	pANTLR3_LIST params;
 	pANTLR3_LIST paramsOld;
+	/* uniq variables all over the unit */
+	pANTLR3_HASH_TABLE variables;
 }
 
 scope Symbols {
@@ -32,7 +34,8 @@ scope Symbols {
 @header {
 #include "common.h"
 
-#define LIST_SIZE	20
+#define LIST_SIZE	100
+#define HASH_SIZE	50
 
 #define PRIV	(SCOPE_TOP(Private)->priv)
 }
@@ -69,6 +72,32 @@ static const int uniqueVariablesDebug = 0;
 		putchar(']');
 	}
 
+	/* taken over from antlr3collections.c */
+	static void dumpHash(const pANTLR3_HASH_TABLE hash)
+	{
+		pANTLR3_HASH_BUCKET thisBucket;
+		pANTLR3_HASH_ENTRY entry;
+		ANTLR3_UINT32 bucket;
+
+		putchar('[');
+		for (bucket = 0; bucket < hash->modulo; bucket++) {
+			thisBucket = &hash->buckets[bucket];
+
+			if (!thisBucket)
+				continue;
+
+			entry = thisBucket->entries;
+
+			while (entry) {
+				char *key = (char *)entry->keybase.key.sKey;
+				char *data = entry->data;
+				printf("\%s=\%s, ", key, data);
+				entry = entry->nextEntry;
+			}
+		}
+		putchar(']');
+	}
+
 	static void ANTLR3_CDECL free_symbols(SCOPE_TYPE(Symbols) symbols)
 	{
 		symbols->variables->free(symbols->variables);
@@ -87,12 +116,14 @@ static const int uniqueVariablesDebug = 0;
 	{
 		priv->params->free(priv->params);
 		priv->paramsOld->free(priv->paramsOld);
+		priv->variables->free(priv->variables);
 	}
 	static void alloc_private(SCOPE_TYPE(Private) priv)
 	{
 		priv->symbolsEnabled = 1;
 		priv->isFunParam = 0;
 		priv->uniqCnt = 0;
+		priv->variables = antlr3HashTableNew(500);
 		priv->paramsOld = antlr3ListNew(LIST_SIZE);
 		priv->params = antlr3ListNew(LIST_SIZE);
 		priv->paramsOld->table->doStrdup = ANTLR3_FALSE;
@@ -105,8 +136,11 @@ static const int uniqueVariablesDebug = 0;
 		free(entry);
 	}
 
-	static char *renameVariable(pASTEmitter ctx, const pANTLR3_STRING old, int *renamed) {
+	static char *renameVariable(pASTEmitter ctx, const pANTLR3_STRING old, int *renamed)
+	{
+		static const char nothing[] = "";
 		SCOPE_TYPE(Private) priv = SCOPE_TOP(Private);
+		pANTLR3_HASH_TABLE privVars = priv->variables;
 		const char *cold = (char *)old->chars;
 		ANTLR3_UINT32 oldlen = old->len;
 		char *new_;
@@ -130,17 +164,13 @@ static const int uniqueVariablesDebug = 0;
 		new_[oldlen] = 0;
 
 		while (1) {
-			int a;
-			for (a = SCOPE_SIZE(Symbols) - 1; a >= 0; a--) {
-				SCOPE_TYPE(Symbols) curr = SCOPE_INSTANCE(Symbols, a);
-				if (indexOfStr(curr->variables, new_) >= 0)
-					break;
-			}
-			if (a < 0)
+			if (!privVars->get(privVars, new_))
 				break;
 			sprintf(new_ + oldlen, "_\%u", priv->uniqCnt++);
 			*renamed = 1;
 		}
+
+		privVars->put(privVars, new_, (void *)nothing, NULL);
 
 		return new_;
 	}
@@ -174,6 +204,8 @@ static const int uniqueVariablesDebug = 0;
 
 		if (uniqueVariablesDebug) {
 			int a;
+			putchar('G');
+			dumpHash(priv->variables);
 			putchar('S');
 			for (a = 0; a < SCOPE_SIZE(Symbols) - 1; a++) {
 				dumpList($Symbols[a]::variablesOld);
