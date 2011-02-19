@@ -21,6 +21,7 @@ public class FunctionDefinition extends Node {
 
 	@Override
 	public void compute() {
+		super.compute();
 		assert(children.size() >= 3); /* list of K&R declarations */
 		final Node decl = getChild(1);
 		Node id;
