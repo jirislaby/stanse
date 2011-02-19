@@ -138,7 +138,7 @@ scope Typedef {
 @header{
 #include "common.h"
 
-#define HASH_SIZE	100
+#define HASH_SIZE	50
 }
 
 @lexer::header{
@@ -163,7 +163,7 @@ scope Typedef {
 		symtab->types->free(symtab->types);
 	}
 
-	/* overtaken from antlr3collections.c */
+	/* taken over from antlr3collections.c */
 	void dump_types(SCOPE_TYPE(Symbols) symtab)
 	{
 		pANTLR3_HASH_TABLE types = symtab->types;
@@ -380,7 +380,8 @@ ident
 		pANTLR3_STRING idText = $ident.text;
 		$Symbols::types->put($Symbols::types, idText->chars, idText, NULL);
 		$ident.tree->u = (void *)1;
-	}
+	} else
+		$ident.tree->u = (void *)0;
 }
 	: IDENTIFIER -> IDENTIFIER
 	;
