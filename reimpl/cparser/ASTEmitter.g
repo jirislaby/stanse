@@ -152,7 +152,7 @@ static const int uniqueVariablesDebug = 0;
 			priv->paramsOld->add(priv->paramsOld, old, NULL);
 			/* we remove them in process, so they are not freed, if we need them */
 			priv->params->add(priv->params, new_, free_string);
-			if (uniqueVariablesDebug > 2) {
+			if (uniqueVariablesDebug > 1) {
 				putchar('P');
 				dumpList(priv->paramsOld);
 				putchar('\n');
@@ -245,7 +245,7 @@ free_new:
 		pANTLR3_LIST s1 = $Symbols::variablesOld;
 		pANTLR3_LIST s2 = $Symbols::variables;
 		ANTLR3_UINT32 i, size = p1->size(p1);
-		if (uniqueVariablesDebug > 2) {
+		if (uniqueVariablesDebug > 1) {
 			putchar('Y');
 			dumpList(p1);
 			putchar('\n');
@@ -260,7 +260,7 @@ free_new:
 			s = p2->remove(p2, i);
 			s2->add(s2, s, free_string);
 		}
-		if (uniqueVariablesDebug > 2) {
+		if (uniqueVariablesDebug > 1) {
 			putchar('X');
 			dumpList(s1);
 			putchar('\n');
@@ -275,7 +275,7 @@ free_new:
 		priv->paramsOld->free(priv->paramsOld);
 		priv->params->free(priv->params);
 		alloc_params(priv);
-		if (uniqueVariablesDebug > 2)
+		if (uniqueVariablesDebug > 1)
 			puts("P pruned");
 	}
 
