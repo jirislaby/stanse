@@ -44,13 +44,14 @@ public class CParser {
 		final CParser cp =
 			new CParser(new File(argv[0]).getAbsolutePath());
 
-		System.out.println("parsing");
+		System.out.println("Parsing");
 		int ret = cp.parse();
 
 		if (ret != 0)
 			System.err.println("Parsing failed with error " + ret);
 
 		final Node n = cp.getRoot();
+		System.out.println("Computing");
 		n.compute();
 		ASTTypeSimplifier.rewrite(n);
 		System.out.println("Generating XML");
