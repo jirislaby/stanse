@@ -148,6 +148,10 @@ public class ComplexType {
 			throw new RuntimeException("Invalid type: " + type);
 	}
 
+	public ComplexType(final COMPLEX_TYPE type) {
+		this.type = type;
+	}
+
 	public COMPLEX_TYPE getType() {
 		return type;
 	}
@@ -158,6 +162,7 @@ public class ComplexType {
 
 	@Override
 	public String toString() {
-		return super.toString() + " (" + types.getStr(type) + ")";
+		return getClass().getSimpleName() +
+			" (" + types.getStr(type) + ")";
 	}
 }
