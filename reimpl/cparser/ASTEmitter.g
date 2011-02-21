@@ -870,7 +870,51 @@ sTRING_LITERAL returns [char *str]
 	;
 
 constant returns [my_jobject d]
-	:	ICONSTANT { $d = newIntConst(PRIV, (char *)$ICONSTANT.text->chars); }
+	:	ICONSTANT {
+		char tmp, *postfix, *strend, *str = (char *)$ICONSTANT.text->chars;
+		unsigned int us = 0, ls = 0;
+		int hex = 0, oct = 0;
+
+		if (*str == '0') {
+			str++;
+			if (tolower(*str) == 'x') {
+				str++;
+				hex = 1;
+			} else {
+				oct = 1;
+				/* there may be \0 or (U|L)+ */
+				if (!isxdigit(*str))
+					str--; /* leave at least the '0' */
+			}
+		}
+
+		postfix = str;
+		while (*postfix && isxdigit(*postfix))
+			postfix++;
+
+		strend = postfix;
+
+		while (*postfix) {
+			if (tolower(*postfix) == 'l')
+				ls++;
+			else if (tolower(*postfix) == 'u')
+				us++;
+			postfix++;
+		}
+
+		/* get rid of postfix */
+		tmp = *strend;
+		*strend = 0;
+
+		$d = newIntConst(PRIV, str);
+		if (hex)
+			setAttrII(PRIV, $d, 0, 1);
+		if (oct)
+			setAttrII(PRIV, $d, 0, 2);
+		setAttrII(PRIV, $d, 1, ls);
+		setAttrII(PRIV, $d, 2, us);
+		*strend = tmp;
+	}
 	|	RCONSTANT { $d = newRealConst(PRIV, (char *)$RCONSTANT.text->chars); }
 	;
 

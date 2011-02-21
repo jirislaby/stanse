@@ -15,6 +15,9 @@ public abstract class Node {
 	final Vector<Node> children = new Vector<Node>();
 	int line = 0, column = 0;
 
+	protected ComplexType type = null; /* if typed node, a type */
+	protected Object eval = null; /* evaluated value of this node */
+
 	public int getLine() {
 		return line;
 	}

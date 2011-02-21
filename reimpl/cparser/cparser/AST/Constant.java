@@ -8,7 +8,7 @@ package cparser.AST;
  * @author Jiri Slaby
  */
 public class Constant extends Node {
-	private String val;
+	protected String val;
 	private Constant() { throw new UnsupportedOperationException(); }
 
 	public Constant(final String val) {
