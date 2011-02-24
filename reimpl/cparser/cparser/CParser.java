@@ -52,6 +52,8 @@ public class CParser {
 		final Node n = cp.getRoot();
 		System.out.println("Computing");
 		n.compute();
+		System.out.println("Creating CFG");
+		n.createCFG();
 		System.out.println("Generating XML");
 		final String xml = n.toXML();
 		System.out.println("Writing XML text");

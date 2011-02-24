@@ -4,6 +4,8 @@
 
 package cparser.AST;
 
+import cparser.CFG.CFG;
+
 /**
  * @author Jiri Slaby
  */
@@ -14,6 +16,9 @@ public class LabelStatement extends Statement {
 
 	public LabelStatement(final String label) {
 		this.label = label;
+	}
+
+	public void fillCFG(final CFG cfg) {
 	}
 
 	@Override

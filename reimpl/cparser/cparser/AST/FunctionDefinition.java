@@ -4,10 +4,13 @@
 
 package cparser.AST;
 
+import cparser.CFG.CFG;
+
 /**
  * @author Jiri Slaby
  */
 public class FunctionDefinition extends Node {
+	private CompoundStatement body;
 	private Id name;
 	private int endLine = -1;
 
@@ -39,6 +42,14 @@ public class FunctionDefinition extends Node {
 			assert(false);
 		}
 		name = (Id)id;
+		body = (CompoundStatement)getChild(children.size() - 1);
+	}
+
+	@Override
+	public void createCFG() {
+		final CFG cfg = new CFG(name.getId());
+		super.createCFG();
+		body.fillCFG(cfg);
 	}
 
 	@Override

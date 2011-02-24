@@ -69,9 +69,26 @@ public abstract class Node {
 			child.compute();
 	}
 
+	public void createCFG() {
+		for (final Node child : children)
+			child.createCFG();
+	}
+
+	public Object getType() {
+		return type;
+	}
+
+	public Object getEval() {
+		return eval;
+	}
+
+	public String getName() {
+		return getClass().getSimpleName();
+	}
+
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName();
+		return getName();
 	}
 
 	/**
