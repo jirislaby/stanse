@@ -4,12 +4,17 @@
 
 package cparser.AST;
 
-import java.util.HashMap;
-import java.util.Map;
+import cparser.CFG.CFG;
 
 /**
  * @author Jiri Slaby
  */
-public class DefaultLabelStatement extends Node {
+public class DefaultLabelStatement extends Statement {
+	public Statement getStatement() {
+		return (Statement)getChild(0);
+	}
 
+	public void fillCFG(final CFG cfg) {
+		getStatement().fillCFG(cfg);
+	}
 }

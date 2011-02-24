@@ -10,7 +10,7 @@ import cparser.CFG.CFG;
  * @author Jiri Slaby
  */
 public class LabelStatement extends Statement {
-	private String label;
+	private final String label;
 
 	private LabelStatement() { throw new UnsupportedOperationException(); }
 
@@ -18,7 +18,16 @@ public class LabelStatement extends Statement {
 		this.label = label;
 	}
 
+	public String getLabel() {
+		return label;
+	}
+
+	public Statement getStatement() {
+		return (Statement)getChild(0);
+	}
+
 	public void fillCFG(final CFG cfg) {
+		getStatement().fillCFG(cfg);
 	}
 
 	@Override
