@@ -7,6 +7,6 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class ConditionalExpression extends Node {
+public class ConditionalExpression extends Expression {
 
 }

@@ -9,7 +9,7 @@ import cparser.Table;
 /**
  * @author Jiri Slaby
  */
-public class AssignExpression extends Node {
+public class AssignExpression extends Expression {
 	enum ASSIGN_OP {
 		NONE,
 		PLUS,

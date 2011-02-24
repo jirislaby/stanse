@@ -9,7 +9,7 @@ import cparser.Table;
 /**
  * @author Jiri Slaby
  */
-public class PostfixExpression extends Node {
+public class PostfixExpression extends Expression {
 	public enum POSTFIX_EXPR {
 		PLUSPLUS,
 		MINUSMINUS,

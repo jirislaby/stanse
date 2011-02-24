@@ -9,7 +9,7 @@ import cparser.Table;
 /**
  * @author Jiri Slaby
  */
-public class PrefixExpression extends Node {
+public class PrefixExpression extends Expression {
 	public enum PREFIX_EXPR {
 		PLUS,
 		MINUS,

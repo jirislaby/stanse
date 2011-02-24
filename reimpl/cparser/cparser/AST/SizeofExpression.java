@@ -7,6 +7,6 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class SizeofExpression extends Node {
+public class SizeofExpression extends Expression {
 
 }

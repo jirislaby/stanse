@@ -7,6 +7,6 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class OffsetofExpression extends Node {
+public class OffsetofExpression extends Expression {
 
 }

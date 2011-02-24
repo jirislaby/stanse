@@ -7,6 +7,6 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class ArrayAccess extends Node {
+public class ArrayAccess extends Expression {
 
 }

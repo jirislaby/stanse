@@ -7,7 +7,7 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class CastExpression extends Node {
+public class CastExpression extends Expression {
 
 	@Override
 	public void compute() {

@@ -7,6 +7,6 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class CompoundLiteral extends Node {
+public class CompoundLiteral extends Expression {
 
 }

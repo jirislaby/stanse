@@ -5,8 +5,6 @@
 package cparser.AST;
 
 import cparser.Table;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Jiri Slaby

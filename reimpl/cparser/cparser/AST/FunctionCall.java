@@ -7,6 +7,6 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class FunctionCall extends Node {
+public class FunctionCall extends Expression {
 
 }
