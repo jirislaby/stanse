@@ -5,6 +5,7 @@
 package cparser.AST;
 
 import cparser.CFG.CFG;
+import cparser.tools.DotHelper;
 
 /**
  * @author Jiri Slaby
@@ -50,6 +51,7 @@ public class FunctionDefinition extends Node {
 		final CFG cfg = new CFG(name.getId());
 		super.createCFG();
 		body.fillCFG(cfg);
+		DotHelper.showDot(cfg.toDot());
 	}
 
 	@Override
