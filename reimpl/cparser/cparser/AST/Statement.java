@@ -7,6 +7,5 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class GnuAssembler extends Statement {
-
+public abstract class Statement extends Node {
 }

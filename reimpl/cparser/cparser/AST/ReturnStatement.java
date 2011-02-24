@@ -4,12 +4,9 @@
 
 package cparser.AST;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Jiri Slaby
  */
-public class ReturnStatement extends Node {
+public class ReturnStatement extends Statement {
 
 }

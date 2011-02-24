@@ -4,12 +4,9 @@
 
 package cparser.AST;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Jiri Slaby
  */
-public class IfStatement extends Node {
+public class IfStatement extends Statement {
 
 }

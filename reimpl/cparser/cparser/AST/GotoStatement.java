@@ -4,12 +4,9 @@
 
 package cparser.AST;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Jiri Slaby
  */
-public class GotoStatement extends Node {
+public class GotoStatement extends Statement {
 
 }

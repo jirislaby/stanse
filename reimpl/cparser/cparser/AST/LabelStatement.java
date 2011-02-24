@@ -7,7 +7,7 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class LabelStatement extends Node {
+public class LabelStatement extends Statement {
 	private String label;
 
 	private LabelStatement() { throw new UnsupportedOperationException(); }

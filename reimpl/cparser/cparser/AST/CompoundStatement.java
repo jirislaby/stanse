@@ -7,6 +7,6 @@ package cparser.AST;
 /**
  * @author Jiri Slaby
  */
-public class CompoundStatement extends Node {
+public class CompoundStatement extends Statement {
 
 }
