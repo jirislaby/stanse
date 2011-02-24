@@ -2,15 +2,16 @@
  * Licensed under the GPLv2
  */
 
-package cparser.rewriter;
+package cparser.tools;
 
 import cparser.AST.BaseType;
 import cparser.AST.ComplexType;
-import cparser.AST.DeclarationSpecifiers;
 import cparser.AST.Node;
 import cparser.AST.StructOrUnion;
 import cparser.AST.TypeOfSpecifier;
 import cparser.AST.Typedef;
+
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,19 +20,10 @@ import java.util.List;
  * @author Jiri Slaby
  */
 public class ASTTypeSimplifier {
-	public static void rewrite(final Node n) {
-		for (Node child: n.getChildren()) {
-			if (child instanceof DeclarationSpecifiers)
-				simplifyTypes(child);
-			else
-				rewrite(child);
-		}
-	}
-
-	private static void simplifyTypes(final Node types) {
+	public static ComplexType simplifyTypes(final Collection<Node> types) {
 		final List<BaseType.BASE_TYPE> typeList =
 			new LinkedList<BaseType.BASE_TYPE>();
-		for (final Node type: types.getChildren()) {
+		for (final Node type: types) {
 			if (type instanceof BaseType) {
 				final BaseType bt = (BaseType)type;
 				typeList.add(bt.getType());
@@ -47,12 +39,8 @@ public class ASTTypeSimplifier {
 			}
 			throw new RuntimeException("Unknown type: " + type);
 		}
-		if (!typeList.isEmpty()) {
-			types.clearChildren();
-			final ComplexType ctype = new ComplexType(typeList);
-			final DeclarationSpecifiers ds =
-				(DeclarationSpecifiers)types;
-			ds.setComplexType(ctype);
-		}
+		if (!typeList.isEmpty())
+			return new ComplexType(typeList);
+		return null;
 	}
 }

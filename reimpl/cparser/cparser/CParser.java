@@ -6,7 +6,6 @@ package cparser;
 
 import cparser.AST.Node;
 import cparser.AST.TranslationUnit;
-import cparser.rewriter.ASTTypeSimplifier;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -53,7 +52,6 @@ public class CParser {
 		final Node n = cp.getRoot();
 		System.out.println("Computing");
 		n.compute();
-		ASTTypeSimplifier.rewrite(n);
 		System.out.println("Generating XML");
 		final String xml = n.toXML();
 		System.out.println("Writing XML text");

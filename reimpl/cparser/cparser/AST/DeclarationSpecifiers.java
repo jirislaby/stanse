@@ -4,12 +4,20 @@
 
 package cparser.AST;
 
+import cparser.tools.ASTTypeSimplifier;
+
 /**
  * @author Jiri Slaby
  */
 public class DeclarationSpecifiers extends Node {
 	private Modifiers mods = new Modifiers();
 	private ComplexType ctype = null;
+
+	@Override
+	public void compute() {
+		super.compute();
+		ctype = ASTTypeSimplifier.simplifyTypes(children);
+	}
 
 	/**
 	 * We get rid of typeSpec midchild here. We always handle typeSpecs as
@@ -24,10 +32,6 @@ public class DeclarationSpecifiers extends Node {
 			assert(false);
 		}
 		children.add(child.getChild(0));
-	}
-
-	public void setComplexType(final ComplexType ct) {
-		ctype = ct;
 	}
 
 	@Override
