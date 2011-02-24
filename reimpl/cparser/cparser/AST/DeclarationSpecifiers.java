@@ -19,6 +19,10 @@ public class DeclarationSpecifiers extends Node {
 		ctype = ASTTypeSimplifier.simplifyTypes(children);
 	}
 
+	public Modifiers getModifiers() {
+		return mods;
+	}
+
 	/**
 	 * We get rid of typeSpec midchild here. We always handle typeSpecs as
 	 * children. See also XMLChildren.

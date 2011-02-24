@@ -64,6 +64,10 @@ public class Modifiers {
 		return sc != SC.NONE;
 	}
 
+	public boolean hasSC(final SC sc) {
+		return this.sc == sc;
+	}
+
 	public String getSCString() {
 		return SCs.getStr(sc);
 	}
