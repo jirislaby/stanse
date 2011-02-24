@@ -9,4 +9,14 @@ package cparser.AST;
  */
 public class CastExpression extends Node {
 
+	@Override
+	public void compute() {
+		super.compute();
+		/* TODO */
+/*		if (getChild(1) instanceof IntConst) {
+			final Node t = getChild(0);
+			System.out.println(toXML());
+		}*/
+	}
+
 }
