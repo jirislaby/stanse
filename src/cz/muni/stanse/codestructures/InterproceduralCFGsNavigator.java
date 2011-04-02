@@ -79,7 +79,7 @@ public final class InterproceduralCFGsNavigator implements CFGsNavigator {
             CFGTraversal.traverseCFGToBreadthForward(cfgh,cfgh.getStartNode(),
                 new CFGvisitor() {
                     @Override
-                    public boolean visit(final CFGNode node) {
+                    public boolean visit(final CFGNode node, final Element element) {
                         final CFGHandle calleeCFG = cfgDict.get(node);
                         if (calleeCFG != null)
                             fillDictionaries(node,calleeCFG);

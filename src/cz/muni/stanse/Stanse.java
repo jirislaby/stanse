@@ -334,6 +334,6 @@ public final class Stanse {
     private static UnitManager unitManager = new UnitManagerLRU();
     private Configuration configuration;
     private String outputDirectory;
-    private final String rootDirectory;
+    private String rootDirectory;
     private static Stanse stanse = null;
 }

@@ -6,12 +6,16 @@
 
 package cz.muni.stanse.codestructures;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dom4j.Element;
 
 /**
  * Specific CFG node for holding info about if/switch and other branching
  */
 public class CFGBranchNode extends CFGNode {
+    private List<Element> labels = new ArrayList<Element>();
 
     /**
      * Creates an instance of the CFGBranchNode with assigned element
