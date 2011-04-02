@@ -1,23 +1,18 @@
 package cz.muni.stanse.threadchecker.debug;
 
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import org.apache.log4j.Logger;
 
-public class GraphViz
-{
-   /**
-    * The dir where temporary files will be created.
-    */
-   private static String TEMP_DIR   = System.getProperty("java.io.tmpdir");
-
-
+public class GraphViz {
    /**
     * Where is your dot program located? It will be called externally.
     */
    private static String DOT        = "/usr/bin/dot";
+   private static Logger logger = Logger.getLogger(GraphViz.class);
 
    /**
     * The source of the graph written in dot language.
@@ -39,25 +34,36 @@ public class GraphViz
       return graph.toString();
    }
 
-   /**
-    * Returns the graph as an image in binary format.
-    * @param dot_source Source of the graph to be drawn.
-    * @return A byte array containing the image of the graph.
-    */
-   public byte[] getGraph(String dot_source) {
-      File dot;
-      byte[] img_stream = null;
+	/**
+	 * Returns the graph as an image in binary format.
+	 * @param dot Source of the graph to be drawn.
+	 * @return A byte array containing the image of the graph.
+	 */
+	public byte[] getGraph(String dot) {
+		byte[] img_stream = null;
+		final Runtime rt = Runtime.getRuntime();
+		final String cmd = DOT + " -Tpng";
 
-	dot = writeDotSourceToFile(dot_source);
-	if (dot != null) {
-	    img_stream = get_img_stream(dot);
-	    if (dot.delete() == false)
-	       System.err.println("Warning: " + dot.getAbsolutePath() +
-		       " could not be deleted!");
-	    return img_stream;
+		try {
+			final Process p = rt.exec(cmd);
+			final BufferedInputStream in = new BufferedInputStream(p.getInputStream());
+			final OutputStream out = p.getOutputStream();
+			final StringBuffer sb = new StringBuffer(dot);
+			out.write(dot.getBytes());
+			out.flush();
+			out.close();
+			p.waitFor();
+			img_stream = new byte[in.available()];
+			in.read(img_stream);
+			in.close();
+		} catch (IOException e) {
+			logger.error("calling external command failed", e);
+		} catch (java.lang.InterruptedException e) {
+			logger.error("the execution of the external program was interrupted", e);
+		}
+
+		return img_stream;
 	}
-	return null;
-   }
 
    /**
     * Writes the graph's image in a file.
@@ -86,69 +92,4 @@ public class GraphViz
       } catch (IOException ioe) { return -1; }
       return 1;
    }
-
-   /**
-    * It will call the external dot program, and return the image in
-    * binary format.
-    * @param dot Source of the graph (in dot language).
-    * @return The image of the graph in .gif format.
-    */
-   private byte[] get_img_stream(File dot) {
-      File img;
-      byte[] img_stream = null;
-
-      try {
-         img = File.createTempFile("graph_", ".png",
-		 new File(GraphViz.TEMP_DIR));
-         String temp = img.getAbsolutePath();
-
-         Runtime rt = Runtime.getRuntime();
-         String cmd = DOT + " -Tpng "+dot.getAbsolutePath()+" -o"+img.getAbsolutePath();
-         Process p = rt.exec(cmd);
-         p.waitFor();
-
-         FileInputStream in = new FileInputStream(img.getAbsolutePath());
-         img_stream = new byte[in.available()];
-         in.read(img_stream);
-         // Close it if we need to
-         if( in != null ) in.close();
-
-         if (img.delete() == false)
-            System.err.println("Warning: "+img.getAbsolutePath()+" could not be deleted!");
-      } catch (IOException ioe) {
-         System.err.println("Error:    in I/O processing of tempfile in dir " +
-		 GraphViz.TEMP_DIR+"\n");
-         System.err.println("       or in calling external command");
-         ioe.printStackTrace();
-      } catch (java.lang.InterruptedException ie) {
-         System.err.println("Error: the execution of the external program was interrupted");
-         ie.printStackTrace();
-      }
-
-      return img_stream;
-   }
-
-   /**
-    * Writes the source of the graph in a file, and returns the written file
-    * as a File object.
-    * @param str Source of the graph (in dot language).
-    * @return The file (as a File object) that contains the source of the graph.
-    */
-   private File writeDotSourceToFile(String str)
-   {
-      File temp;
-      try {
-         temp = File.createTempFile("graph_", ".dot.tmp",
-		 new File(GraphViz.TEMP_DIR));
-         FileWriter fout = new FileWriter(temp);
-         fout.write(str);
-         fout.close();
-      } catch (IOException e) {
-         System.err.println("Error: I/O error while writing the dot source to temp file!");
-         return null;
-      }
-      return temp;
-   }
-
-
 }

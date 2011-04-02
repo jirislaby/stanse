@@ -10,6 +10,17 @@ my $out = $ARGV[0];
 my $in = $ARGV[1];
 my $crop = @ARGV > 2 ? $ARGV[2] : "";
 
+if (-e $out) {
+	my $reply = "N";
+	do {
+		print "'$out' already exists, overwrite? [y/N] ";
+		$reply = uc(<STDIN>);
+		chomp($reply);
+	} while ($reply ne "Y" && $reply ne "N" && $reply ne "");
+	exit 1 if ($reply ne "Y");
+	unlink $out;
+}
+
 my $dbh = DBI->connect("dbi:SQLite:dbname=$out","","", {AutoCommit => 0}) ||
 	die "connect to db error: " . DBI::errstr;
 
@@ -17,19 +28,22 @@ my $xp = XML::XPath->new(filename => "$in") || die "can't open $in";
 
 $dbh->do("CREATE TABLE errors(id INTEGER PRIMARY KEY, checker STRING, " .
 		"importance INTEGER, fp_bug INTEGER, error STRING, " .
-		"file STRING, line INTEGER, errorXML BLOB)");
+		"file STRING, line INTEGER, locations INTEGER, " .
+		"errorXML BLOB)");
 
-
-my $errors = $xp->findnodes("/database/errors/error");
 
 my $data = $dbh->prepare("INSERT INTO errors(checker, importance, fp_bug, " .
-		"error, file, line, errorXML) VALUES (?, ?, ?, ?, ?, ?, ?)");
+		"error, file, line, locations, errorXML) " .
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
 my $croplen = length $crop;
 my $xp1 = XML::XPath->new();
 
+my $errors = $xp->findnodes("/database/errors/error");
+
 foreach my $error ($errors->get_nodelist) {
-	my ($loc) = $error->findnodes("traces/trace[1]/locations/location[1]");
+	my ($loc) = $error->findnodes("traces/trace[1]/locations/location[last()]");
+	my $loc_count = $error->findvalue("count(traces/trace[1]/locations/location)");
 	my $unit = $loc->findvalue("unit");
 	if (substr($unit, 0, $croplen) eq $crop) {
 		$unit = substr($unit, $croplen);
@@ -42,6 +56,7 @@ foreach my $error ($errors->get_nodelist) {
 			$fp_bug,
 			$error->findvalue("short_desc"),
 			$unit, $loc->findvalue("line"),
+			$loc_count,
 			XML::XPath::XMLParser::as_string($error));
 }
 

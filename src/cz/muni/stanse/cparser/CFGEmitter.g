@@ -23,7 +23,6 @@ scope Function {
 	List<CFGBreakNode> rets;
 	List<Pair<String, CFGBreakNode>> gotos;
 	Map<String, CFGNode> labels;
-//	List<CFGPart> unreachables;
 	Set<String> symbols;
 	CFGNode lastStatement;
 }
@@ -52,15 +51,30 @@ import cz.muni.stanse.utils.Triple;
 	private static DocumentFactory xmlFactory =
 		DocumentFactory.getInstance();
 
-	private CFGPart createCFG(Element e) {
-		CFGPart cfg = new CFGPart();
-		CFGNode n = new CFGNode(e);
+	private CFGPart createCFG(final Element e, final String c) {
+		final CFGPart cfg = new CFGPart();
+		final CFGNode n = new CFGNode(e, c);
 		cfg.setStartNode(n);
 		cfg.setEndNode(n);
 		return cfg;
 	}
 
-	private void addSwitchDefaultAssert(CFGBranchNode branch,
+	private CFGPart createCFG(final Element e) {
+		return createCFG(e, null);
+	}
+
+	private void iterSwitchAddCase(final Element e, final CFGNode node,
+			boolean isDefault) {
+		int a = 0;
+		// find the top-most switch () { }
+		while ($IterSwitch[-a]::cases == null)
+			a++;
+		$IterSwitch[-a]::cases.add(Pair.make(e, node));
+		if (isDefault)
+			$IterSwitch[-a]::haveDefault = true;
+	}
+
+	private void addSwitchDefaultAssert(CFGBranchNode branch, String code,
 			CFGNode breakNode, Element lineElem) {
 		CFGNode parent = branch;
 		boolean pin = false;
@@ -76,7 +90,7 @@ import cz.muni.stanse.utils.Triple;
 			cond.add(branch.getElement().createCopy());
 			cond.add(caseLabel.createCopy());
 			parent = CFGEvaluator.addAssert(parent, defaultLabel,
-					null, cond, true, lineElem);
+					null, cond, code + " == " + caseLabel.asXML(), true, lineElem);
 		}
 		if (pin)
 			parent.addEdge(breakNode);
@@ -113,7 +127,6 @@ scope Function;
 	$Function::rets = new LinkedList<CFGBreakNode>();
 	$Function::labels = new HashMap<String, CFGNode>();
 	$Function::gotos = new LinkedList<Pair<String, CFGBreakNode>>();
-//	$ Function::unreachables = new LinkedList<CFGPart>();
 	$Function::symbols = new HashSet<String>();
 }
 	: ^(FUNCTION_DEFINITION declarationSpecifiers declarator declaration* compoundStatement) {
@@ -133,16 +146,6 @@ scope Function;
 				$Function::labels.get(gotoPair.getFirst());
 			gotoPair.getSecond().addBreakEdge(labelNode);
 		}
-/*		for (CFGPart cfg: $ Function::unreachables) {
-			CFGNode start = cfg.getStartNode();
-			if (start.getPredecessors().size() == 0 &&
-					!start.getElement().getName().
-						equals("breakStatement")) {
-				System.err.println("Unreachable:");
-				System.err.println(cfg.toStringGraph());
-				System.err.println("\n============");
-			}
-		}*/
 
 //		System.err.println($g.toStringGraph());
 //		System.err.println($g.toDot());
@@ -165,8 +168,8 @@ declarationSpecifiers
 	: ^(DECLARATION_SPECIFIERS ^(XTYPE_SPECIFIER typeSpecifier*) ^(XTYPE_QUALIFIER typeQualifier*) ^(XSTORAGE_CLASS (storageClassSpecifier|functionSpecifier)*))
 	;
 
-declarator
-	: ^(DECLARATOR pointer? directDeclarator)
+declarator returns [String ddText]
+	: ^(DECLARATOR pointer? directDeclarator) { $ddText = $directDeclarator.text; }
 	;
 
 directDeclarator
@@ -187,7 +190,12 @@ initDeclarator returns [CFGPart g]
 	: ^(INIT_DECLARATOR declarator initializer?) {
 		if ($initializer.start != null) {
 			$g = new CFGPart();
-			$g.append(new CFGNode($initDeclarator.start.getElement()));
+			/*
+			 * let's construct the code manually, because
+			 * declarator may contain pointer (an asterisk)
+			 */
+			$g.append(new CFGNode($initDeclarator.start.getElement(),
+				$declarator.ddText + " = " + $initializer.text));
 		}
 	}
 	;
@@ -223,11 +231,6 @@ compoundStatement returns [CFGPart g]
 		$g.append(new CFGNode((Element)$compoundStatement.start.
 					getElement().node(0)));
 	$Function::lastStatement = cfg.getEndNode();
-
-/*	for (CFGPart cfg1: cfgs) {
-		if (cfg1.getStartNode().getPredecessors().size() == 0)
-			$ Function::unreachables.add(cfg1);
-	}*/
 }
 	: ^(COMPOUND_STATEMENT CS_END (declaration {
 			if (!$declaration.g.isEmpty())
@@ -380,13 +383,12 @@ labeledStatement returns [CFGPart g]
 	}
 	| ^('case' expression statement) {
 		$g = $statement.g;
-		$IterSwitch::cases.add(new Pair($expression.start.getElement(),
-			$g.getStartNode()));
+		iterSwitchAddCase($expression.start.getElement(),
+				$g.getStartNode(), false);
 	}
 	| ^('default' statement) {
 		$g = $statement.g;
-		$IterSwitch::cases.add(new Pair(defaultLabel, $g.getStartNode()));
-		$IterSwitch::haveDefault = true;
+		iterSwitchAddCase(defaultLabel, $g.getStartNode(), true);
 	}
 	;
 
@@ -413,7 +415,7 @@ selectionStatementIf returns [CFGPart g]
 }
 	: ^('if' expression {
 		evalExpr = CFGEvaluator.evaluateExpr(
-			$expression.start.getElement());
+			$expression.start.getElement(), $expression.text);
 	} s1=statement {
 		s1Last = $Function::lastStatement;
 	} s2=statement?) {
@@ -445,7 +447,7 @@ scope IterSwitch;
 	CFGBranchNode n;
 }
 	: ^('switch' expression {
-		n = new CFGBranchNode($expression.start.getElement());
+		n = new CFGBranchNode($expression.start.getElement(), $expression.text);
 	} statement) {
 		$g = new CFGPart();
 		$g.setStartNode(n);
@@ -454,8 +456,8 @@ scope IterSwitch;
 		for (Pair<Element, CFGNode> pair: $IterSwitch::cases) {
 			Element caseLabel = pair.getFirst();
 			if (caseLabel.getName().equals("default")) {
-				addSwitchDefaultAssert(n, pair.getSecond(),
-					caseLabel);
+				addSwitchDefaultAssert(n, $expression.text,
+					pair.getSecond(), caseLabel);
 			} else {
 				Element cond = xmlFactory.
 					createElement("binaryExpression").
@@ -463,13 +465,14 @@ scope IterSwitch;
 				cond.add(n.getElement().createCopy());
 				cond.add(caseLabel.createCopy());
 				CFGEvaluator.addAssert(n, caseLabel,
-						pair.getSecond(), cond, false,
-						caseLabel);
+					pair.getSecond(), cond,
+					$expression.text + " == " + caseLabel.asXML(),
+					false, caseLabel);
 			}
 		}
 		/* add default if not present */
 		if (!$IterSwitch::haveDefault)
-			addSwitchDefaultAssert(n, breakNode, n.getElement());
+			addSwitchDefaultAssert(n, null, breakNode, n.getElement());
 
 		/* backpatch break */
 		for (CFGBreakNode c: $IterSwitch::breaks)
@@ -505,7 +508,7 @@ scope IterSwitch;
 }
 	: ^('while' expression { /* to preserve sequential numbers */
 		evalExpr = CFGEvaluator.evaluateExpr(
-			$expression.start.getElement());
+			$expression.start.getElement(), $expression.text);
 	} statement) {
 		statementCFG = $statement.g;
 		breakNode = new CFGJoinNode();
@@ -525,6 +528,7 @@ scope IterSwitch;
 		$g.setEndNode(breakNode);
 		contNode = CFGEvaluator.evaluateExprConnect(
 				$expression.start.getElement(),
+				$expression.text,
 				statementCFG.getStartNode(), breakNode);
 		statementType = $statement.start.getType();
 	}
@@ -535,7 +539,8 @@ scope IterSwitch;
 		$g.setStartNode(n1);
 		$g.setEndNode(breakNode);
 		evalExpr = CFGEvaluator.evaluateExpr($e2.g == null ?
-			newEmptyStatement($f) : $e2.start.getElement());
+			newEmptyStatement($f) : $e2.start.getElement(),
+			$e2.g == null ? null : $e2.text);
 	} ^(E3 e3=expression?) statement) {
 		statementCFG = $statement.g;
 		n2 = ExprEvaluator.connect(evalExpr,
@@ -577,7 +582,7 @@ jumpStatement returns [CFGPart g]
 	;
 
 asmStatement returns [CFGPart g]
-	: ASM		{ $g = createCFG($asmStatement.start.getElement()); }	;
+	: ASM		{ $g = createCFG($asmStatement.start.getElement(), $asmStatement.text); }	;
 
 /* STATEMENTS END */
 
@@ -591,12 +596,12 @@ expression returns [CFGPart g]
 }
 @after {
 	if ($g == null)
-		$g = createCFG($expression.start.getElement());
+		$g = createCFG($expression.start.getElement(), $expression.text);
 }
 	: ^(ASSIGNMENT_EXPRESSION assignmentOperator e1=expression e2=expression) { /*$g = $e2.g; do nothing so far XXX to be fixed */  }
 	| ^(CONDITIONAL_EXPRESSION ^(E1 e1=expression) {
 		evalExpr = CFGEvaluator.evaluateExpr(
-			$e1.start.getElement());
+			$e1.start.getElement(), $e1.text);
 	} ^(E2 e2=expression?) {
 		if (e2 == null)
 			trueNode = new CFGNode($e1.start.getElement());

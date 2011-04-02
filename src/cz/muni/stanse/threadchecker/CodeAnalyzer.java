@@ -1,10 +1,13 @@
 
 package cz.muni.stanse.threadchecker;
 
+import cz.muni.stanse.checker.CheckerException;
+import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.threadchecker.locks.BackTrack;
 import cz.muni.stanse.threadchecker.locks.Lock;
+import cz.muni.stanse.threadchecker.locks.LockingException;
 import java.util.List;
 import java.util.Vector;
 import org.apache.log4j.Logger;
@@ -32,19 +35,24 @@ public class CodeAnalyzer {
      * @param parameter Element where lockname is included.
      */
     static void analyzeLockingFunction(CFGNode node, Function function,
-                                                            Element parameter) {
+	    Element parameter) throws CheckerException {
         String lockName;
         String description;
         BackTrack backTrackNode;
 
         lockName = CodeAnalyzer.parseStringVariable(parameter);
-        logger.info("Locking function detected - locking "+lockName);
+        logger.debug("Locking function detected - locking "+lockName);
 
         //Add new lock to every possibilty Data state
         for(FunctionState data : function.getFunctionStates()) {
             description = "locking "+lockName
                                     +" - already locked:"+ data.getLockStack();
-            data.lockUp(lockName, node);
+	    try {
+		data.lockUp(lockName, node);
+	    } catch (final LockingException e) {
+		throw new CheckerException("A problem with unlocking " +
+			"detected. Probably an imbalanced lock.", e);
+	    }
             backTrackNode = data.getBackTrack().peekLast();
 
             //Set description to triple node (history of traversing)
@@ -69,17 +77,22 @@ public class CodeAnalyzer {
      * @param parameter Element where lockname is included.
      */
     static void analyzeUnlockingFunction(CFGNode node, Function function,
-                                    Element parameter) {
+	    Element parameter) throws CheckerException {
         String lockName;
         String description;
         BackTrack backTrackNode;
         lockName = CodeAnalyzer.parseStringVariable(parameter);
-        logger.info("Unlocking function detected - unlocking "+lockName);
+        logger.debug("Unlocking function detected - unlocking "+lockName);
 
         for(FunctionState data : function.getFunctionStates()) {
+	    try {
+		data.lockDown(lockName);
+	    } catch (final LockingException e) {
+		throw new CheckerException("A problem with locking " +
+			"detected. Probably an imbalanced lock.", e);
+	    }
             description = "unlocking "+lockName
                                     + " - still locked: "+data.getLockStack();
-            data.lockDown(lockName);
 
             backTrackNode = data.getBackTrack().peekLast();
             if(backTrackNode.getCFGNodeID().equals(node.getNumber())) {
@@ -95,14 +108,15 @@ public class CodeAnalyzer {
 
 
     /**
-     * Function get callee's name and look up, whether it's already analysed,
-     * if not, function executes analyseCFG and results is stitched with caller.
-     * @param node CFGNode where function get Element
+     * Gets callee's name and looks up whether it's already analysed,
+     * if not, it executes analyseCFG and result is stitched with caller.
+     * @param node CFGNode where function gets an Element
      * @param caller Function which CFGNode represents callee's execution
      * @param parameter Element  where callee name is included.
      */
     public static void analyzeFunction(CFGNode node, Function caller,
-                                                            Element parameter) {
+	    Element parameter, final CheckerProgressMonitor mon)
+	    throws CheckerException {
         Function callee = null;
         BackTrack backTrackNode;
         FunctionState dataBeforeStitch = null;
@@ -111,24 +125,31 @@ public class CodeAnalyzer {
         String description;
         boolean alreadyInserted = false;
         
-        callee = CodeAnalyzer.getCallee(parameter, caller.getName());
+        callee = CodeAnalyzer.getCallee(parameter, caller.getName(), mon);
         if(callee == null) {
             String functionCall = CodeAnalyzer.parseStringVariable(parameter);
-            logger.info("Can't find CFG for functionCall "+functionCall
-                                            +" in function: "+caller.getName());
+            logger.debug("Can't find CFG for functionCall " + functionCall +
+		    " in function: " + caller.getName());
             return;
         }
 
-        logger.info("Stitching caller ("+caller.getName()
+        logger.debug("Stitching caller ("+caller.getName()
                                     +") and callee ("+callee.getName()+"):");
-        logger.info("=============================================");
-        logger.info("Caller:"+caller);
-        logger.info("Callee:"+callee);
+        logger.debug("=============================================");
+        logger.debug("Caller:"+caller);
+        logger.debug("Callee:"+callee);
 
         /*if Data from callee contains something usefull (rules, threads,
         *locked locks) function executes stitchFunctions on dataCalle and 
         * dataCaller and also generate proper backTrack nodes
         */
+	long states = caller.getFunctionStates().size() *
+		callee.getFunctionStates().size();
+	if (states > 5000) {
+		throw new CheckerException("Too many states (" + states +
+			") when trying to stitch " + callee.getName() + " into " +
+			caller.getName() + ".\nIsn't there a locking imbalance?\n");
+	}
         for(FunctionState dataCaller : caller.getFunctionStates()) {
             for(FunctionState dataCallee : callee.getFunctionStates()) {
                 if(dataCallee.isEmpty()) {
@@ -181,7 +202,7 @@ public class CodeAnalyzer {
         //Remove old data and insert newly created
         caller.getFunctionStates().removeAll(dataToRemove);
         caller.getFunctionStates().addAll(dataToAdd);
-        logger.info("After:"+caller);
+        logger.debug("After:" + caller);
     }
 
     /**
@@ -193,30 +214,31 @@ public class CodeAnalyzer {
      * @return Function callee
      * @throws NoCFGException whether CFG for callee doesn't exist
      */
-    private static Function getCallee(Element parameter, String callerName) {
+    private static Function getCallee(Element parameter, String callerName,
+	    final CheckerProgressMonitor mon) throws CheckerException {
         String functionCall;
         Function callee;
         CFGHandle cfg;
 
         functionCall = CodeAnalyzer.parseStringVariable(parameter);
-        logger.info("Analyzing functionCall "+functionCall);
+        logger.debug("Analysing functionCall: " + functionCall);
         callee = settings.getFunction(functionCall);
 
         if(callee == null) {
-            logger.info("Callee "+functionCall
-                                            +" is new function analysing CFG");
+            logger.debug("Callee " + functionCall +
+		    " is a new function, analysing CFG");
             cfg = settings.getCFG(functionCall);
             if(cfg == null) {
                 return null;
             }
             if(!settings.isOnStack(cfg)) {
-                callee = CFGTransit.analyseCFG(cfg);
+                callee = CFGTransit.analyseCFG(cfg, mon);
                 settings.addFunction(callee,cfg);
             } else {
                 callee = new Function(cfg);
             }
         } else {
-            logger.info("Using for calle "+functionCall+"function cache");
+            logger.debug("Using function cache for callee " + functionCall);
         }
         return callee;
     }
@@ -230,7 +252,7 @@ public class CodeAnalyzer {
      * @param parameter Element
      */
     static void analyzeThreadFunction(CFGNode node, Function function,
-                                                            Element parameter) {
+	    Element parameter, final CheckerProgressMonitor mon) {
         ThreadInfo thread;
         String threadFunction;
         BackTrack backTrackNode;
@@ -246,7 +268,7 @@ public class CodeAnalyzer {
                                                                +threadFunction);
                 return;
             }
-            thread = new ThreadInfo(cfg);
+            thread = new ThreadInfo(cfg, mon);
             settings.addThread(thread);
         }
 
@@ -327,17 +349,21 @@ public class CodeAnalyzer {
         }
 
         if(node.getName().equals("functionCall")) {
-            Node funcName = node.selectSingleNode("id[1]");
-            List<Node> paramsNodes = node.selectNodes("*[position()!=1]");
-            String params = "";
+            final Node funcName = node.selectSingleNode("id[1]");
+            final List<Node> paramsNodes = node.selectNodes("*[position()!=1]");
+            final StringBuilder fun = new StringBuilder(funcName.getText());
+	    boolean first = true;
 
-            if(!paramsNodes.isEmpty()) { //First argument is without comma
-                params = parseStringVariable(paramsNodes.get(0));
+	    fun.append('(');
+            for (final Node param : paramsNodes) {
+		    if (!first)
+			    fun.append(',');
+		    fun.append(parseStringVariable(param));
+		    first = false;
             }
-            for(int index=1; index < paramsNodes.size(); index++) {
-                params += ","+parseStringVariable(paramsNodes.get(index));
-            }
-            return funcName.getText()+"("+params+")";
+	    fun.append(')');
+
+            return fun.toString();
         }
 
         return null;

@@ -25,15 +25,39 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
 final class PatternLocationCreator extends CFGvisitor {
-
-    // public section
+	private void checkMatchingConflict(final Element element,
+			final LinkedList<Pair<XMLPattern, SimpleAutomatonID>> matchings) {
+		boolean same = true;
+		final Set<String> names = new HashSet<String>();
+		names.add(matchings.getFirst().getFirst().getName());
+		for (final Pair<XMLPattern,SimpleAutomatonID> match : matchings)
+			if (names.add(match.getFirst().getName())) {
+				same = false;
+				break;
+			}
+		if (!same) {
+			logger.warn("This code:");
+			logger.warn(element.asXML());
+			logger.warn("can be matched by more than one " +
+				"distinct rule:");
+			for (final Pair<XMLPattern,SimpleAutomatonID> match :
+					matchings) {
+				final XMLPattern pat = match.getFirst();
+				logger.warn(pat.getName() + ": " +
+					pat.getPatternXMLelement().asXML().
+					replace(' ', '\n'));
+			}
+		}
+	}
 
     @Override
-    public boolean visit(final CFGNode node) {
+    public boolean visit(final CFGNode node, final Element element) {
         final LinkedList<Pair<XMLPattern,SimpleAutomatonID>>
             matchings = new LinkedList<Pair<XMLPattern,SimpleAutomatonID>>();
         for (XMLPattern pattern : getXMLAutomatonDefinition().getXMLpatterns()){
@@ -47,7 +71,9 @@ final class PatternLocationCreator extends CFGvisitor {
                                        new SimpleAutomatonID(assign,isGlobal)));
             }
         }
-        assert(matchings.size() <= 1);
+
+	if (matchings.size() > 1)
+		checkMatchingConflict(element, matchings);
 
         if (!matchings.isEmpty()) {
             final PatternLocation newLocation =
@@ -181,4 +207,6 @@ final class PatternLocationCreator extends CFGvisitor {
     private final CFGsNavigator navigator;
     private final CFGHandle cfg;
     private final AliasResolver aliasResolver;
+    private final static Logger logger =
+	    Logger.getLogger(PatternLocationCreator.class);
 }

@@ -16,7 +16,6 @@ import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.UnitManager;
 import cz.muni.stanse.codestructures.UnitManagerLRU;
 import cz.muni.stanse.gui.MainWindow;
-import cz.muni.stanse.props.Properties.VerbosityLevel;
 import cz.muni.stanse.statistics.CheckerErrorsGuiTracing;
 import cz.muni.stanse.statistics.ErrorMessagesStatsBuilder;
 import cz.muni.stanse.statistics.MergeDocuments;
@@ -33,6 +32,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import joptsimple.OptionException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * Class containing the main() method. Not supposed to be instantiated. The main
@@ -83,8 +84,8 @@ public final class Stanse {
         return stanse != null ? stanse : createSingleInstance();
     }
 
-    public Configuration getConfiguration() {
-        return configuration;
+    public synchronized Configuration getConfiguration() {
+	return configuration;
     }
 
     public synchronized void setConfiguration(Configuration configuration) {
@@ -107,13 +108,9 @@ public final class Stanse {
         outputDirectory = dir;
     }
 
-    public VerbosityLevel getVerbosityLevel() {
-        return verbosityLevel;
-    }
-
-    public void setVerbosityLevel(final VerbosityLevel level) {
-        verbosityLevel = level;
-    }
+	public void setVerbosityLevel(final Level level) {
+		Logger.getRootLogger().setLevel(level);
+	}
 
     public synchronized void dumpAST() {
         assert (getConfiguration() != null);
@@ -159,10 +156,9 @@ public final class Stanse {
     // private section
 
     private Stanse() {
-        configuration = null;
-        outputDirectory = ".";
-        rootDirectory = buildRootDirectory();
-        verbosityLevel = VerbosityLevel.LOW;
+	configuration = null;
+	outputDirectory = ".";
+	rootDirectory = buildRootDirectory();
     }
 
     private static synchronized Stanse createSingleInstance() {
@@ -170,8 +166,8 @@ public final class Stanse {
     }
 
     private static void printStanseInfo() {
-        System.out.println("Stanse version \"1.1.2\"");
-        System.out.println("Copyright (c) 2008-2010 Masaryk University, Brno\n");
+	System.out.println("Stanse version \"1.2.0\"");
+	System.out.println("Copyright (c) 2008-2011 Masaryk University, Brno\n");
     }
 
     private static void buildConfiguration(final CmdLineManager cmdLineManager) {
@@ -338,7 +334,6 @@ public final class Stanse {
     private static UnitManager unitManager = new UnitManagerLRU();
     private Configuration configuration;
     private String outputDirectory;
-    private String rootDirectory;
-    private VerbosityLevel verbosityLevel;
+    private final String rootDirectory;
     private static Stanse stanse = null;
 }

@@ -22,6 +22,7 @@ import cz.muni.stanse.checker.CheckingFailed;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.ClassLogger;
+import cz.muni.stanse.utils.TimeManager;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -176,7 +177,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     private CheckingResult
     check(final XMLAutomatonDefinition xmlAutomatonDefinition,
           final LazyInternalStructures internals,
-          final CheckerErrorReceiver errReciver,
+          final CheckerErrorReceiver errReceiver,
           final AutomatonCheckerLogger monitor)
           throws XMLAutomatonSyntaxErrorException {
         monitor.phaseLog("building pattern locations");
@@ -198,7 +199,8 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
             if (location.hasUnprocessedAutomataStates())
                 progressQueue.add(location);
         }
-        final long startFixPointComputationTime = System.currentTimeMillis();
+	final TimeManager tmgr = new TimeManager();
+        tmgr.measureStart();
         while (!progressQueue.isEmpty()) {
             //dumpNodeLocationGraph(nodeLocationDictionary.values());
             final PatternLocation currentLocation = progressQueue.remove();
@@ -214,15 +216,12 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
                     progressQueue.add(
                            currentLocation.getLocationForCallNotPassedStates());
             }
-            final long FixPointComputationTime =
-                    System.currentTimeMillis() - startFixPointComputationTime;
+            final long time = tmgr.measureElapsedMs() / 1000L;
 	    /* 60 s is hard limit, 10 s when there are many locations */
-            if (FixPointComputationTime > 60000 ||
-			(FixPointComputationTime > 10000 &&
-				nodeLocationDictionary.size() > 500)) {
+            if (time > 60 || (time > 10 && nodeLocationDictionary.size() > 500)) {
                 monitor.pushTab();
                 final String errMsg =
-                    "*** FAILED: fix-point computation FAILED, " +
+                    "*** WARNING: fix-point computation TERMINATED " +
                     "because of timeout. Location set is extremely " +
                     "large: " + nodeLocationDictionary.size();
                 monitor.note(errMsg);
@@ -243,7 +242,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         monitor.pushTab();
         final CheckingResult result =
             CheckerErrorBuilder.buildErrorList(nodeLocationDictionary,internals,
-                                               detectors,errReciver,monitor,
+                                               detectors,errReceiver,monitor,
                                                getName());
         monitor.popTab();
 

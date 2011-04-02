@@ -10,12 +10,10 @@ import cz.muni.stanse.checker.CheckerException;
 import cz.muni.stanse.checker.CheckerErrorReceiver;
 import cz.muni.stanse.checker.CheckerProgressMonitor;
 import cz.muni.stanse.codestructures.CFGHandle;
-import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.threadchecker.graph.Cycle;
 import cz.muni.stanse.threadchecker.graph.DependencyGraph;
 import cz.muni.stanse.threadchecker.graph.RAG;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,89 +28,74 @@ import org.apache.log4j.Logger;
  * @author Jan Kučera
  */
 public class ThreadChecker extends Checker {
-    private final static Logger logger =
-                                Logger.getLogger(ThreadChecker.class.getName());
-    private static CheckerSettings settings = CheckerSettings.getInstance();
+	private final static Logger logger =
+		Logger.getLogger(ThreadChecker.class.getName());
+	private static CheckerSettings settings = CheckerSettings.getInstance();
+	private CheckerProgressMonitor monitor;
 
-    /**
-     * Function pick choose starting CFG and build their dependency graphs, then
-     * find possible cycles and generate RAG and create appropriate errors
-     * or warnings.
-     * @param units List<Unit> representing all files intended to check
-     * @return List<PresentableError> representing all errors that checker found
-     * @throws cz.muni.stanse.checker.CheckerException
-     */
-    @Override
-    public CheckingResult check(
-                        final LazyInternalStructures internals,
-                        final CheckerErrorReceiver errReciver,
-                        final CheckerProgressMonitor monitor)
-                                                       throws CheckerException {
-        List<CheckerError> errors;
-        CheckerError error;
-        Set<DependencyGraph> graphs = null;
-        List<String> startFunctions;
+	/**
+	 * Function pick choose starting CFG and build their dependency graphs
+	 * then find possible cycles and generate RAG and create appropriate
+	 * errors or warnings.
+	 * @param units List<Unit> representing all files intended to check
+	 * @return List<PresentableError> representing all errors that checker
+	 * found
+	 * @throws cz.muni.stanse.checker.CheckerException
+	 */
+	@Override
+	public CheckingResult check(
+		final LazyInternalStructures internals,
+		final CheckerErrorReceiver errReceiver,
+		final CheckerProgressMonitor monitor)
+		throws CheckerException {
+		this.monitor = monitor;
 
-        settings.setInternals(internals);
+		monitor.write("Starting ThreadChecker");
 
-        Collection<Unit> units = internals.getUnits();
+		settings.setInternals(internals);
+		settings.clearData();
+		settings.addAllCFGs();
 
-        settings.clearData();
-//        for(Unit unit : units) {
-//            logger.info("===============");
-//            logger.info("Analysing file: "+unit.getName());
-//            logger.info("===============");
-//            settings.addAllCFGs(unit);
-//            Utils.showGraph(unit);
-//        }
-        
-        settings.addAllCFGs();
+		//Parser somehow creates empty unit - prevent throwing expcetion
+		if (internals.getUnits().size() == 1 &&
+				internals.getCFGHandles().isEmpty())
+			return new CheckingSuccess();
 
+		monitor.write("Analysing starting functions");
+		analyseFunctions(settings.getStartFunctions());
+		monitor.write("Generating dependency graphs");
+		final Set<DependencyGraph> graphs = generateDependencyGraphs();
+		monitor.write("Finding errors");
+		final List<CheckerError> errors = findErrors(graphs, getMonitor());
 
-        //Parser somehow creates empty unit - prevent throwing expcetion
-        if(units.size()==1 && internals.getCFGHandles().isEmpty()) {
-            return new CheckingSuccess();
-        }
+		Collections.sort(errors);
 
-        startFunctions = settings.getStartFunctions();
+		monitor.write("Reporting errors");
+		errReceiver.receiveAll(errors);
 
+		settings.setInternals(null);
 
-        this.analyseFunctions(startFunctions);
-        graphs = this.generateDependencyGraphs();
-        errors = this.findErrors(graphs);
-
-        if(errors.size()>0) {
-            logger.warn("\nError result in file:"+
-                        units.iterator().next().getName()+"\n"+errors);
-        }
-        Collections.sort(errors);
-
-        for (final CheckerError err : errors)
-            errReciver.receive(err);
-
-        settings.setInternals(null);
-
-        return new CheckingSuccess();
-    }
+		return new CheckingSuccess();
+	}
     
     /**
-     * Method pick startFunctions, create ThreadInfo instance which execute
+     * Method picks startFunctions, creates ThreadInfo instance which executes
      * CFG analysis on every of those threads.
      * @param startFunctions List<String> of function names
     */
-    private void analyseFunctions(List<String> startFunctions) {
+    private void analyseFunctions(final List<String> startFunctions) {
         CFGHandle cfg;
         ThreadInfo thread;
 
-        logger.debug("Start functions are:"+startFunctions);
+        logger.debug("Start functions are: " + startFunctions);
 
-        for(String functionName : startFunctions) {
+        for (final String functionName : startFunctions) {
             cfg = settings.getCFG(functionName);
-            if(cfg == null) {
-                logger.warn("Can't found CFG with startName "+functionName);
+            if (cfg == null) {
+                logger.error("Can't find CFG with startName " + functionName);
                 continue;
             }
-            thread = new ThreadInfo(cfg);
+            thread = new ThreadInfo(cfg, getMonitor());
             settings.addThread(thread);
         }
     }
@@ -123,7 +106,8 @@ public class ThreadChecker extends Checker {
      * @param graphs Set<DependencyGraph> of dependency graphs
      * @return List<CheckerErrors> founded errors
      */
-    private List<CheckerError> findErrors(Set<DependencyGraph> graphs){
+    private static List<CheckerError> findErrors(Set<DependencyGraph> graphs,
+	    final CheckerProgressMonitor mon) {
         List<CheckerError> errors = new Vector<CheckerError>();
         CheckerError error;
         DependencyCycleDetector detector
@@ -135,13 +119,13 @@ public class ThreadChecker extends Checker {
         if(graphs == null)
             return errors;
 
-        logger.info("Graph:\n"+graphs);
+        logger.debug("Graph:\n\t" + graphs);
         Utils.showDependencyGraphs(graphs);
         for(DependencyGraph rules : graphs) {
             cycles.addAll(detector.detect(rules));
         }
         for(Cycle cycle : cycles) {
-            logger.info("Cycle detected:"+cycle);
+            mon.write("Cycle detected: " + cycle);
             error = rag.detectDeadlock(cycle);
             errors.add(error);
         }
@@ -155,13 +139,13 @@ public class ThreadChecker extends Checker {
      */
     private Set<DependencyGraph> generateDependencyGraphs() {
             ThreadInfo thread;
-            Set<DependencyGraph> graphs = null;
+            Set<DependencyGraph> graphs;
             Iterator<ThreadInfo> it = settings.getThreads().iterator();
             if(!it.hasNext())
                 return new HashSet<DependencyGraph>();
 
             graphs = it.next().getDependencyGraphs();
-            for(;it.hasNext();) {
+            while (it.hasNext()) {
                 thread = it.next();
                 graphs = joinGraphs(graphs, thread.getDependencyGraphs());
             }
@@ -175,7 +159,7 @@ public class ThreadChecker extends Checker {
      * @param second Set<DependencyGraph>
      * @return Set<DependencyGraph>
      */
-    private Set<DependencyGraph> joinGraphs(Set<DependencyGraph> first,
+    private static Set<DependencyGraph> joinGraphs(Set<DependencyGraph> first,
                                                 Set<DependencyGraph> second) {
        Set<DependencyGraph> graphResult = new HashSet<DependencyGraph>();
        if(first.isEmpty())
@@ -192,6 +176,10 @@ public class ThreadChecker extends Checker {
             }
        }
        return graphResult;
+    }
+
+    protected CheckerProgressMonitor getMonitor() {
+	    return monitor;
     }
 
     @Override

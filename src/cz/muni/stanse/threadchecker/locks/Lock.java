@@ -13,9 +13,9 @@ public interface Lock extends Cloneable {
     
     Lock clone();
 
-    boolean lockUp();
+    boolean lockUp() throws LockingException;
 
-    boolean lockDown();
+    boolean lockDown() throws LockingException;
 
     int getState();
 

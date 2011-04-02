@@ -1,0 +1,39 @@
+#!/usr/bin/perl -w
+use strict;
+use XML::XPath;
+use DBI;
+
+die "wrong commandline. should be $0 src.xml" if @ARGV < 1;
+
+my $in = $ARGV[0];
+
+my $xp = XML::XPath->new(filename => "$in") || die "can't open $in";
+
+my $errors = $xp->findnodes("/database/errors/error");
+
+my @bugs;
+my @fps;
+
+foreach my $error ($errors->get_nodelist) {
+	my $xp1 = XML::XPath->new();
+	my $bug = $xp1->exists('real-bug', $error);
+	my $fp = $xp1->exists('false-positive', $error);
+	next if (!$bug && !$fp);
+	my ($loc) = $error->findnodes("traces/trace[1]/locations/location[last()]");
+	my $unit = $loc->findvalue("unit");
+	my $val = $loc->findvalue("unit") . " [" . $loc->findvalue("line") . "]";# " . $error->findvalue("full_desc");
+	if ($bug) {
+		push @bugs, $val;
+	} else {
+		push @fps, $val;
+	}
+}
+
+foreach my $bug (sort @bugs) {
+	print "BUG $bug\n";
+}
+foreach my $fp (sort @fps) {
+	print "FP $fp\n";
+}
+
+0;

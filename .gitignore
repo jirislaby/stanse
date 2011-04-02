@@ -1,3 +1,8 @@
 bin
-build
 dist
+/build/
+/manifest.mf
+*.tokens
+*.preproc
+*.preproc.xml
+.*.swp

@@ -163,6 +163,34 @@
         </functionCall>
     </pattern>
 
+    <pattern name="free" constructive="true">
+        <functionCall>
+            <id>kfree_skb</id>
+            <var name="A"/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="free" constructive="true">
+        <functionCall>
+            <id>consume_skb</id>
+            <var name="A"/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="free" constructive="true">
+        <functionCall>
+            <id>dev_kfree_skb_any</id>
+            <var name="A"/>
+        </functionCall>
+    </pattern>
+
+    <pattern name="free" constructive="true">
+        <functionCall>
+            <id>dev_kfree_skb_irq</id>
+            <var name="A"/>
+        </functionCall>
+    </pattern>
+
     <pattern name="noreturn">
         <functionCall>
             <id>panic</id>

@@ -122,17 +122,17 @@ public class Utils {
         }
 
         List<Element> functionDefinitions = new Vector<Element>();
-        String toDot = "digraph CFG {";
+        final StringBuilder toDot = new StringBuilder("digraph CFG {");
         String temporary = "";
 
         for (CFGHandle cfg: Stanse.getUnitManager().getCFGHandles(unit)) {
              temporary = cfg.toDot();
              temporary = temporary.replaceFirst("digraph CFG", "subgraph CFG");
-             toDot += temporary;
+             toDot.append(temporary);
              functionDefinitions.add(cfg.getElement());
         }
 
-        toDot +="}";
+        toDot.append('}');
 
         gv.graph = new StringBuffer(toDot);
 
@@ -164,7 +164,7 @@ public class Utils {
      * @param graphs
      */
     public static void showDependencyGraphs(Set<DependencyGraph> graphs) {
-        String toDot = "digraph CFG {\n";
+        final StringBuilder toDot = new StringBuilder("digraph CFG {\n");
         String sourceName;
         String sourceLabel;
         String targetName;
@@ -179,7 +179,7 @@ public class Utils {
 
 
         for(DependencyGraph graph : graphs) {
-            toDot += "subgraph CFG {\n";
+            toDot.append("subgraph CFG {\n");
             for(DependencyRule rule : graph.getRules()) {
 
                 sourceName = rule.getSource().getName();
@@ -189,15 +189,15 @@ public class Utils {
                 sourceName = sourceName.replace("->", "_");
                 targetName = targetName.replace("->", "_");
 
-                toDot += sourceName+" [label = \""+ sourceLabel+"\"];\n";
-                toDot += targetName+" [label = \""+ targetLabel+"\"];\n";
-                toDot += sourceName+" -> "+targetName
-                        +" [label = \""+rule.getThread().getId()+"\"];\n";
+                toDot.append(sourceName).append(" [label = \"").append(sourceLabel).append("\"];\n");
+                toDot.append(targetName).append(" [label = \"").append(targetLabel).append("\"];\n");
+                toDot.append(sourceName).append(" -> ").append(targetName).
+			append(" [label = \"").append(rule.getThread().getId()).append("\"];\n");
             }
-            toDot+="}\n";
+            toDot.append("}\n");
         }
 
-        toDot +="}\n";
+        toDot.append("}\n");
 
         gv.graph = new StringBuffer(toDot);
 

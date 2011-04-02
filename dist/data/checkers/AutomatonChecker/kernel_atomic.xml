@@ -267,6 +267,15 @@
 	</nested>
     </pattern>
 
+    <pattern name="nonatomic">
+	<nested>
+	    <functionCall>
+		<id>request_irq</id>
+		<any/>
+	    </functionCall>
+	</nested>
+    </pattern>
+
     <pattern name="atomize">
         <functionCall>
             <id>__st_spin_lock_st__</id>

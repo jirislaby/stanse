@@ -13,12 +13,14 @@ import cz.muni.stanse.checker.CheckerErrorTrace;
 import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.LazyInternalStructures;
+import cz.muni.stanse.codestructures.LinearCode;
 import cz.muni.stanse.codestructures.traversal.CFGPathVisitor;
 import cz.muni.stanse.utils.Pair;
 
 import java.util.List;
 import java.util.Vector;
 import java.util.Map;
+import java.util.Stack;
 
 final class ErrorTracesListCreator extends CFGPathVisitor {
 
@@ -26,7 +28,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
 
     @Override
     public boolean visit(final List<CFGNode> path,
-                         final java.util.Stack<CFGNode> cfgContext) {
+                         final Stack<CFGNode> cfgContext) {
         if (getErrorTracesList().size() >= 20 || path.size() > 100
                 || isLimitOfRejectedMeasureExceeded())
             return false;
@@ -117,12 +119,8 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         this.nodeLocationDictionary = nodeLocationDictionary;
         this.startNode = startNode;
         this.internals = internals;
-        errorTracesList = new Vector<CheckerErrorTrace>();
         this.detectors = detectors;
         this.monitor = monitor;
-        totalImportance = FalsePositivesDetector.getBugDefaultImportance();
-        failMsg = null;
-        numRejectedMeasure = 0;
     }
 
     Vector<CheckerErrorTrace> getErrorTracesList() {
@@ -137,10 +135,8 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         return failMsg;
     }
 
-    // private section
-
     private int getTraceImportance(final List<CFGNode> path,
-                                   final java.util.Stack<CFGNode> cfgContext) {
+                                   final Stack<CFGNode> cfgContext) {
         int importance = FalsePositivesDetector.getBugDefaultImportance();
         for (final FalsePositivesDetector detector : detectors) {
             final int currImportance =
@@ -158,7 +154,7 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                                        final String innerMsg,
                                        final String endMsg,
                                        final List<CFGNode> path,
-                                       final java.util.Stack<CFGNode> context) {
+                                       final Stack<CFGNode> context) {
         final Vector<CheckerErrorTraceLocation> trace =
                                         new Vector<CheckerErrorTraceLocation>();
         for (final CFGNode node : context) {
@@ -200,8 +196,10 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
                                           .toString()));
         }
 
-        return new CheckerErrorTrace(trace,
-                       "error-trace [" + (getErrorTracesList().size()+1) + "]");
+	final CheckerErrorTrace eTrace = new CheckerErrorTrace(trace,
+		"error-trace [" + (getErrorTracesList().size()+1) + "]");
+	eTrace.setLinearCode(new LinearCode(context, path));
+	return eTrace;
     }
 
     private ErrorRule getRule() {
@@ -233,12 +231,10 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         return node.getFile().getPath();
     }
 
-    private void updateTotalImportance(final int traceImportance) {
-        assert(traceImportance !=
-                    FalsePositivesDetector.getBugDefaultImportance());
-        totalImportance = totalImportance > traceImportance ?
-                                totalImportance : traceImportance ;
-    }
+	private void updateTotalImportance(final int traceImportance) {
+		if (totalImportance <= traceImportance)
+			totalImportance = traceImportance;
+	}
 
     private boolean isLimitOfRejectedMeasureExceeded() {
         return numRejectedMeasure > 1000;
@@ -265,27 +261,18 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
         failMsg = msg;
     }
 
-    private int getNodeLine(final CFGNode node) {
-	// TODO: following lines can be removed, when there are no CFGNodes
-	// without XML element and each XML element has 'bl' attribute.
-	if (node.getElement() == null)
-	    return 1;
-	String attr = node.getElement().attributeValue("bl");
-	if (attr == null)
-	    return 1;
-	return Integer.parseInt(attr);
-    }
-
-    private ErrorRule rule;
-    private final AutomatonStateTransferManager transferor;
-    private final Map<CFGNode,Pair<PatternLocation,PatternLocation>>
-                                                         nodeLocationDictionary;
-    private final CFGNode startNode;
-    private final LazyInternalStructures internals;
-    private final Vector<CheckerErrorTrace> errorTracesList;
-    private final java.util.List<FalsePositivesDetector> detectors;
-    private final AutomatonCheckerLogger monitor;
-    private int totalImportance;
-    private String failMsg;
-    private int numRejectedMeasure;
+	private ErrorRule rule;
+	private final AutomatonStateTransferManager transferor;
+	private final Map<CFGNode, Pair<PatternLocation, PatternLocation>>
+		nodeLocationDictionary;
+	private final CFGNode startNode;
+	private final LazyInternalStructures internals;
+	private final Vector<CheckerErrorTrace> errorTracesList =
+		new Vector<CheckerErrorTrace>();
+	private final java.util.List<FalsePositivesDetector> detectors;
+	private final AutomatonCheckerLogger monitor;
+	private int totalImportance =
+		FalsePositivesDetector.getBugDefaultImportance();
+	private String failMsg = null;
+	private int numRejectedMeasure = 0;
 }

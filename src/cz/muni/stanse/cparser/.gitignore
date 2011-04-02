@@ -1,5 +1,4 @@
 *.tokens
-CFGEmitter.java
-GNUCaLexer.java
-GNUCaParser.java
 XMLEmitter.java
+*Emitter.java
+GNUCa*.java

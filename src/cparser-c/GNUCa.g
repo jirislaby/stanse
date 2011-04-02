@@ -234,22 +234,6 @@ asmStringLiteral // GNU
 	:	sTRING_LITERAL
 	;
 
-functionDefinition						// (6.9.1)
-scope Symbols; // put parameters and locals into same scope for now
-@init { $Symbols::types = antlr3HashTableNew(HASH_SIZE); SCOPE_TOP(Symbols)->free = freetypes; }
-	:	declarationSpecifiers declarator
-		(	compoundStatement		// ANSI style
-		|	declaration+ compoundStatement	// K&R style
-		)
-	;
-
-nestedFunctionDefinition	// GNU C
-scope Symbols; // // put parameters and locals into same scope for now
-@init { $Symbols::types = antlr3HashTableNew(HASH_SIZE); SCOPE_TOP(Symbols)->free = freetypes; }
-	:	declarationSpecifiers declarator declaration* compoundStatement
-	;
-
-
 // A.2.2 Declarations
 
 declaration		// (6.7)
@@ -434,10 +418,6 @@ parameterDeclaration
 // the complicated rewrite of attributes? is necessary to remove ambiguities. If abstractDeclarator is empty, it should not have any attributes.
 	:	declarationSpecifiers ( ( pointer? ('(' pointer?)* IDENTIFIER ) => declarator | abstractDeclarator ? )
 	;
-// orig:
-//	:	declarationSpecifiers declarator
-//	|	declarationSpecifiers abstractDeclarator?
-//	;
 
 identifierList
 	:	IDENTIFIER (',' IDENTIFIER)*
@@ -713,11 +693,11 @@ jumpStatement
 	;
 
 asmStatement	// GNU
-	:	('asm'|'__asm'|'__asm__') typeQualifier? '(' asmArgument ')' ';'
+	:	('asm'|'__asm'|'__asm__') typeQualifier? 'goto'? '(' asmArgument ')' ';'
 	;
 
 asmArgument	// GNU
-	:	asmStringLiteral (':' asmOperands? (':' asmOperands? (':' asmClobbers)?)?)?
+	:	asmStringLiteral (':' asmOperands? (':' asmOperands? (':' asmClobbers? (':' asmLabels)?)?)?)?
 	;
 
 asmOperands	// GNU
@@ -731,6 +711,10 @@ asmOperand	// GNU
 
 asmClobbers	// GNU
 	:	asmStringLiteral (',' asmStringLiteral)*
+	;
+
+asmLabels	// GNU
+	:	IDENTIFIER (',' IDENTIFIER)*
 	;
 
 

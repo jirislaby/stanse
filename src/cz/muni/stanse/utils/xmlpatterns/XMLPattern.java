@@ -213,7 +213,7 @@ public final class XMLPattern {
         return false;
     }
 
-    private Element getPatternXMLelement() {
+    public Element getPatternXMLelement() {
         return (Element)patternXMLelement.elementIterator().next();
     }
 

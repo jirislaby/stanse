@@ -44,6 +44,7 @@ public class CFGNode {
 
     private int number;
     private Element element;
+    private String code;
     private List<CFGNode> preds = new ArrayList<CFGNode>();
     private List<CFGNode> succs = new ArrayList<CFGNode>();
     private List<EdgeLabel> edgeLabels = new ArrayList<EdgeLabel>();
@@ -100,6 +101,17 @@ public class CFGNode {
     /**
      * Creates a new instance of CFGNode
      * @param e element to assign to this node
+     * @param code corresponding (original) code
+     */
+    public CFGNode(Element e, String code) {
+	number = CFGNodeNumber.getNext();
+	element = e;
+	this.code = code;
+    }
+
+    /**
+     * Creates a new instance of CFGNode
+     * @param e element to assign to this node
      */
     public CFGNode(Element e) {
 	number = CFGNodeNumber.getNext();
@@ -112,6 +124,14 @@ public class CFGNode {
      */
     public int getNumber() {
 	return number;
+    }
+
+    /**
+     * Get element corresponding to this node
+     * @return element
+     */
+    public String getCode() {
+	return code;
     }
 
     /**
@@ -318,6 +338,7 @@ public class CFGNode {
 	optSuccs.clear();
 	element.clearContent();
 	element = null;
+	code = null;
     }
 
     @Override

@@ -85,13 +85,14 @@ public class Function implements Cloneable {
 
     @Override
     public String toString() {
-        String result = states.toString();
-        return result;
+        return states.toString();
     }
 
     public void join(Function other) {
-        logger.debug("Joining:\n\t"+this.getFunctionStates()+"\n and \n\t"
-                                                    +other.getFunctionStates());
+        logger.debug("Joining:\n\t(" + getActualNode().getNumber() + "): " +
+		getFunctionStates()+"\n and \n\t(" +
+		other.getActualNode().getNumber() + "): " +
+		other.getFunctionStates());
         for(FunctionState data : other.states) {
             if(!states.contains(data)) {
                 states.add(data);
@@ -134,28 +135,31 @@ public class Function implements Cloneable {
             }
         }
 
-        for(int i = 0; i < getFunctionStates().size(); i++) {
-            if(i == markedIndex)
-                continue;
-            if(selectedState.isSubset(getFunctionStates().get(i))) {
-                toRemove.add(getFunctionStates().get(i));
-            }
-        }
+	    for (int i = 0; i < getFunctionStates().size(); i++) {
+		    if (i == markedIndex)
+			    continue;
+		    if (selectedState.isSubset(getFunctionStates().get(i)))
+			    toRemove.add(getFunctionStates().get(i));
+	    }
 
-        logger.info("Merging:");
-        for(FunctionState state : getFunctionStates()) {
-            logger.info("\t"+state.toString());
-        }
-        getFunctionStates().removeAll(toRemove);
-        logger.info("To this:");
-        for(FunctionState state : getFunctionStates()) {
-            logger.info("\t"+state.toString());
-        }
+	    if (logger.isDebugEnabled()) {
+		    logger.debug("Merging:");
+		    for (final FunctionState state : getFunctionStates())
+			    logger.debug("\t" + state.toString());
+	    }
+
+	    getFunctionStates().removeAll(toRemove);
+
+	    if (logger.isDebugEnabled()) {
+		    logger.debug("To this:");
+		    for (final FunctionState state : getFunctionStates()) {
+			    logger.debug("\t" + state.toString());
+		    }
+	    }
     }
 
-    @Override
-    public Function clone() {
-      final Function clone = new Function(this);
-      return clone;
-    }
+	@Override
+	public Function clone() {
+		return new Function(this);
+	}
 }

@@ -46,13 +46,16 @@ final class FileChooserFileFilter extends javax.swing.filechooser.FileFilter{
 
     private static String createFinalDescription(final String description,
                                           final List<String> extensions) {
-        String result = description + ": ";
+        final StringBuilder result = new StringBuilder(description);
+	result.append(": ");
         boolean first = true;
         for (String extension : extensions) {
-            result = result + ((first) ? "" : ", ") + extension.toUpperCase();
+	    if (!first)
+		    result.append(", ");
+	    result.append(extension.toUpperCase());
             first = false;
         }
-        return result;
+        return result.toString();
     }
 
     private String getDesctiption() {

@@ -1,3 +1,5 @@
+DONE: 6313e3c21743cc88bb5bd8aa72948ee1e83937b6
+
 L http://lkml.org/lkml/2009/1/17/37 relay
 L http://lkml.org/lkml/2009/1/17/66 pciehp_core
 L http://lkml.org/lkml/2009/1/17/96 net_namespace
@@ -28,15 +30,34 @@ L http://lkml.org/lkml/2009/7/13/321 phy_device
 L http://lkml.org/lkml/2009/9/23/216 vt_ioctl
 L http://lkml.org/lkml/2009/9/25/47 kvm
 L http://lkml.org/lkml/2009/12/10/147 cfi_cmdset_0002
+L http://lkml.org/lkml/2010/1/6/148 wireless
+L http://lkml.org/lkml/2010/3/16/201 vga_switcheroo
+L http://lkml.org/lkml/2010/3/16/218 NET/ksz884x
+L http://lkml.org/lkml/2010/3/16/222 PCMCIA:resource
+L http://lkml.org/lkml/2010/3/16/243 SCSI/be2iscsi SCSI/qla2xxx SCSI/lpfc
+L http://lkml.org/lkml/2010/3/17/193 vhost
+L http://lkml.org/lkml/2010/6/21/177 USB/isp1362-hcd
+L http://lkml.org/lkml/2010/7/7/74 MEDIA/lirc
+L http://lkml.org/lkml/2010/7/7/77 x86/KVM
+L http://lkml.org/lkml/2010/7/7/78 nl80211
+L http://lkml.org/lkml/2010/9/4/69 pkgtemp
+L http://lkml.org/lkml/2010/9/4/70 apparmor
+L http://lkml.org/lkml/2010/9/4/73 NET/bna
 
 ATOM http://lkml.org/lkml/2009/6/19/189 qla3xxx
 ATOM http://lkml.org/lkml/2009/6/19/207 dvb_dmx_swfilter_packet
+ATOM http://lkml.org/lkml/2010/3/16/172 regd
+ATOM http://lkml.org/lkml/2010/6/21/176 USB/gadget/printer
+ATOM http://lkml.org/lkml/2010/6/21/183 audit_tree
+ATOM http://lkml.org/lkml/2010/10/23/17 XHCI
 
 IRQ http://lkml.org/lkml/2009/5/28/69 apic
-PCI http://lkml.org/lkml/2009/9/6/139 amd64-agp
+PCI http://lkml.org/lkml/2009/9/6/139 amd64-agp -- 3/4 of year to be merged
 PCI http://lkml.org/lkml/2009/9/8/79 arch/x86/kernel/quirks.c
 PCI http://lkml.org/lkml/2009/9/23/212 pata_via
 PCI http://lkml.org/lkml/2010/1/20/148 hotplug/cpcihp
+PCI http://lkml.org/lkml/2010/1/20/149 backlight/progear
+PCI http://lkml.org/lkml/2010/11/4/154 PCI/xen-pcifront
 TTY http://lkml.org/lkml/2009/7/14/326 nozomi
 TTY http://lkml.org/lkml/2009/9/19/233 mct_u232
 TTY http://lkml.org/lkml/2009/9/19/240 riscom8
@@ -48,16 +69,44 @@ MEM http://lkml.org/lkml/2009/9/23/211 usblcd
 MEM http://lkml.org/lkml/2009/9/23/215 mxser
 MEM http://lkml.org/lkml/2009/9/23/221 aacraid qla2xxx cxgb3i lpfc scsi_lib
 MEM http://lkml.org/lkml/2009/9/28/50 qla2xxx
+MEM http://lkml.org/lkml/2010/1/6/149 wireless
 MEM http://lkml.org/lkml/2010/1/6/151 radeon_cp
 MEM http://lkml.org/lkml/2010/1/6/152 dvb/siano video/tuner-core
 MEM http://lkml.org/lkml/2010/1/6/155 video/tuner-core pci/hotplug
+MEM http://lkml.org/lkml/2010/1/6/159 net/atlx
+MEM http://lkml.org/lkml/2010/1/6/162 brtfs
 MEM http://lkml.org/lkml/2010/1/10/16 video/cx18
 MEM http://lkml.org/lkml/2010/1/10/25 ipv6
 MEM http://lkml.org/lkml/2010/1/10/28 irda
 MEM http://lkml.org/lkml/2010/1/10/31 synclink
+MEM http://lkml.org/lkml/2010/3/16/219 DVB/gp8psk
+MEM http://lkml.org/lkml/2010/3/16/246 NET/netpoll
+MEM http://lkml.org/lkml/2010/6/21/174 CRYPTO/ablkcipher
+MEM http://lkml.org/lkml/2010/6/21/175 X86/intel_ips
+MEM http://lkml.org/lkml/2010/6/21/178 SOUNDusb/endpoint
+MEM http://lkml.org/lkml/2010/6/22/111 intel_cacheinfo
+MEM http://lkml.org/lkml/2010/6/22/116 INPUT/tps6507x-ts
+MEM http://lkml.org/lkml/2010/6/22/117 ISDN/hysdn
+MEM http://lkml.org/lkml/2010/6/22/118 VIDEO/ivtvfb
+MEM http://lkml.org/lkml/2010/6/22/119 SCSI/mvsas
+MEM http://lkml.org/lkml/2010/9/4/75 MEDIA/ere_ir
+MEM http://lkml.org/lkml/2010/9/4/76 sch_atm
+MEM http://lkml.org/lkml/2010/9/4/79 HIDDEV
+MEM http://lkml.org/lkml/2010/9/4/81 bna
+MEM http://lkml.org/lkml/2010/9/4/82 tlv320aic3x
+MEM http://lkml.org/lkml/2010/10/11/38 ATM/solos-pci
+MEM http://lkml.org/lkml/2010/10/11/55 ATM/mpc
+MEM http://lkml.org/lkml/2010/10/11/79 WIRELESS/at76c50x
+MEM http://lkml.org/lkml/2010/10/11/82 NET/pch ATM/iphase NET/wimax
+MEM http://lkml.org/lkml/2010/10/27/167 FS/cifs
+MEM http://lkml.org/lkml/2010/10/27/170 NET/sunrpc
+MEM http://lkml.org/lkml/2010/11/6/34 Char/virtio_console x86/pci/xen ocfs2 IDE/ide-floppy
 MEM https://bugzilla.novell.com/show_bug.cgi?id=564733
 MEM https://bugzilla.novell.com/show_bug.cgi?id=564735
 
 RCH http://patchwork.kernel.org/patch/56386/ ath9k
 RCH http://lkml.org/lkml/2010/1/6/325 dvb/zl10039
 RCH http://lkml.org/lkml/2010/1/6/331 reiserfs
+RCH http://lkml.org/lkml/2010/3/16/200 kernel/user
+RCH http://lkml.org/lkml/2010/3/16/214 infiniband/ulp/iser
+RCH http://lkml.org/lkml/2010/9/4/84 SOUND/wm8753
