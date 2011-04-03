@@ -32,23 +32,25 @@ public final class LinearCode {
 	private int level = 0;
 
 	private void nodeToLinear(final StringBuilder sb, final CFGNode node) {
-		final Element el = node.getElement();
-		final String elName = el.getName();
-		final String code = node.getCode();
+            final Element el = node.getElement();
+            if (el != null) {
+                final String elName = el.getName();
+                final String code = node.getCode();
 
-		if (elName.equals("assert")) {
-			level++;
-			final String cropped = code.substring(7,
-				code.length() - 1);
-			sb.append("if (").append(cropped).append(") {").
-				append(sep);
-		} else if (elName.equals("initDeclarator")) {
-			final int eqIdx = code.indexOf('=');
-			final String right = code.substring(eqIdx + 1);
-			sb.append("typeof(").append(right).append(") ").
-				append(code).append(';').append(sep);
-		} else
-			sb.append(node.getCode()).append(';').append(sep);
+                if (elName.equals("assert")) {
+                        level++;
+                        final String cropped = code.substring(7,
+                                code.length() - 1);
+                        sb.append("if (").append(cropped).append(") {").
+                                append(sep);
+                } else if (elName.equals("initDeclarator")) {
+                        final int eqIdx = code.indexOf('=');
+                        final String right = code.substring(eqIdx + 1);
+                        sb.append("typeof(").append(right).append(") ").
+                                append(code).append(';').append(sep);
+                } else
+                        sb.append(node.getCode()).append(';').append(sep);
+            }
 	}
 
 	public LinearCode(final Stack<CFGNode> context,
