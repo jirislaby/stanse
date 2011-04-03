@@ -73,7 +73,7 @@ public class CfgUnit extends Unit {
             filenames = new File[jsonFilenames.length()];
             for (int i = 0; i < jsonFilenames.length(); ++i) {
                 File child = new File(jsonFilenames.getString(i));
-                if (child.isAbsolute())
+                if (child.isAbsolute() || child.getPath().charAt(0) == '/' || child.getPath().charAt(0) == '\\')
                     filenames[i] = child;
                 else
                     filenames[i] = new File(basePath, child.getPath());
