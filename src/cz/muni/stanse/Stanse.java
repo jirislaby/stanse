@@ -60,11 +60,6 @@ public final class Stanse {
             return;
         }
 
-        if (cmdLineManager.testSuite() != null) {
-            TestSuite.Run(cmdLineManager.testSuite());
-            return;
-        }
-
         getInstance().setVerbosityLevel(cmdLineManager.getVerbosityLevel());
 
         if (cmdLineManager.getStanseHome() != null)
