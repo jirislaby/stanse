@@ -60,7 +60,7 @@ public class CppUnit extends CfgUnit {
 	    JSONTokener jsonTokener = new JSONTokener(sr);
 	    JSONObject jsonUnit = new JSONObject(jsonTokener);
 
-	    super.parseUnit(this.fileName.getParentFile(), jsonUnit);
+	    super.parseUnit(new File(System.getProperty("user.dir")), jsonUnit);
 	} catch (IOException e) {
 	    throw new ParserException("parser: " + e.getLocalizedMessage(), e);
 	} catch (JSONException e) {
