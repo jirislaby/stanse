@@ -23,6 +23,10 @@ $ stcc
 $ stpreproc
 don't complain about command not found, permission denied or any other problem.
 
+For C++ support, you need to download and build the cpp2sir Stanse frontend.
+The sources can be found at http://github.org/avakar/cpp2sir. Build them
+and place the cpp2sir executable into the dist/ directory.
+
 There are several methods how to invoke Stanse:
 
 1) First of all, one may run stanse by typing
