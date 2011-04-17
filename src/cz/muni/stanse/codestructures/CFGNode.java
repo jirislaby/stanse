@@ -303,7 +303,7 @@ public class CFGNode {
      */
     public void addOptEdge(CFGNode to) {
 	optSuccs.add(to);
-	to.addPred(this);
+	to.optPreds.add(this);
     }
 
     /**
