@@ -31,6 +31,9 @@ import org.dom4j.Element;
 final class PatternLocationCreator extends CFGvisitor {
 	private void checkMatchingConflict(final Element element,
 			final LinkedList<Pair<XMLPattern, SimpleAutomatonID>> matchings) {
+		if (!logger.isDebugEnabled())
+			return;
+
 		boolean same = true;
 		final Set<String> names = new HashSet<String>();
 		names.add(matchings.getFirst().getFirst().getName());
@@ -40,14 +43,14 @@ final class PatternLocationCreator extends CFGvisitor {
 				break;
 			}
 		if (!same) {
-			logger.warn("This code:");
-			logger.warn(element.asXML());
-			logger.warn("can be matched by more than one " +
+			logger.debug("This code:");
+			logger.debug(element.asXML());
+			logger.debug("can be matched by more than one " +
 				"distinct rule:");
 			for (final Pair<XMLPattern,SimpleAutomatonID> match :
 					matchings) {
 				final XMLPattern pat = match.getFirst();
-				logger.warn(pat.getName() + ": " +
+				logger.debug(pat.getName() + ": " +
 					pat.getPatternXMLelement().asXML());
 			}
 		}
