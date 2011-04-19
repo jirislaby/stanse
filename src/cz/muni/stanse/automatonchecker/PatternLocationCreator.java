@@ -48,8 +48,7 @@ final class PatternLocationCreator extends CFGvisitor {
 					matchings) {
 				final XMLPattern pat = match.getFirst();
 				logger.warn(pat.getName() + ": " +
-					pat.getPatternXMLelement().asXML().
-					replace(' ', '\n'));
+					pat.getPatternXMLelement().asXML());
 			}
 		}
 	}
