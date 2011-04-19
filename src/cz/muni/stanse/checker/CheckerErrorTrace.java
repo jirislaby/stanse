@@ -11,6 +11,8 @@ import cz.muni.stanse.Stanse;
 import cz.muni.stanse.codestructures.CFGNode;
 
 import cz.muni.stanse.codestructures.LazyInternalStructures;
+
+import java.util.ArrayList;
 import cz.muni.stanse.codestructures.LinearCode;
 import java.util.List;
 import java.util.Vector;
@@ -117,11 +119,19 @@ public final class CheckerErrorTrace {
     // private section
 
     private static Vector<CheckerErrorTraceLocation>
-    buildLocations(final List<CFGNode> trace, final String startMsg,
+    buildLocations(List<CFGNode> trace, final String startMsg,
                    final String innerMsg, final String endMsg,
                    final LazyInternalStructures internals) {
         final Vector<CheckerErrorTraceLocation> result =
                 new Vector<CheckerErrorTraceLocation>();
+
+        // Filter out nodes that don't have an associated location.
+        List<CFGNode> filteredTrace = new ArrayList<CFGNode>();
+        for (CFGNode node : trace) {
+            if (node.hasLocation())
+        	filteredTrace.add(node);
+        }
+        trace = filteredTrace;
 
         assert(!trace.isEmpty());
         result.add(new CheckerErrorTraceLocation(

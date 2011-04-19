@@ -1,2 +1,4 @@
+*.tokens
+XMLEmitter.java
 *Emitter.java
 GNUCa*.java

@@ -17,7 +17,7 @@ import cz.muni.stanse.codestructures.CFGNode;
 
 // Node followers --------------------------------------------------------------
 
-abstract class CFGNodeFollowers { 
+abstract class CFGNodeFollowers {
     abstract List<CFGNode> get(final CFGNode node);
 }
 
@@ -125,7 +125,7 @@ final class CFGTraversationStack<T> extends CFGTraversationContainer<T> {
 // CFG traversal itself --------------------------------------------------------
 
 public final class CFGTraversal {
-    
+
     // public section
 
     public static <T extends CFGvisitor>
@@ -135,7 +135,7 @@ public final class CFGTraversal {
                     new ForwardCFGNodeFollowers(),
                     new CFGTraversationQueue<CFGNode>(),
                     visitor);
-        return visitor;        
+        return visitor;
     }
 
     public static <T extends CFGvisitor>
@@ -145,7 +145,7 @@ public final class CFGTraversal {
                     new BackwardCFGNodeFollowers(),
                     new CFGTraversationQueue<CFGNode>(),
                     visitor);
-        return visitor;        
+        return visitor;
     }
 
     public static <T extends CFGvisitor>
@@ -155,7 +155,7 @@ public final class CFGTraversal {
                     new ForwardCFGNodeFollowers(),
                     new CFGTraversationStack<CFGNode>(),
                     visitor);
-        return visitor;        
+        return visitor;
     }
 
     public static <T extends CFGvisitor>
@@ -165,7 +165,7 @@ public final class CFGTraversal {
                     new BackwardCFGNodeFollowers(),
                     new CFGTraversationStack<CFGNode>(),
                     visitor);
-        return visitor;        
+        return visitor;
     }
 
     public static <T extends CFGPathVisitor>
@@ -196,7 +196,7 @@ public final class CFGTraversal {
         traverseCFGPaths(cfg,path,
                          new ForwardCFGNodeFollowers(),
                          visitor,new HashSet<Pair<CFGNode,CFGNode>>());
-        return visitor;        
+        return visitor;
     }
 
     public static <T extends CFGPathVisitor>
@@ -207,7 +207,7 @@ public final class CFGTraversal {
         traverseCFGPaths(cfg,path,
                          new BackwardCFGNodeFollowers(),
                          visitor,new HashSet<Pair<CFGNode,CFGNode>>());
-        return visitor;        
+        return visitor;
     }
 
     public static <T extends CFGPathVisitor>

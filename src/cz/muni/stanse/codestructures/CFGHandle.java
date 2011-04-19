@@ -6,6 +6,7 @@
 
 package cz.muni.stanse.codestructures;
 
+import java.util.List;
 import java.util.Set;
 
 import org.dom4j.Element;
@@ -64,9 +65,17 @@ public class CFGHandle {
     public boolean isSymbolLocal(String symbol) {
         return getCFG().isSymbolLocal(symbol);
     }
-    
+
     public Set<String> getSymbols() {
     	return getCFG().getSymbols();
+    }
+
+    public List<String> getParams() {
+	return getCFG().getParams();
+    }
+
+    public String getRetVar() {
+	return getCFG().getRetVar();
     }
 
     protected Unit getUnit() {

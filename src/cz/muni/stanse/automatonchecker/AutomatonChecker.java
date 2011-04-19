@@ -1,5 +1,5 @@
 /**
- * @file AutomatonChecker.java 
+ * @file AutomatonChecker.java
  * @brief Defines public final class AutomatonChecker which provides static
  *        program verification specialized to locking problems, interrupts
  *        enabling/disabling problems, unnecessary check optimizations and
@@ -24,9 +24,11 @@ import cz.muni.stanse.utils.Pair;
 import cz.muni.stanse.utils.ClassLogger;
 import cz.muni.stanse.utils.TimeManager;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Collections;
+import java.util.List;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -55,10 +57,10 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     /**
      * @brief Parses accepted XML automata definition and initializes internal
-     *        structures related to automata definition. 
+     *        structures related to automata definition.
      *
      * @param XMLdefinition XML representation of AST
-     * @throws XMLAutomatonSyntaxErrorException 
+     * @throws XMLAutomatonSyntaxErrorException
      */
     public AutomatonChecker(final File xmlFile) {
         super();
@@ -66,7 +68,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     }
 
     /**
-     * @brief Uniquelly identifies the checker by the string identifier. 
+     * @brief Uniquelly identifies the checker by the string identifier.
      *
      * @return String which uniquelly identifies the checker.
      * @see cz.muni.stanse.checker.Checker#getName()
@@ -78,14 +80,14 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
     }
 
     /**
-     * @brief Does the source code checking itself. 
+     * @brief Does the source code checking itself.
      *
      * Method searches through source code to find matching patterns defined
      * in XML automata definition file. Each such matched location in the source
      * code is assigned an instance of PatternLocation class. Initial location
      * in the program is always introduced and is initialized with initial
      * states of all automata to be run on the source code.
-     * 
+     *
      * The computation itself is simple distribution of automata states between
      * instances of PatternLocation class (locations are linked together with
      * respect to control-flow of source code). Automata states are transformed
@@ -93,14 +95,14 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
      * then distributed to linked locations. This procedure is finished, when
      * no location was delivered automaton state, which was not processed in
      * that location.
-     * 
+     *
      * Error detection is the final phase of the procedure. All PatternLocations
      * are crossed and checked for error states. Each PatternLocation has
      * assigned set of error transition rules which are applied to all processed
      * states in the location. If some error transition rule can be applied to
      * processed states, then it means the source code contains error. Each
      * error rule contains description of an error it checks for. Those error
-     * transition rules are defined in XML automaton definition file. 
+     * transition rules are defined in XML automaton definition file.
      *
      * @param units List of translations units (described in internal structures
      *              like CFGs and ASTs)
@@ -130,6 +132,48 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 
     // private section
 
+    private Integer makePatternId(HashMap<PatternLocation, Integer> patternids, StringBuilder sb, PatternLocation pattern) {
+        if (!patternids.containsKey(pattern)) {
+            sb.append("n").append(patternids.size()).append("[label=\"");
+            for (AutomatonState state : pattern.getUnprocessedAutomataStates()){
+                sb.append("[").append(state.toString()).append("]");
+            }
+            for (AutomatonState state : pattern.getProcessedAutomataStates()){
+                sb.append("[").append(state.toString()).append("]");
+            }
+            sb.append(pattern.getCFGreferenceNode());
+            sb.append("\"]").append(";\n");
+            patternids.put(pattern, patternids.size());
+            return patternids.size() - 1;
+        } else
+            return patternids.get(pattern);
+    }
+
+    private void dumpNodeLocationGraph(Collection<Pair<PatternLocation, PatternLocation> > locs) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("digraph G {\n");
+
+        HashMap<PatternLocation, Integer> patternids = new HashMap<PatternLocation, Integer>();
+        for (Pair<PatternLocation, PatternLocation> loc : locs) {
+            Integer firstId = makePatternId(patternids, sb, loc.getFirst());
+            Integer secondId = makePatternId(patternids, sb, loc.getSecond());
+            for (PatternLocation succ : loc.getFirst().getSuccessorPatternLocations()) {
+                Integer succId = makePatternId(patternids, sb, succ);
+                sb.append("n").append(firstId).append("->").append("n").append(succId).append(";\n");
+            }
+            if (firstId != secondId) {
+                sb.append("n").append(firstId).append("->").append("n").append(secondId).append(";\n");
+                for (PatternLocation succ : loc.getSecond().getSuccessorPatternLocations()) {
+                    Integer succId = makePatternId(patternids, sb, succ);
+                    sb.append("n").append(secondId).append("->").append("n").append(succId).append(";\n");
+                }
+            }
+        }
+
+        sb.append("}");
+        System.out.print(sb);
+    }
+
     private CheckingResult
     check(final XMLAutomatonDefinition xmlAutomatonDefinition,
           final LazyInternalStructures internals,
@@ -140,6 +184,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
         final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
             nodeLocationDictionary = PatternLocationBuilder
                    .buildPatternLocations(internals.getCFGHandles(),
+                                          internals.getAliasResolver(),
                                           xmlAutomatonDefinition,
                                           internals.getArgumentPassingManager(),
                                           internals.getNavigator(),
@@ -157,6 +202,7 @@ final class AutomatonChecker extends cz.muni.stanse.checker.Checker {
 	final TimeManager tmgr = new TimeManager();
         tmgr.measureStart();
         while (!progressQueue.isEmpty()) {
+            //dumpNodeLocationGraph(nodeLocationDictionary.values());
             final PatternLocation currentLocation = progressQueue.remove();
             if (!currentLocation.hasUnprocessedAutomataStates())
                 continue;

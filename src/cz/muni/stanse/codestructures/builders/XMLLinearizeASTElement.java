@@ -16,7 +16,7 @@ public final class XMLLinearizeASTElement {
 		addElement("baseType").
 		addText("void");
     }
-    
+
     // public section
 
     @SuppressWarnings("unchecked")

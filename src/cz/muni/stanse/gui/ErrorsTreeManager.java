@@ -14,10 +14,10 @@ import cz.muni.stanse.checker.CheckerErrorTraceLocation;
 final class ErrorsTreeManager {
 
     // package-private section
-	
+
 	/**
 	 * This comparator will compare CheckerError according to their importance
-	 * 
+	 *
 	 * @author radim cebis
 	 */
 	private static class ErrorsComparator implements Comparator<DefaultMutableTreeNode> {
@@ -28,24 +28,24 @@ final class ErrorsTreeManager {
 			Object firstObj = first.getUserObject();
 			if(secondObj instanceof CheckerError && firstObj instanceof CheckerError) {
 				return ((CheckerError)secondObj).getImportance() - ((CheckerError)firstObj).getImportance();
-			} 
+			}
 			return 0;
 		}
 	}
-	
+
 	/**
 	 * This function will sort checker errors according to their importance
-	 * 
+	 *
 	 * @author radim cebis
 	 */
 	@SuppressWarnings("unchecked")
 	public void sortErrors() {
 		if(errorsTree!=null && errorsTree.getModel()!=null && errorsTree.getModel().getRoot()!=null) {
 			((SortingTreeNode<DefaultMutableTreeNode>)(errorsTree.getModel().getRoot())).sort();
-			present();			
-		}		
+			present();
+		}
 	}
-	
+
 	ErrorsTreeManager(final javax.swing.JTree errorsTree,
                       final javax.swing.JButton markBugButton,
                       final javax.swing.JButton markFalsePosButton,
@@ -206,7 +206,7 @@ final class ErrorsTreeManager {
         getOpenedSourceFilesManager().gotoColumnInSelectedLine(
                                       location.getColumnNumber());
         MainWindow.getInstance().getConsoleManager().clear();
-        Object selected = getSelectedData(); 
+        Object selected = getSelectedData();
         if(selected instanceof CheckerError) {
         	MainWindow.getInstance().getConsoleManager().appendText(
                    ((CheckerError)selected).getFullDesc());

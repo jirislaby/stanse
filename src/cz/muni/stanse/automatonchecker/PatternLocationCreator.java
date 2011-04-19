@@ -1,6 +1,6 @@
 /**
  * @file .java
- * @brief 
+ * @brief
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *
@@ -8,6 +8,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.codestructures.AliasResolver;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.CFGsNavigator;
@@ -23,6 +24,7 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -62,7 +64,7 @@ final class PatternLocationCreator extends CFGvisitor {
             matchings = new LinkedList<Pair<XMLPattern,SimpleAutomatonID>>();
         for (XMLPattern pattern : getXMLAutomatonDefinition().getXMLpatterns()){
             final Pair<Boolean,XMLPatternVariablesAssignment>
-                matchResult = pattern.matchesXMLElement(element);
+                matchResult = pattern.matchesNode(node, aliasResolver);
             if (matchResult.getFirst()) {
                 final XMLPatternVariablesAssignment assign =
                         matchResult.getSecond();
@@ -100,7 +102,8 @@ final class PatternLocationCreator extends CFGvisitor {
 
     PatternLocationCreator(final CFGHandle cfg,
                            final XMLAutomatonDefinition XMLdefinition,
-                           final CFGsNavigator navigator) {
+                           final CFGsNavigator navigator,
+                           final AliasResolver aliasResolver) {
         super();
         automatonDefinition = XMLdefinition;
         nodeLocationDictionary = new HashMap<CFGNode,Pair<PatternLocation,
@@ -108,6 +111,7 @@ final class PatternLocationCreator extends CFGvisitor {
         automataIDs = new HashSet<SimpleAutomatonID>();
         this.navigator = navigator;
         this.cfg = cfg;
+        this.aliasResolver = aliasResolver;
 
         createStartEndPatternLocations();
     }
@@ -141,7 +145,7 @@ final class PatternLocationCreator extends CFGvisitor {
                                                        item.getSecond()));
         return transitionRules;
     }
-    
+
     private LinkedList<ErrorRule> createErrorRules(
                final LinkedList<Pair<XMLPattern,SimpleAutomatonID>> matchings) {
         final LinkedList<ErrorRule> errorRules = new LinkedList<ErrorRule>();
@@ -173,11 +177,7 @@ final class PatternLocationCreator extends CFGvisitor {
     isGlobalAssignement(final XMLPatternVariablesAssignment assignment) {
         final SimpleAutomatonID id = new SimpleAutomatonID(assignment,false);
 
-        final Iterator<Element> paramIter =
-           XMLLinearizeASTElement.functionDeclaration(getCfg().getElement())
-                                 .iterator();
-        for (paramIter.next(); paramIter.hasNext(); ) {
-            final String paramName = paramIter.next().getText();
+        for (String paramName : getCfg().getParams()){
             for (final String var : id.getVarsAssignment())
                 if (var.contains(paramName))
                     return false;
@@ -208,6 +208,7 @@ final class PatternLocationCreator extends CFGvisitor {
     private final HashSet<SimpleAutomatonID> automataIDs;
     private final CFGsNavigator navigator;
     private final CFGHandle cfg;
+    private final AliasResolver aliasResolver;
     private final static Logger logger =
 	    Logger.getLogger(PatternLocationCreator.class);
 }

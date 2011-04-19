@@ -35,44 +35,53 @@ public final class ArgumentPassingManager {
 
     private void build(final CFGsNavigator navigator,
                        final Map<CFGNode,CFGHandle> nodeToCFGdict) {
-        for (final CFGNode call : navigator.callSites()) {
-            final CFGNode start = navigator.getCalleeStart(call);
-            buildPassingsForCallSite(call,call.getElement(),start,
-                    nodeToCFGdict.get(start).getElement(),
-                    navigator.getCalleeEnd(call));
+        for (final CFGNode caller : navigator.callSites()) {
+            final CFGNode start = navigator.getCalleeStart(caller);
+            buildPassingsForCallSite(caller,
+                    nodeToCFGdict.get(start));
         }
     }
 
     private void
-    buildPassingsForCallSite(final CFGNode call, Element callElem,
-                             final CFGNode start, Element calleeElem,
-                             final CFGNode end) {
+    buildPassingsForCallSite(final CFGNode caller,
+                             final CFGHandle callee) {
         final LinkedList<Pair<String,String>> map =
-            buildMappingFromCallSiteToCallee(callElem,calleeElem);
-        getMapping().put(Pair.make(call,start),map);
-        getMapping().put(Pair.make(call,end),map);
+            buildMappingFromCallSiteToCallee(caller, callee);
+        getMapping().put(Pair.make(caller, callee.getStartNode()),map);
+        getMapping().put(Pair.make(caller, callee.getEndNode()), map);
 
         final LinkedList<Pair<String,String>> mapTransposed =
             transposeCallSiteMapping(map);
-        getMapping().put(Pair.make(start,call),mapTransposed);
-        getMapping().put(Pair.make(end,call),mapTransposed);
+        getMapping().put(Pair.make(callee.getStartNode(), caller),mapTransposed);
+        getMapping().put(Pair.make(callee.getEndNode(), caller),mapTransposed);
     }
 
     private static LinkedList<Pair<String,String>>
-    buildMappingFromCallSiteToCallee(final Element callElem,
-                                     final Element calleeElem) {
+    buildMappingFromCallSiteToCallee(final CFGNode caller,
+                                     final CFGHandle callee) {
         final LinkedList<Pair<String,String>> result =
             new LinkedList<Pair<String,String>>();
 
-        final Iterator<Element> callIter =
-            XMLLinearizeASTElement.functionCall(callElem).iterator();
-        final Iterator<Element> calleeIter =
-            XMLLinearizeASTElement.functionDeclaration(calleeElem).iterator();
-        for (callIter.next(), calleeIter.next(); callIter.hasNext(); )
-            result.add(Pair.make(PassingSolver
-                                             .makeArgument(callIter.next()),
-                                 PassingSolver
-                                             .makeArgument(calleeIter.next())));
+        if (caller.getNodeType() != null) {
+            Iterator<CFGNode.Operand> opIter = caller.getOperands().iterator();
+            opIter.next();
+            Iterator<String> paramIter = callee.getParams().iterator();
+            while (opIter.hasNext()) {
+                assert paramIter.hasNext();
+                result.add(Pair.make(PassingSolver.makeArgument(opIter.next()), paramIter.next()));
+            }
+            assert !paramIter.hasNext();
+        } else {
+            final Iterator<Element> callIter =
+                XMLLinearizeASTElement.functionCall(caller.getElement()).iterator();
+            final Iterator<Element> calleeIter =
+                XMLLinearizeASTElement.functionDeclaration(callee.getElement()).iterator();
+            for (callIter.next(), calleeIter.next(); callIter.hasNext(); )
+                result.add(Pair.make(PassingSolver
+                                                 .makeArgument(callIter.next()),
+                                     PassingSolver
+                                                 .makeArgument(calleeIter.next())));
+        }
         return result;
     }
 

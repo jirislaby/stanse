@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import org.antlr.runtime.tree.CommonTreeNodeStream;
 import org.antlr.runtime.tree.RewriteCardinalityException;
 
 import cz.muni.stanse.Stanse;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.Unit;
 import cz.muni.stanse.codestructures.ParserException;
 import cz.muni.stanse.codestructures.CFG;
@@ -34,49 +36,39 @@ import cz.muni.stanse.utils.StreamAlgo;
  * Holds all the code-related data for C compilation units (files).
  *
  * Currently based on the ANTLR parser, working in three steps.
- * 
+ *
  *  1. parse C and create an AST (GNUCa.g)
  *  2. parse AST and generate an XML representation of the AST (XMLEmitter.g)
  *  3. parse AST and generate its CFG, with pointers to the relevant XML
  *     nodes (CFGEmitter.g)
  */
 public final class CUnit extends Unit {
-    private String jobEntry;
     private List<String> typedefs = null;
+    List<String> args;
 
     /**
      * Constructor with flags parameter
      *
      * @param jobEntry string in format TODO
      */
-    public CUnit(String jobEntry) {
-	String file;
-	int outputIdx;
+    public CUnit(List<String> args) {
+	this.args = args;
+	String file = args.get(0);
 
-	jobEntry = jobEntry.trim();
-	outputIdx = jobEntry.indexOf("},{");
-	if (outputIdx < 0 || jobEntry.charAt(0) != '{') {
-	    file = jobEntry;
-	    jobEntry = "{" + file + "},{" + file + "},{},{}";
+	if (args.size() == 1) {
+	    args.add(args.get(0));
+	    args.add("");
+	    args.add("");
 	} else {
-	    String workDir, output;
-	    File f;
-	    int dirIdx;
-
-	    outputIdx += 3;
-	    dirIdx = jobEntry.indexOf("},{", outputIdx) + 3;
-	    output = jobEntry.substring(outputIdx, dirIdx - 3);
-
-	    f = new File(output);
+	    String output = args.get(1);
+	    File f = new File(output);
 	    if (!f.isAbsolute()) {
-		workDir = jobEntry.substring(dirIdx,
-			jobEntry.indexOf("},{", dirIdx));
+		String workDir = args.get(2);
 		f = new File(workDir, output);
 	    }
 	    file = f.getAbsolutePath();
 	}
 	file += ".preproc";
-	this.jobEntry = jobEntry;
 	this.fileName = new File(file);
     }
 
@@ -128,7 +120,20 @@ public final class CUnit extends Unit {
 	try {
 	    CFGs = cfgEmitter.translationUnit();
 	    for (CFG cfg: CFGs)
+	    {
+		for (CFGNode node : cfg.getAllNodesOpt()) {
+		    assert node.getElement() != null;
+		    int line = 1;
+		    int column = 1;
+		    if (node.getElement().attribute("bl") != null)
+			line = Integer.parseInt(node.getElement().attributeValue("bl"));
+		    if (node.getElement().attribute("bc") != null)
+			column = Integer.parseInt(node.getElement().attributeValue("bc"));
+		    node.setLocation(this.fileName, line, column);
+		}
+
 		CFGHs.add(new CFGHandle(this, cfg));
+	    }
 	} catch (RecognitionException e) {
 	    throw new ParserException("CFGEmitter", e);
 	}
@@ -138,14 +143,24 @@ public final class CUnit extends Unit {
 	typedefs = new LinkedList<String>();
 	Process p;
 	String line;
-	
+
 	// this is necessary
 	// the environment is modified only AFTER the command is
 	// executed!
 	String command = Stanse.getInstance().getRootDirectory() + File.separator +
 		"bin" + File.separator + "stpreproc";
+	String jobEntry = "{" + args.get(0) + "}";
+	for (int i = 1; i < args.size(); ++i) {
+	    jobEntry += ",{";
+	    jobEntry += args.get(i);
+	    jobEntry += "}";
+	}
 	ProcessBuilder builder = new ProcessBuilder("perl", command, jobEntry);
 	Map<String, String> env = builder.environment();
+	if (env.containsKey("Path")) {
+	    env.put("PATH", env.get("Path"));
+	    env.remove("Path");
+	}
 	env.put("PATH", env.get("PATH") + File.pathSeparator +
 		Stanse.getInstance().getRootDirectory() + File.separator + "bin");
 	try {

@@ -1,6 +1,6 @@
 /**
  * @file XMLPattern.java
- * @brief 
+ * @brief
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *
@@ -8,9 +8,14 @@
  */
 package cz.muni.stanse.utils.xmlpatterns;
 
+import cz.muni.stanse.codestructures.AliasResolver;
+import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.utils.Pair;
+
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Element;
 import org.dom4j.Attribute;
@@ -35,6 +40,7 @@ public final class XMLPattern {
 
     public XMLPattern(final Element XMLelement) {
         patternXMLelement = XMLelement;
+        compiledRegexes = new HashMap<String, java.util.regex.Pattern>();
         name = patternXMLelement.attributeValue("name");
         final String conAttr = patternXMLelement.attributeValue("constructive");
         constructive = (conAttr == null) ? true : !conAttr.equals("false");
@@ -71,7 +77,69 @@ public final class XMLPattern {
     }
 
     public Pair<Boolean,XMLPatternVariablesAssignment>
+    matchesNode(final CFGNode node, AliasResolver aliasResolver) {
+	Element xmlPivot = getPatternXMLelement();
+        if (xmlPivot.getName().equals("node")) {
+            return matchesNode(node, getPatternXMLelement(), aliasResolver);
+        } else if (node.getElement() != null)
+            return matchesXMLElement(node.getElement());
+        else
+            return Pair.make(false, null);
+    }
+
+    private Pair<Boolean,XMLPatternVariablesAssignment>
+    matchesNode(final CFGNode node, Element xmlPivot, AliasResolver aliasResolver) {
+	if (node.getNodeType() == null
+                || !node.getNodeType().equals(xmlPivot.attributeValue("type")))
+	    return Pair.make(false, null);
+
+	XMLPatternVariablesAssignment varsAssignment = new XMLPatternVariablesAssignment();
+
+	Iterator<Element> i = xmlPivot.elementIterator();
+	Iterator<CFGNode.Operand> j = node.getOperands().iterator();
+	while (i.hasNext() && j.hasNext()) {
+	    Element elem = i.next();
+
+	    if (elem.getName().equals("any"))
+		return Pair.make(true, varsAssignment);
+
+	    CFGNode.Operand op = j.next();
+
+	    if (elem.getName().equals("ignore"))
+		continue;
+
+	    if (elem.getName().equals("var")) {
+	        varsAssignment.put(elem.attribute("name").getValue(), op);
+	        continue;
+	    }
+
+            if (op.type == CFGNode.OperandType.nodeval) {
+                if (!elem.getName().equals("node"))
+                    return Pair.make(false, null);
+
+                Pair<Boolean, XMLPatternVariablesAssignment> nested
+                        = matchesNode((CFGNode)op.id, elem, aliasResolver);
+		if (!nested.getFirst())
+		    return nested;
+		varsAssignment.merge(nested.getSecond());
+	    } else {
+                if (!op.type.toString().equals(elem.getName()))
+                    return Pair.make(false, null);
+
+		if (!aliasResolver.match(elem.getText(), op.id.toString()))
+		    return Pair.make(false, null);
+	    }
+	}
+
+	if (i.hasNext() || j.hasNext())
+	    return Pair.make(false, null);
+
+	return Pair.make(true, varsAssignment);
+    }
+
+    public Pair<Boolean,XMLPatternVariablesAssignment>
     matchesXMLElement(final Element XMLelement) {
+        assert XMLelement != null;
         final XMLPatternVariablesAssignment varsAssignment =
                 new XMLPatternVariablesAssignment();
         return new Pair<Boolean,XMLPatternVariablesAssignment>(
@@ -104,7 +172,7 @@ public final class XMLPattern {
                                XMLelement);
             return true;
         }
-        
+
         if (!XMLpivot.getName().equals(XMLelement.getName()))
             return false;
         if (!matchingAttributes(XMLpivot.attributes(),XMLelement))
@@ -136,7 +204,7 @@ public final class XMLPattern {
         if (matchingElements((Element)XMLpivot.elementIterator().next(),
 		XMLelement, varsAssignment))
             return true;
-        
+
         for (final Iterator<Element> j = XMLelement.elementIterator();
 		j.hasNext(); )
             if (matchingElements(XMLpivot, j.next(), varsAssignment))
@@ -148,7 +216,7 @@ public final class XMLPattern {
     public Element getPatternXMLelement() {
         return (Element)patternXMLelement.elementIterator().next();
     }
-    
+
     private static boolean matchingAttributes(final List<Attribute> pivotATTRs,
                                               final Element XMLelement) {
         for (final Attribute pivotAttr: pivotATTRs) {
@@ -200,5 +268,6 @@ public final class XMLPattern {
 
     private final Element patternXMLelement;
     private final String name;
+    private final Map<String, java.util.regex.Pattern> compiledRegexes;
     private final boolean constructive;
 }

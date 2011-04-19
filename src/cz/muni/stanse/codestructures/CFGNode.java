@@ -6,9 +6,11 @@
 
 package cz.muni.stanse.codestructures;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.dom4j.Element;
 
@@ -17,13 +19,77 @@ import org.dom4j.Element;
  * package)
  */
 public class CFGNode {
+
+    public static class EdgeLabel
+    {
+        public int edgeIndex = 0;
+        public Object cond = null;
+
+        EdgeLabel()
+        {
+        }
+
+        EdgeLabel(int edgeIndex, Object cond)
+        {
+            this.edgeIndex = edgeIndex;
+            this.cond = cond;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return "(" + Integer.toString(edgeIndex) + ", " + cond.toString() + ")";
+        }
+    }
+
     private int number;
     private Element element;
     private String code;
     private List<CFGNode> preds = new ArrayList<CFGNode>();
     private List<CFGNode> succs = new ArrayList<CFGNode>();
+    private List<EdgeLabel> edgeLabels = new ArrayList<EdgeLabel>();
     private List<CFGNode> optPreds = new ArrayList<CFGNode>();
     private List<CFGNode> optSuccs = new ArrayList<CFGNode>();
+
+    public enum OperandType { none, function, constant, varptr, varval, nodeval };
+
+    public static class Operand {
+	public Operand(OperandType type, Object id) {
+	    this.type = type;
+	    this.id = id;
+	}
+
+	public Operand(String type, Object id) {
+	    if (type.equals("func"))
+		this.type = OperandType.function;
+	    else if (type.equals("const"))
+		this.type = OperandType.constant;
+	    else if (type.equals("varptr"))
+		this.type = OperandType.varptr;
+	    else if (type.equals("var"))
+		this.type = OperandType.varval;
+	    else if (type.equals("node"))
+		this.type = OperandType.nodeval;
+	    else
+		throw new IllegalArgumentException("Invalid operand type: " + type);
+	    this.id = id;
+	}
+
+        @Override
+	public String toString() {
+	    return type.toString() + " " + id.toString();
+	}
+
+	public OperandType type;
+	public Object id;
+    }
+
+    String nodeType;
+    List<Operand> operands = new ArrayList<Operand>();
+    File file;
+    int line;
+    int column;
+    boolean visible = true;
 
     /**
      * Creates a new instance of CFGNode
@@ -76,16 +142,50 @@ public class CFGNode {
 	return element;
     }
 
+    public void setLocation(File file, int line, int column) {
+        this.file = file;
+	this.line = line;
+	this.column = column;
+    }
+
+    public boolean hasLocation() {
+	return file != null;
+    }
+
+    public File getFile() {
+        return this.file;
+    }
+
     public final int getColumn() {
-	if (getElement() == null || getElement().attribute("bc") == null)
-	    return 1;
-        return Integer.parseInt(getElement().attributeValue("bc"));
+	return column;
     }
 
     public final int getLine() {
-	if (getElement() == null || getElement().attribute("bl") == null)
-	    return 1;
-        return Integer.parseInt(getElement().attributeValue("bl"));
+	return line;
+    }
+
+    public boolean isVisible() {
+	return visible;
+    }
+
+    public void setVisible(boolean value) {
+	visible = value;
+    }
+
+    public static Set<String> getDependentVars(Operand op) {
+	Set<String> res = new java.util.HashSet<String>();
+	if (op.type == OperandType.varptr || op.type == OperandType.varval)
+	    res.add((String)op.id);
+	else if (op.type == OperandType.nodeval)
+	    res.addAll(((CFGNode)op.id).getDependentVars());
+	return res;
+    }
+
+    public Set<String> getDependentVars() {
+	Set<String> res = new java.util.HashSet<String>();
+	for (Operand op : operands)
+	    res.addAll(getDependentVars(op));
+	return res;
     }
 
     /**
@@ -120,29 +220,33 @@ public class CFGNode {
 	return Collections.unmodifiableList(optSuccs);
     }
 
+    public List<Operand> getOperands() {
+	return Collections.unmodifiableList(operands);
+    }
+
+    public void setOperands(List<Operand> operands) {
+	this.operands.clear();
+	this.operands.addAll(operands);
+    }
+
+    public void addOperand(OperandType type, Object id) {
+	operands.add(new Operand(type, id));
+    }
+
+    public String getNodeType() {
+	return nodeType;
+    }
+
+    public void setNodeType(String nodeType) {
+	this.nodeType = nodeType;
+    }
+
     /**
      * Adds the node to the predecessors
      * @param pred new predecessor
      */
     protected void addPred(CFGNode pred) {
 	preds.add(pred);
-    }
-
-    /**
-     * Adds the node to the successors
-     * @param succ new successor
-     */
-    protected void addSucc(CFGNode succ) {
-	succs.add(succ);
-    }
-
-    /**
-     * Inserts the node to the successors at specified position
-     * @param index index at which the specified element is to be inserted
-     * @param succ new successor
-     */
-    protected void addSucc(int index, CFGNode succ) {
-	succs.add(index, succ);
     }
 
     /**
@@ -154,63 +258,43 @@ public class CFGNode {
     }
 
     /**
-     * Returns index of the specified successor
-     * @param succ successor to get index for
-     * @return the index in the list
+     * Adds an edge between two nodes
+     * @param to which node to add the edge to
      */
-    protected int indexOfSucc(CFGNode succ) {
-	return succs.indexOf(succ);
-    }
-
-    /**
-     * Adds the node to the predecessors
-     * @param pred new predecessor
-     */
-    protected void addOptPred(CFGNode pred) {
-	optPreds.add(pred);
-    }
-
-    /**
-     * Adds the node to the successors
-     * @param succ new successor
-     */
-    protected void addOptSucc(CFGNode succ) {
-	optSuccs.add(succ);
-    }
-
-    /**
-     * Inserts the node to the successors at specified position
-     * @param index index at which the specified element is to be inserted
-     * @param succ new successor
-     */
-    protected void addOptSucc(int index, CFGNode succ) {
-	optSuccs.add(index, succ);
-    }
-
-    /**
-     * Removes the node from the successors
-     * @param index the index of the element to be removed
-     */
-    protected void removeOptSucc(int index) {
-	optSuccs.remove(index);
-    }
-
-    /**
-     * Returns index of the specified successor
-     * @param succ successor to get index for
-     * @return the index in the list
-     */
-    protected int indexOfOptSucc(CFGNode succ) {
-	return optSuccs.indexOf(succ);
+    public void addEdge(CFGNode to) {
+	succs.add(to);
+	edgeLabels.add(new EdgeLabel());
+	to.addPred(this);
     }
 
     /**
      * Adds an edge between two nodes
      * @param to which node to add the edge to
      */
-    public void addEdge(CFGNode to) {
-	addSucc(to);
-	to.addPred(this);
+    public void addEdge(CFGNode to, Object label) {
+        succs.add(to);
+        edgeLabels.add(new EdgeLabel(0, label));
+        to.addPred(this);
+    }
+
+    /**
+     * Adds an edge between two nodes
+     * @param to which node to add the edge to
+     */
+    public void addEdge(CFGNode to, int edgeIndex, Object label) {
+        succs.add(to);
+        edgeLabels.add(new EdgeLabel(edgeIndex, label));
+        to.addPred(this);
+    }
+
+    /**
+     * Get label of a branch edge indexed from 0
+     *
+     * @param edge edge index
+     * @return element which is the label
+     */
+    public Object getEdgeLabel(int edge) {
+        return edgeLabels.get(edge);
     }
 
     /**
@@ -218,8 +302,8 @@ public class CFGNode {
      * @param to which node to add the edge to
      */
     public void addOptEdge(CFGNode to) {
-	addOptSucc(to);
-	to.addOptPred(this);
+	optSuccs.add(to);
+	to.optPreds.add(this);
     }
 
     /**
@@ -228,9 +312,9 @@ public class CFGNode {
      * @param newTo which node use as a replacement
      */
     public void replaceEdge(CFGNode oldTo, CFGNode newTo) {
-	int idx = indexOfSucc(oldTo);
+	int idx = succs.indexOf(oldTo);
 	removeSucc(idx);
-	addSucc(idx, newTo);
+	succs.add(idx, newTo);
 	newTo.addPred(this);
     }
 
@@ -240,15 +324,16 @@ public class CFGNode {
      * @param newTo which node use as a replacement
      */
     public void replaceOptEdge(CFGNode oldTo, CFGNode newTo) {
-	int idx = indexOfOptSucc(oldTo);
-	removeOptSucc(idx);
-	addOptSucc(idx, newTo);
-	newTo.addOptPred(this);
+	int idx = optSuccs.indexOf(oldTo);
+	optSuccs.remove(idx);
+	optSuccs.add(idx, newTo);
+	newTo.optPreds.add(this);
     }
 
     public void drop() {
 	preds.clear();
 	succs.clear();
+	edgeLabels.clear();
 	optPreds.clear();
 	optSuccs.clear();
 	element.clearContent();
@@ -279,6 +364,10 @@ public class CFGNode {
 
     @Override
     public String toString() {
-	return Integer.toString(number);
+	String res = Integer.toString(number) + " " + nodeType.toString();
+	for (Operand op : operands) {
+	    res += "[" + op.toString() + "]";
+	}
+	return res;
     }
 }

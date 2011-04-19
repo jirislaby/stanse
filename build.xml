@@ -21,6 +21,7 @@
 	<pathelement location="${dist}/lib/log4j-1.2.16.jar"/>
 	<pathelement location="${dist}/lib/swing-layout-1.0.4.jar"/>
 	<pathelement location="${dist}/lib/com.inamik.utils.tableformatter-0.96.2.jar"/>
+	<pathelement location="${dist}/lib/json-dced076c.jar"/>
     </path>
     <target name="run">
         <java jar="${dist}/${ant.project.name}.jar" fork="true" >
@@ -135,7 +136,7 @@
 	    <attribute name="Built-By" value="${user.name}"/>
 	    <attribute name="Main-Class" value="cz.muni.stanse.Stanse"/>
 	    <attribute name="Implementation-Version" value="Built on: ${TODAY}" />
-	    <attribute name="Class-Path" value="lib/antlr-runtime-3.2.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.3.jar lib/jgrapht-jdk1.6.jar lib/jopt-simple-3.1.jar lib/log4j-1.2.16.jar lib/swing-layout-1.0.4.jar lib/com.inamik.utils.tableformatter-0.96.2.jar" />
+	    <attribute name="Class-Path" value="lib/antlr-runtime-3.2.jar lib/dom4j-1.6.1.jar lib/jaxen-1.1.3.jar lib/jgrapht-jdk1.6.jar lib/jopt-simple-3.1.jar lib/log4j-1.2.16.jar lib/swing-layout-1.0.4.jar lib/com.inamik.utils.tableformatter-0.96.2.jar lib/json-dced076c.jar" />
 	</manifest>
 	<jar destfile="${dist}/stanse.jar" basedir="build" manifest="manifest.mf" excludes="cparser-c/"/>
     </target>

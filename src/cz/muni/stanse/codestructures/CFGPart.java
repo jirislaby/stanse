@@ -116,7 +116,7 @@ public class CFGPart {
      * Returns all nodes in this CFG
      * @return list of all nodes
      */
-    protected Set<CFGNode> getAllNodes() {
+    public Set<CFGNode> getAllNodes() {
 	return getAllNodes(false);
     }
 
@@ -124,7 +124,7 @@ public class CFGPart {
      * Returns all nodes in this CFG including optimized ones
      * @return list of all nodes
      */
-    protected Set<CFGNode> getAllNodesOpt() {
+    public Set<CFGNode> getAllNodesOpt() {
 	return getAllNodes(true);
     }
 
@@ -205,20 +205,18 @@ public class CFGPart {
 	    Element e = n.getElement();
 	    if (e != null) {
 		sb.append(' ');
-		sb.append(e.toString());
+		sb.append(e.asXML());
 	    }
-	    CFGBranchNode bn = null;
-	    if (n instanceof CFGBranchNode)
-		bn = (CFGBranchNode)n;
 	    int edge = 0;
 	    for (CFGNode succ: n.getSuccessors()) {
 		sb.append(eol);
 		sb.append("  -");
-		if (bn != null) {
-		    sb.append(bn.getEdgeLabel(edge));
+		Object edgeLabel = n.getEdgeLabel(edge);
+		if (edgeLabel instanceof Element) {
+		    sb.append(((Element)edgeLabel).asXML());
 		    sb.append('-');
-		    edge++;
 		}
+		edge++;
 		sb.append("> ");
 		sb.append(succ.toString());
 	    }
@@ -282,16 +280,14 @@ public class CFGPart {
     private void buildArcs(StringBuilder sb, CFGNode from, boolean optimized,
 	    String eol) {
 	int edge = 0;
-	CFGBranchNode bn = null;
-	if (from instanceof CFGBranchNode)
-	    bn = (CFGBranchNode)from;
 	for (CFGNode succ: optimized ? from.getOptSuccessors() :
 		from.getSuccessors()) {
 	    sb.append('\t').append(from.getNumber()).append(" -> ").
 		    append(succ.getNumber());
-	    if (bn != null) {
+	    Object edgeLabel = from.getEdgeLabel(edge);
+	    if (edgeLabel instanceof Element) {
 		sb.append(" [label=\"");
-		Element label = bn.getEdgeLabel(edge);
+		Element label = (Element)edgeLabel;
 		if (label.getName().equals("intConst"))
 		    sb.append(label.getText());
 		else

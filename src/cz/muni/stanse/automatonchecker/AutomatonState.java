@@ -1,7 +1,7 @@
 /**
- * @file AutomatonState.java 
+ * @file AutomatonState.java
  * @brief Here are defined automata states for all the automata defined in XML
- *        automata definition file of automatonchecker package.   
+ *        automata definition file of automatonchecker package.
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *
@@ -16,7 +16,7 @@ import java.util.Stack;
 /**
  * @brief This class represents automaton state for each automata class defined
  *        in XML automata definition file.
- * 
+ *
  *  Automata states represents the data, which are delivered between
  *  PatternLocation instances, which is the main idea in whole automatonchecker
  *  package. So each automaton state presented in some PatternLocation tells as,
@@ -74,12 +74,20 @@ final class AutomatonState {
     }
 
     Stack<AutomatonStateContextItem> getContext() {
-        return context;
+	return context;
     }
 
     boolean isEqualWith(AutomatonState other) {
         return getSymbol().equals(other.getSymbol()) &&
                getContext().equals(other.getContext());
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(symbol);
+        for (AutomatonStateContextItem ctxitem : context)
+            sb.append("[").append(ctxitem.getAutomatonID()).append("]");
+        return sb.toString();
     }
 
     // private section

@@ -6,9 +6,12 @@
 
 package cz.muni.stanse.codestructures;
 
+import cz.muni.stanse.codestructures.builders.XMLLinearizeASTElement;
 import cz.muni.stanse.utils.xmlpatterns.XMLAlgo;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.dom4j.Element;
@@ -17,9 +20,11 @@ import org.dom4j.Element;
  * Represents a control-flow graph of a function
  */
 public class CFG extends CFGPart {
-    private Set<String> symbols;
+    private List<String> params;
+    private Set<String> symbols; // locals
     private String functionName;
     private Element functionDefinition;
+    private String retvar;
 
     /**
      * Creates a new instance of CFG
@@ -30,41 +35,34 @@ public class CFG extends CFGPart {
      */
     public static CFG createFromCFGPart(CFGPart cfgPart,
 		Element functionDefinition) {
-	CFG cfg = new CFG(functionDefinition);
-	cfg.setStartNode(cfgPart.getStartNode());
-	cfg.setEndNode(cfgPart.getEndNode());
+
+	List<Element> linear = XMLLinearizeASTElement.functionDeclaration(functionDefinition);
+	assert linear.size() > 0;
+	assert linear.get(0).getName().equals("id");
+
+	String functionName = linear.get(0).getText();
+
+	List<String> params = new ArrayList<String>();
+	for (int i = 1; i < linear.size(); ++i) {
+	    assert linear.get(i).getName().equals("id");
+	    params.add(linear.get(i).getText());
+	}
+
+	CFG cfg = new CFG(cfgPart.getStartNode(), cfgPart.getEndNode(), functionName);
+	cfg.setParams(params);
+	cfg.functionDefinition = functionDefinition;
 	return cfg;
     }
 
-    /**
-     * Creates a new instance of CFG
-     *
-     * @param functionDefinition XML representation of a function definition
-     */
-    private CFG(Element functionDefinition) {
+    public CFG(CFGNode startNode, CFGNode endNode, String functionName) {
 	super();
-	this.functionDefinition = functionDefinition;
-	Element declarator = (Element)functionDefinition.
-		selectSingleNode("./declarator");
-	while (true) {
-	    String node0 = declarator.node(0).getName();
-	    if (node0.equals("declarator"))
-		declarator = (Element)declarator.node(0);
-	    else if (node0.equals("pointer") &&
-			declarator.node(1).getName().equals("declarator"))
-		declarator = (Element)declarator.node(1);
-	    else
-		break;
-	}
-	Element nameElem = (Element)declarator.selectSingleNode("./id");
-	if (nameElem == null) {
-	    functionName = "UNKNOWN";
-	    System.err.println("Unknown function definition:");
-	    XMLAlgo.outputXML(functionDefinition);
-	    System.err.println("\n============");
-	} else
-	    functionName = nameElem.getText();
+	this.functionName = functionName;
+	this.setStartNode(startNode);
+	this.setEndNode(endNode);
     }
+
+    public String getRetVar() { return retvar; }
+    public void setRetVar(String value) { retvar = value; }
 
     /**
      * Returns function name assigned to this CFG
@@ -76,16 +74,25 @@ public class CFG extends CFGPart {
     }
 
     protected Element getElement() {
-        if (!functionDefinition.getName().equals("functionDefinition"))
+        if (functionDefinition != null && !functionDefinition.getName().equals("functionDefinition"))
 	    throw new UnsupportedOperationException(
 		    "wrong element in functionDefinition");
         return functionDefinition;
     }
 
+    public void setParams(List<String> params) {
+	this.params = params;
+    }
+
     public void setSymbols(Set<String> symbols) {
 	this.symbols = symbols;
     }
-    
+
+    public List<String> getParams() {
+	assert this.params != null;
+	return Collections.unmodifiableList(this.params);
+    }
+
     public Set<String> getSymbols() {
 	return Collections.unmodifiableSet(this.symbols);
     }
@@ -103,18 +110,13 @@ public class CFG extends CFGPart {
 	    return false;
 	}
 	final CFG other = (CFG)obj;
-	if (this.functionDefinition != other.functionDefinition &&
-		(this.functionDefinition == null ||
-		 !this.functionDefinition.equals(other.functionDefinition))) {
-	    return false;
-	}
-	return true;
+	return this.functionName.equals(other.functionName);
     }
 
     @Override
     public int hashCode() {
 	int hash = super.hashCode();
-	hash = 23 * hash + functionDefinition.hashCode();
+	hash = 23 * hash + functionName.hashCode();
 	return hash;
     }
 

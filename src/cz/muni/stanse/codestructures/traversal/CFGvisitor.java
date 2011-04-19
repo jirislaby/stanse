@@ -16,7 +16,7 @@ public abstract class CFGvisitor {
     }
 
     boolean visitInternal(final CFGNode node, Element element) {
-        return terminate ? false : visit(node,element);
+        return terminate ? false : visit(node, element);
     }
 
     private boolean terminate = false;

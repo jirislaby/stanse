@@ -1,6 +1,6 @@
 /**
  * @file .java
- * @brief 
+ * @brief
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *
@@ -8,6 +8,7 @@
  */
 package cz.muni.stanse.automatonchecker;
 
+import cz.muni.stanse.codestructures.AliasResolver;
 import cz.muni.stanse.codestructures.CFGHandle;
 import cz.muni.stanse.codestructures.CFGNode;
 import cz.muni.stanse.codestructures.traversal.CFGTraversal;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 final class PatternLocationBuilder {
 
@@ -28,6 +30,7 @@ final class PatternLocationBuilder {
 
     static HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
     buildPatternLocations(final Collection<CFGHandle> cfgs,
+                          final AliasResolver aliasResolver,
                           final XMLAutomatonDefinition automatonDefinition,
                           final ArgumentPassingManager passingManager,
                           final CFGsNavigator navigator,
@@ -43,6 +46,7 @@ final class PatternLocationBuilder {
     		final Pair<HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>,
                        HashSet<SimpleAutomatonID>> locationsAndStates =
                 buildPatternLocationsAndStatesForOneCFG(cfg,
+                        aliasResolver,
                         automatonDefinition, navigator,
                         startFunctions.contains(cfg));
     		nodeLocationDictionary.putAll(locationsAndStates.getFirst());
@@ -77,12 +81,13 @@ final class PatternLocationBuilder {
     private static Pair<HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>,
                         HashSet<SimpleAutomatonID>>
     buildPatternLocationsAndStatesForOneCFG(final CFGHandle cfg,
+                               final AliasResolver aliasResolver,
                                final XMLAutomatonDefinition automatonDefinition,
                                final CFGsNavigator navigator,
                                final boolean isStartFunction)
                                        throws XMLAutomatonSyntaxErrorException {
         final PatternLocationCreator patternLocationCreator =
-            new PatternLocationCreator(cfg, automatonDefinition,navigator);
+            new PatternLocationCreator(cfg, automatonDefinition,navigator, aliasResolver);
 
         final HashMap<CFGNode,Pair<PatternLocation,PatternLocation>>
             nodeLocationsDictionary = CFGTraversal.traverseCFGToBreadthForward(
@@ -175,9 +180,7 @@ final class PatternLocationBuilder {
                                  new HashSet<SimpleAutomatonID>(),
                                  new HashSet<SimpleAutomatonID>());
         for (final SimpleAutomatonID id : IDs)
-           if (isParameterDependentID(id,cz.muni.stanse.codestructures.builders.
-                    XMLLinearizeASTElement.functionDeclaration(cfg.getElement())
-                                          .iterator()))
+           if (isParameterDependentID(id, cfg.getParams().iterator()))
                 result.getThird().add(id);
             else if (isOfLocallyDeclaredVariable(id,cfg)) {
                 if (isInReturnExpression(id,cfg))
@@ -193,9 +196,9 @@ final class PatternLocationBuilder {
 
     private static boolean
     isParameterDependentID(final SimpleAutomatonID automatonID,
-                        final java.util.Iterator<org.dom4j.Element> paramIter) {
-        for (paramIter.next(); paramIter.hasNext(); )
-            if (isParameterDependentID(automatonID,paramIter.next().getText()))
+                        final java.util.Iterator<String> params) {
+        while (params.hasNext())
+            if (isParameterDependentID(automatonID,params.next()))
                 return true;
         return false;
     }
@@ -219,20 +222,30 @@ final class PatternLocationBuilder {
 
     private static boolean isInReturnExpression(final SimpleAutomatonID id,
             final CFGHandle cfg) {
-        for (final CFGNode node : cfg.getEndNode().getPredecessors())
-            if (node.getElement().getName().equals("returnStatement") &&
-                isInReturnExpression(id,node))
+        for (final CFGNode node : cfg.getEndNode().getPredecessors()) {
+            Set<String> dependentVars = null;
+            if (node.getNodeType() != null && node.getNodeType().equals("assign")
+                    && ((String)node.getOperands().get(0).id).equals(cfg.getRetVar())) {
+                CFGNode.Operand retop = node.getOperands().get(1);
+                dependentVars = CFGNode.getDependentVars(retop);
+            } else if (node.getElement() != null && node.getElement().getName().equals("returnStatement")) {
+                dependentVars = new HashSet<String>();
+                for (Object idElem : node.getElement().selectNodes("id"))
+                    dependentVars.add(((org.dom4j.Element)idElem).getText());
+            }
+            if (dependentVars != null && isInReturnExpression(id,dependentVars))
                 return true;
+        }
         return false;
     }
 
     private static boolean isInReturnExpression(final SimpleAutomatonID id,
-                                                final CFGNode retNode) {
+                                                final Set<String> dependentVars) {
         for (final String varsAssign : id.getVarsAssignment()) {
             final String varName = cz.muni.stanse.codestructures.PassingSolver.
                                               parseRootVariableName(varsAssign);
-            for (Object idElem : retNode.getElement().selectNodes("id"))
-                if (varName.equals(((org.dom4j.Element)idElem).getText()))
+            for (String depVar : dependentVars)
+                if (varName.equals(depVar))
                     return true;
         }
         return false;

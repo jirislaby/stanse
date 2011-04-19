@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<automaton>
+    <description name="Mutex double release checker"
+                 desc="Checks that mutexes don't get release twice" />
+
+    <pattern name="lock">
+        <node type="call">
+            <function>mutex::acquire</function>
+            <var name="P1"/>
+        </node>
+    </pattern>
+
+    <pattern name="unlock">
+        <node type="call">
+            <function>mutex::release</function>
+            <var name="P1"/>
+        </node>
+    </pattern>
+
+    <pattern name="safe-unlock">
+        <node type="call">
+            <function>mutex::~mutex</function>
+            <var name="P1"/>
+        </node>
+    </pattern>
+
+    <start state="Unlocked" />
+    <transition from="Unlocked[A]" by="lock[A]" to="Locked[A]" />
+    <transition from="Locked[A]" by="unlock[A]" to="Unlocked[A]" />
+    <transition from="Locked[A]" by="safe-unlock[A]" to="Unlocked[A]" />
+
+    <error from="Unlocked[A]" by="unlock[A]"
+           desc="double unlock"
+           level="0"
+           entry="Function entered with mutex unlocked."
+           begin="Here the mutex is unlocked."
+           propag="not affected"
+           end="Unlocking twice" />
+    <error from="Locked[A]" by="lock[A]"
+           desc="double lock"
+           level="0"
+           entry="Function entered in mutex locked."
+           begin="Here the mutex is locked."
+           propag="not affected"
+           end="Locking twice." />
+    <error from="Locked[*]" by=""
+           desc="Leaving function with mutex locked."
+           level="0"
+           entry="The function entered with mutex locked."
+           begin="The mutex is locked here."
+           propag="not affected"
+           end="Leaving locked." />
+</automaton>

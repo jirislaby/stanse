@@ -1,6 +1,6 @@
 /**
  * @file .java
- * @brief 
+ * @brief
  *
  * Copyright (c) 2008-2009 Marek Trtik
  *
@@ -95,7 +95,7 @@ final class PatternLocation {
     }
 
     void fireLocalAutomataStates() {
-        
+
     }
 
     boolean processUnprocessedAutomataStates() {
@@ -205,8 +205,12 @@ final class PatternLocation {
         }
     }
 
-    private LinkedList<AutomatonState> getUnprocessedAutomataStates() {
+    public LinkedList<AutomatonState> getUnprocessedAutomataStates() {
         return unprocessedAutomataStates;
+    }
+
+    public String toString() {
+	return "PL(" + CFGreferenceNode.toString() + ")";
     }
 
     private final CFGNode CFGreferenceNode;
