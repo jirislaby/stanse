@@ -51,8 +51,9 @@ sub handle_markers($$$$) {
 		$lcnt++;
 		if ($lcnt == $line) {
 			$markline = whitespace($markline);
-			if (whitespace($markline) ne $wanted) {
-				die "ineq: " . whitespace($markline) . " to $wanted";
+			if ($markline ne $wanted) {
+				die "ineq at $file ($line): " . $markline .
+					" to $wanted";
 			}
 			$ret = find_line(\@all, $pos, $file);
 			open(ORIG, $file) || die "cannot open $file";
