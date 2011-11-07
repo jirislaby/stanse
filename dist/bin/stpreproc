@@ -92,6 +92,8 @@ open(NONINCS, ">$nonincludes") || die "can't open $nonincludes for writing";
 
 my $out = 0;
 my $itself = 1;
+my $blank = 0;
+my $sw = 0;
 
 while (<CPP>) {
     if (/^\s*#/) {
@@ -100,9 +102,26 @@ while (<CPP>) {
 	    my $fl = $2;
 	    $itself = $fl =~ /\b2\b/ && $file =~ /$armored/;
 	}
+#	for having line markers in NONINCS, uncomment the following line
+#	print NONINCS;
+	$blank = 0;
 	next;
     }
     $out = 1 if ($itself && !/^\s*$/);
+
+    if ($out && !$sw) {
+	for (; $blank; $blank--) {
+	    print NONINCS "\n";
+	}
+	$sw = 1;
+    }
+
+    if (/^\s*$/) {
+	$blank++;
+    } else {
+	$blank = 0;
+    }
+
     if ($out) {
 	print NONINCS;
     } else {
