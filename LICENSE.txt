@@ -1,0 +1,17 @@
+This software is the result of the project Institute for Theoretical
+Computer Science, No. 1M0545, and this result is consistent with
+the expected objectives of the project. The owner of the result is
+Masaryk University, a public university, ID: 00216224. Masaryk University
+allows other companies and individuals to use this software free
+of charge and without territorial restrictions under the terms of
+the license listed bellow. This permission is granted for the duration
+of property rights. This software is not subject to special information
+treatment according to Act No. 412/2005 Coll., as amended. In case
+that a person who will use the software under this license offer
+violates the license terms, the permission to use the software terminates.
+
+LICENSE
+-------
+GPLv2 if not specified in particular files otherwise.
+
+Get a copy of GPLv2 at gnu.org.
