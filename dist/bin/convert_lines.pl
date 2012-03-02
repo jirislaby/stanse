@@ -2,6 +2,7 @@
 use strict;
 
 my $nomark_dir = "/home/xslaby/src-28/";
+my $source_dir = "/l/latest/tmp/linux1/";
 
 sub whitespace($) {
 	my $_ = shift;
@@ -56,7 +57,7 @@ sub handle_markers($$$$) {
 					" to $wanted";
 			}
 			$ret = find_line(\@all, $pos, $file);
-			open(ORIG, $file) || die "cannot open $file";
+			open(ORIG, "$source_dir$file") || die "cannot open $file";
 			@all = <ORIG>;
 			close ORIG;
 			my $orig = whitespace($all[$ret-1]);
