@@ -84,7 +84,7 @@ public class CFGNode {
 	public Object id;
     }
 
-    String nodeType;
+    String nodeType = null;
     List<Operand> operands = new ArrayList<Operand>();
     File file;
     int line;
@@ -364,7 +364,9 @@ public class CFGNode {
 
     @Override
     public String toString() {
-	String res = Integer.toString(number) + " " + nodeType.toString();
+	String res = Integer.toString(number);
+	if (nodeType != null)
+		res += " " + nodeType.toString();
 	for (Operand op : operands) {
 	    res += "[" + op.toString() + "]";
 	}
