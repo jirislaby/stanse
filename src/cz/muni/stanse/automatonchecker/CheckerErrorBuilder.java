@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import java.util.Map;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Stack;
 import org.apache.log4j.Logger;
 
@@ -152,8 +153,15 @@ final class CheckerErrorBuilder {
                     // cyclic dependency disallows to find starting nodes of
                     // their error traces -> both error traces returned will
                     // be empty.
-                    if (traces.isEmpty())
-                        continue;
+                    if (traces.isEmpty()) {
+			List simpleTrace = new LinkedList();
+			simpleTrace.add(location.getCFGreferenceNode());
+			simpleTrace.add(location.getCFGreferenceNode());
+			traces.add(new CheckerErrorTrace(simpleTrace,
+				    rule.getErrorBeginMessage(),
+				    rule.getErrorPropagMessage(),
+				    rule.getErrorEndMessage(), internals));
+		    }
 
 		    int min_size = Integer.MAX_VALUE;
 		    CheckerErrorTrace min_trace = null;
