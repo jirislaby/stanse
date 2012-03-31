@@ -127,6 +127,7 @@ final class CheckerErrorBuilder {
                                         location.getProcessedAutomataStates())) {
                 if (tmgr.measureElapsedMs() > 10000L)
                     return Pair.make(numErrors,result);
+
                 if (rule.checkForError(AutomatonStateCFGcontextAlgo.
                             filterStatesByContext(
                                           location.getProcessedAutomataStates(),
@@ -187,7 +188,8 @@ final class CheckerErrorBuilder {
                                         automatonName,
 					Make.linkedList(min_trace)));
                     ++numErrors;
-                    monitor.note("*** error found: " + shortDesc);
+                    monitor.note("*** error found: " + shortDesc + " at line " +
+			location.getCFGreferenceNode().getLine());
                 }
             }
         return Pair.make(numErrors,result);
