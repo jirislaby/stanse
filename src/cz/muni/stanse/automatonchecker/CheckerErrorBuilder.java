@@ -156,8 +156,14 @@ final class CheckerErrorBuilder {
                     // be empty.
                     if (traces.isEmpty()) {
 			List simpleTrace = new LinkedList();
-			simpleTrace.add(location.getCFGreferenceNode());
-			simpleTrace.add(location.getCFGreferenceNode());
+			CFGNode refNode = location.getCFGreferenceNode();
+			if (rule.getErrorDescription().equals("leaving function in locked state")) {
+				List<CFGNode> preds = refNode.getPredecessors();
+				assert(preds.size() == 1);
+				simpleTrace.add(preds.get(0));
+			} else
+				simpleTrace.add(refNode);
+			simpleTrace.add(refNode);
 			traces.add(new CheckerErrorTrace(simpleTrace,
 				    rule.getErrorBeginMessage(),
 				    rule.getErrorPropagMessage(),
