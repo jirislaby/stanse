@@ -1,0 +1,2 @@
+linuxkernel-2.6.28-statsbase.xml -- gcc33
+linuxkernel-2.6.28-statsbase-one-location.xml -- gcc47
