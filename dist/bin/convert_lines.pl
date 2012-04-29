@@ -47,6 +47,7 @@ sub handle_markers($$$$) {
 
 			next;
 		}
+		# XXX comment this for new gcc's
 		next if ($start && $markline =~ /^\s*$/);
 		$start = 0;
 		$lcnt++;
