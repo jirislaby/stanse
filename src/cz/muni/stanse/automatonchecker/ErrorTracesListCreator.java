@@ -27,12 +27,28 @@ final class ErrorTracesListCreator extends CFGPathVisitor {
     // public section
 
     @Override
+    public void endPath(final List<CFGNode> path,
+	    final Stack<CFGNode> cfgContext) {
+	final int importance = getTraceImportance(path, cfgContext);
+	if (importance !=
+		FalsePositivesDetector.getFalsePositiveImportance()) {
+	    getErrorTracesList().add(buildErrorTrace(
+		    "The *incomplete* trace starts here",
+		    getRule().getErrorPropagMessage(),
+		    getRule().getErrorEndMessage(),
+		    path, cfgContext));
+	    updateTotalImportance(importance);
+	    resetNumRejectedMeasure();
+	} else
+	    incrementNumRejectedMeasure(path.size());
+    }
+
+    @Override
     public boolean visit(final List<CFGNode> path,
                          final Stack<CFGNode> cfgContext) {
         if (getErrorTracesList().size() >= 20 || path.size() > 100
                 || isLimitOfRejectedMeasureExceeded())
             return false;
-
         final CFGNode node = path.iterator().next();
 
         if (getStartNode().equals(node) && path.size() == 1)

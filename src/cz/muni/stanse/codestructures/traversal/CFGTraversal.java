@@ -291,8 +291,11 @@ public final class CFGTraversal {
         for (CFGNode currentNodeFollower : nodeFollowers.get(path.getFirst())) {
             final Pair<CFGNode,CFGNode> edge =
                 new Pair<CFGNode,CFGNode>(path.getFirst(),currentNodeFollower);
-            if (visitedEdges.contains(edge))
+            if (visitedEdges.contains(edge)) {
+		visitor.endPath(Collections.unmodifiableList(path),
+			new Stack<CFGNode>());
                 continue;
+	    }
 
             path.addFirst(currentNodeFollower);
             visitedEdges.add(edge);
@@ -315,8 +318,10 @@ public final class CFGTraversal {
             if (path.size() < 2 || !nodeFollowers.isReturnNode(path.get(1))) {
                 final Pair<CFGNode,CFGNode> edge = Pair.make(path.getFirst(),
                                   nodeFollowers.getCalleeNode(path.getFirst()));
-                if (visitedEdges.contains(edge))
+                if (visitedEdges.contains(edge)) {
+		    visitor.endPath(Collections.unmodifiableList(path), callStack);
                     return;
+		}
                 if (visitor.onCFGchange(path.getFirst(),edge.getSecond())) {
                     visitedStack.push(
                             new HashSet<Pair<CFGNode,CFGNode>>(visitedEdges));
@@ -333,8 +338,10 @@ public final class CFGTraversal {
         if (nodeFollowers.isReturnNode(path.get(0)) && !callStack.isEmpty()) {
             final Pair<CFGNode,CFGNode> edge = Pair.make(path.getFirst(),
                                                          callStack.peek());
-            if (visitedEdges.contains(edge))
+            if (visitedEdges.contains(edge)) {
+		visitor.endPath(Collections.unmodifiableList(path), callStack);
                 return;
+	    }
             callStack.pop();
             visitedStack.pop();
             visitor.onCFGchange(path.getFirst(),edge.getSecond());
@@ -345,8 +352,10 @@ public final class CFGTraversal {
         for (CFGNode currentNodeFollower : nodeFollowers.get(path.getFirst())) {
             final Pair<CFGNode,CFGNode> edge = Pair.make(path.getFirst(),
                                                          currentNodeFollower);
-            if (visitedEdges.contains(edge))
+            if (visitedEdges.contains(edge)) {
+		visitor.endPath(Collections.unmodifiableList(path), callStack);
                 continue;
+	    }
             traverseCFGPathsInterproceduralByEdge(edge,path,nodeFollowers,
                                                 visitor,visitedStack,callStack);
         }

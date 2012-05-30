@@ -12,6 +12,9 @@ import java.util.Stack;
 public abstract class CFGPathVisitor {
     public abstract boolean visit(List<CFGNode> path,Stack<CFGNode> cfgContext);
 
+    public void endPath(final List<CFGNode> path, final Stack<CFGNode> cfgContext) {
+    }
+
     public boolean onCFGchange(CFGNode from, CFGNode to) {
         return false;
     }
