@@ -154,21 +154,8 @@ final class CheckerErrorBuilder {
                     // cyclic dependency disallows to find starting nodes of
                     // their error traces -> both error traces returned will
                     // be empty.
-                    if (traces.isEmpty()) {
-			List simpleTrace = new LinkedList();
-			CFGNode refNode = location.getCFGreferenceNode();
-			if (rule.getErrorDescription().equals("leaving function in locked state")) {
-				List<CFGNode> preds = refNode.getPredecessors();
-				assert(preds.size() == 1);
-				simpleTrace.add(preds.get(0));
-			} else
-				simpleTrace.add(refNode);
-			simpleTrace.add(refNode);
-			traces.add(new CheckerErrorTrace(simpleTrace,
-				    rule.getErrorBeginMessage(),
-				    rule.getErrorPropagMessage(),
-				    rule.getErrorEndMessage(), internals));
-		    }
+                    if (traces.isEmpty())
+			continue;
 
 		    int min_size = Integer.MAX_VALUE;
 		    CheckerErrorTrace min_trace = null;
