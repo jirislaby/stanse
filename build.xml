@@ -115,7 +115,7 @@
     </target>
     <target name="build" depends="init,cparser-c,parser">
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" destdir="build">
+        <javac debug="true" destdir="build" encoding="utf-8">
             <src path="src"/>
 	    <exclude name="cz/muni/stanse/ownershipchecker/*"/>
             <classpath refid="project.classpath"/>
