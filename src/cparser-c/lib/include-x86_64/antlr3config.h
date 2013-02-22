@@ -88,6 +88,10 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
 
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#define LT_OBJDIR ".libs/"
+
 /* Name of package */
 #define PACKAGE "libantlr3c"
 
@@ -98,19 +102,22 @@
 #define PACKAGE_NAME "libantlr3c"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "libantlr3c 3.2"
+#define PACKAGE_STRING "libantlr3c 3.4"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "libantlr3c"
 
+/* Define to the home page for this package. */
+#define PACKAGE_URL ""
+
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.2"
+#define PACKAGE_VERSION "3.4"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "3.2"
+#define VERSION "3.4"
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
