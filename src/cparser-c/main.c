@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 		goto err;
 
 	ret++;
-	input = antlr3AsciiFileStreamNew((unsigned char *)argv[1]);
+	input = antlr3FileStreamNew((unsigned char *)argv[1], ANTLR3_ENC_8BIT);
 	if (!input)
 		goto err;
 	ret++;
