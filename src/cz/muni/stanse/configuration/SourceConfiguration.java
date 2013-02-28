@@ -1,7 +1,6 @@
 package cz.muni.stanse.configuration;
 
 import cz.muni.stanse.Stanse;
-import cz.muni.stanse.cfgparser.CfgUnit;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesException;
 import cz.muni.stanse.configuration.source_enumeration.SourceCodeFilesEnumerator;
 import cz.muni.stanse.codestructures.Unit;
@@ -11,7 +10,6 @@ import cz.muni.stanse.codestructures.LazyInternalStructures;
 import cz.muni.stanse.codestructures.LazyInternalStructuresInter;
 import cz.muni.stanse.codestructures.LazyInternalStructuresIntra;
 import cz.muni.stanse.cparser.CUnit;
-import cz.muni.stanse.cppparser.CppUnit;
 import cz.muni.stanse.utils.ClassLogger;
 
 import java.util.ArrayList;
@@ -110,12 +108,7 @@ public final class SourceConfiguration {
 		String pathName = args.get(0);
 		int extPos = pathName.lastIndexOf(".");
 		String ext = pathName.substring(extPos + 1, pathName.length());
-		if (ext.equals("cpp") || ext.equals("cc") || ext.equals("cxx")
-			|| ext.equals("C"))
-		    result.add(new CppUnit(args));
-		else if (ext.equals("cfg"))
-		    result.add(new CfgUnit(args));
-		else if (ext.equals("c"))
+		if (ext.equals("c"))
 		    result.add(new CUnit(args));
 	    }
 	} catch (SourceCodeFilesException e) {
