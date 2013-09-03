@@ -1,0 +1,132 @@
+#!/usr/bin/perl -w
+use strict;
+use XML::XPath;
+use Data::Dumper::Concise;
+
+die "wrong commandline. should be $0 src.xml" if @ARGV < 1;
+
+my $in = $ARGV[0];
+
+my $xp = XML::XPath->new(filename => "$in") || die "can't open $in";
+
+my $start = $xp->findvalue('/automaton/start/@state');
+
+print STDERR "START=$start\n";
+
+my %patterns;
+my $patt = $xp->findnodes("/automaton/pattern");
+
+foreach my $pattern ($patt->get_nodelist) {
+	my $name = $pattern->getAttribute("name");
+	my $id = $pattern->findvalue(".//functionCall/id");
+
+	die "no ID: " . $pattern->toString() unless ($id);
+
+	$id =~ s/(^__st_)|(_st__$)//g;
+
+	push @{$patterns{$name}}, $id;
+}
+
+#print Dumper(%patterns);
+
+my @trans;
+my %nodes;
+sub add_trans($$$) {
+	my ($from, $by, $to) = @_;
+
+	if ($from =~ /\[B\]/ || $by =~ /\[B\]/ || $to =~ /\[B\]/) {
+		return;
+	}
+
+	$from =~ s/\[.\]//;
+	$by =~ s/\[.\]//;
+	$to =~ s/\[.\]//;
+
+	push @trans, [ $from, $by, $to ];
+	$nodes{$from} = 1;
+	$nodes{$to} = 1;
+}
+
+my $tr = $xp->findnodes("/automaton/transition");
+
+foreach my $trans ($tr->get_nodelist) {
+	my $from = $trans->getAttribute("from");
+	my $by = $trans->getAttribute("by");
+	my $to = $trans->getAttribute("to") || "UNK";
+
+	$by =~ /([^\[]+)(.*)/;
+	foreach my $by1 (@{$patterns{$1}}) {
+		add_trans($from, "$by1$2", $to);
+	}
+}
+
+my $err = $xp->findnodes("/automaton/error");
+
+foreach my $error ($err->get_nodelist) {
+	my $from = $error->getAttribute("from");
+	my $by = $error->getAttribute("by");
+
+	$from =~ s/ .*//;
+	if (!$by) {
+		add_trans($from, "EOF", "ERR");
+		next;
+	}
+
+	$by =~ /([^\[]+)(.*)/;
+	foreach my $by1 (@{$patterns{$1}}) {
+		add_trans($from, "$by1$2", "ERR");
+	}
+}
+
+my %map;
+my $map_cnt = 0;
+sub get_node($) {
+	my ($name) = @_;
+	if (!defined($map{$name})) {
+		$map{$name} = "A$map_cnt";
+		$map_cnt++;
+	}
+	return $map{$name};
+}
+
+sub to_dot() {
+	print "digraph g {\n";
+	foreach my $trans (@trans) {
+		my @arr = @{$trans};
+		print STDERR "$arr[0] ---$arr[1]---> $arr[2]\n";
+		my $from = get_node($arr[0]);
+		my $to = get_node($arr[2]);
+		print qq(\t$from -> $to [label="$arr[1]"];\n);
+	}
+	foreach my $name (keys %map) {
+		print qq(\t$map{$name} [label="$name"];\n);
+	}
+	print "}\n";
+}
+
+sub to_tikz() {
+	foreach my $trans (@trans) {
+		my @arr = @{$trans};
+		my $from = get_node($arr[0]);
+		my $to = get_node($arr[2]);
+	}
+	my $cnt = 0;
+	my $multiplier = 2.5;
+	foreach my $name (sort keys %map) {
+		print qq|\t\\node at (|, $multiplier*($cnt%4), ",-",
+			$multiplier*int($cnt/4),
+			qq|) [node] ($map{$name}) {\\code{$name}};\n|;
+		$cnt++;
+	}
+	foreach my $trans (@trans) {
+		my @arr = @{$trans};
+		print STDERR "$arr[0] ---$arr[1]---> $arr[2]\n";
+		my $from = get_node($arr[0]);
+		my $to = get_node($arr[2]);
+		print qq|\t\\path[->] ($from) edge[edge] node {} ($to);\n|;# [label="$arr[1]"];\n);
+	}
+}
+
+to_tikz();
+
+1;
