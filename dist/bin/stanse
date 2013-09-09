@@ -1,0 +1,23 @@
+#!/bin/sh
+
+LOCALCLASSPATH=@LOCALCLASSPATH@
+for LIB in /usr/share/stanse/lib/*; do
+	LOCALCLASSPATH=$LIB:$LOCALCLASSPATH
+done
+
+JAVA=java
+test -d "${JAVA_HOME}" && test -d "${JAVA_HOME}/bin" && \
+	test -x "${JAVA_HOME}/bin/java" && JAVA="${JAVA_HOME}/bin/java"
+
+SFLAGS=
+JFLAGS="-cp $LOCALCLASSPATH"
+while test -n "$1"; do
+	flag=$1
+	case $flag in
+	-X*) JFLAGS="$JFLAGS '$flag'" ;;
+	*) SFLAGS="$SFLAGS '$flag'" ;;
+	esac
+	shift
+done
+
+eval $JAVA $JFLAGS cz.muni.stanse.Stanse $SFLAGS

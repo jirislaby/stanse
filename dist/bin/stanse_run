@@ -1,0 +1,95 @@
+#!/bin/sh
+
+usage()
+{
+	echo "$0 [-fk] [-c checker] [-j jobs] [-o out.xml] [-O out_dir]"
+	echo '  -c checker use this checker (see stanse help), can be repeated'
+	echo '  -j jobs    how many jobs to run in parallel'
+	echo '  -f         force; overwrite files by default'
+	echo '  -k         kernel mode (add default kernel checkers)'
+	echo '  -o out.xml where to store the found errors (default: errors.xml)'
+	echo '  -O dir     pass O=dir to kernel make'
+}
+
+JOB_FILE=`mktemp`
+MAKE_OPTS='CC=stcc'
+STATS_OUT='errors.xml'
+FORCE=0
+
+while [ $# -gt 0 ]; do
+	PARM="$1"
+	shift
+	case "$PARM" in
+	-c)
+		STANSE_OPTS="$STANSE_OPTS $PARM $1"
+		shift
+		;;
+	-j)
+		MAKE_OPTS="$MAKE_OPTS -j$1"
+		shift
+		;;
+	-f)
+		FORCE=1
+		;;
+	-k)
+		STANSE_OPTS="$STANSE_OPTS -c AutomatonChecker:/usr/share/stanse/checkers/AutomatonChecker/kernel_atomic.xml"
+		STANSE_OPTS="$STANSE_OPTS -c AutomatonChecker:/usr/share/stanse/checkers/AutomatonChecker/kernel_locking_irq.xml"
+		STANSE_OPTS="$STANSE_OPTS -c AutomatonChecker:/usr/share/stanse/checkers/AutomatonChecker/kernel_memory.xml"
+		STANSE_OPTS="$STANSE_OPTS -c AutomatonChecker:/usr/share/stanse/checkers/AutomatonChecker/kernel_pairing.xml"
+		STANSE_OPTS="$STANSE_OPTS -c ReachabilityChecker"
+		;;
+	-o)
+		STATS_OUT="$1"
+		shift
+		;;
+	-O)
+		MAKE_OPTS="$MAKE_OPTS O=$1"
+		shift
+		;;
+	-h|--help|*)
+		echo "Unknown option '$PARM'"
+		echo
+		usage
+		exit 1
+		;;
+	esac
+done
+
+if [ $FORCE -ne 1 -a -e "$STATS_OUT" ]; then
+	echo "The output file '$STATS_OUT' already exists, exiting"
+	echo "To overwrite files by default, use -f"
+	exit 2
+fi
+
+export JOB_FILE
+
+echo '1) Cleaning build dir...'
+echo nice make $MAKE_OPTS clean
+nice make $MAKE_OPTS clean || exit 3
+echo
+
+echo '2) Building kernel...'
+rm -f "$JOB_FILE"
+echo nice make $MAKE_OPTS all
+nice make $MAKE_OPTS all 2>&1|head -40  || exit 3
+echo
+
+MEM=`grep '^MemTotal:' /proc/meminfo|sed 's/^MemTotal: *\([0-9]*\) .*$/\1/'`
+MEM=$(($MEM/2/1024))
+if [ $MEM -lt 500 ]; then
+	echo 'Too few memory, Stanse may fail'
+	MEM=500
+fi
+if [ $MEM -gt 4000 ]; then
+	MEM=4000
+fi
+echo $MEM
+
+echo '3) Running Stanse...'
+echo stanse -Xmx${MEM}m --jobfile "$JOB_FILE" --stats-build $STATS_OUT "$STANSE_OPTS"
+stanse -Xmx${MEM}m --jobfile "$JOB_FILE" --stats-build $STATS_OUT "$STANSE_OPTS" || exit 4
+echo
+
+echo "The output is now in '$STATS_OUT'. You can:"
+echo "  a) convert it to a database by st_xml2sqlite3 and publish on the web"
+echo "  b) run stanse --stats-err-guitracing $STATS_OUT:/dev/null -g to see them in Stanse"
