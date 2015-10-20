@@ -277,6 +277,7 @@ typeSpecifier		// (6.7.2)
         |       'long'
         |       'float'
         |       'double'
+        |       '__int128'
         |       s='signed'
         |       s='__signed'
         |       s='__signed__'

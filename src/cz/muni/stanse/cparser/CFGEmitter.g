@@ -300,6 +300,7 @@ typeSpecifier
 	| ^(BASETYPE 'long')
 	| ^(BASETYPE 'float')
 	| ^(BASETYPE 'double')
+	| ^(BASETYPE '__int128')
 	| ^(BASETYPE SIGNED)
 	| ^(BASETYPE 'unsigned')
 	| ^(BASETYPE '_Bool')
