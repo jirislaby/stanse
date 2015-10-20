@@ -50,7 +50,7 @@ die "wrong commandline" if @ARGV != 1;
 
 my $arg = shift @ARGV;
 chomp $arg;
-$arg =~ /^{(.*)},{(.*)},{(.*)},{(.*)}$/;
+$arg =~ /^\{(.*)\},\{(.*)\},\{(.*)\},\{(.*)\}$/;
 
 die "commandline mangled" unless defined $4;
 
